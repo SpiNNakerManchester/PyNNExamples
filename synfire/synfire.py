@@ -33,7 +33,6 @@ p.run(1000)
 spikes = [pop.getSpikes() for pop in chain_pops]
 p.end()
 
-print spikes
 pylab.figure()
 pylab.xlabel('Time (ms)')
 pylab.ylabel('Neuron')
