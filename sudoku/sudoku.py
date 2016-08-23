@@ -39,7 +39,7 @@ if sys.platform.startswith("win32"):
     vis_exe = "sudoku.exe"
 elif sys.platform.startswith("darwin"):
     vis_exe = "sudoku_osx"
-elif sys.platform.startwith("linux"):
+elif sys.platform.startswith("linux"):
     vis_exe = "sudoku_linux"
 else:
     raise Exception("Unknown platform: {}".format(sys.platform))
