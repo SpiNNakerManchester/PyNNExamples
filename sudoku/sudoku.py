@@ -11,6 +11,7 @@ import spynnaker_external_devices_plugin.pyNN as ext
 import subprocess
 from threading import Thread
 import os
+import sys
 
 import matplotlib
 import time
@@ -25,20 +26,23 @@ ms_per_bin = 100
 
 
 # Run the visualiser
-def read_output(out):
+def read_output(visualiser, out):
     while visualiser.poll() is None:
         line = out.readline()
         if line:
             print line
-    print "Done"
+    print "Visualiser exited - quitting"
+    os._exit(0)
 
 vis_exe = None
-if os.name == "nt":
+if sys.platform.startswith("win32"):
     vis_exe = "sudoku.exe"
-elif os.name == "mac":
+elif sys.platform.startswith("darwin"):
     vis_exe = "sudoku_osx"
-elif os.name == "posix":
+elif sys.platform.startwith("linux"):
     vis_exe = "sudoku_linux"
+else:
+    raise Exception("Unknown platform: {}".format(sys.platform))
 vis_exe = os.path.abspath(os.path.join(os.path.dirname(__file__), vis_exe))
 print "Executing", vis_exe
 visualiser = subprocess.Popen(args=[
@@ -46,7 +50,7 @@ visualiser = subprocess.Popen(args=[
     "-neurons_per_number", str(neurons_per_digit),
     "-ms_per_bin", str(ms_per_bin)],
     stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1)
-Thread(target=read_output, args=[visualiser.stdout]).start()
+Thread(target=read_output, args=[visualiser, visualiser.stdout]).start()
 
 p.setup(timestep=1.0)
 print "Creating Sudoku Network..."
