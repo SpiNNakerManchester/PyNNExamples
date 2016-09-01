@@ -239,19 +239,19 @@ cells.initialize("v", RandomDistribution("uniform", [-65.0, -55.0]))
 
 p.run(run_time)
 
-spikes = cells.getSpikes()
-f, axarr = pylab.subplots(9, 9)
-for y in range(9):
-    for x in range(9):
-        base = ((y * 9) + x) * n_cell
-        next_base = base + n_cell
-        ids = spikes[:, 0]
-        cell_spikes = spikes[numpy.where((ids >= base) & (ids < next_base))]
-        axarr[8 - y][x].plot(
-            [i[1] for i in cell_spikes], [i[0] - base for i in cell_spikes], ".")
-        axarr[8 - y][x].axis([0, run_time, -1, n_cell + 1])
-        # axarr[8 - y][x].axis('off')
-pylab.show()
+# spikes = cells.getSpikes()
+# f, axarr = pylab.subplots(9, 9)
+# for y in range(9):
+#     for x in range(9):
+#         base = ((y * 9) + x) * n_cell
+#         next_base = base + n_cell
+#         ids = spikes[:, 0]
+#         cell_spikes = spikes[numpy.where((ids >= base) & (ids < next_base))]
+#         axarr[8 - y][x].plot(
+#             [i[1] for i in cell_spikes], [i[0] - base for i in cell_spikes], ".")
+#         axarr[8 - y][x].axis([0, run_time, -1, n_cell + 1])
+#         # axarr[8 - y][x].axis('off')
+# pylab.show()
 # pylab.savefig("sudoku.png")
 
 p.end()
