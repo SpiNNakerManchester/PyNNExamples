@@ -62,6 +62,10 @@ def read_output(visualiser, out):
         pass
     os._exit(0)
 
+
+g.setup()
+hostname = g._spinnaker._hostname
+
 visualiser = None
 if sys.platform.startswith("win32"):
     visualiser = "visualiser.exe"
@@ -74,11 +78,10 @@ else:
 visualiser = os.path.abspath(os.path.join(os.path.dirname(__file__), visualiser))
 print "Executing", visualiser
 vis_exec = subprocess.Popen(
-    args=[visualiser, "-c", "heatmap2x2.ini"],
+    args=[visualiser, "-c", "heatmap2x2.ini", "-ip", hostname],
     stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1)
 Thread(target=read_output, args=[vis_exec, vis_exec.stdout]).start()
 
-g.setup()
 for i in range(cores):
     heat_demo = HeatDemo()
     g.add_machine_vertex_instance(heat_demo)
