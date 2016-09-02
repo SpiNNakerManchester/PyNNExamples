@@ -3,11 +3,6 @@ from pacman.model.graphs.machine.impl.machine_vertex import MachineVertex
 from pacman.model.resources.resource_container import ResourceContainer
 from pacman.model.resources.dtcm_resource import DTCMResource
 from pacman.model.resources.sdram_resource import SDRAMResource
-from spinnman.messages.sdp.sdp_message import SDPMessage
-from spinnman.messages.sdp.sdp_header import SDPHeader
-from spinnman.messages.sdp.sdp_flag import SDPFlag
-from pacman.model.constraints.placer_constraints\
-    .placer_chip_and_core_constraint import PlacerChipAndCoreConstraint
 from spinn_front_end_common.abstract_models.abstract_starts_synchronized import AbstractStartsSynchronized
 from spinn_front_end_common.abstract_models.abstract_has_associated_binary \
     import AbstractHasAssociatedBinary
@@ -19,7 +14,7 @@ from threading import Thread
 import sys
 import subprocess
 import os
-import struct
+import platform
 
 position = (-220.0, 50.0, 0.0)
 look = (1.0, 0.0, 0.0)
@@ -72,10 +67,24 @@ if sys.platform.startswith("win32"):
 elif sys.platform.startswith("darwin"):
     visualiser = "visualiser_osx"
 elif sys.platform.startswith("linux"):
-    visualiser = "visualiser_linux"
+    if platform.machine() == "x86_64":
+        visualiser = "visualiser_64_linux"
+    elif platform.machine() == "i386":
+        visualiser = "visualiser_32_linux"
+    elif platform.machine() is None:
+        print "Cant diagnose the bit size of the machine. " \
+              "Running 32 bit visualiser."
+        visualiser = "visualiser_32_linux"
+    else:
+        print "I do not recognise the bit size of the machine. " \
+              "Will use 32 bit visualiser."
+        visualiser = "visualiser_32_linux"
 else:
     raise Exception("Unknown platform {}".format(sys.platform))
-visualiser = os.path.abspath(os.path.join(os.path.dirname(__file__), visualiser))
+
+visualiser = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), visualiser))
+
 print "Executing", visualiser
 vis_exec = subprocess.Popen(
     args=[visualiser, "-c", "heatmap2x2.ini", "-ip", hostname],
