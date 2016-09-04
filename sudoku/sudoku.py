@@ -12,15 +12,8 @@ import subprocess
 from threading import Thread
 import os
 import sys
-import numpy
-import time
 
-import matplotlib
-from _collections import defaultdict
-# matplotlib.use("Agg")
-import pylab  # @IgnorePep8
-
-run_time = 10000                        # run time in milliseconds
+run_time = 20000                        # run time in milliseconds
 neurons_per_digit = 5                   # number of neurons per digit
 fact = float(neurons_per_digit) / 10.0  # number of neurons per digit / 10
 ms_per_bin = 100
@@ -64,34 +57,34 @@ n_total = n_cell * 9 * 9
 n_stim_total = n_stim * 9 * 9
 
 # global distributions & parameters
-weight_cell = RandomDistribution("uniform", [-0.5 / fact, -0.0 / fact])
-weight_stim = RandomDistribution("uniform", [0.0, 0.5])
+weight_cell = 0.2
+weight_stim = 0.2
 dur_nois = RandomDistribution("uniform", [30000.0, 30001.0])
-weight_nois = 2.0
+weight_nois = 1.4
 delay = 2.0
 
 
 # Diabolical problem:
 
-# init = [[0, 0, 1, 0, 0, 8, 0, 7, 3],  # initialise non-zeros
-#         [0, 0, 5, 6, 0, 0, 0, 0, 1],  # NB use as init[8-y][x] -> cell[x][y]
-#         [7, 0, 0, 0, 0, 1, 0, 0, 0],
-#         [0, 9, 0, 8, 1, 0, 0, 0, 0],
-#         [5, 3, 0, 0, 0, 0, 0, 4, 6],
-#         [0, 0, 0, 0, 6, 5, 0, 3, 0],
-#         [0, 0, 0, 1, 0, 0, 0, 0, 4],
-#         [8, 0, 0, 0, 0, 9, 3, 0, 0],
-#         [9, 4, 0, 5, 0, 0, 7, 0, 0]]
+init = [[0, 0, 1, 0, 0, 8, 0, 7, 3],  # initialise non-zeros
+        [0, 0, 5, 6, 0, 0, 0, 0, 1],  # NB use as init[8-y][x] -> cell[x][y]
+        [7, 0, 0, 0, 0, 1, 0, 0, 0],
+        [0, 9, 0, 8, 1, 0, 0, 0, 0],
+        [5, 3, 0, 0, 0, 0, 0, 4, 6],
+        [0, 0, 0, 0, 6, 5, 0, 3, 0],
+        [0, 0, 0, 1, 0, 0, 0, 0, 4],
+        [8, 0, 0, 0, 0, 9, 3, 0, 0],
+        [9, 4, 0, 5, 0, 0, 7, 0, 0]]
 
-init = [[2, 0, 0, 0, 0, 6, 0, 3, 0],        # initialise non-zeros
-        [4, 8, 0, 0, 1, 9, 0, 0, 0],        # NB use as init[8-y][x] -> cell[x][y]
-        [0, 0, 7, 0, 2, 0, 9, 0, 0],
-        [0, 0, 0, 3, 0, 0, 0, 9, 0],
-        [7, 0, 8, 0, 0, 0, 1, 0, 5],
-        [0, 4, 0, 0, 0, 7, 0, 0, 0],
-        [0, 0, 4, 0, 9, 0, 6, 0, 0],
-        [0, 0, 0, 6, 4, 0, 0, 1, 9],
-        [0, 5, 0, 1, 0, 0, 0, 0, 8]]
+# init = [[2, 0, 0, 0, 0, 6, 0, 3, 0],  # initialise non-zeros
+#         [4, 8, 0, 0, 1, 9, 0, 0, 0],  # NB use as init[8-y][x] -> cell[x][y]
+#         [0, 0, 7, 0, 2, 0, 9, 0, 0],
+#         [0, 0, 0, 3, 0, 0, 0, 9, 0],
+#         [7, 0, 8, 0, 0, 0, 1, 0, 5],
+#         [0, 4, 0, 0, 0, 7, 0, 0, 0],
+#         [0, 0, 4, 0, 9, 0, 6, 0, 0],
+#         [0, 0, 0, 6, 4, 0, 0, 1, 9],
+#         [0, 5, 0, 1, 0, 0, 0, 0, 8]]
 
 corr = init
 
@@ -106,28 +99,21 @@ corr = init
 #
 cell_params_lif = {
     'cm': 0.25,         # nF membrane capacitance
-    'i_offset': 0.3,    # nA    bias current
+    'i_offset': 0.5,    # nA    bias current
     'tau_m': 20.0,      # ms    membrane time constant
     'tau_refrac': 2.0,  # ms    refractory period
     'tau_syn_E': 5.0,   # ms    excitatory synapse time constant
     'tau_syn_I': 5.0,   # ms    inhibitory synapse time constant
     'v_reset': -70.0,   # mV    reset membrane potential
     'v_rest': -65.0,    # mV    rest membrane potential
-    'v_thresh': -50.0   # mV    firing threshold voltage
+    'v_thresh': -50.0,  # mV    firing threshold voltage
+    'spikes_per_second': 200
 }
 
 print "Creating Populations..."
 cells = p.Population(n_total, p.IF_curr_exp, cell_params_lif, label="Cells")
 cells.record()
 ext.activate_live_output_for(cells, tag=1, port=17897)
-# cell = [[
-#     p.Population(
-#         n_cell, p.IF_curr_exp, cell_params_lif,
-#         label="Cell" + str(x + 1) + str(y + 1))
-#     for x in range(9)] for y in range(9)]
-# for x in range(9):
-#     for y in range(9):
-#         ext.activate_live_output_for(cell[x][y], tag=1, port=17897)
 
 #
 # add a noise source to each cell
@@ -138,18 +124,7 @@ noise = p.Population(
     {"rate": 20.0},
     label="Noise")
 p.Projection(noise, cells, p.OneToOneConnector(weight_nois))
-# nois = [[
-#     p.Population(
-#         n_cell, p.SpikeSourcePoisson,
-#         {"rate": 20.0, "start": 0.0, "duration": dur_nois},
-#         label="Noise" + str(x + 1) + str(y + 1))
-#     for x in range(9)] for y in range(9)]
-#
-# # connect noise neurons one-to-one to cell neurons
-# conn_nois = p.OneToOneConnector(weight_nois)
-# for x in range(9):
-#     for y in range(9):
-#         p.Projection(nois[x][y], cell[x][y], conn_nois, target="excitatory")
+
 
 #
 # set up the cell internal inhibitory connections
@@ -164,7 +139,7 @@ for x in range(9):
         # diagonal
         connections_cell = [
             (i + base, j + base,
-             0.0 if i // n_N == j // n_N else weight_cell.next(), delay)
+             0.0 if i // n_N == j // n_N else weight_cell, delay)
             for i in range(n_cell) for j in range(n_cell)
         ]
         connections.extend(connections_cell)
@@ -178,9 +153,9 @@ def interCell(x, y, r, c, connections):
         weight_cell() from cell[x][y] to cell[r][c]
     """
     base_source = ((y * 9) + x) * n_cell
-    base_dest = ((r * 9) + c) * n_cell
+    base_dest = ((c * 9) + r) * n_cell
     connections_intC = [
-        (i + base_source, j + base_dest, weight_cell.next(), delay)
+        (i + base_source, j + base_dest, weight_cell, delay)
         for i in range(n_cell)
         for j in range(n_N * (i // n_N), n_N * (i // n_N + 1))]
 
@@ -222,19 +197,13 @@ for x in range(9):
                 for j in range(
                         n_N * (init[8 - y][x] - 1), n_N * init[8 - y][x]):
                     connections_stim.append(
-                        (i + base_stim, j + base, weight_stim.next(), delay))
+                        (i + base_stim, j + base, weight_stim, delay))
 
             s += 1
 conn_stim = p.FromListConnector(connections_stim)
 p.Projection(stim, cells, conn_stim, target="excitatory")
 #
 # initialise the network, run, and get results
-#
-# for x in range(9):
-#     for y in range(9):
-#         cell[x][y].initialize(
-#             "v", RandomDistribution("uniform", [-65.0, -55.0]))
-#         cell[x][y].record()
 cells.initialize("v", RandomDistribution("uniform", [-65.0, -55.0]))
 
 p.run(run_time)
@@ -248,13 +217,11 @@ p.run(run_time)
 #         ids = spikes[:, 0]
 #         cell_spikes = spikes[numpy.where((ids >= base) & (ids < next_base))]
 #         axarr[8 - y][x].plot(
-#             [i[1] for i in cell_spikes], [i[0] - base for i in cell_spikes], ".")
+#             [i[1] for i in cell_spikes],
+#             [i[0] - base for i in cell_spikes], ".")
 #         axarr[8 - y][x].axis([0, run_time, -1, n_cell + 1])
 #         # axarr[8 - y][x].axis('off')
 # pylab.show()
 # pylab.savefig("sudoku.png")
 
 p.end()
-#
-# while not visualiser.poll():
-#     time.sleep(0.1)
