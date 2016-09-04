@@ -86,13 +86,9 @@ init = [[0, 0, 1, 0, 0, 8, 0, 7, 3],  # initialise non-zeros
 #         [0, 0, 0, 6, 4, 0, 0, 1, 9],
 #         [0, 5, 0, 1, 0, 0, 0, 0, 8]]
 
-corr = init
-
 # Dream problem - no input!
-"""
-init = [[0 for x in range(9)] for y in range(9)]
+# init = [[0 for x in range(9)] for y in range(9)]
 corr = init
-"""
 
 #
 # set up the 9x9 cell array populations
@@ -182,9 +178,6 @@ p.Projection(cells, cells, conn_intC, target="inhibitory")
 #
 print "Fixing initial numbers..."
 s = 0
-stim = p.Population(
-    n_stim_total, p.SpikeSourcePoisson,
-    {"rate": 10.0}, label="Stim")
 connections_stim = []
 for x in range(9):
     for y in range(9):
@@ -200,8 +193,13 @@ for x in range(9):
                         (i + base_stim, j + base, weight_stim, delay))
 
             s += 1
-conn_stim = p.FromListConnector(connections_stim)
-p.Projection(stim, cells, conn_stim, target="excitatory")
+
+if len(connections_stim) > 0:
+    stim = p.Population(
+        n_stim_total, p.SpikeSourcePoisson,
+        {"rate": 10.0}, label="Stim")
+    conn_stim = p.FromListConnector(connections_stim)
+    p.Projection(stim, cells, conn_stim, target="excitatory")
 #
 # initialise the network, run, and get results
 cells.initialize("v", RandomDistribution("uniform", [-65.0, -55.0]))
