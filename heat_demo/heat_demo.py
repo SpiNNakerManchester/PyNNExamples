@@ -16,6 +16,9 @@ import subprocess
 import os
 import platform
 
+from spinnman.connections.udp_packet_connections.udp_eieio_connection import \
+    UDPEIEIOConnection
+
 position = (-220.0, 50.0, 0.0)
 look = (1.0, 0.0, 0.0)
 up = (0.0, 1.0, 0.0)
@@ -38,7 +41,10 @@ class HeatDemo(
             self, ResourceContainer(
                 dtcm=DTCMResource(0), sdram=SDRAMResource(0),
                 cpu_cycles=CPUCyclesPerTickResource(0),
-                iptags=[IPtagResource("localhost", 17894, False, tag=1)]),
+                iptags=[IPtagResource(
+                    "localhost", 17894, False, tag=1,
+                    traffic_identifier="heat_elements",
+                    connection_type=UDPEIEIOConnection)]),
             label="Tracer")
 
     def get_binary_file_name(self):

@@ -3,6 +3,8 @@ from pacman.model.graphs.machine.impl.machine_vertex import MachineVertex
 from pacman.model.resources.resource_container import ResourceContainer
 from pacman.model.resources.dtcm_resource import DTCMResource
 from pacman.model.resources.sdram_resource import SDRAMResource
+from spinnman.connections.udp_packet_connections.udp_connection import \
+    UDPConnection
 from spinnman.messages.sdp.sdp_message import SDPMessage
 from spinnman.messages.sdp.sdp_header import SDPHeader
 from spinnman.messages.sdp.sdp_flag import SDPFlag
@@ -38,7 +40,10 @@ class Aggregator(MachineVertex, AbstractHasAssociatedBinary):
             self, ResourceContainer(
                 dtcm=DTCMResource(0), sdram=SDRAMResource(0),
                 cpu_cycles=CPUCyclesPerTickResource(0), iptags=[
-                    IPtagResource(".", 17894, strip_sdp=False, tag=1)]),
+                    IPtagResource(
+                        ".", 17894, strip_sdp=False, tag=1,
+                        traffic_identifier="ray_trace_aggregator",
+                        connection_type=UDPConnection)]),
             label="Aggregator",
             constraints=[PlacerChipAndCoreConstraint(0, 0, 1)])
 
