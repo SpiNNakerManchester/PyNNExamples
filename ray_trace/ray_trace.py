@@ -43,12 +43,13 @@ class Aggregator(MachineVertex, AbstractHasAssociatedBinary):
     def get_binary_file_name(self):
         return "aggregator.aplx"
 
+    @property
     @overrides(MachineVertex.resources_required)
     def resources_required(self):
         return ResourceContainer(
-                dtcm=DTCMResource(0), sdram=SDRAMResource(0),
-                cpu_cycles=CPUCyclesPerTickResource(0), iptags=[
-                    IPtagResource(".", 17894, strip_sdp=False, tag=1)])
+            dtcm=DTCMResource(0), sdram=SDRAMResource(0),
+            cpu_cycles=CPUCyclesPerTickResource(0), iptags=[
+                IPtagResource(".", 17894, strip_sdp=False, tag=1)])
 
 
 class Tracer(
@@ -64,11 +65,12 @@ class Tracer(
     def get_binary_file_name(self):
         return "tracer.aplx"
 
+    @property
     @overrides(MachineVertex.resources_required)
     def resources_required(self):
         return ResourceContainer(
-                dtcm=DTCMResource(0), sdram=SDRAMResource(0),
-                cpu_cycles=CPUCyclesPerTickResource(0))
+            dtcm=DTCMResource(0), sdram=SDRAMResource(0),
+            cpu_cycles=CPUCyclesPerTickResource(0))
 
 
 def read_output(drawer, out):
