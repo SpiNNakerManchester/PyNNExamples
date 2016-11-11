@@ -1,4 +1,5 @@
 import spinnaker_graph_front_end as g
+from pacman.model.decorators.overrides import overrides
 from pacman.model.graphs.machine.impl.machine_vertex import MachineVertex
 from pacman.model.resources.resource_container import ResourceContainer
 from pacman.model.resources.dtcm_resource import DTCMResource
@@ -35,15 +36,20 @@ class Aggregator(MachineVertex, AbstractHasAssociatedBinary):
 
     def __init__(self):
         MachineVertex.__init__(
-            self, ResourceContainer(
-                dtcm=DTCMResource(0), sdram=SDRAMResource(0),
-                cpu_cycles=CPUCyclesPerTickResource(0), iptags=[
-                    IPtagResource(".", 17894, strip_sdp=False, tag=1)]),
-            label="Aggregator",
+            self, label="Aggregator",
             constraints=[PlacerChipAndCoreConstraint(0, 0, 1)])
 
+    @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
         return "aggregator.aplx"
+
+    @property
+    @overrides(MachineVertex.resources_required)
+    def resources_required(self):
+        return ResourceContainer(
+            dtcm=DTCMResource(0), sdram=SDRAMResource(0),
+            cpu_cycles=CPUCyclesPerTickResource(0), iptags=[
+                IPtagResource(".", 17894, strip_sdp=False, tag=1)])
 
 
 class Tracer(
@@ -53,13 +59,18 @@ class Tracer(
 
     def __init__(self):
         MachineVertex.__init__(
-            self, ResourceContainer(
-                dtcm=DTCMResource(0), sdram=SDRAMResource(0),
-                cpu_cycles=CPUCyclesPerTickResource(0)),
-            label="Tracer")
+            self, label="Tracer")
 
+    @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
         return "tracer.aplx"
+
+    @property
+    @overrides(MachineVertex.resources_required)
+    def resources_required(self):
+        return ResourceContainer(
+            dtcm=DTCMResource(0), sdram=SDRAMResource(0),
+            cpu_cycles=CPUCyclesPerTickResource(0))
 
 
 def read_output(drawer, out):
