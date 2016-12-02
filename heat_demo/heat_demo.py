@@ -1,9 +1,12 @@
 import spinnaker_graph_front_end as g
-from pacman.model.graphs.machine.impl.machine_vertex import MachineVertex
+
 from pacman.model.resources.resource_container import ResourceContainer
 from pacman.model.resources.dtcm_resource import DTCMResource
 from pacman.model.resources.sdram_resource import SDRAMResource
-from spinn_front_end_common.abstract_models.abstract_starts_synchronized import AbstractStartsSynchronized
+from pacman.model.graphs.machine.impl.simple_machine_vertex \
+    import SimpleMachineVertex
+from spinn_front_end_common.abstract_models.abstract_starts_synchronized \
+    import AbstractStartsSynchronized
 from spinn_front_end_common.abstract_models.abstract_has_associated_binary \
     import AbstractHasAssociatedBinary
 from pacman.model.resources.cpu_cycles_per_tick_resource \
@@ -16,9 +19,6 @@ import subprocess
 import os
 import platform
 
-from spinnman.connections.udp_packet_connections.udp_eieio_connection import \
-    UDPEIEIOConnection
-
 position = (-220.0, 50.0, 0.0)
 look = (1.0, 0.0, 0.0)
 up = (0.0, 1.0, 0.0)
@@ -27,24 +27,21 @@ horizontalFieldOfView = 60.0
 verticalFieldOfView = 50.0
 frameHeight = 600
 antialiasing = 10
-cores = 64
+cores = 60
 
 
 class HeatDemo(
-        MachineVertex, AbstractHasAssociatedBinary,
+        SimpleMachineVertex, AbstractHasAssociatedBinary,
         AbstractStartsSynchronized):
 
     seen_chips = set()
 
     def __init__(self):
-        MachineVertex.__init__(
+        SimpleMachineVertex.__init__(
             self, ResourceContainer(
                 dtcm=DTCMResource(0), sdram=SDRAMResource(0),
                 cpu_cycles=CPUCyclesPerTickResource(0),
-                iptags=[IPtagResource(
-                    "localhost", 17894, False, tag=1,
-                    traffic_identifier="heat_elements",
-                    connection_type=UDPEIEIOConnection)]),
+                iptags=[IPtagResource("localhost", 17894, False, tag=1)]),
             label="Tracer")
 
     def get_binary_file_name(self):
