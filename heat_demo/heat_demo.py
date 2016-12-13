@@ -1,10 +1,9 @@
 import spinnaker_graph_front_end as g
-
+from pacman.model.decorators.overrides import overrides
+from pacman.model.graphs.machine.impl.machine_vertex import MachineVertex
 from pacman.model.resources.resource_container import ResourceContainer
 from pacman.model.resources.dtcm_resource import DTCMResource
 from pacman.model.resources.sdram_resource import SDRAMResource
-from pacman.model.graphs.machine.impl.simple_machine_vertex \
-    import SimpleMachineVertex
 from spinn_front_end_common.abstract_models.abstract_starts_synchronized \
     import AbstractStartsSynchronized
 from spinn_front_end_common.abstract_models.abstract_has_associated_binary \
@@ -27,25 +26,29 @@ horizontalFieldOfView = 60.0
 verticalFieldOfView = 50.0
 frameHeight = 600
 antialiasing = 10
-cores = 60
+cores = 64
 
 
 class HeatDemo(
-        SimpleMachineVertex, AbstractHasAssociatedBinary,
+        MachineVertex, AbstractHasAssociatedBinary,
         AbstractStartsSynchronized):
 
     seen_chips = set()
 
     def __init__(self):
-        SimpleMachineVertex.__init__(
-            self, ResourceContainer(
-                dtcm=DTCMResource(0), sdram=SDRAMResource(0),
-                cpu_cycles=CPUCyclesPerTickResource(0),
-                iptags=[IPtagResource("localhost", 17894, False, tag=1)]),
-            label="Tracer")
+        MachineVertex.__init__(self, label="Tracer")
 
+    @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
         return "heat_demo.aplx"
+
+    @property
+    @overrides(MachineVertex.resources_required)
+    def resources_required(self):
+        return ResourceContainer(
+            dtcm=DTCMResource(0), sdram=SDRAMResource(0),
+            cpu_cycles=CPUCyclesPerTickResource(0),
+            iptags=[IPtagResource("localhost", 17894, False, tag=1)])
 
 
 def read_output(visualiser, out):
