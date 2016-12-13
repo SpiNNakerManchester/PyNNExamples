@@ -1,19 +1,21 @@
 import spinnaker_graph_front_end as g
-from pacman.model.decorators.overrides import overrides
-from pacman.model.graphs.machine.impl.machine_vertex import MachineVertex
+
 from pacman.model.resources.resource_container import ResourceContainer
 from pacman.model.resources.dtcm_resource import DTCMResource
 from pacman.model.resources.sdram_resource import SDRAMResource
-from spinnman.messages.sdp.sdp_message import SDPMessage
-from spinnman.messages.sdp.sdp_header import SDPHeader
-from spinnman.messages.sdp.sdp_flag import SDPFlag
 from pacman.model.constraints.placer_constraints\
     .placer_chip_and_core_constraint import PlacerChipAndCoreConstraint
+from pacman.model.graphs.machine.impl.simple_machine_vertex \
+    import SimpleMachineVertex
 from spinn_front_end_common.abstract_models.abstract_has_associated_binary \
     import AbstractHasAssociatedBinary
 from pacman.model.resources.cpu_cycles_per_tick_resource \
     import CPUCyclesPerTickResource
 from pacman.model.resources.iptag_resource import IPtagResource
+
+from spinnman.messages.sdp.sdp_message import SDPMessage
+from spinnman.messages.sdp.sdp_header import SDPHeader
+from spinnman.messages.sdp.sdp_flag import SDPFlag
 
 from threading import Thread
 import sys
@@ -32,45 +34,35 @@ antialiasing = 10
 cores = 59
 
 
-class Aggregator(MachineVertex, AbstractHasAssociatedBinary):
+class Aggregator(SimpleMachineVertex, AbstractHasAssociatedBinary):
 
     def __init__(self):
-        MachineVertex.__init__(
-            self, label="Aggregator",
+        SimpleMachineVertex.__init__(
+            self, ResourceContainer(
+                dtcm=DTCMResource(0), sdram=SDRAMResource(0),
+                cpu_cycles=CPUCyclesPerTickResource(0), iptags=[
+                    IPtagResource(".", 17894, strip_sdp=False, tag=1)]),
+            label="Aggregator",
             constraints=[PlacerChipAndCoreConstraint(0, 0, 1)])
 
-    @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
         return "aggregator.aplx"
 
-    @property
-    @overrides(MachineVertex.resources_required)
-    def resources_required(self):
-        return ResourceContainer(
-            dtcm=DTCMResource(0), sdram=SDRAMResource(0),
-            cpu_cycles=CPUCyclesPerTickResource(0), iptags=[
-                IPtagResource(".", 17894, strip_sdp=False, tag=1)])
-
 
 class Tracer(
-        MachineVertex, AbstractHasAssociatedBinary):
+        SimpleMachineVertex, AbstractHasAssociatedBinary):
 
     seen_chips = set()
 
     def __init__(self):
-        MachineVertex.__init__(
-            self, label="Tracer")
+        SimpleMachineVertex.__init__(
+            self, ResourceContainer(
+                dtcm=DTCMResource(0), sdram=SDRAMResource(0),
+                cpu_cycles=CPUCyclesPerTickResource(0)),
+            label="Tracer")
 
-    @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
         return "tracer.aplx"
-
-    @property
-    @overrides(MachineVertex.resources_required)
-    def resources_required(self):
-        return ResourceContainer(
-            dtcm=DTCMResource(0), sdram=SDRAMResource(0),
-            cpu_cycles=CPUCyclesPerTickResource(0))
 
 
 def read_output(drawer, out):
