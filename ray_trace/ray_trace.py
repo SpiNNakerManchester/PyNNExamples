@@ -20,6 +20,7 @@ import sys
 import subprocess
 import os
 import struct
+from spinnman.model.enums.executable_start_type import ExecutableStartType
 
 position = (-220.0, 50.0, 0.0)
 look = (1.0, 0.0, 0.0)
@@ -43,6 +44,10 @@ class Aggregator(MachineVertex, AbstractHasAssociatedBinary):
     def get_binary_file_name(self):
         return "aggregator.aplx"
 
+    @overrides(AbstractHasAssociatedBinary.get_binary_start_mode_enum)
+    def get_binary_start_mode_enum(self):
+        return ExecutableStartType.RUNNING
+
     @property
     @overrides(MachineVertex.resources_required)
     def resources_required(self):
@@ -64,6 +69,10 @@ class Tracer(
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
         return "tracer.aplx"
+
+    @overrides(AbstractHasAssociatedBinary.get_binary_start_mode_enum)
+    def get_binary_start_mode_enum(self):
+        return ExecutableStartType.RUNNING
 
     @property
     @overrides(MachineVertex.resources_required)

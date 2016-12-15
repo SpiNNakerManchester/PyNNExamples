@@ -4,7 +4,6 @@
 # Steve Furber, November 2015
 #
 #############################################################
-
 import pyNN.spiNNaker as p
 from pyNN.random import RandomDistribution
 import spynnaker_external_devices_plugin.pyNN as ext
