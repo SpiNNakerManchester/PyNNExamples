@@ -9,12 +9,11 @@ from pacman.model.resources.cpu_cycles_per_tick_resource \
     import CPUCyclesPerTickResource
 from pacman.model.resources.iptag_resource import IPtagResource
 
-from spinn_front_end_common.abstract_models.abstract_starts_synchronized \
-    import AbstractStartsSynchronized
 from spinn_front_end_common.abstract_models.abstract_has_associated_binary \
     import AbstractHasAssociatedBinary
+from spinn_front_end_common.utilities.utility_objs.executable_start_type \
+    import ExecutableStartType
 
-from spinnman.model.enums.executable_start_type import ExecutableStartType
 
 from threading import Thread
 import sys
@@ -33,8 +32,7 @@ antialiasing = 10
 
 
 class HeatDemo(
-        MachineVertex, AbstractHasAssociatedBinary,
-        AbstractStartsSynchronized):
+        MachineVertex, AbstractHasAssociatedBinary):
 
     seen_chips = set()
 
@@ -45,9 +43,9 @@ class HeatDemo(
     def get_binary_file_name(self):
         return "heat_demo.aplx"
 
-    @overrides(AbstractHasAssociatedBinary.get_binary_start_mode_enum)
-    def get_binary_start_mode_enum(self):
-        return ExecutableStartType.RUNNING
+    @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
+    def get_binary_start_type(self):
+        return ExecutableStartType.SYNC
 
     @property
     @overrides(MachineVertex.resources_required)

@@ -9,6 +9,8 @@ from spinnman.messages.sdp.sdp_header import SDPHeader
 from spinnman.messages.sdp.sdp_flag import SDPFlag
 from pacman.model.constraints.placer_constraints\
     .placer_chip_and_core_constraint import PlacerChipAndCoreConstraint
+from spinn_front_end_common.utilities.utility_objs.executable_start_type \
+    import ExecutableStartType
 from spinn_front_end_common.abstract_models.abstract_has_associated_binary \
     import AbstractHasAssociatedBinary
 from pacman.model.resources.cpu_cycles_per_tick_resource \
@@ -20,7 +22,6 @@ import sys
 import subprocess
 import os
 import struct
-from spinnman.model.enums.executable_start_type import ExecutableStartType
 
 position = (-220.0, 50.0, 0.0)
 look = (1.0, 0.0, 0.0)
@@ -44,8 +45,8 @@ class Aggregator(MachineVertex, AbstractHasAssociatedBinary):
     def get_binary_file_name(self):
         return "aggregator.aplx"
 
-    @overrides(AbstractHasAssociatedBinary.get_binary_start_mode_enum)
-    def get_binary_start_mode_enum(self):
+    @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
+    def get_binary_start_type(self):
         return ExecutableStartType.RUNNING
 
     @property
@@ -70,8 +71,8 @@ class Tracer(
     def get_binary_file_name(self):
         return "tracer.aplx"
 
-    @overrides(AbstractHasAssociatedBinary.get_binary_start_mode_enum)
-    def get_binary_start_mode_enum(self):
+    @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
+    def get_binary_start_type(self):
         return ExecutableStartType.RUNNING
 
     @property
