@@ -214,7 +214,7 @@ Figure(
     # raster plot of the presynaptic neuron spike times
     Panel(exc_spikes.segments[0].spiketrains,
           yticks=True, markersize=0.2, xlim=(0, tstop)),
-    title="Simple synfire chain example",
+    title="va_benchmark",
     annotations="Simulated with {}".format(p.name())
 )
 plt.show()
