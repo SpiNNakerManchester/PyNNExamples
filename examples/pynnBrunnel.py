@@ -216,9 +216,9 @@ esp = E_pop.get_data("spikes")
 Figure(
     # raster plot of the presynaptic neuron spike times
     Panel(esp.segments[0].spiketrains,
-          yticks=True, markersize=0.2, xlim=(0, sim_time)),
+          yticks=True, markersize=01, xlim=(0, sim_time)),
     title="Simple synfire chain example",
-    annotations="Simulated with {}".format(p.name())
+    annotations="Simulated with {}".format(pynn.name())
 )
 plt.show()
 
