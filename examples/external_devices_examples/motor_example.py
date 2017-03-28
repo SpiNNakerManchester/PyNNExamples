@@ -22,7 +22,8 @@ projections = list()
 
 input_population = p.Population(6, p.SpikeSourcePoisson(rate=10))
 control_population = p.Population(6, p.IF_curr_exp())
-motor_device = p.Population(6, q.MunichMotorDevice(spinnaker_link_id=0))
+motor_device = p.Population(
+    6, q.Spynnaker8MunichMotorDevice(spinnaker_link_id=0))
 
 p.Projection(
     input_population, control_population, p.OneToOneConnector(),

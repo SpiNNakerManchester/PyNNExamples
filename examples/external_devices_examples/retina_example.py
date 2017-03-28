@@ -5,7 +5,7 @@ intermediate population
 try:
     import pyNN.spiNNaker as p
 except Exception as e:
-    import spynnaker7.pyNN as p
+    import spynnaker8 as p
 import spynnaker_external_devices_plugin.pyNN as q
 
 import retina_lib as retina_lib
@@ -64,13 +64,13 @@ p.setup(timestep=1.0)
 
 # FPGA Retina - Down Polarity
 retina_pop = p.Population(
-    None, q.ExternalFPGARetinaDevice, get_updated_params({
+    None, q.ExternalFPGARetinaDevice(**get_updated_params({
         'retina_key': 0x5,
         'mode': q.ExternalFPGARetinaDevice.MODE_128,
-        'polarity': q.ExternalFPGARetinaDevice.DOWN_POLARITY}),
+        'polarity': q.ExternalFPGARetinaDevice.DOWN_POLARITY})),
     label='External retina')
 
-population = p.Population(1024, p.IF_curr_exp, {}, label='pop_1')
+population = p.Population(1024, p.IF_curr_exp(), label='pop_1')
 p.Projection(retina_pop, population,
              p.FromListConnector(retina_lib.subSamplerConnector2D(
                  128, 32, 2.0, 1)))
