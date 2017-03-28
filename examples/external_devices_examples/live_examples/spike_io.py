@@ -1,5 +1,4 @@
 # imports of both spynnaker and external device plugin.
-import pylab
 import random
 import spynnaker8 as Frontend
 import time
