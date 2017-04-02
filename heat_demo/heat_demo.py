@@ -1,7 +1,7 @@
 import spinnaker_graph_front_end as g
 
 from pacman.model.decorators.overrides import overrides
-from pacman.model.graphs.machine.impl.machine_vertex import MachineVertex
+from pacman.model.graphs.machine.machine_vertex import MachineVertex
 from pacman.model.resources.resource_container import ResourceContainer
 from pacman.model.resources.dtcm_resource import DTCMResource
 from pacman.model.resources.sdram_resource import SDRAMResource
