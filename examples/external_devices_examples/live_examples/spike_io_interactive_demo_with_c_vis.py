@@ -3,9 +3,9 @@ import Tkinter as tk
 import spynnaker8 as Frontend
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
-import spynnaker_external_devices_plugin.pyNN as ExternalDevices
-from spynnaker_external_devices_plugin.pyNN.connections\
-    .spynnaker_live_spikes_connection import SpynnakerLiveSpikesConnection
+import spynnaker8_external_device_plugin.pyNN as ExternalDevices
+from spynnaker8_external_device_plugin.pyNN import \
+    SpynnakerLiveSpikesConnection
 
 
 class PyNNScript(object):
@@ -115,12 +115,12 @@ class PyNNScript(object):
         if use_spike_injector:
             injector_forward = Frontend.Population(
                 self.n_neurons,
-                ExternalDevices.Spynnaker8SpikeInjector(
+                ExternalDevices.SpikeInjector(
                     **cell_params_spike_injector_with_key),
                 label='spike_injector_forward')
             injector_backward = Frontend.Population(
                 self.n_neurons,
-                ExternalDevices.Spynnaker8SpikeInjector(
+                ExternalDevices.SpikeInjector(
                     **cell_params_spike_injector),
                 label='spike_injector_backward')
         else:

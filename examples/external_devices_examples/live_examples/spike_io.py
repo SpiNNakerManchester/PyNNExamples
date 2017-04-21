@@ -6,9 +6,9 @@ from threading import Condition
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 
-import spynnaker_external_devices_plugin.pyNN as ExternalDevices
-from spynnaker_external_devices_plugin.pyNN.connections \
-    .spynnaker_live_spikes_connection import SpynnakerLiveSpikesConnection
+import spynnaker8_external_device_plugin.pyNN as ExternalDevices
+from spynnaker8_external_device_plugin.pyNN import \
+    SpynnakerLiveSpikesConnection
 
 # boolean allowing users to use python or c vis
 using_c_vis = False
@@ -82,10 +82,10 @@ pop_backward = Frontend.Population(
 
 # Create injection populations
 injector_forward = Frontend.Population(
-    n_neurons, ExternalDevices.Spynnaker8SpikeInjector(
+    n_neurons, ExternalDevices.SpikeInjector(
         **cell_params_spike_injector_with_key), label='spike_injector_forward')
 injector_backward = Frontend.Population(
-    n_neurons, ExternalDevices.Spynnaker8SpikeInjector(
+    n_neurons, ExternalDevices.SpikeInjector(
         **cell_params_spike_injector), label='spike_injector_backward')
 
 # Create a connection from the injector into the populations
