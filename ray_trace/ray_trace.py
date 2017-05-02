@@ -1,6 +1,6 @@
 import spinnaker_graph_front_end as g
 from pacman.model.decorators.overrides import overrides
-from pacman.model.graphs.machine.impl.machine_vertex import MachineVertex
+from pacman.model.graphs.machine.machine_vertex import MachineVertex
 from pacman.model.resources.resource_container import ResourceContainer
 from pacman.model.resources.dtcm_resource import DTCMResource
 from pacman.model.resources.sdram_resource import SDRAMResource
@@ -9,6 +9,8 @@ from spinnman.messages.sdp.sdp_header import SDPHeader
 from spinnman.messages.sdp.sdp_flag import SDPFlag
 from pacman.model.constraints.placer_constraints\
     .placer_chip_and_core_constraint import PlacerChipAndCoreConstraint
+from spinn_front_end_common.utilities.utility_objs.executable_start_type \
+    import ExecutableStartType
 from spinn_front_end_common.abstract_models.abstract_has_associated_binary \
     import AbstractHasAssociatedBinary
 from pacman.model.resources.cpu_cycles_per_tick_resource \
@@ -43,6 +45,10 @@ class Aggregator(MachineVertex, AbstractHasAssociatedBinary):
     def get_binary_file_name(self):
         return "aggregator.aplx"
 
+    @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
+    def get_binary_start_type(self):
+        return ExecutableStartType.RUNNING
+
     @property
     @overrides(MachineVertex.resources_required)
     def resources_required(self):
@@ -64,6 +70,10 @@ class Tracer(
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
         return "tracer.aplx"
+
+    @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
+    def get_binary_start_type(self):
+        return ExecutableStartType.RUNNING
 
     @property
     @overrides(MachineVertex.resources_required)
