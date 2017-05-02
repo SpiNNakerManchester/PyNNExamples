@@ -16,6 +16,8 @@ run_time = 20000                        # run time in milliseconds
 neurons_per_digit = 5                   # number of neurons per digit
 fact = float(neurons_per_digit) / 10.0  # number of neurons per digit / 10
 ms_per_bin = 100
+running = False
+ended = False
 
 
 # Run the visualiser
@@ -25,6 +27,10 @@ def read_output(visualiser, out):
         if line:
             print line
     print "Visualiser exited - quitting"
+    global running
+    global ended
+    if running and not ended:
+        p.end()
     os._exit(0)
 
 vis_exe = None
@@ -203,6 +209,7 @@ if len(connections_stim) > 0:
 # initialise the network, run, and get results
 cells.initialize("v", RandomDistribution("uniform", [-65.0, -55.0]))
 
+running = True
 p.run(run_time)
 
 # spikes = cells.getSpikes()
@@ -222,3 +229,4 @@ p.run(run_time)
 # pylab.savefig("sudoku.png")
 
 p.end()
+ended = True
