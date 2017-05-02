@@ -5,6 +5,8 @@ from pacman.model.graphs.machine.machine_vertex import MachineVertex
 from pacman.model.resources.resource_container import ResourceContainer
 from pacman.model.resources.dtcm_resource import DTCMResource
 from pacman.model.resources.sdram_resource import SDRAMResource
+from pacman.model.constraints.placer_constraints\
+    .placer_chip_and_core_constraint import PlacerChipAndCoreConstraint
 from pacman.model.resources.cpu_cycles_per_tick_resource \
     import CPUCyclesPerTickResource
 from pacman.model.resources.iptag_resource import IPtagResource
@@ -72,20 +74,12 @@ def read_output(visualiser, out):
 g.setup()
 hostname = g._spinnaker._hostname
 machine = g.machine()
-cores = 0
+cores = []
 
-for processor in machine.get_chip_at(0, 0).processors:
-    if not processor.is_monitor:
-        cores += 1
-for processor in machine.get_chip_at(0, 1).processors:
-    if not processor.is_monitor:
-        cores += 1
-for processor in machine.get_chip_at(1, 0).processors:
-    if not processor.is_monitor:
-        cores += 1
-for processor in machine.get_chip_at(1, 1).processors:
-    if not processor.is_monitor:
-        cores += 1
+for x, y in [(0, 0), (0, 1), (1, 0), (1, 1)]:
+    for processor in machine.get_chip_at(x, y).processors:
+        if not processor.is_monitor and processor.processor_id <= 16:
+            cores.append((x, y, processor.processor_id))
 
 if hostname is None:
     raise Exception(
@@ -121,7 +115,8 @@ vis_exec = subprocess.Popen(
     stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1)
 Thread(target=read_output, args=[vis_exec, vis_exec.stdout]).start()
 
-for i in range(cores):
+for x, y, p in cores:
     heat_demo = HeatDemo()
+    heat_demo.add_constraint(PlacerChipAndCoreConstraint(x, y, p))
     g.add_machine_vertex_instance(heat_demo)
 g.run(None)
