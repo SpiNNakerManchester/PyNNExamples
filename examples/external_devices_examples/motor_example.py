@@ -7,7 +7,7 @@ try:
     import pyNN.spiNNaker as p
 except Exception as e:
     import spynnaker8 as p
-import spynnaker8_external_device_plugin.pyNN as q
+import spynnaker8_external_devices_plugin.pyNN as q
 
 # set up the tools
 p.setup(timestep=1.0, min_delay=1.0, max_delay=32.0)

@@ -6,7 +6,7 @@ from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 
 # Extra imports for external communication
-import spynnaker8_external_device_plugin.pyNN as ExternalDevices
+import spynnaker8_external_devices_plugin.pyNN as ExternalDevices
 
 # Define a synfire chain as usual
 p.setup(timestep=1.0, min_delay=1.0, max_delay=144.0)

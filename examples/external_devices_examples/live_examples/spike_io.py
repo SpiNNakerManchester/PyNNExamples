@@ -6,8 +6,8 @@ from threading import Condition
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 
-import spynnaker8_external_device_plugin.pyNN as ExternalDevices
-from spynnaker8_external_device_plugin.pyNN import \
+import spynnaker8_external_devices_plugin.pyNN as ExternalDevices
+from spynnaker8_external_devices_plugin.pyNN import \
     SpynnakerLiveSpikesConnection
 
 # boolean allowing users to use python or c vis
