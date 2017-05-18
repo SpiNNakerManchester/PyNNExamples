@@ -11,7 +11,7 @@ import numpy
 import pylab
 import spynnaker8 as sim
 
-import spynnaker_extra_pynn_models as q
+import spynnaker8_extra_pynn_models as q
 
 # Timestep (ms)
 # **NOTE** the 2.5Khz input frequency is not going to work particularily well
@@ -29,7 +29,7 @@ sim.setup(timestep=dt, min_delay=1.0, max_delay=4.0)
 
 # Create population of neurons
 cell = sim.Population(
-    N, q.Spynnaker8IF_curr_exp_ca2_adaptive(
+    N, q.IFCurrExpCa2Adaptive(
       **{"tau_m": 20.0, "cm": 0.5,
        "v_rest": -70.0, "v_reset": -60.0, "v_thresh": -54.0,
        "i_alpha": 0.1, "tau_ca2": 50.0}))
