@@ -95,6 +95,7 @@ def read_output(drawer, out):
         pass
     os._exit(0)
 
+
 drawer = None
 if sys.platform.startswith("win32"):
     drawer = "drawer.exe"
