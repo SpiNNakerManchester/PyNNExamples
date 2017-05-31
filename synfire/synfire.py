@@ -45,8 +45,3 @@ for pop_spikes in spikes:
     offset += n_neurons
 pylab.show()
 
-
-
-
-
-
