@@ -13,16 +13,16 @@ Andrew Davison, UNIC, CNRS
 August 2006
 """
 import socket
-
-simulator_name = 'spiNNaker'
-benchmark = 'CUBA'
-
-#exec("from pyNN.%s import *" % simulator_name)
 import spynnaker8 as p
 from pyNN.random import NumpyRNG, RandomDistribution
 from pyNN.utility import Timer
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
+
+simulator_name = 'spiNNaker'
+benchmark = 'CUBA'
+
+# exec("from pyNN.%s import *" % simulator_name)
 
 timer = Timer()
 
@@ -205,8 +205,6 @@ p.run(tstop)
 simCPUTime = timer.diff()
 
 # === Print results to file ===
-
-import pylab
 
 exc_spikes = exc_cells.get_data("spikes")
 

@@ -1,22 +1,17 @@
-import math
-import numpy
 import pylab
-import pylab
-import random
-import sys
 
 import spynnaker8 as sim
 import spynnaker8_extra_pynn_models as extra_sim
 
-#-------------------------------------------------------------------
+# -------------------------------------------------------------------
 # This example uses the sPyNNaker implementation of the triplet rule
 # Developed by Pfister and Gerstner(2006) to reproduce the pairing
 # Experiment first performed by Sjostrom (2001)
-#-------------------------------------------------------------------
+# -------------------------------------------------------------------
 
-#-------------------------------------------------------------------
+# -------------------------------------------------------------------
 # Common parameters
-#-------------------------------------------------------------------
+# -------------------------------------------------------------------
 start_time = 100
 time_between_pairs = 1000
 num_pairs = 60
@@ -24,6 +19,7 @@ num_pairs = 60
 start_w = 0.5
 frequencies = [0.1, 10, 20, 40, 50]
 delta_t = [-10, 10]
+
 
 def generate_fixed_frequency_test_data(
         frequency, first_spike_time, num_spikes):
@@ -34,22 +30,15 @@ def generate_fixed_frequency_test_data(
     return [first_spike_time + (s * interspike_delay)
             for s in range(num_spikes)]
 
-#-------------------------------------------------------------------
+
+# -------------------------------------------------------------------
 # Experiment loop
-#-------------------------------------------------------------------
+# -------------------------------------------------------------------
 # Population parameters
 model = sim.IF_curr_exp
-cell_params = {
-    'cm'        : 0.25, # nF
-    'i_offset'  : 0.0,
-    'tau_m'     : 10.0,
-    'tau_refrac': 2.0,
-    'tau_syn_E' : 2.5,
-    'tau_syn_I' : 2.5,
-    'v_reset'   : -70.0,
-    'v_rest'    : -65.0,
-    'v_thresh'  : -55.4
-    }
+cell_params = {'cm': 0.25, 'i_offset': 0.0, 'tau_m': 10.0, 'tau_refrac': 2.0,
+               'tau_syn_E': 2.5, 'tau_syn_I': 2.5, 'v_reset': -70.0,
+               'v_rest': -65.0, 'v_thresh': -55.4}
 
 # SpiNNaker setup
 sim.setup(timestep=1.0, min_delay=1.0, max_delay=10.0)
@@ -92,12 +81,10 @@ for t in delta_t:
         # Plastic Connection between pre_pop and post_pop
         # Sjostrom visual cortex min-triplet params
         stdp_model = sim.STDPMechanism(
-            timing_dependence=
-            extra_sim.PfisterSpikeTriplet(
+            timing_dependence=extra_sim.PfisterSpikeTriplet(
                 tau_plus=16.8, tau_minus=33.7, tau_x=101, tau_y=114,
                 A_plus=param_scale * 0.0, A_minus=param_scale * 7.1e-3),
-            weight_dependence=
-            extra_sim.WeightDependenceAdditiveTriplet(
+            weight_dependence=extra_sim.WeightDependenceAdditiveTriplet(
                 w_min=0.0, w_max=1.0, A3_plus=param_scale * 6.5e-3,
                 A3_minus=param_scale * 0.0),
             weight=start_w, delay=1)
@@ -115,14 +102,15 @@ sim.run(sim_time)
 # Read weights from each parameter value being tested
 weights = []
 for projection_delta_t in projections:
-    weights.append([p.get('weight')[0] for p in projection_delta_t])
-
+    # TODO fix second partameter and handle output
+    weights.append([p.get('weight',)[0] for p in projection_delta_t])
+    print weights
 # End simulation on SpiNNaker
 sim.end()
 
-#-------------------------------------------------------------------
+# -------------------------------------------------------------------
 # Plotting
-#-------------------------------------------------------------------
+# -------------------------------------------------------------------
 # Sjostrom et al. (2001) experimental data
 data_w = [
     [-0.29, -0.41, -0.34, 0.56, 0.75],

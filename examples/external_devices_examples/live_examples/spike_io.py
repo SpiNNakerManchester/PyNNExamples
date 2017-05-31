@@ -154,13 +154,13 @@ def send_input_backward(label, sender):
         sender.send_spike(label, real_id)
 
 
-
 # Create a receiver of live spikes
 def receive_spikes(label, time, neuron_ids):
     for neuron_id in neuron_ids:
         print_condition.acquire()
         print "Received spike at time", time, "from", label, "-", neuron_id
         print_condition.release()
+
 
 # Set up the live connection for sending spikes
 live_spikes_connection_send = SpynnakerLiveSpikesConnection(

@@ -1,3 +1,6 @@
+BROKEN
+ALSO AT:
+https://github.com/SpiNNakerManchester/sPyNNaker8ExternalDevicesPlugin/blob/master/intergration_tests/external_devices_examples/retina_lib.py
 import numpy
 numpy.set_printoptions(precision=4, suppress=True)
 

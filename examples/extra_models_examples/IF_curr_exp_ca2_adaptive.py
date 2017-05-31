@@ -28,11 +28,12 @@ T = 250
 sim.setup(timestep=dt, min_delay=1.0, max_delay=4.0)
 
 # Create population of neurons
-cell = sim.Population(
-    N, q.IFCurrExpCa2Adaptive(
-      **{"tau_m": 20.0, "cm": 0.5,
-       "v_rest": -70.0, "v_reset": -60.0, "v_thresh": -54.0,
-       "i_alpha": 0.1, "tau_ca2": 50.0}))
+cell = sim.Population(N, q.IFCurrExpCa2Adaptive(**{"tau_m": 20.0, "cm": 0.5,
+                                                   "v_rest": -70.0,
+                                                   "v_reset": -60.0,
+                                                   "v_thresh": -54.0,
+                                                   "i_alpha": 0.1,
+                                                   "tau_ca2": 50.0}))
 
 # Create poisson spike source
 spike_source = sim.Population(N, sim.SpikeSourcePoisson(rate=2500.0))
