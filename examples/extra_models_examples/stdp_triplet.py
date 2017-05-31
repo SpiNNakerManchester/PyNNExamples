@@ -104,7 +104,6 @@ weights = []
 for projection_delta_t in projections:
     # TODO fix second partameter and handle output
     weights.append([p.get('weight',)[0] for p in projection_delta_t])
-    print weights
 # End simulation on SpiNNaker
 sim.end()
 
