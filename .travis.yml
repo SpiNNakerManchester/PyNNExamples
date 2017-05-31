@@ -1,0 +1,18 @@
+language: python
+python: 2.7
+
+virtualenv:
+  system_site_packages: true
+
+script:
+  - flake8 heat_demo learning
+
+
+virtualenv:
+  system_site_packages: true
+
+before_script:
+  - pip install flake8
+script:
+  # Code quality check
+  - flake8
