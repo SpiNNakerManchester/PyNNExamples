@@ -33,6 +33,7 @@ def read_output(visualiser, out):
         p.end()
     os._exit(0)
 
+
 vis_exe = None
 if sys.platform.startswith("win32"):
     vis_exe = "sudoku.exe"
@@ -161,6 +162,7 @@ def interCell(x, y, r, c, connections):
         for j in range(n_N * (i // n_N), n_N * (i // n_N + 1))]
 
     connections.extend(connections_intC)
+
 
 print "Setting up inhibition between cells..."
 for x in range(9):
