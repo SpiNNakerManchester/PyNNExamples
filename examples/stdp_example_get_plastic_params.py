@@ -28,13 +28,10 @@ Authors : Catherine Wacongne < catherine.waco@gmail.com >
 
 April 2013
 """
-import pylab
 try:
     import pyNN.spiNNaker as sim
 except Exception as e:
     import spynnaker8 as sim
-from pyNN.utility.plotting import Figure, Panel
-import matplotlib.pyplot as plt
 
 # SpiNNaker setup
 sim.setup(timestep=1.0, min_delay=1.0, max_delay=10.0)

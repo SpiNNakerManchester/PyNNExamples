@@ -28,7 +28,6 @@ Authors : Catherine Wacongne < catherine.waco@gmail.com >
 
 April 2013
 """
-import pylab
 try:
     import pyNN.spiNNaker as sim
 except Exception as e:
@@ -168,7 +167,7 @@ post_pop.record(['v', 'spikes'])
 # Run simulation
 sim.run(simtime)
 
-#print("Weights:{}".format(plastic_projection.getWeights()))
+# print("Weights:{}".format(plastic_projection.getWeights()))
 
 
 pre_spikes = pre_pop.get_data('spikes')

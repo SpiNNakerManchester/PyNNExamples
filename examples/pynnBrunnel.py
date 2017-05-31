@@ -1,12 +1,12 @@
-simulator_Name = 'spiNNaker'
-#exec('import pyNN.%s as pynn' % simulator_Name)
 import spynnaker8 as pynn
 
 import numpy as np
 import pylab as plt
 from pyNN.random import NumpyRNG, RandomDistribution
 from pyNN.utility.plotting import Figure, Panel
-import matplotlib.pyplot as plt
+
+simulator_Name = 'spiNNaker'
+# exec('import pyNN.%s as pynn' % simulator_Name)
 
 
 def poisson_generator(rate, rng, t_start=0.0, t_stop=1000.0, array=True,
@@ -74,6 +74,7 @@ def poisson_generator(rate, rng, t_start=0.0, t_stop=1000.0, array=True,
         return spikes, extra_spikes
     else:
         return [round(x) for x in spikes]
+
 
 # Total number of neurons
 Neurons = 3000

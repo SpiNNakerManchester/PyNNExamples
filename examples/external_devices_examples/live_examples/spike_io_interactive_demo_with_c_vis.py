@@ -285,6 +285,7 @@ class GUI(object):
         print "injecting with neuron_id {} to pop {}".format(neuron_id, label)
         self._live_spikes_connection.send_spike(label, neuron_id)
 
+
 # set up the initial script
 if __name__ == '__main__':
     from multiprocessing import freeze_support
