@@ -201,10 +201,6 @@ Frontend.run(run_time)
 spikes_forward = pop_forward.get_data('spikes')
 spikes_backward = pop_backward.get_data('spikes')
 
-# Clear data structures on spiNNaker to leave the machine in a clean state for
-# future executions
-Frontend.end()
-
 Figure(
     # raster plot of the presynaptic neuron spike times
     Panel(spikes_forward.segments[0].spiketrains,
@@ -215,3 +211,7 @@ Figure(
     annotations="Simulated with {}".format(Frontend.name())
 )
 plt.show()
+
+# Clear data structures on spiNNaker to leave the machine in a clean state for
+# future executions
+Frontend.end()
