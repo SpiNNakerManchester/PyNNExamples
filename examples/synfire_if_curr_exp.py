@@ -68,6 +68,7 @@ Figure(
           ylabel="gsyn excitatory (mV)",
           data_labels=[populations[0].label], yticks=True, xlim=(0, runtime)),
     Panel(gsyn_inh.segments[0].filter(name='gsyn_inh')[0],
+          xlabel="Time (ms)", xticks=True,
           ylabel="gsyn inhibitory (mV)",
           data_labels=[populations[0].label], yticks=True, xlim=(0, runtime)),
     title="Simple synfire chain example",
