@@ -30,16 +30,12 @@ weight = 1
 delay1 = 0.1
 delay2 = 2.0
 
-cell_params_lif = {'cm'        : cm,
-                   'i_offset'  : i_offset,
-                   'tau_m'     : tau_m,
-                   'tau_refrac': tau_refrac,
-                   'tau_syn_E' : current_decay,
-                   'tau_syn_I' : current_decay,
-                   'v_reset'   : v_reset,
-                   'v_rest'    : v_rest,
-                   'v_thresh'  : v_thresh
-                   }
+cell_params_lif = {'cm': cm, 'i_offset': i_offset, 'tau_m': tau_m,
+				'tau_refrac': tau_refrac, 'tau_syn_E': current_decay,
+				'tau_syn_I': current_decay, 'v_reset': v_reset,
+				'v_rest': v_rest, 'v_thresh': v_thresh
+				}
+
 
 # neuron populations
 sEMD = p.Population(1, p.IF_curr_exp_sEMD(**cell_params_lif), label = "sEMD")
