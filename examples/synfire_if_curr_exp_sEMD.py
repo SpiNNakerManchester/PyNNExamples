@@ -5,7 +5,6 @@ See https://www.cit-ec.de/en/nbs/spiking-insect-vision for more details
 
 # imports
 import spynnaker8 as p
-import csv
 import datetime
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
@@ -31,34 +30,34 @@ delay1 = 0.1
 delay2 = 2.0
 
 cell_params_lif = {'cm': cm, 'i_offset': i_offset, 'tau_m': tau_m,
-				   'tau_refrac': tau_refrac, 'tau_syn_E': current_decay,
-				   'tau_syn_I': current_decay, 'v_reset': v_reset,
-				   'v_rest': v_rest, 'v_thresh': v_thresh
-				  }
+                   'tau_refrac': tau_refrac, 'tau_syn_E': current_decay,
+                   'tau_syn_I': current_decay, 'v_reset': v_reset,
+                   'v_rest': v_rest, 'v_thresh': v_thresh
+                  }
 
 
 # neuron populations
 sEMD = p.Population(1, p.IF_curr_exp_sEMD(**cell_params_lif), label = "sEMD")
 spikeArray = {'spike_times': [[0]]}
 input_first = p.Population(1, p.SpikeSourceArray(**spikeArray),
-						   label = "input_first")
+                           label = "input_first")
 input_second = p.Population(1, p.SpikeSourceArray(**spikeArray),
-						    label = "input_second")
+                            label = "input_second")
 
 # projections
 p.Projection(input_first, sEMD,
-			 p.OneToOneConnector(),
-			 receptor_type = "excitatory",
-			 synapse_type=p.StaticSynapse(weight=weight, delay=delay1))
+             p.OneToOneConnector(),
+             receptor_type = "excitatory",
+             synapse_type=p.StaticSynapse(weight=weight, delay=delay1))
 p.Projection(input_second, sEMD,
-			 p.OneToOneConnector(),
-			 receptor_type = "inhibitory",
-			 synapse_type=p.StaticSynapse(weight=weight, delay=delay2))
+             p.OneToOneConnector(),
+             receptor_type = "inhibitory",
+             synapse_type=p.StaticSynapse(weight=weight, delay=delay2))
 
 # records
 sEMD.record(['v', 'gsyn_exc', 'gsyn_inh', 'spikes'])
 
-#run
+# run
 p.run(run_time)
 
 # get data
