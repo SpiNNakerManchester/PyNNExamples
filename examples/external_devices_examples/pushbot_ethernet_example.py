@@ -1,26 +1,25 @@
 import spynnaker8 as p
-import spynnaker8_external_devices_plugin.pyNN as e
-from spynnaker8_external_devices_plugin.pyNN import PushBotRetinaViewer
 
 p.setup(1.0)
 
 # Set up the PushBot devices
-pushbot_protocol = e.MunichIoSpiNNakerLinkProtocol(
-    mode=e.MunichIoSpiNNakerLinkProtocol.MODES.PUSH_BOT, uart_id=0)
-motor_0 = e.PushBotEthernetMotorDevice(
-    e.PushBotMotor.MOTOR_0_PERMANENT, pushbot_protocol)
-motor_1 = e.PushBotEthernetMotorDevice(
-    e.PushBotMotor.MOTOR_1_PERMANENT, pushbot_protocol)
-speaker = e.PushBotEthernetSpeakerDevice(
-    e.PushBotSpeaker.SPEAKER_TONE, pushbot_protocol)
-laser = e.PushBotEthernetLaserDevice(
-    e.PushBotLaser.LASER_ACTIVE_TIME, pushbot_protocol,
+pushbot_protocol = p.external_devices.MunichIoSpiNNakerLinkProtocol(
+    mode=p.external_devices.MunichIoSpiNNakerLinkProtocol.MODES.PUSH_BOT,
+    uart_id=0)
+motor_0 = p.external_devices.PushBotEthernetMotorDevice(
+    p.external_devices.PushBotMotor.MOTOR_0_PERMANENT, pushbot_protocol)
+motor_1 = p.external_devices.PushBotEthernetMotorDevice(
+    p.external_devices.PushBotMotor.MOTOR_1_PERMANENT, pushbot_protocol)
+speaker = p.external_devices.PushBotEthernetSpeakerDevice(
+    p.external_devices.PushBotSpeaker.SPEAKER_TONE, pushbot_protocol)
+laser = p.external_devices.PushBotEthernetLaserDevice(
+    p.external_devices.PushBotLaser.LASER_ACTIVE_TIME, pushbot_protocol,
     start_total_period=1000)
-led_front = e.PushBotEthernetLEDDevice(
-    e.PushBotLED.LED_FRONT_ACTIVE_TIME, pushbot_protocol,
+led_front = p.external_devices.PushBotEthernetLEDDevice(
+    p.external_devices.PushBotLED.LED_FRONT_ACTIVE_TIME, pushbot_protocol,
     start_total_period=1000)
-led_back = e.PushBotEthernetLEDDevice(
-    e.PushBotLED.LED_BACK_ACTIVE_TIME, pushbot_protocol,
+led_back = p.external_devices.PushBotEthernetLEDDevice(
+    p.external_devices.PushBotLED.LED_BACK_ACTIVE_TIME, pushbot_protocol,
     start_total_period=1000)
 
 weights = {
@@ -35,8 +34,8 @@ weights = {
 devices = [motor_0, motor_1, speaker, laser, led_front, led_back]
 
 # Set up the PushBot control
-pushbot = e.EthernetControlPopulation(
-    len(devices), e.PushBotLifEthernet(
+pushbot = p.external_devices.EthernetControlPopulation(
+    len(devices), p.external_devices.PushBotLifEthernet(
         protocol=pushbot_protocol,
         devices=devices,
         pushbot_ip_address="10.162.177.57",
@@ -57,17 +56,19 @@ connections = [
 ]
 p.Projection(stimulation, pushbot, p.FromListConnector(connections))
 
-retina_resolution = e.PushBotRetinaResolution.DOWNSAMPLE_64_X_64
-pushbot_retina = e.EthernetSensorPopulation(
-    e.PushBotEthernetRetinaDevice(
+retina_resolution = \
+    p.external_devices.PushBotRetinaResolution.DOWNSAMPLE_64_X_64
+pushbot_retina = p.external_devices.EthernetSensorPopulation(
+    p.external_devices.PushBotEthernetRetinaDevice(
         protocol=pushbot_protocol,
         resolution=retina_resolution,
         pushbot_ip_address="10.162.177.57"
     ))
 
-viewer = PushBotRetinaViewer(retina_resolution.value, port=17895)
-e.activate_live_output_for(pushbot_retina, port=viewer.local_port,
-                           notify=False)
+viewer = p.external_devices.PushBotRetinaViewer(
+    retina_resolution.value, port=17895)
+p.external_devices.activate_live_output_for(
+    pushbot_retina, port=viewer.local_port, notify=False)
 
 viewer.start()
 p.run(len(devices) * 1000)
