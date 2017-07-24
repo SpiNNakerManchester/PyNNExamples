@@ -3,9 +3,6 @@ import Tkinter as tk
 import spynnaker8 as Frontend
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
-import spynnaker8_external_devices_plugin.pyNN as ExternalDevices
-from spynnaker8_external_devices_plugin.pyNN import \
-    SpynnakerLiveSpikesConnection
 
 
 class PyNNScript(object):
@@ -115,12 +112,12 @@ class PyNNScript(object):
         if use_spike_injector:
             injector_forward = Frontend.Population(
                 self.n_neurons,
-                ExternalDevices.SpikeInjector(
+                Frontend.external_devices.SpikeInjector(
                     **cell_params_spike_injector_with_key),
                 label='spike_injector_forward')
             injector_backward = Frontend.Population(
                 self.n_neurons,
-                ExternalDevices.SpikeInjector(
+                Frontend.external_devices.SpikeInjector(
                     **cell_params_spike_injector),
                 label='spike_injector_backward')
         else:
@@ -183,10 +180,10 @@ class PyNNScript(object):
         pop_backward.record('spikes')
 
         # Activate the sending of live spikes
-        ExternalDevices.activate_live_output_for(
+        Frontend.external_devices.activate_live_output_for(
             pop_forward, database_notify_host="localhost",
             database_notify_port_num=19996)
-        ExternalDevices.activate_live_output_for(
+        Frontend.external_devices.activate_live_output_for(
             pop_backward, database_notify_host="localhost",
             database_notify_port_num=19996)
 
@@ -194,9 +191,10 @@ class PyNNScript(object):
             # if not using the c visualiser, then a new spynnaker live spikes
             # connection is created to define that there are python code which
             # receives the outputted spikes.
-            live_spikes_connection_receive = SpynnakerLiveSpikesConnection(
-                receive_labels=["pop_forward", "pop_backward"],
-                local_port=19999, send_labels=None)
+            live_spikes_connection_receive = \
+                Frontend.external_devices.SpynnakerLiveSpikesConnection(
+                    receive_labels=["pop_forward", "pop_backward"],
+                    local_port=19999, send_labels=None)
 
             # Set up callbacks to occur when spikes are received
             live_spikes_connection_receive.add_receive_callback(
@@ -241,13 +239,15 @@ class GUI(object):
     """
 
     def __init__(self, n_neurons, ready):
+        import spynnaker8 as Frontend
         self._n_neurons = n_neurons
 
         # Set up the live connection for sending and receiving spikes
-        self._live_spikes_connection = SpynnakerLiveSpikesConnection(
-            receive_labels=None, local_port=19996,
-            send_labels=["spike_injector_forward",
-                         "spike_injector_backward"])
+        self._live_spikes_connection = \
+            Frontend.external_devices.SpynnakerLiveSpikesConnection(
+                receive_labels=None, local_port=19996,
+                send_labels=["spike_injector_forward",
+                             "spike_injector_backward"])
 
         # Set up callbacks to occur at the start of simulation
         self._live_spikes_connection.add_start_callback(
