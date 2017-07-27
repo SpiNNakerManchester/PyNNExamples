@@ -1,32 +1,31 @@
 import spynnaker8 as p
-import spynnaker8_external_devices_plugin.pyNN as e
-from spynnaker8_external_devices_plugin.pyNN import PushBotRetinaViewer
 
 p.setup(1.0)
 
 # Set up the PushBot devices
-pushbot_protocol = e.MunichIoSpiNNakerLinkProtocol(
-    mode=e.MunichIoSpiNNakerLinkProtocol.MODES.PUSH_BOT, uart_id=0)
+pushbot_protocol = p.external_devices.MunichIoSpiNNakerLinkProtocol(
+    mode=p.external_devices.MunichIoSpiNNakerLinkProtocol.MODES.PUSH_BOT,
+    uart_id=0)
 spinnaker_link = 0
 board_address = None
-motor_0 = e.PushBotSpiNNakerLinkMotorDevice(
-    e.PushBotMotor.MOTOR_0_PERMANENT, pushbot_protocol,
+motor_0 = p.external_devices.PushBotSpiNNakerLinkMotorDevice(
+    p.external_devices.PushBotMotor.MOTOR_0_PERMANENT, pushbot_protocol,
     spinnaker_link, board_address=board_address)
-motor_1 = e.PushBotSpiNNakerLinkMotorDevice(
-    e.PushBotMotor.MOTOR_1_PERMANENT, pushbot_protocol,
+motor_1 = p.external_devices.PushBotSpiNNakerLinkMotorDevice(
+    p.external_devices.PushBotMotor.MOTOR_1_PERMANENT, pushbot_protocol,
     spinnaker_link, board_address=board_address)
-speaker = e.PushBotSpiNNakerLinkSpeakerDevice(
-    e.PushBotSpeaker.SPEAKER_TONE, pushbot_protocol,
+speaker = p.external_devices.PushBotSpiNNakerLinkSpeakerDevice(
+    p.external_devices.PushBotSpeaker.SPEAKER_TONE, pushbot_protocol,
     spinnaker_link, board_address=board_address)
-laser = e.PushBotSpiNNakerLinkLaserDevice(
-    e.PushBotLaser.LASER_ACTIVE_TIME, pushbot_protocol,
+laser = p.external_devices.PushBotSpiNNakerLinkLaserDevice(
+    p.external_devices.PushBotLaser.LASER_ACTIVE_TIME, pushbot_protocol,
     spinnaker_link, board_address=board_address, start_total_period=1000)
-led_front = e.PushBotSpiNNakerLinkLEDDevice(
-    e.PushBotLED.LED_FRONT_ACTIVE_TIME, pushbot_protocol,
+led_front = p.external_devices.PushBotSpiNNakerLinkLEDDevice(
+    p.external_devices.PushBotLED.LED_FRONT_ACTIVE_TIME, pushbot_protocol,
     spinnaker_link, board_address=board_address,
     start_total_period=1000)
-led_back = e.PushBotSpiNNakerLinkLEDDevice(
-    e.PushBotLED.LED_BACK_ACTIVE_TIME, pushbot_protocol,
+led_back = p.external_devices.PushBotSpiNNakerLinkLEDDevice(
+    p.external_devices.PushBotLED.LED_BACK_ACTIVE_TIME, pushbot_protocol,
     spinnaker_link, board_address=board_address,
     start_total_period=1000)
 
@@ -43,7 +42,7 @@ devices = [motor_0, motor_1, speaker, laser, led_front, led_back]
 
 # Set up the PushBot control
 pushbot = p.Population(
-    len(devices), e.PushBotLifSpinnakerLink(
+    len(devices), p.external_devices.PushBotLifSpinnakerLink(
         protocol=pushbot_protocol,
         devices=devices,
         tau_syn_E=500.0),
@@ -62,19 +61,20 @@ connections = [
 ]
 p.Projection(stimulation, pushbot, p.FromListConnector(connections))
 
-retina_resolution = e.PushBotRetinaResolution.DOWNSAMPLE_64_X_64
+retina_resolution = \
+    p.external_devices.PushBotRetinaResolution.DOWNSAMPLE_64_X_64
 pushbot_retina = p.Population(
     retina_resolution.value.n_neurons,
-    e.PushBotSpiNNakerLinkRetinaDevice(
+    p.external_devices.PushBotSpiNNakerLinkRetinaDevice(
         spinnaker_link_id=spinnaker_link,
         board_address=board_address,
         protocol=pushbot_protocol,
         resolution=retina_resolution))
 
-viewer = PushBotRetinaViewer(
+viewer = p.external_devices.PushBotRetinaViewer(
     retina_resolution.value, port=17895)
-e.activate_live_output_for(pushbot_retina, port=viewer.local_port,
-                           notify=False)
+p.external_devices.activate_live_output_for(
+    pushbot_retina, port=viewer.local_port, notify=False)
 
 viewer.start()
 p.run(len(devices) * 1000)

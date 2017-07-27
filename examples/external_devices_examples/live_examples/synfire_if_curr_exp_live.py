@@ -5,9 +5,6 @@ import spynnaker8 as p
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 
-# Extra imports for external communication
-import spynnaker8_external_devices_plugin.pyNN as ExternalDevices
-
 # Define a synfire chain as usual
 p.setup(timestep=1.0, min_delay=1.0, max_delay=144.0)
 nNeurons = 200  # number of neurons in each population
@@ -50,7 +47,7 @@ projections.append(p.Projection(populations[1], populations[0],
 populations[0].record('spikes')
 
 # Activate live output for the population
-ExternalDevices.activate_live_output_for(
+p.external_devices.activate_live_output_for(
     populations[0], database_notify_host="localhost",
     database_notify_port_num=19999)
 
