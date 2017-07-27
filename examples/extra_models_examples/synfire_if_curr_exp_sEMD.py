@@ -36,7 +36,8 @@ cell_params_lif = {'cm': cm, 'i_offset': i_offset, 'tau_m': tau_m,
 
 
 # neuron populations
-sEMD = p.Population(1, p.IF_curr_exp_sEMD(**cell_params_lif), label="sEMD")
+sEMD = p.Population(1, p.extra_models.IF_curr_exp_sEMD(**cell_params_lif),
+                    label="sEMD")
 spikeArray = {'spike_times': [[0]]}
 input_first = p.Population(1, p.SpikeSourceArray(**spikeArray),
                            label="input_first")
