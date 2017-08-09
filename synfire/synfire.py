@@ -1,8 +1,10 @@
 """
 Synfire chain example
 """
-import pyNN.spiNNaker as p
-import pylab
+try:
+    import pyNN.spiNNaker as p
+except Exception as e:
+    import spynnaker7.pyNN as p
 
 
 # number of neurons in each population
@@ -33,14 +35,21 @@ p.run(1000)
 spikes = [pop.getSpikes() for pop in chain_pops]
 p.end()
 
-pylab.figure()
-pylab.xlabel('Time (ms)')
-pylab.ylabel('Neuron')
-pylab.title('Spikes Sent By Chain')
-offset = 0
-for pop_spikes in spikes:
-    pylab.plot(
-        [i[1] for i in pop_spikes], [i[0] + offset for i in pop_spikes], "."
-    )
-    offset += n_neurons
-pylab.show()
+if __name__ == '__main__':
+    try:
+        import pylab
+        pylab.figure()
+        pylab.xlabel('Time (ms)')
+        pylab.ylabel('Neuron')
+        pylab.title('Spikes Sent By Chain')
+        offset = 0
+        for pop_spikes in spikes:
+            pylab.plot(
+                [i[1] for i in pop_spikes],
+                [i[0] + offset for i in pop_spikes], "."
+            )
+            offset += n_neurons
+        pylab.show()
+    except Exception as ex:
+        print ex
+        print spikes

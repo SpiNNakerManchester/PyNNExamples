@@ -4,9 +4,12 @@
 # Steve Furber, November 2015
 #
 #############################################################
-import pyNN.spiNNaker as p
+try:
+    import pyNN.spiNNaker as p
+except Exception as e:
+    import spynnaker7.pyNN as p
 from pyNN.random import RandomDistribution
-import spynnaker_external_devices_plugin.pyNN as ext
+import spynnaker7.pyNN.external_devices as ext
 import subprocess
 from threading import Thread
 import os
