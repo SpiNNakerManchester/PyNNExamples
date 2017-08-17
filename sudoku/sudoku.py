@@ -38,20 +38,32 @@ def read_output(visualiser, out):
 
 
 vis_exe = None
-if sys.platform.startswith("win32"):
-    vis_exe = "sudoku.exe"
-elif sys.platform.startswith("darwin"):
-    vis_exe = "sudoku_osx"
-elif sys.platform.startswith("linux"):
-    vis_exe = "sudoku_linux"
+if "OLD_VIS" in os.environ:
+    if sys.platform.startswith("win32"):
+        vis_exe = "sudoku.exe"
+    elif sys.platform.startswith("darwin"):
+        vis_exe = "sudoku_osx"
+    elif sys.platform.startswith("linux"):
+        vis_exe = "sudoku_linux"
+    else:
+        raise Exception("Unknown platform: {}".format(sys.platform))
+    vis_exe = [os.path.abspath(os.path.join(
+        os.path.dirname(__file__), vis_exe))]
+    neur_per_num_opt = "-neurons_per_number"
+    ms_per_bin_opt = "-ms_per_bin"
 else:
-    raise Exception("Unknown platform: {}".format(sys.platform))
-vis_exe = os.path.abspath(os.path.join(os.path.dirname(__file__), vis_exe))
-print "Executing", vis_exe
-visualiser = subprocess.Popen(args=[
-    vis_exe,
-    "-neurons_per_number", str(neurons_per_digit),
-    "-ms_per_bin", str(ms_per_bin)],
+    visroot = "/Users/dkf/git/sPyNNakerVisualisers"
+    vis_exe = [sys.executable,
+               visroot + "/spynnaker_visualisers/sudoku/sudoku_visualiser.py"]
+    neur_per_num_opt = "--neurons_per_number"
+    ms_per_bin_opt = "--ms_per_bin"
+    if "PYTHONPATH" in os.environ:
+        os.environ["PYTHONPATH"] += ":" +visroot
+    else:
+        os.environ["PYTHONPATH"] = visroot
+visualiser = subprocess.Popen(
+    args=vis_exe + [neur_per_num_opt, str(neurons_per_digit),
+                    ms_per_bin_opt, str(ms_per_bin)],
     stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1)
 Thread(target=read_output, args=[visualiser, visualiser.stdout]).start()
 
