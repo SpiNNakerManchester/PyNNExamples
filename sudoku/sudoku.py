@@ -52,15 +52,9 @@ if "OLD_VIS" in os.environ:
     neur_per_num_opt = "-neurons_per_number"
     ms_per_bin_opt = "-ms_per_bin"
 else:
-    visroot = "/Users/dkf/git/sPyNNakerVisualisers"
-    vis_exe = [sys.executable,
-               visroot + "/spynnaker_visualisers/sudoku/sudoku_visualiser.py"]
+    vis_exe = ["spynnaker_sudoku"]
     neur_per_num_opt = "--neurons_per_number"
     ms_per_bin_opt = "--ms_per_bin"
-    if "PYTHONPATH" in os.environ:
-        os.environ["PYTHONPATH"] += ":" +visroot
-    else:
-        os.environ["PYTHONPATH"] = visroot
 visualiser = subprocess.Popen(
     args=vis_exe + [neur_per_num_opt, str(neurons_per_digit),
                     ms_per_bin_opt, str(ms_per_bin)],
