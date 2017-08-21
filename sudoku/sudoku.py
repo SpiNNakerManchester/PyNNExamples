@@ -55,11 +55,16 @@ else:
     vis_exe = ["spynnaker_sudoku"]
     neur_per_num_opt = "--neurons_per_number"
     ms_per_bin_opt = "--ms_per_bin"
-visualiser = subprocess.Popen(
-    args=vis_exe + [neur_per_num_opt, str(neurons_per_digit),
-                    ms_per_bin_opt, str(ms_per_bin)],
-    stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1)
-Thread(target=read_output, args=[visualiser, visualiser.stdout]).start()
+try:
+    visualiser = subprocess.Popen(
+        args=vis_exe + [neur_per_num_opt, str(neurons_per_digit),
+                        ms_per_bin_opt, str(ms_per_bin)],
+        stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1)
+    Thread(target=read_output, args=[visualiser, visualiser.stdout]).start()
+except Exception:
+    print "This example depends on " \
+          "https://github.com/SpiNNakerManchester/sPyNNakerVisualisers"
+    raise
 
 p.setup(timestep=1.0)
 print "Creating Sudoku Network..."
