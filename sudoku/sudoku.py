@@ -62,8 +62,9 @@ def activate_visulaser(old_vis):
             args=vis_exe + [neur_per_num_opt, str(neurons_per_digit),
                             ms_per_bin_opt, str(ms_per_bin)],
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1)
-        Thread(target=read_output, args=[visualiser, visualiser.stdout]).start()
-    except Exception as ex:
+        Thread(target=read_output,
+               args=[visualiser, visualiser.stdout]).start()
+    except Exception:
         if not old_vis:
             print "This example depends on " \
                   "https://github.com/SpiNNakerManchester/sPyNNakerVisualisers"
