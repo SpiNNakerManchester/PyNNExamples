@@ -210,9 +210,9 @@ exc_spikes = exc_cells.get_data("spikes")
 
 Figure(
     # raster plot of the presynaptic neuron spike times
-    Panel(exc_spikes.segments[0].spiketrains,
+    Panel(exc_spikes.segments[0].spiketrains, xlabel="Time/ms", xticks=True,
           yticks=True, markersize=0.2, xlim=(0, tstop)),
-    title="va_benchmark",
+    title="Vogels-Abbott benchmark: spikes",
     annotations="Simulated with {}".format(p.name())
 )
 plt.show()
