@@ -94,11 +94,14 @@ teachlist = list()
 for i in range(nSourceNeurons):
     teachlist.append(teachingSpikes)
 teachingSpikeArray = {'spike_times': teachlist}
-populations.append(p.Population(nSourceNeurons, p.SpikeSourceArray(**spikeArray),
+populations.append(p.Population(nSourceNeurons,
+                                p.SpikeSourceArray(**spikeArray),
                                 label='excit_pop_ss_array'))       # 0
-populations.append(p.Population(nInhibNeurons, p.IF_curr_exp(**cell_params_lif),
+populations.append(p.Population(nInhibNeurons,
+                                p.IF_curr_exp(**cell_params_lif),
                                 label='inhib_pop'))                # 1
-populations.append(p.Population(nExcitNeurons, p.IF_curr_exp(**cell_params_lif),
+populations.append(p.Population(nExcitNeurons,
+                                p.IF_curr_exp(**cell_params_lif),
                                 label='excit_pop'))                # 2
 populations.append(p.Population(nTeachNeurons,
                                 p.SpikeSourceArray(**teachingSpikeArray),
@@ -114,11 +117,7 @@ stdp_model = p.STDPMechanism(
 
 rng = NumpyRNG(seed=1)
 ext_delay_distr = RandomDistribution('normal', (1.5, 0.75), rng=rng)
-                                     #, boundaries=[0.1, 9.9],
-                                     #constrain='redraw')
 inh_delay_distr = RandomDistribution('normal', (0.75, 0.375), rng=rng)
-                                     #boundaries=[0.1, 9.9],
-                                     #constrain='redraw')
 delay_distr_recurrent = RandomDistribution('uniform', [2.0, 8.0], rng=rng)
 weight_distr_ffwd = RandomDistribution('uniform', [0.5, 1.25], rng=rng)
 weight_distr_recurrent = RandomDistribution('uniform', [0.1, 0.2], rng=rng)
