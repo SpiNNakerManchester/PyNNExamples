@@ -4,12 +4,9 @@
 # Steve Furber, November 2015
 #
 #############################################################
-try:
-    import pyNN.spiNNaker as p
-except Exception as e:
-    import spynnaker7.pyNN as p
+import spynnaker8 as p
 from pyNN.random import RandomDistribution
-import spynnaker7.pyNN.external_devices as ext
+import spynnaker8.external_devices as ext
 import subprocess
 from threading import Thread
 import os
@@ -139,7 +136,7 @@ cell_params_lif = {
 
 print "Creating Populations..."
 cells = p.Population(n_total, p.IF_curr_exp, cell_params_lif, label="Cells")
-cells.record()
+cells.record("spikes")
 ext.activate_live_output_for(cells, tag=1, port=17897)
 
 #
@@ -150,7 +147,8 @@ noise = p.Population(
     n_total, p.SpikeSourcePoisson,
     {"rate": 20.0},
     label="Noise")
-p.Projection(noise, cells, p.OneToOneConnector(weight_nois))
+p.Projection(noise, cells, p.OneToOneConnector(),
+             synapse_type=p.StaticSynapse(weight=weight_nois))
 
 
 #
@@ -203,7 +201,7 @@ for x in range(9):
                 if r != x and c != y:
                     interCell(x, y, r, c, connections)  # & by square
 conn_intC = p.FromListConnector(connections)
-p.Projection(cells, cells, conn_intC, target="inhibitory")
+p.Projection(cells, cells, conn_intC, receptor_type="inhibitory")
 
 #
 # set up & connect the initial (stimulation) conditions
@@ -231,10 +229,10 @@ if len(connections_stim) > 0:
         n_stim_total, p.SpikeSourcePoisson,
         {"rate": 10.0}, label="Stim")
     conn_stim = p.FromListConnector(connections_stim)
-    p.Projection(stim, cells, conn_stim, target="excitatory")
+    p.Projection(stim, cells, conn_stim, receptor_type="excitatory")
 #
 # initialise the network, run, and get results
-cells.initialize("v", RandomDistribution("uniform", [-65.0, -55.0]))
+cells.initialize(v=RandomDistribution("uniform", [-65.0, -55.0]))
 
 running = True
 p.run(run_time)
