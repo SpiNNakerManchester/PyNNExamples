@@ -1,39 +1,46 @@
 """
 Synfire chain example
 """
-try:
-    import pyNN.spiNNaker as p
-except Exception as e:
-    import spynnaker7.pyNN as p
-
+import spynnaker8 as sim
+from spynnaker8.utilities import neo_convertor
 
 # number of neurons in each population
 n_neurons = 100
 n_populations = 10
 weights = 0.5
 delays = 17.0
+simtime = 1000
 
-p.setup(timestep=1.0, min_delay=1.0, max_delay=144.0)
+sim.setup(timestep=1.0, min_delay=1.0, max_delay=144.0)
 
 spikeArray = {'spike_times': [[0]]}
-stimulus = p.Population(1, p.SpikeSourceArray, spikeArray, label='stimulus')
+stimulus = sim.Population(1, sim.SpikeSourceArray, spikeArray, label='stimulus')
 
 chain_pops = [
-    p.Population(n_neurons, p.IF_curr_exp, {}, label='chain_{}'.format(i))
+    sim.Population(n_neurons, sim.IF_curr_exp, {}, label='chain_{}'.format(i))
     for i in range(n_populations)
 ]
 for pop in chain_pops:
-    pop.record()
+    pop.record("spikes")
 
-connector = p.FixedNumberPreConnector(10, weights, delays)
+connector = sim.FixedNumberPreConnector(10)
 for i in range(n_populations):
-    p.Projection(chain_pops[i], chain_pops[(i + 1) % n_populations], connector)
+    sim.Projection(chain_pops[i], chain_pops[(i + 1) % n_populations], connector,
+                   synapse_type=sim.StaticSynapse(weight=weights, delay=delays))
 
-p.Projection(stimulus, chain_pops[0], p.AllToAllConnector(weights=5.0))
+sim.Projection(stimulus, chain_pops[0], sim.AllToAllConnector(),
+               synapse_type=sim.StaticSynapse(weight=5.0))
 
-p.run(1000)
-spikes = [pop.getSpikes() for pop in chain_pops]
-p.end()
+sim.run(simtime)
+# None PyNN method which is faster
+# spikes = [pop.spinnaker_get_data("spikes") for pop in chain_pops]
+
+# Pynn method and support method
+neos = [pop.get_data("spikes") for pop in chain_pops]
+spikes = map(neo_convertor.convert_spikes, neos)
+
+sim.end()
+
 
 if __name__ == '__main__':
     try:
@@ -53,3 +60,22 @@ if __name__ == '__main__':
     except Exception as ex:
         print ex
         print spikes
+
+    # Way to plot the spikes without neo convertor
+    # try:
+    #    import matplotlib.pyplot as plt
+    #    import pyNN.utility.plotting as plotting
+
+    #    panels = [plotting.Panel(neo.segments[0].spiketrains, yticks=True,
+    #                             markersize=0.2, xlim=(0, simtime))
+    #              for neo in neos]
+    #    plotting.Figure(
+    #        *panels,
+    #        title="Synfire Example",
+    #        annotations="Simulated with {}".format(sim.name()))
+    #    plt.show()
+    #except Exception as ex:
+    #    print ex
+    #    for neo in neos:
+    #        print neo.segments[0].spiketrains
+    #        print "===="
