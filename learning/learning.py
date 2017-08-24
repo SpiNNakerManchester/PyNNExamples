@@ -167,10 +167,12 @@ pre_spikes = pre_pop.get_data('spikes')
 post_spikes = post_pop.get_data('spikes')
 
 plotting.Figure(
-    plotting.Panel(pre_spikes.segments[0].spiketrains, yticks=True,
-                   markersize=0.2, xlim=(0, simtime)),
-    plotting.Panel(post_spikes.segments[0].spiketrains, yticks=True,
-                   markersize=0.2, xlim=(0, simtime)),
+    plotting.Panel(
+        pre_spikes.segments[0].spiketrains,
+        post_spikes.segments[0].spiketrains,
+        yticks=True, markersize=5, xlim=(0, simtime),
+        line_properties=[{"color": "r"}, {"color": "b"}]
+        ),
     title="Learning example",
     annotations="Simulated with {}".format(sim.name())
 )
