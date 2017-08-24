@@ -106,7 +106,7 @@ print("Simulating for %us" % (sim_time / 1000))
 sim.run(sim_time)
 
 # Get weight from each projection
-end_w = [p.getWeights()[0] for p in projections]
+end_w = [p.get('weight', 'list', with_address=False)[0] for p in projections]
 
 # End simulation on SpiNNaker
 sim.end()
