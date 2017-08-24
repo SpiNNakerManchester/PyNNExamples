@@ -14,7 +14,8 @@ simtime = 1000
 sim.setup(timestep=1.0, min_delay=1.0, max_delay=144.0)
 
 spikeArray = {'spike_times': [[0]]}
-stimulus = sim.Population(1, sim.SpikeSourceArray, spikeArray, label='stimulus')
+stimulus = sim.Population(1, sim.SpikeSourceArray, spikeArray,
+                          label='stimulus')
 
 chain_pops = [
     sim.Population(n_neurons, sim.IF_curr_exp, {}, label='chain_{}'.format(i))
@@ -25,8 +26,10 @@ for pop in chain_pops:
 
 connector = sim.FixedNumberPreConnector(10)
 for i in range(n_populations):
-    sim.Projection(chain_pops[i], chain_pops[(i + 1) % n_populations], connector,
-                   synapse_type=sim.StaticSynapse(weight=weights, delay=delays))
+    sim.Projection(chain_pops[i], chain_pops[(i + 1) % n_populations],
+                   connector,
+                   synapse_type=sim.StaticSynapse(weight=weights,
+                                                  delay=delays))
 
 sim.Projection(stimulus, chain_pops[0], sim.AllToAllConnector(),
                synapse_type=sim.StaticSynapse(weight=5.0))
@@ -74,7 +77,7 @@ if __name__ == '__main__':
     #        title="Synfire Example",
     #        annotations="Simulated with {}".format(sim.name()))
     #    plt.show()
-    #except Exception as ex:
+    # except Exception as ex:
     #    print ex
     #    for neo in neos:
     #        print neo.segments[0].spiketrains

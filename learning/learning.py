@@ -123,10 +123,10 @@ sim.Projection(INoisePost, post_pop, ee_connector, ee_synapse_type,
 # Additional Inputs projections
 for i in range(len(IAddPre)):
     sim.Projection(IAddPre[i], pre_pop, ee_connector, ee_synapse_type,
-               receptor_type='excitatory')
+                   receptor_type='excitatory')
 for i in range(len(IAddPost)):
     sim.Projection(IAddPost[i], post_pop, ee_connector, ee_synapse_type,
-               receptor_type='excitatory')
+                   receptor_type='excitatory')
 
 # Plastic Connections between pre_pop and post_pop
 stdp_model = sim.STDPMechanism(
