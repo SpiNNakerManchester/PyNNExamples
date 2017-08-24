@@ -72,8 +72,9 @@ static_ex_pop, _ = build_network(None)
 # Run for 1s
 sim.run(1000)
 
-# Get static spikes and save to disk
+# Get static spikes
 static_spikes = static_ex_pop.get_data('spikes')
+static_spikes_numpy = neo_convertor.convert_spikes(static_spikes)
 
 # Build inhibitory plasticity  model
 stdp_model = sim.STDPMechanism(
@@ -89,7 +90,8 @@ sim.run(10000)
 
 # Get plastic spikes and save to disk
 plastic_spikes = plastic_ex_pop.get_data('spikes')
-numpy.save("plastic_spikes.npy", plastic_spikes) # not going to work, lol
+plastic_spikes_numpy = neo_convertor.convert_spikes(plastic_spikes)
+numpy.save("plastic_spikes.npy", plastic_spikes_numpy)
 
 plastic_weights = plastic_ie_projection.get('weight', 'array')
 # Weights(format="array")
@@ -101,7 +103,6 @@ fig, axes = pylab.subplots(3)
 
 # Plot last 200ms of static spikes (to match Brian script)
 axes[0].set_title("Excitatory raster without inhibitory plasticity")
-static_spikes_numpy = neo_convertor.convert_spikes(static_spikes)
 axes[0].scatter(static_spikes_numpy[:, 1],
                 static_spikes_numpy[:, 0], s=2, color="blue")
 axes[0].set_xlim(800, 1000)
@@ -109,7 +110,6 @@ axes[0].set_ylim(0, NUM_EXCITATORY)
 
 # Plot last 200ms of plastic spikes (to match Brian script)
 axes[1].set_title("Excitatory raster with inhibitory plasticity")
-plastic_spikes_numpy = neo_convertor.convert_spikes(plastic_spikes)
 axes[1].scatter(plastic_spikes_numpy[:, 1],
                 plastic_spikes_numpy[:, 0], s=2, color="blue")
 axes[1].set_xlim(9800, 10000)
