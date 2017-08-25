@@ -64,21 +64,31 @@ if __name__ == '__main__':
         print ex
         print spikes
 
-    # Way to plot the spikes without neo convertor
+    # Way to plot the spikes without neo converter but without the colours
     # try:
-    #    import matplotlib.pyplot as plt
-    #    import pyNN.utility.plotting as plotting
-
-    #    panels = [plotting.Panel(neo.segments[0].spiketrains, yticks=True,
-    #                             markersize=0.2, xlim=(0, simtime))
-    #              for neo in neos]
-    #    plotting.Figure(
-    #        *panels,
-    #        title="Synfire Example",
-    #        annotations="Simulated with {}".format(sim.name()))
-    #    plt.show()
+    #     import matplotlib.pyplot as plt
+    #     import pyNN.utility.plotting as plotting
+    #     spike_trains = [neo.segments[0].spiketrains for neo in neos]
+    #     offset = 0
+    #     for spike_train_list in spike_trains:
+    #         for spike_train in spike_train_list:
+    #             spike_train.annotations["source_index"] += offset
+    #         offset += n_neurons
+    #     spike_trains = [
+    #         spike_train for spike_train_list in spike_trains
+    #         for spike_train in spike_train_list]
+    #     panel = plotting.Panel(
+    #         spike_trains,
+    #         yticks=True, markersize=2, xlim=(0, simtime),
+    #         line_properties=[
+    #             {"color": colour}
+    #             for i, colour in enumerate(colours)])
+    #     plotting.Figure(
+    #         panel, title="Synfire Example",
+    #         annotations="Simulated with {}".format(sim.name()))
+    #     plt.show()
     # except Exception as ex:
-    #    print ex
-    #    for neo in neos:
-    #        print neo.segments[0].spiketrains
-    #        print "===="
+    #     print ex
+    #     for neo in neos:
+    #         print neo.segments[0].spiketrains
+    #         print "===="
