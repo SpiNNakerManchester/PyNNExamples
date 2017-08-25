@@ -23,11 +23,13 @@ ended = False
 
 # Run the visualiser
 def read_output(visualiser, out):
-    while visualiser.poll() is None:
+    result = visualiser.poll()
+    while result is None:
         line = out.readline()
         if line:
             print line
-    print "Visualiser exited - quitting"
+        result = visualiser.poll()
+    print "Visualiser exited: {} - quitting".format(result)
     global running
     global ended
     if running and not ended:
@@ -55,18 +57,18 @@ def activate_visulaser(old_vis):
         neur_per_num_opt = "--neurons_per_number"
         ms_per_bin_opt = "--ms_per_bin"
     try:
-        visualiser = subprocess.Popen(
+        subprocess.Popen(
             args=vis_exe + [neur_per_num_opt, str(neurons_per_digit),
                             ms_per_bin_opt, str(ms_per_bin)],
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1)
-        Thread(target=read_output,
-               args=[visualiser, visualiser.stdout]).start()
+        # Thread(target=read_output,
+        #        args=[visualiser, visualiser.stdout]).start()
     except Exception:
         if not old_vis:
             print "This example depends on " \
                   "https://github.com/SpiNNakerManchester/sPyNNakerVisualisers"
             traceback.print_exc()
-            print "trying old visuliser"
+            print "trying old visualiser"
             activate_visulaser(old_vis=True)
         else:
             raise
