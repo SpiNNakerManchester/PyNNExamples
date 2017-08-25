@@ -4,14 +4,10 @@
 # Steve Furber, November 2015
 #
 #############################################################
-try:
-    import pyNN.spiNNaker as p
-except Exception as e:
-    import spynnaker7.pyNN as p
+import spynnaker8 as p
 from pyNN.random import RandomDistribution
-import spynnaker7.pyNN.external_devices as ext
+import spynnaker8.external_devices as ext
 import subprocess
-from threading import Thread
 import os
 import sys
 import traceback
@@ -26,11 +22,13 @@ ended = False
 
 # Run the visualiser
 def read_output(visualiser, out):
-    while visualiser.poll() is None:
+    result = visualiser.poll()
+    while result is None:
         line = out.readline()
         if line:
             print line
-    print "Visualiser exited - quitting"
+        result = visualiser.poll()
+    print "Visualiser exited: {} - quitting".format(result)
     global running
     global ended
     if running and not ended:
@@ -58,18 +56,18 @@ def activate_visulaser(old_vis):
         neur_per_num_opt = "--neurons_per_number"
         ms_per_bin_opt = "--ms_per_bin"
     try:
-        visualiser = subprocess.Popen(
+        subprocess.Popen(
             args=vis_exe + [neur_per_num_opt, str(neurons_per_digit),
                             ms_per_bin_opt, str(ms_per_bin)],
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1)
-        Thread(target=read_output,
-               args=[visualiser, visualiser.stdout]).start()
+        # Thread(target=read_output,
+        #        args=[visualiser, visualiser.stdout]).start()
     except Exception:
         if not old_vis:
             print "This example depends on " \
                   "https://github.com/SpiNNakerManchester/sPyNNakerVisualisers"
             traceback.print_exc()
-            print "trying old visuliser"
+            print "trying old visualiser"
             activate_visulaser(old_vis=True)
         else:
             raise
@@ -89,33 +87,88 @@ n_stim_total = n_stim * 9 * 9
 
 # global distributions & parameters
 weight_cell = 0.2
-weight_stim = 0.2
+weight_stim = 1
 dur_nois = RandomDistribution("uniform", [30000.0, 30001.0])
 weight_nois = 1.4
 delay = 2.0
+puzzel = 5
 
+# initialise non-zeros
+# NB use as init[8-y][x] -> cell[x][y]
 
-# Diabolical problem:
+if puzzel == 1:
+    # Diabolical problem:
+    init = [[0, 0, 1,  0, 0, 8,  0, 7, 3],
+            [0, 0, 5,  6, 0, 0,  0, 0, 1],
+            [7, 0, 0,  0, 0, 1,  0, 0, 0],
 
-init = [[0, 0, 1, 0, 0, 8, 0, 7, 3],  # initialise non-zeros
-        [0, 0, 5, 6, 0, 0, 0, 0, 1],  # NB use as init[8-y][x] -> cell[x][y]
-        [7, 0, 0, 0, 0, 1, 0, 0, 0],
-        [0, 9, 0, 8, 1, 0, 0, 0, 0],
-        [5, 3, 0, 0, 0, 0, 0, 4, 6],
-        [0, 0, 0, 0, 6, 5, 0, 3, 0],
-        [0, 0, 0, 1, 0, 0, 0, 0, 4],
-        [8, 0, 0, 0, 0, 9, 3, 0, 0],
-        [9, 4, 0, 5, 0, 0, 7, 0, 0]]
+            [0, 9, 0,  8, 1, 0,  0, 0, 0],
+            [5, 3, 0,  0, 0, 0,  0, 4, 6],
+            [0, 0, 0,  0, 6, 5,  0, 3, 0],
 
-# init = [[2, 0, 0, 0, 0, 6, 0, 3, 0],  # initialise non-zeros
-#         [4, 8, 0, 0, 1, 9, 0, 0, 0],  # NB use as init[8-y][x] -> cell[x][y]
-#         [0, 0, 7, 0, 2, 0, 9, 0, 0],
-#         [0, 0, 0, 3, 0, 0, 0, 9, 0],
-#         [7, 0, 8, 0, 0, 0, 1, 0, 5],
-#         [0, 4, 0, 0, 0, 7, 0, 0, 0],
-#         [0, 0, 4, 0, 9, 0, 6, 0, 0],
-#         [0, 0, 0, 6, 4, 0, 0, 1, 9],
-#         [0, 5, 0, 1, 0, 0, 0, 0, 8]]
+            [0, 0, 0,  1, 0, 0,  0, 0, 4],
+            [8, 0, 0,  0, 0, 9,  3, 0, 0],
+            [9, 4, 0,  5, 0, 0,  7, 0, 0]]
+elif puzzel == 2:
+    init = [[2, 0, 0,  0, 0, 6,  0, 3, 0],
+            [4, 8, 0,  0, 1, 9,  0, 0, 0],
+            [0, 0, 7,  0, 2, 0,  9, 0, 0],
+
+            [0, 0, 0,  3, 0, 0,  0, 9, 0],
+            [7, 0, 8,  0, 0, 0,  1, 0, 5],
+            [0, 4, 0,  0, 0, 7,  0, 0, 0],
+
+            [0, 0, 4,  0, 9, 0,  6, 0, 0],
+            [0, 0, 0,  6, 4, 0,  0, 1, 9],
+            [0, 5, 0,  1, 0, 0,  0, 0, 8]]
+elif puzzel == 3:
+    init = [[0, 0, 3,  2, 0, 0,  0, 7, 0],
+            [0, 0, 5,  0, 0, 0,  3, 0, 0],
+            [0, 0, 8,  9, 7, 0,  0, 5, 0],
+
+            [0, 0, 0,  8, 9, 0,  0, 0, 0],
+            [0, 5, 0,  0, 0, 0,  0, 2, 0],
+            [0, 0, 0,  0, 6, 1,  0, 0, 0],
+
+            [0, 1, 0,  0, 2, 5,  6, 0, 0],
+            [0, 0, 4,  0, 0, 0,  8, 0, 0],
+            [0, 9, 0,  0, 0, 7,  5, 0, 0]]
+elif puzzel == 4:
+    init = [[0, 1, 0,  0, 0, 0,  0, 0, 2],
+            [8, 7, 0,  0, 0, 0,  5, 0, 4],
+            [5, 0, 2,  0, 0, 0,  0, 9, 0],
+
+            [0, 5, 0,  4, 0, 9,  0, 0, 1],
+            [0, 0, 0,  7, 3, 2,  0, 0, 0],
+            [9, 0, 0,  5, 0, 1,  0, 4, 0],
+
+            [0, 2, 0,  0, 0, 0,  4, 0, 8],
+            [4, 0, 6,  0, 0, 0,  0, 1, 3],
+            [1, 0, 0,  0, 0, 0,  0, 2, 0]]
+elif puzzel == 5:
+    init = [[8, 9, 0,  2, 0, 0,  0, 7, 0],
+            [0, 0, 0,  0, 8, 0,  0, 0, 0],
+            [0, 4, 1,  0, 3, 0,  5, 0, 0],
+
+            [2, 5, 8,  0, 0, 0,  0, 0, 6],
+            [0, 0, 0,  0, 0, 0,  0, 0, 0],
+            [6, 0, 0,  0, 0, 0,  1, 4, 7],
+
+            [0, 0, 7,  0, 1, 0,  4, 3, 0],
+            [0, 0, 0,  0, 2, 0,  0, 0, 0],
+            [0, 2, 0,  0, 0, 7,  0, 5, 1]]
+else:
+    init = [[1, 0, 0,  4, 0, 0,  0, 0, 0],
+            [7, 0, 0,  5, 0, 0,  6, 0, 3],
+            [0, 0, 0,  0, 3, 0,  4, 2, 0],
+
+            [0, 0, 9,  0, 0, 0,  0, 3, 5],
+            [0, 0, 0,  3, 0, 5,  0, 0, 0],
+            [6, 3, 0,  0, 0, 0,  1, 0, 0],
+
+            [0, 2, 6,  0, 5, 0,  0, 0, 0],
+            [9, 0, 4,  0, 0, 6,  0, 0, 7],
+            [0, 0, 0,  0, 0, 8,  0, 0, 2]]
 
 # Dream problem - no input!
 # init = [[0 for x in range(9)] for y in range(9)]
@@ -139,7 +192,7 @@ cell_params_lif = {
 
 print "Creating Populations..."
 cells = p.Population(n_total, p.IF_curr_exp, cell_params_lif, label="Cells")
-cells.record()
+cells.record("spikes")
 ext.activate_live_output_for(cells, tag=1, port=17897)
 
 #
@@ -150,7 +203,8 @@ noise = p.Population(
     n_total, p.SpikeSourcePoisson,
     {"rate": 20.0},
     label="Noise")
-p.Projection(noise, cells, p.OneToOneConnector(weight_nois))
+p.Projection(noise, cells, p.OneToOneConnector(),
+             synapse_type=p.StaticSynapse(weight=weight_nois))
 
 
 #
@@ -203,7 +257,7 @@ for x in range(9):
                 if r != x and c != y:
                     interCell(x, y, r, c, connections)  # & by square
 conn_intC = p.FromListConnector(connections)
-p.Projection(cells, cells, conn_intC, target="inhibitory")
+p.Projection(cells, cells, conn_intC, receptor_type="inhibitory")
 
 #
 # set up & connect the initial (stimulation) conditions
@@ -231,10 +285,10 @@ if len(connections_stim) > 0:
         n_stim_total, p.SpikeSourcePoisson,
         {"rate": 10.0}, label="Stim")
     conn_stim = p.FromListConnector(connections_stim)
-    p.Projection(stim, cells, conn_stim, target="excitatory")
+    p.Projection(stim, cells, conn_stim, receptor_type="excitatory")
 #
 # initialise the network, run, and get results
-cells.initialize("v", RandomDistribution("uniform", [-65.0, -55.0]))
+cells.initialize(v=RandomDistribution("uniform", [-65.0, -55.0]))
 
 running = True
 p.run(run_time)
