@@ -8,7 +8,6 @@ import spynnaker8 as p
 from pyNN.random import RandomDistribution
 import spynnaker8.external_devices as ext
 import subprocess
-from threading import Thread
 import os
 import sys
 import traceback
