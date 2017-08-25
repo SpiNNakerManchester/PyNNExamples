@@ -1,38 +1,6 @@
-"""
-Simple test for STDP :
-
-   Reproduces a classical plasticity experiment of plasticity induction by
-pre/post synaptic pairing specifically :
-
- * At the begining of the simulation, "n_stim_test" external stimulations of
-   the "pre_pop" (presynaptic) population do not trigger activity in the
-   "post_pop" (postsynaptic) population.
-
- * Then the presynaptic and postsynaptic populations are stimulated together
-   "n_stim_pairing" times by an external source so that the "post_pop"
-   population spikes 10ms after the "pre_pop" population.
-
- * Ater that period, only the "pre_pop" population is externally stimulated
-   "n_stim_test" times, but now it should trigger activity in the "post_pop"
-   population (due to STDP learning)
-
-Run as :
-
-   $ ./stdp_example
-
-This example requires that the NeuroTools package is installed
-(http://neuralensemble.org/trac/NeuroTools)
-
-Authors : Catherine Wacongne < catherine.waco@gmail.com >
-          Xavier Lagorce < Xavier.Lagorce@crans.org >
-
-April 2013
-"""
-import pylab
-try:
-    import pyNN.spiNNaker as sim
-except Exception as e:
-    import spynnaker.pyNN as sim
+import matplotlib.pyplot as plt
+import pyNN.utility.plotting as plotting
+import spynnaker8 as sim
 
 # SpiNNaker setup
 sim.setup(timestep=1.0, min_delay=1.0, max_delay=10.0)
@@ -127,12 +95,12 @@ for i in range(n_stim_test):
 
 # Noise inputs
 INoisePre = sim.Population(pop_size,
-                           sim.SpikeSourcePoisson,
-                           {'rate': e_rate, 'start': 0, 'duration': simtime},
+                           sim.SpikeSourcePoisson(rate=e_rate, start=0,
+                                                  duration=simtime),
                            label="expoisson")
 INoisePost = sim.Population(pop_size,
-                            sim.SpikeSourcePoisson,
-                            {'rate': e_rate, 'start': 0, 'duration': simtime},
+                            sim.SpikeSourcePoisson(rate=e_rate, start=0,
+                                                   duration=simtime),
                             label="expoisson")
 
 # +-------------------------------------------------------------------+
@@ -143,29 +111,37 @@ INoisePost = sim.Population(pop_size,
 JEE = 3.
 
 # Connection type between noise poisson generator and excitatory populations
-ee_connector = sim.OneToOneConnector(weights=JEE * 0.05)
+ee_connector = sim.OneToOneConnector()
+ee_synapse_type = sim.StaticSynapse(weight=JEE * 0.05)
 
 # Noise projections
-sim.Projection(INoisePre, pre_pop, ee_connector, target='excitatory')
-sim.Projection(INoisePost, post_pop, ee_connector, target='excitatory')
+sim.Projection(INoisePre, pre_pop, ee_connector, ee_synapse_type,
+               receptor_type='excitatory')
+sim.Projection(INoisePost, post_pop, ee_connector, ee_synapse_type,
+               receptor_type='excitatory')
 
 # Additional Inputs projections
 for i in range(len(IAddPre)):
-    sim.Projection(IAddPre[i], pre_pop, ee_connector, target='excitatory')
+    sim.Projection(IAddPre[i], pre_pop, ee_connector, ee_synapse_type,
+                   receptor_type='excitatory')
 for i in range(len(IAddPost)):
-    sim.Projection(IAddPost[i], post_pop, ee_connector, target='excitatory')
+    sim.Projection(IAddPost[i], post_pop, ee_connector, ee_synapse_type,
+                   receptor_type='excitatory')
 
 # Plastic Connections between pre_pop and post_pop
 stdp_model = sim.STDPMechanism(
     timing_dependence=sim.SpikePairRule(tau_plus=20., tau_minus=20.0,
-                                        nearest=True),
-    weight_dependence=sim.AdditiveWeightDependence(w_min=0, w_max=0.9,
-                                                   A_plus=0.02, A_minus=0.02)
+                                        A_plus=0.02, A_minus=0.02),
+    weight_dependence=sim.AdditiveWeightDependence(w_min=0, w_max=0.9)
 )
 
 plastic_projection = sim.Projection(
     pre_pop, post_pop, sim.FixedProbabilityConnector(p_connect=0.5),
-    synapse_dynamics=sim.SynapseDynamics(slow=stdp_model)
+    synapse_type=sim.STDPMechanism(
+        timing_dependence=sim.SpikePairRule(tau_plus=20., tau_minus=20.0,
+                                            A_plus=0.02, A_minus=0.02),
+        weight_dependence=sim.AdditiveWeightDependence(w_min=0, w_max=0.9)
+    )
 )
 
 # +-------------------------------------------------------------------+
@@ -173,29 +149,35 @@ plastic_projection = sim.Projection(
 # +-------------------------------------------------------------------+
 
 # Record neurons' potentials
-pre_pop.record_v()
-post_pop.record_v()
+pre_pop.record("v")
+post_pop.record("v")
 
 # Record spikes
-pre_pop.record()
-post_pop.record()
+pre_pop.record("spikes")
+post_pop.record("spikes")
 
 # Run simulation
 sim.run(simtime)
 
-print("Weights:", plastic_projection.getWeights())
+print("Weights:", plastic_projection.get(attribute_names='weight',
+                                         format='list', gather=True,
+                                         with_address=True))
 
-pre_spikes = pre_pop.getSpikes(compatible_output=True)
-post_spikes = post_pop.getSpikes(compatible_output=True)
+pre_spikes = pre_pop.get_data('spikes')
+post_spikes = post_pop.get_data('spikes')
 
-pylab.figure()
-pylab.xlim((0, simtime))
-pylab.plot([i[1] for i in pre_spikes], [i[0] for i in pre_spikes], "r.")
-pylab.plot([i[1] for i in post_spikes], [i[0] for i in post_spikes], "b.")
-pylab.xlabel('Time/ms')
-pylab.ylabel('spikes')
+plotting.Figure(
+    plotting.Panel(
+        pre_spikes.segments[0].spiketrains,
+        post_spikes.segments[0].spiketrains,
+        yticks=True, markersize=5, xlim=(0, simtime),
+        line_properties=[{"color": "r"}, {"color": "b"}]
+        ),
+    title="Learning example",
+    annotations="Simulated with {}".format(sim.name())
+)
 
-pylab.show()
+plt.show()
 
 # End simulation on SpiNNaker
 sim.end()
