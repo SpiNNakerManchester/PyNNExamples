@@ -55,9 +55,16 @@ print stdp_projection.getWeights()
 
 sim.end()
 
+line_properties = [{'color': 'red'}, {'color': 'blue'}]
+
 plot.Figure(
     # plot spikes
-    plot.Panel(pre_spikes, post_spikes, yticks=True, markersize=5, xlim=(0, simtime), color=["b","r"]),
+    plot.Panel(pre_spikes, post_spikes, yticks=True, markersize=5,
+               xlim=(0, simtime), line_properties=line_properties),
+    plot.Panel(pre_spikes, yticks=True, markersize=5,
+               xlim=(0, simtime), color='red', data_labels=["pre"]),
+    plot.Panel(post_spikes, yticks=True, markersize=5,
+               xlim=(0, simtime), color='blue', data_labels=["post"]),
     title="Balanced Random Network Example",
     annotations="Simulated with {}".format(sim.name())
 )
