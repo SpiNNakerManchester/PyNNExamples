@@ -16,13 +16,13 @@ sim.run(simtime)
 neo = pop_1.get_data(variables=["spikes", "v"])
 spikes = neo.segments[0].spiketrains
 print spikes
-v = neo.segments[0].filter(name='v')
+v = neo.segments[0].filter(name='v')[0]
 print v
 sim.end()
 
 plot.Figure(
     # plot voltage for first ([0]) neuron
-    plot.Panel(v[0], ylabel="Membrane potential (mV)",
+    plot.Panel(v, ylabel="Membrane potential (mV)",
                data_labels=[pop_1.label], yticks=True, xlim=(0, simtime)),
     # plot spikes (or in this case spike)
     plot.Panel(spikes, yticks=True, markersize=5, xlim=(0, simtime)),
