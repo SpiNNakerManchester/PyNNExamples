@@ -36,7 +36,7 @@ def read_output(visualiser, out):
     os._exit(0)
 
 
-def activate_visulaser(old_vis):
+def activate_visualiser(old_vis):
     vis_exe = None
     if old_vis:
         if sys.platform.startswith("win32"):
@@ -68,12 +68,12 @@ def activate_visulaser(old_vis):
                   "https://github.com/SpiNNakerManchester/sPyNNakerVisualisers"
             traceback.print_exc()
             print "trying old visualiser"
-            activate_visulaser(old_vis=True)
+            activate_visualiser(old_vis=True)
         else:
             raise
 
 
-activate_visulaser(old_vis=("OLD_VIS" in os.environ))
+activate_visualiser(old_vis=("OLD_VIS" in os.environ))
 
 p.setup(timestep=1.0)
 print "Creating Sudoku Network..."
@@ -91,12 +91,12 @@ weight_stim = 1
 dur_nois = RandomDistribution("uniform", [30000.0, 30001.0])
 weight_nois = 1.4
 delay = 2.0
-puzzel = 5
+puzzle = 6
 
 # initialise non-zeros
 # NB use as init[8-y][x] -> cell[x][y]
 
-if puzzel == 1:
+if puzzle == 1:
     # Diabolical problem:
     init = [[0, 0, 1,  0, 0, 8,  0, 7, 3],
             [0, 0, 5,  6, 0, 0,  0, 0, 1],
@@ -109,7 +109,7 @@ if puzzel == 1:
             [0, 0, 0,  1, 0, 0,  0, 0, 4],
             [8, 0, 0,  0, 0, 9,  3, 0, 0],
             [9, 4, 0,  5, 0, 0,  7, 0, 0]]
-elif puzzel == 2:
+elif puzzle == 2:
     init = [[2, 0, 0,  0, 0, 6,  0, 3, 0],
             [4, 8, 0,  0, 1, 9,  0, 0, 0],
             [0, 0, 7,  0, 2, 0,  9, 0, 0],
@@ -121,7 +121,7 @@ elif puzzel == 2:
             [0, 0, 4,  0, 9, 0,  6, 0, 0],
             [0, 0, 0,  6, 4, 0,  0, 1, 9],
             [0, 5, 0,  1, 0, 0,  0, 0, 8]]
-elif puzzel == 3:
+elif puzzle == 3:
     init = [[0, 0, 3,  2, 0, 0,  0, 7, 0],
             [0, 0, 5,  0, 0, 0,  3, 0, 0],
             [0, 0, 8,  9, 7, 0,  0, 5, 0],
@@ -133,7 +133,7 @@ elif puzzel == 3:
             [0, 1, 0,  0, 2, 5,  6, 0, 0],
             [0, 0, 4,  0, 0, 0,  8, 0, 0],
             [0, 9, 0,  0, 0, 7,  5, 0, 0]]
-elif puzzel == 4:
+elif puzzle == 4:
     init = [[0, 1, 0,  0, 0, 0,  0, 0, 2],
             [8, 7, 0,  0, 0, 0,  5, 0, 4],
             [5, 0, 2,  0, 0, 0,  0, 9, 0],
@@ -145,7 +145,7 @@ elif puzzel == 4:
             [0, 2, 0,  0, 0, 0,  4, 0, 8],
             [4, 0, 6,  0, 0, 0,  0, 1, 3],
             [1, 0, 0,  0, 0, 0,  0, 2, 0]]
-elif puzzel == 5:
+elif puzzle == 5:
     init = [[8, 9, 0,  2, 0, 0,  0, 7, 0],
             [0, 0, 0,  0, 8, 0,  0, 0, 0],
             [0, 4, 1,  0, 3, 0,  5, 0, 0],
@@ -157,6 +157,21 @@ elif puzzel == 5:
             [0, 0, 7,  0, 1, 0,  4, 3, 0],
             [0, 0, 0,  0, 2, 0,  0, 0, 0],
             [0, 2, 0,  0, 0, 7,  0, 5, 1]]
+elif puzzle == 6:
+    # "World's hardest sudoku":
+    # http://www.telegraph.co.uk/news/science/science-news/9359579/\
+    # Worlds-hardest-sudoku-can-you-crack-it.html
+    init = [[8, 0, 0,  0, 0, 0,  0, 0, 0],
+            [0, 0, 3,  6, 0, 0,  0, 0, 0],
+            [0, 7, 0,  0, 9, 0,  2, 0, 0],
+
+            [0, 5, 0,  0, 0, 7,  0, 0, 0],
+            [0, 0, 0,  0, 4, 5,  7, 0, 0],
+            [0, 0, 0,  1, 0, 0,  0, 3, 0],
+
+            [0, 0, 1,  0, 0, 0,  0, 6, 8],
+            [0, 0, 8,  5, 0, 0,  0, 1, 0],
+            [0, 9, 0,  0, 0, 0,  4, 0, 0]]
 else:
     init = [[1, 0, 0,  4, 0, 0,  0, 0, 0],
             [7, 0, 0,  5, 0, 0,  6, 0, 3],
