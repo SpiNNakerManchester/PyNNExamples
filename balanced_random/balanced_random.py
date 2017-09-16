@@ -79,7 +79,7 @@ p.end()
 Figure(
     # raster plot of the presynaptic neuron spike times
     Panel(data.segments[0].spiketrains,
-          yticks=True, markersize=1.0, xlim=(0, 4000)),
+          yticks=True, markersize=2.0, xlim=(0, p.get_current_time())),
     title="Balanced Random Network",
     annotations="Simulated with {}".format(p.name())
 )
