@@ -73,13 +73,14 @@ pop_input.set(rate=20)
 p.run(1000)
 
 data = pop_exc.get_data("spikes")
+end_time = p.get_current_time()
 
 p.end()
 
 Figure(
     # raster plot of the presynaptic neuron spike times
     Panel(data.segments[0].spiketrains,
-          yticks=True, markersize=2.0, xlim=(0, p.get_current_time())),
+          yticks=True, markersize=2.0, xlim=(0, end_time)),
     title="Balanced Random Network",
     annotations="Simulated with {}".format(p.name())
 )
