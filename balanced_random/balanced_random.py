@@ -14,8 +14,10 @@ weight_input = 0.001
 
 pop_input = p.Population(100, p.SpikeSourcePoisson(rate=0), label="Input")
 
-pop_exc = p.Population(n_exc, p.IF_curr_exp(), label="Excitatory")
-pop_inh = p.Population(n_inh, p.IF_curr_exp(), label="Inhibitory")
+pop_exc = p.Population(
+    n_exc, p.IF_curr_exp(spikes_per_second=100), label="Excitatory")
+pop_inh = p.Population(
+    n_inh, p.IF_curr_exp(spikes_per_second=100), label="Inhibitory")
 stim_exc = p.Population(
     n_exc, p.SpikeSourcePoisson(rate=1000.0), label="Stim_Exc")
 stim_inh = p.Population(
