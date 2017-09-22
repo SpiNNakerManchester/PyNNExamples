@@ -46,7 +46,7 @@ projections.append(p.Projection(
 
 p.run(runtime)
 
-print projections[0].get(['weight', 'delay', ''], 'list')
+print projections[0].get(['weight', 'delay'], 'list')
 
 
 p.end()
