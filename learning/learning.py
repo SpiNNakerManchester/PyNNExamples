@@ -170,8 +170,9 @@ plotting.Figure(
     plotting.Panel(
         pre_spikes.segments[0].spiketrains,
         post_spikes.segments[0].spiketrains,
-        yticks=True, markersize=5, xlim=(0, simtime),
-        line_properties=[{"color": "r"}, {"color": "b"}]
+        yticks=True, xlim=(0, simtime),
+        line_properties=[{"color": "r", "markersize":5},
+                         {"color": "b", "markersize":2}]
         ),
     title="Learning example",
     annotations="Simulated with {}".format(sim.name())

@@ -19,7 +19,7 @@ post_pop.record("spikes")
 
 training = sim.Population(
     n_neurons,
-    sim.SpikeSourcePoisson(rate=10.0, start=2000.0, duration=1000.0),
+    sim.SpikeSourcePoisson(rate=10.0, start=1500.0, duration=1500.0),
     label="Training")
 
 sim.Projection(pre_noise,  pre_pop,  sim.OneToOneConnector(),
@@ -55,17 +55,14 @@ print stdp_projection.getWeights()
 
 sim.end()
 
-line_properties = [{'color': 'red'}, {'color': 'blue'}]
+line_properties = [{'color': 'red', 'markersize': 5},
+                   {'color': 'blue', 'markersize': 2}]
 
 plot.Figure(
     # plot spikes
-    plot.Panel(pre_spikes, post_spikes, yticks=True, markersize=5,
-               xlim=(0, simtime), line_properties=line_properties),
-    plot.Panel(pre_spikes, yticks=True, markersize=5,
-               xlim=(0, simtime), color='red', data_labels=["pre"]),
-    plot.Panel(post_spikes, yticks=True, markersize=5,
-               xlim=(0, simtime), color='blue', data_labels=["post"]),
-    title="Balanced Random Network Example",
+    plot.Panel(pre_spikes, post_spikes, yticks=True, xlim=(0, simtime),
+               line_properties=line_properties),
+    title="STDP Network Example",
     annotations="Simulated with {}".format(sim.name())
 )
 plt.show()
