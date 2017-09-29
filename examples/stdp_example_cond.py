@@ -167,8 +167,7 @@ post_pop.record(['v', 'spikes'])
 # Run simulation
 sim.run(simtime)
 
-# print("Weights:{}".format(plastic_projection.getWeights()))
-
+print("Weights:{}".format(plastic_projection.get('weight', 'list')))
 
 pre_spikes = pre_pop.get_data('spikes')
 post_spikes = post_pop.get_data('spikes')

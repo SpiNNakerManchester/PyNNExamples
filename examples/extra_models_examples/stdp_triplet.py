@@ -101,8 +101,9 @@ sim.run(sim_time)
 # Read weights from each parameter value being tested
 weights = []
 for projection_delta_t in projections:
-    # TODO fix second partameter and handle output
-    weights.append([p.get('weight',)[0] for p in projection_delta_t])
+    weights.append([p.get('weight', 'list', with_address=False)[0]
+                    for p in projection_delta_t])
+
 # End simulation on SpiNNaker
 sim.end()
 

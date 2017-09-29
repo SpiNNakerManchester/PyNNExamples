@@ -176,8 +176,8 @@ delay_distr = RandomDistribution('uniform', low=1.0, high=16.0, rng=rng)
 Ext_conn = pynn.OneToOneConnector()
 
 uniformDistr = RandomDistribution('uniform', low=-10, high=0, rng=rng)
-E_pop.initialize('v', uniformDistr)
-I_pop.initialize('v', uniformDistr)
+E_pop.initialize(v=uniformDistr)
+I_pop.initialize(v=uniformDistr)
 
 # Projections
 E_E = pynn.Projection(
