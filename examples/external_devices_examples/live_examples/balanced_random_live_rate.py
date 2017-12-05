@@ -73,7 +73,7 @@ poisson_control = p.external_devices.SpynnakerPoissonControlConnection(
 
 def start_callback(label, connection):
     for rate in [50, 10, 20]:
-        time.sleep(1.0)
+        time.sleep(10.0)
         connection.set_rates(label, [(i, rate) for i in range(100)])
 
 
