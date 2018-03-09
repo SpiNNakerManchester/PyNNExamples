@@ -101,16 +101,17 @@ for t in delta_t:
         synapse_type=stdp_model))
 
 print("Simulating for %us" % (sim_time / 1000))
-
+post_pop.record("spikes")
 # Run simulation
 sim.run(sim_time)
 
+post_pop_spikes = post_pop.get_data("spikes")
 # Get weight from each projection
 end_w = [p.get('weight', 'list', with_address=False)[0] for p in projections]
 
 # End simulation on SpiNNaker
 sim.end()
-
+pp_spikes = post_pop_spikes.segments[0].spiketrains
 # -------------------------------------------------------------------
 # Plot curve
 # -------------------------------------------------------------------
