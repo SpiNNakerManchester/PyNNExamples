@@ -9,13 +9,14 @@ except Exception as e:
 # To reproduce the eponymous STDP curve first
 # Plotted by Bi and Poo (1998)
 # ------------------------------------------------------------------
-
+n = 16
 # ------------------------------------------------------------------
 # Common parameters
 # ------------------------------------------------------------------
 time_between_pairs = 1000
 num_pairs = 60
-start_w = 0.5
+max_w = 1.0/n
+start_w = 0.5/n
 delta_t = [-100, -60, -40, -30, -20, -10, -1, 1, 10, 20, 30, 40, 60, 100]
 start_time = 200
 mad = True
@@ -78,10 +79,10 @@ for t in delta_t:
     post_stim = sim.Population(
         1, sim.SpikeSourceArray(spike_times=[post_times]))
 
-    weight = 2
+    weight = 2.0
 
     # Connections between spike sources and neuron populations
-    ee_connector = sim.OneToOneConnector()
+    ee_connector = sim.AllToAllConnector()
     sim.Projection(
         pre_stim, pre_pop, ee_connector, receptor_type='excitatory',
         synapse_type=sim.StaticSynapse(weight=weight))
@@ -92,9 +93,9 @@ for t in delta_t:
     # Plastic Connection between pre_pop and post_pop
     stdp_model = sim.STDPMechanism(
         timing_dependence=sim.SpikePairRule(
-            tau_plus=16.7, tau_minus=33.7, A_plus=0.005, A_minus=0.005),
+            tau_plus=16.7, tau_minus=33.7, A_plus=0.1, A_minus=0.1),
         weight_dependence=sim.AdditiveWeightDependence(
-            w_min=0.0, w_max=1), weight=start_w)
+            w_min=0.0, w_max=max_w), weight=start_w)
 
     projections.append(sim.Projection(
         pre_pop, post_pop, sim.OneToOneConnector(),
@@ -123,7 +124,7 @@ axis.set_xlabel(r"$(t_{j} - t_{i}/ms)$")
 axis.set_ylabel(r"$(\frac{\Delta w_{ij}}{w_{ij}})$",
                 rotation="horizontal", size="xx-large")
 axis.plot(delta_t, delta_w)
-axis.axhline(color="grey", linestyle="--")
-axis.axvline(color="grey", linestyle="--")
+# axis.axhline(color="grey", linestyle="--")
+# axis.axvline(color="grey", linestyle="--")
 
 pylab.show()
