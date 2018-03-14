@@ -9,10 +9,17 @@ except Exception as e:
 # To reproduce the eponymous STDP curve first
 # Plotted by Bi and Poo (1998)
 # ------------------------------------------------------------------
-n = 16
+def stdp_param_check(alpha_plus,alpha_minus,w_max,tau_minus,tau_plus):
+
+    min_w_delta = w_max/2.**16
+    max_tau_plus_delta = -math.log((min_w_delta/alpha_plus))*tau_plus
+    max_tau_minus_delta = -math.log((min_w_delta/alpha_minus))*tau_minus
+
+    return max_tau_plus_delta,max_tau_minus_delta,min_w_delta
 # ------------------------------------------------------------------
 # Common parameters
 # ------------------------------------------------------------------
+n = 16
 time_between_pairs = 1000
 num_pairs = 60
 max_w = 1.0/n
@@ -102,16 +109,17 @@ for t in delta_t:
         synapse_type=stdp_model))
 
 print("Simulating for %us" % (sim_time / 1000))
-
+post_pop.record("spikes")
 # Run simulation
 sim.run(sim_time)
 
+post_pop_spikes = post_pop.get_data("spikes")
 # Get weight from each projection
 end_w = [p.get('weight', 'list', with_address=False)[0] for p in projections]
 
 # End simulation on SpiNNaker
 sim.end()
-
+pp_spikes = post_pop_spikes.segments[0].spiketrains
 # -------------------------------------------------------------------
 # Plot curve
 # -------------------------------------------------------------------
@@ -124,7 +132,7 @@ axis.set_xlabel(r"$(t_{j} - t_{i}/ms)$")
 axis.set_ylabel(r"$(\frac{\Delta w_{ij}}{w_{ij}})$",
                 rotation="horizontal", size="xx-large")
 axis.plot(delta_t, delta_w)
-# axis.axhline(color="grey", linestyle="--")
-# axis.axvline(color="grey", linestyle="--")
+axis.axhline(color="grey", linestyle="--")
+axis.axvline(color="grey", linestyle="--")
 
 pylab.show()
