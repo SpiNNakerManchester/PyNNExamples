@@ -124,9 +124,9 @@ print_condition = Condition()
 
 # Create an initialisation method
 def init_pop(label, n_neurons, run_time_ms, machine_timestep_ms):
-    print "{} has {} neurons".format(label, n_neurons)
-    print "Simulation will run for {}ms at {}ms timesteps".format(
-        run_time_ms, machine_timestep_ms)
+    print("{} has {} neurons".format(label, n_neurons))
+    print("Simulation will run for {}ms at {}ms timesteps".format(
+        run_time_ms, machine_timestep_ms))
 
 
 # Create a sender of packets for the forward population
@@ -134,7 +134,7 @@ def send_input_forward(label, sender):
     for neuron_id in range(0, 100, 20):
         time.sleep(random.random() + 0.5)
         print_condition.acquire()
-        print "Sending forward spike", neuron_id
+        print("Sending forward spike {}".format(neuron_id))
         print_condition.release()
         sender.send_spike(label, neuron_id, send_full_keys=True)
 
@@ -145,7 +145,7 @@ def send_input_backward(label, sender):
         real_id = 100 - neuron_id - 1
         time.sleep(random.random() + 0.5)
         print_condition.acquire()
-        print "Sending backward spike", real_id
+        print("Sending backward spike {}".format(real_id))
         print_condition.release()
         sender.send_spike(label, real_id)
 
@@ -154,7 +154,8 @@ def send_input_backward(label, sender):
 def receive_spikes(label, time, neuron_ids):
     for neuron_id in neuron_ids:
         print_condition.acquire()
-        print "Received spike at time", time, "from", label, "-", neuron_id
+        print("Received spike at time {} from {} - {}".format(
+            time, label, neuron_id))
         print_condition.release()
 
 

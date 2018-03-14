@@ -3,3 +3,7 @@
 .pydevproject
 *.pyc
 .idea/
+__pycache__
+.pytest_cache
+*application_generated_data_files/
+*reports/
