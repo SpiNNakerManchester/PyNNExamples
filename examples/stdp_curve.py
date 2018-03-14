@@ -1,4 +1,5 @@
 import pylab
+import math
 try:
     import pyNN.spiNNaker as sim
 except Exception as e:
@@ -9,7 +10,13 @@ except Exception as e:
 # To reproduce the eponymous STDP curve first
 # Plotted by Bi and Poo (1998)
 # ------------------------------------------------------------------
+def stdp_param_check(alpha_plus,alpha_minus,w_max,tau_minus,tau_plus):
 
+    min_w_delta = w_max/2.**16
+    max_tau_plus_delta = -math.log((min_w_delta/alpha_plus))*tau_plus
+    max_tau_minus_delta = -math.log((min_w_delta/alpha_minus))*tau_minus
+
+    return max_tau_plus_delta,max_tau_minus_delta,min_w_delta
 # ------------------------------------------------------------------
 # Common parameters
 # ------------------------------------------------------------------

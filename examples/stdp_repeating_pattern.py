@@ -1,9 +1,19 @@
 import spynnaker8 as sim
-import numpy
+import numpy as np
 import pylab as plt
 from signal_prep import *
 from pyNN.random import NumpyRNG, RandomDistribution
+import math
 
+#function that calculates minimum alphas based on w_max and tau_minus/tau_plus
+
+def stdp_param_check(alpha_plus,alpha_minus,w_max,tau_minus,tau_plus):
+
+    min_w_delta = w_max/2.**16
+    max_tau_plus_delta = -math.log((min_w_delta/alpha_plus))*tau_plus
+    max_tau_minus_delta = -math.log((min_w_delta/alpha_minus))*tau_minus
+
+    return max_tau_plus_delta,max_tau_minus_delta,min_w_delta
 
 # Population parameters
 model = sim.IF_curr_exp
@@ -22,17 +32,21 @@ cell_params = {'cm': 0.25,  # nF
 #STDP -ve decay due to noise (0 num pattern neurons) currently only possible at max 250 incoming connections (stim_size)
 
 stim_size = 300
-num_pattern_neurons = 0
+num_pattern_neurons = 10
 pattern_freq = 10
 noise_rate = 10.
 num_recordings = 10
 duration = 20.0 * 1000.
 w2s =2.
-w_max = w2s/2.
+w_max = 2.#w2s/(num_pattern_neurons*2)#w2s/2.
 start_weight = w_max/2.
-a_plus = 0.005#0.03125
-a_minus = 0.005#0.85 * a_plus
+tau_plus=16.7
+tau_minus=33.7
+a_plus = 0.005#0.1#0.03125
+a_minus = 0.005#0.1#0.85 * a_plus
 #a_plus = 0.
+max_tau_plus_delta,max_tau_minus_delta,min_w_delta = stdp_param_check(a_plus,a_minus,w_max,tau_minus,tau_plus)
+num_pattern_neurons = 0
 
 # SpiNNaker setup
 sim.setup(timestep=1.0, min_delay=1.0, max_delay=51.0)
@@ -67,7 +81,7 @@ else:
 # Plastic Connection between pre_pop and post_pop
 stdp_model = sim.STDPMechanism(
     timing_dependence=sim.extra_models.SpikeNearestPairRule(
-        tau_plus=16.7, tau_minus=33.7, A_plus=a_plus, A_minus=a_minus),
+        tau_plus=tau_plus, tau_minus=tau_minus, A_plus=a_plus, A_minus=a_minus),
     weight_dependence=sim.AdditiveWeightDependence(
         w_min=0.0, w_max=w_max), weight=start_weight)
 
@@ -88,6 +102,10 @@ stim_data = pre_pop.get_data("spikes")
 print "max weight = {}, min weight = {}".format(max(weights),min(weights))
 
 sim.end()
+
+print "----------Weight scaling + STDP parameters----------"
+print "max_tau_plus:{}".format(max_tau_plus_delta), "max_tau_minus:{}".format(max_tau_minus_delta),\
+    "min_w_delta:{}".format(min_w_delta)
 
 if stim_size < 1000:
     vary_weight_plot(varying_weights,range(int(stim_size)),chosen_int,duration,
