@@ -157,7 +157,6 @@ for i in range(len(i_add_post)):
         synapse_type=sim.StaticSynapse(weight=jee * 0.05))
 
 # Structurally plastic connection between pre_pop and post_pop
-
 structure_model_without_stdp = sim.StructuralMechanism(
     weight=.2,  # Use this weights when creating a new synapse
     s_max=32,  # Maximum allowed fan-in per target-layer neuron
@@ -189,7 +188,6 @@ post_pop.record(['v', 'spikes'])
 sim.run(sim_time)
 
 # Retrieve connectivity information from SpiNNaker
-
 pre_weights = []
 pre_weights.append(
     np.array([
@@ -199,9 +197,9 @@ pre_weights.append(
         plastic_projection._get_synaptic_data(True, 'delay')]).T)
 pre_spikes = pre_pop.get_data('spikes')
 post_spikes = post_pop.get_data('spikes')
+
 # End simulation on SpiNNaker
 sim.end()
-
 
 # Plotting spikes
 Figure(

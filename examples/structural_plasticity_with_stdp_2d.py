@@ -204,6 +204,7 @@ pre_weights.append(
         plastic_projection._get_synaptic_data(True, 'delay')]).T)
 pre_spikes = pre_pop.get_data('spikes')
 post_spikes = post_pop.get_data('spikes')
+
 # End simulation on SpiNNaker
 sim.end()
 
@@ -218,7 +219,6 @@ Figure(
 )
 
 # Plotting connectivity
-
 final_ff_conn_network = np.ones((pop_size, pop_size)) * np.nan
 final_ff_weight_network = np.ones((pop_size, pop_size)) * np.nan
 for source, target, weight, delay in pre_weights[-1]:
