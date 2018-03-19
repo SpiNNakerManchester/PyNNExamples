@@ -61,17 +61,17 @@ dur_stim = 20
 
 pop_size = 40
 
-ISI = 90.
+isi = 90.
 start_test_pre_pairing = 200.
 start_pairing = 1500.
 start_test_post_pairing = 700.
 
-simtime = (start_pairing + start_test_post_pairing
-           + ISI * (n_stim_pairing + n_stim_test) + 550.)
+sim_time = (start_pairing + start_test_post_pairing
+            + isi * (n_stim_pairing + n_stim_test) + 550.)
 
 # Initialisations of the different types of populations
-IAddPre = []
-IAddPost = []
+i_add_pre = []
+i_add_post = []
 
 # +-------------------------------------------------------------------+
 # | Creation of neuron populations                                    |
@@ -84,67 +84,67 @@ post_pop = sim.Population(pop_size, model(**cell_params))
 # Test of the effect of activity of the pre_pop population on the post_pop
 # population prior to the "pairing" protocol : only pre_pop is stimulated
 for i in range(n_stim_test):
-    IAddPre.append(sim.Population(
+    i_add_pre.append(sim.Population(
         pop_size, sim.SpikeSourcePoisson(
-            rate=in_rate, start=start_test_pre_pairing + ISI * i,
+            rate=in_rate, start=start_test_pre_pairing + isi * i,
             duration=dur_stim)))
 
 # Pairing protocol : pre_pop and post_pop are stimulated with a 10 ms
 # difference
 for i in range(n_stim_pairing):
-    IAddPre.append(sim.Population(
+    i_add_pre.append(sim.Population(
         pop_size, sim.SpikeSourcePoisson(
-           rate=in_rate, start=start_pairing + ISI * i, duration=dur_stim)))
-    IAddPost.append(sim.Population(
+           rate=in_rate, start=start_pairing + isi * i, duration=dur_stim)))
+    i_add_post.append(sim.Population(
         pop_size, sim.SpikeSourcePoisson(
-            rate=in_rate, start=start_pairing + ISI * i + 10.,
+            rate=in_rate, start=start_pairing + isi * i + 10.,
             duration=dur_stim)))
 
 # Test post pairing : only pre_pop is stimulated (and should trigger activity
 # in Post)
 for i in range(n_stim_test):
-    IAddPre.append(sim.Population(
+    i_add_pre.append(sim.Population(
         pop_size, sim.SpikeSourcePoisson(
             rate=in_rate, start=(
-                start_pairing + ISI * n_stim_pairing +
-                start_test_post_pairing + ISI * i),
+                    start_pairing + isi * n_stim_pairing +
+                    start_test_post_pairing + isi * i),
             duration=dur_stim)))
 
 # Noise inputs
-INoisePre = sim.Population(
+i_noise_pre = sim.Population(
     pop_size, sim.SpikeSourcePoisson(
-        rate=e_rate, start=0, duration=simtime), label="expoisson")
-INoisePost = sim.Population(
+        rate=e_rate, start=0, duration=sim_time), label="expoisson")
+i_noise_post = sim.Population(
     pop_size, sim.SpikeSourcePoisson(
-        rate=e_rate, start=0, duration=simtime), label="expoisson")
+        rate=e_rate, start=0, duration=sim_time), label="expoisson")
 
 # +-------------------------------------------------------------------+
 # | Creation of connections                                           |
 # +-------------------------------------------------------------------+
 
 # Connection parameters
-JEE = 3.
+jee = 3.
 
 # Connection type between noise poisson generator and excitatory populations
 ee_connector = sim.OneToOneConnector()
 
 # Noise projections
 sim.Projection(
-    INoisePre, pre_pop, ee_connector, receptor_type='excitatory',
-    synapse_type=sim.StaticSynapse(weight=JEE * 0.05))
+    i_noise_pre, pre_pop, ee_connector, receptor_type='excitatory',
+    synapse_type=sim.StaticSynapse(weight=jee * 0.05))
 sim.Projection(
-    INoisePost, post_pop, ee_connector, receptor_type='excitatory',
-    synapse_type=sim.StaticSynapse(weight=JEE * 0.05))
+    i_noise_post, post_pop, ee_connector, receptor_type='excitatory',
+    synapse_type=sim.StaticSynapse(weight=jee * 0.05))
 
 # Additional Inputs projections
-for i in range(len(IAddPre)):
+for i in range(len(i_add_pre)):
     sim.Projection(
-        IAddPre[i], pre_pop, ee_connector, receptor_type='excitatory',
-        synapse_type=sim.StaticSynapse(weight=JEE * 0.05))
-for i in range(len(IAddPost)):
+        i_add_pre[i], pre_pop, ee_connector, receptor_type='excitatory',
+        synapse_type=sim.StaticSynapse(weight=jee * 0.05))
+for i in range(len(i_add_post)):
     sim.Projection(
-        IAddPost[i], post_pop, ee_connector, receptor_type='excitatory',
-        synapse_type=sim.StaticSynapse(weight=JEE * 0.05))
+        i_add_post[i], post_pop, ee_connector, receptor_type='excitatory',
+        synapse_type=sim.StaticSynapse(weight=jee * 0.05))
 
 # Plastic Connections between pre_pop and post_pop
 stdp_model = sim.STDPMechanism(
@@ -165,7 +165,7 @@ pre_pop.record(['v', 'spikes'])
 post_pop.record(['v', 'spikes'])
 
 # Run simulation
-sim.run(simtime)
+sim.run(sim_time)
 
 print("Weights:{}".format(plastic_projection.get('weight', 'list')))
 
@@ -175,9 +175,9 @@ post_spikes = post_pop.get_data('spikes')
 Figure(
     # raster plot of the presynaptic neuron spike times
     Panel(pre_spikes.segments[0].spiketrains,
-          yticks=True, markersize=0.2, xlim=(0, simtime)),
+          yticks=True, markersize=0.2, xlim=(0, sim_time)),
     Panel(post_spikes.segments[0].spiketrains,
-          yticks=True, markersize=0.2, xlim=(0, simtime)),
+          yticks=True, markersize=0.2, xlim=(0, sim_time)),
     title="stdp example cond",
     annotations="Simulated with {}".format(sim.name()))
 plt.show()
