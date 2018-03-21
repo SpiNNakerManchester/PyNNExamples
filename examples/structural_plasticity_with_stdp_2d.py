@@ -162,7 +162,7 @@ stdp_model = sim.STDPMechanism(
         tau_plus=20., tau_minus=20.0, A_plus=0.02, A_minus=0.02),
     weight_dependence=sim.AdditiveWeightDependence(w_min=0, w_max=1.))
 
-structure_model_with_stdp = sim.StructuralMechanism(
+structure_model_with_stdp = sim.StructuralMechanismSTDP(
     stdp_model=stdp_model,
     weight=0,  # Use this weights when creating a new synapse
     s_max=32,  # Maximum allowed fan-in per target-layer neuron
