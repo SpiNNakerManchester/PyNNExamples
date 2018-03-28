@@ -197,11 +197,8 @@ sim.run(sim_time)
 
 pre_weights = []
 pre_weights.append(
-    np.array([
-        plastic_projection._get_synaptic_data(True, 'source'),
-        plastic_projection._get_synaptic_data(True, 'target'),
-        plastic_projection._get_synaptic_data(True, 'weight'),
-        plastic_projection._get_synaptic_data(True, 'delay')]).T)
+    plastic_projection.get(["weight", "delay"], format="list")
+)
 pre_spikes = pre_pop.get_data('spikes')
 post_spikes = post_pop.get_data('spikes')
 
