@@ -4,6 +4,7 @@ import pylab as plt
 from signal_prep import *
 from pyNN.random import NumpyRNG, RandomDistribution
 import math
+import logging
 
 #function that calculates minimum alphas based on w_max and tau_minus/tau_plus
 def stdp_param_check(alpha_plus,alpha_minus,w_max,tau_minus,tau_plus):
@@ -30,20 +31,21 @@ cell_params = {'cm': 0.25,  # nF
 #simulation parameters
 #STDP -ve decay due to noise (0 num pattern neurons) currently only possible at max 250 incoming connections (stim_size)
 stim_size = 1000
-num_pattern_neurons = stim_size*0.01
-noise_rate = 1.
-num_recordings = 10
-duration = 90.0 * 1000.
+num_pattern_neurons = 0#stim_size*0.01#
+noise_rate = 10.#1.#
+num_recordings = 2#10
+duration = 20.0 * 1000.
 w2s =2.
-w_max = w2s/num_pattern_neurons#w2s/2.#1.#
+w2s_stdp = 127.
+w_max = w2s/stim_size#w2s/2.#w2s_stdp/10#w2s/num_pattern_neurons#1.#1.#
 #start_weight = w_max/2.
 av_weight = w_max/2.
 ten_perc = av_weight/10.
 start_weight = RandomDistribution('uniform',(av_weight-ten_perc,av_weight+ten_perc))
-tau_plus=16.7
-tau_minus=33.7
-a_plus = 0.0075#0.0015#0.0025#
-a_minus = 0.005#0.001#0.002#
+tau_plus=30.#16.7
+tau_minus=30.#33.7
+a_plus = 0.1#0.005#0.005#0.0075#0.0015#0.0025#
+a_minus = 0.1#0.005#0.005#0.001#0.002#
 max_tau_plus_delta,max_tau_minus_delta,min_w_delta = stdp_param_check(a_plus,a_minus,w_max,tau_minus,tau_plus)
 
 # SpiNNaker setup
@@ -120,6 +122,10 @@ stdp_proj=sim.Projection(
  #  synapse_type=sim.StaticSynapse(weight=w2s))
     synapse_type=stdp_model)
 
+#target noise for STDP stable tests
+target_noise = sim.Population(1, sim.SpikeSourcePoisson(rate=1., duration=duration))
+target_noise_proj = sim.Projection(target_noise,target_pop,sim.OneToOneConnector(),synapse_type=sim.StaticSynapse(weight=w2s))
+
 varying_weights=[]
 #add initial weights
 #varying_weights.append([start_weight for _ in range(stim_size)])
@@ -138,19 +144,20 @@ sim.end()
 num_recordings+=1
 print "max weight = {}, min weight = {}".format(max(weights),min(weights))
 
-print "----------Weight scaling + STDP parameters----------"
-print "max_tau_plus:{}".format(max_tau_plus_delta), "max_tau_minus:{}".format(max_tau_minus_delta),\
-    "min_w_delta:{}".format(min_w_delta)
+# print "----------Weight scaling + STDP parameters----------"
+# print "max_tau_plus:{}".format(max_tau_plus_delta), "max_tau_minus:{}".format(max_tau_minus_delta),\
+#     "min_w_delta:{}".format(min_w_delta)
 
-if stim_size < 1000:
+if stim_size <= 100:
     vary_weight_plot(varying_weights,range(int(stim_size)),chosen_int,duration/1000.,
                              plt,np=numpy,num_recs=num_recordings,ylim=w_max+(w_max/10.))
 else:
-    vary_weight_plot(varying_weights,chosen_int,chosen_int,duration/1000.,
+    vary_weight_plot(varying_weights,range(100),chosen_int,duration/1000.,
+    #vary_weight_plot(varying_weights,chosen_int,chosen_int,duration/1000.,
                              plt,np=numpy,num_recs=num_recordings,ylim=w_max+(w_max/10.))
 weight_dist_plot(varying_weights,1,plt,title="pre-pop weight distribution")
 
-#mem_v = target_data.segments[0].filter(name='v')
+mem_v = target_data.segments[0].filter(name='v')
 #cell_voltage_plot_8(mem_v, plt, duration, 1.,scale_factor=0.001)
 spike_raster_plot_8(stim_data.segments[0].spiketrains,plt,duration/1000.,stim_size+1,0.001,title="pre pop activity")
 spike_raster_plot_8(target_data.segments[0].spiketrains,plt,duration/1000.,2,0.001,title="target pop activity")
