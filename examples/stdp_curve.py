@@ -20,8 +20,11 @@ def stdp_param_check(alpha_plus,alpha_minus,w_max,tau_minus,tau_plus):
 # ------------------------------------------------------------------
 # Common parameters
 # ------------------------------------------------------------------
+n = 16
 time_between_pairs = 1000
 num_pairs = 60
+max_w = 1.0/n
+start_w = 0.5/n
 delta_t = [-100, -60, -40, -30, -20, -10, -1, 1, 10, 20, 30, 40, 60, 100]
 start_time = 200
 mad = True
@@ -94,6 +97,8 @@ for t in delta_t:
         1, sim.SpikeSourceArray(spike_times=[pre_times]))
     post_stim = sim.Population(
         1, sim.SpikeSourceArray(spike_times=[post_times]))
+
+    weight = 2.0
 
     # Connections between spike sources and neuron populations
     ee_connector = sim.OneToOneConnector()
