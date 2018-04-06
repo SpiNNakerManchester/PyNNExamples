@@ -235,7 +235,7 @@ def weight_array_to_group_list(weight_array,from_ids,to_ids):
 
 def vary_weight_plot(varying_weights,ids,stim_ids,duration,plt,num_recs,np,ylim,title=''):
     if len(ids)>0:
-        varying_weights_array = np.array(varying_weights)
+        #varying_weights_array = np.array(varying_weights)
         repeats = np.linspace(0, duration, num_recs)
         sr = math.sqrt(len(ids))
         num_cols = np.ceil(sr)
@@ -247,18 +247,26 @@ def vary_weight_plot(varying_weights,ids,stim_ids,duration,plt,num_recs,np,ylim,
         count=0
         for id in ids:
             plt.subplot(num_rows,num_cols,count+1)
-            weights=varying_weights_array[:,id]
+            id_times = []
+            for reading in varying_weights:
+                id_times.append(reading[id])
+
+            id_times=map(list, zip(*id_times))
+
+            #weights=varying_weights_array[:,id]
             #every number of connections per neuron over time should be equal(no struc plasticity)
             #insane way to get each time element from the weights list
-            if len(weights.shape)>1:
-                times = np.zeros((len(weights[0]),len(weights)))
-                for i in range(len(weights[0])):
-                    for j in range(len(weights)):
-                        times[i,j]=weights[j][i]
-                for t in times:
-                    plt.plot(repeats, t)
-            else:
-                plt.plot(repeats, weights)
+            # if len(weights.shape)>1:
+            #     times = np.zeros((len(weights[0]),len(weights)))
+            #     for i in range(len(weights[0])):
+            #         for j in range(len(weights)):
+            #             times[i,j]=weights[j][i]
+            #     for t in times:
+            #         plt.plot(repeats, t)
+            # else:
+            #     plt.plot(repeats, weights)
+            for t in id_times:
+                plt.plot(repeats,t)
             label = plt.ylabel("ID:{}".format(str(id+1)))
             if id in stim_ids:
                 label.set_color('red')
@@ -267,23 +275,32 @@ def vary_weight_plot(varying_weights,ids,stim_ids,duration,plt,num_recs,np,ylim,
             count+=1
 
 def weight_dist_plot(varying_weights,num_ticks,plt,np=numpy,title=None):
-    varying_weights_array = np.array(varying_weights)
-    initial_weights = varying_weights_array[0][:]
+    #varying_weights_array = np.array(varying_weights)
+    #initial_weights = varying_weights_array[0][:]
+    # init_weights = []
+    # if len(initial_weights.shape)>1:
+    #     for weights in initial_weights:
+    #         for weight in weights:
+    #             init_weights.append(weight)
+    #     init_weights = np.asarray(init_weights)
+    #     final_weights = varying_weights_array[-1][:]
+    #     fin_weights = []
+    #     for weights in final_weights:
+    #         for weight in weights:
+    #             fin_weights.append(weight)
+    # else:
+    #     init_weights = varying_weights_array[0][:]
+    #     fin_weights = varying_weights_array[-1][:]
+    initial_weights = varying_weights[0]
     init_weights = []
-    if len(initial_weights.shape)>1:
-        for weights in initial_weights:
-            for weight in weights:
-                init_weights.append(weight)
-        init_weights = np.asarray(init_weights)
-        final_weights = varying_weights_array[-1][:]
-        fin_weights = []
-        for weights in final_weights:
-            for weight in weights:
-                fin_weights.append(weight)
-    else:
-        init_weights = varying_weights_array[0][:]
-        fin_weights = varying_weights_array[-1][:]
-
+    for weights in initial_weights:
+        for weight in weights:
+            init_weights.append(weight)
+    final_weights = varying_weights[-1]
+    fin_weights = []
+    for weights in final_weights:
+        for weight in weights:
+            fin_weights.append(weight)
     plt.figure(title)
     plt.hist(init_weights,bins=100,alpha=0.5)
     plt.hist(fin_weights,bins=100,alpha=0.5)
