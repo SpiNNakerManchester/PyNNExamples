@@ -233,48 +233,109 @@ def weight_array_to_group_list(weight_array,from_ids,to_ids):
         group_weights_to.append(numpy.array(connection_weights_to))
     return [group_weights_to,group_weights_from]
 
+# def vary_weight_plot(varying_weights,ids,stim_ids,duration,plt,num_recs,np,ylim,title=''):
+#     if len(ids)>0:
+#         #varying_weights_array = np.array(varying_weights)
+#         repeats = np.linspace(0, duration, num_recs)
+#         sr = math.sqrt(len(ids))
+#         num_cols = np.ceil(sr)
+#         num_rows = np.ceil(len(ids)/num_cols)
+#
+#         plt.figure(title)
+#         plt.suptitle("weight updates for all connections")
+#
+#         count=0
+#         for id in ids:
+#             plt.subplot(num_rows,num_cols,count+1)
+#             id_times = []
+#             for reading in varying_weights:
+#                 id_times.append(reading[id])
+#
+#             id_times = numpy.array(id_times)
+#             if len(id_times.shape)>1:
+#                 id_times=map(list, zip(*id_times))
+#                 for t in id_times:
+#                     plt.plot(repeats,t)
+#             else:
+#                 plt.plot(repeats,id_times)
+#             #weights=varying_weights_array[:,id]
+#             #every number of connections per neuron over time should be equal(no struc plasticity)
+#             #insane way to get each time element from the weights list
+#             # if len(weights.shape)>1:
+#             #     times = np.zeros((len(weights[0]),len(weights)))
+#             #     for i in range(len(weights[0])):
+#             #         for j in range(len(weights)):
+#             #             times[i,j]=weights[j][i]
+#             #     for t in times:
+#             #         plt.plot(repeats, t)
+#             # else:
+#             #     plt.plot(repeats, weights)
+#
+#             label = plt.ylabel("ID:{}".format(str(id+1)))
+#             if id in stim_ids:
+#                 label.set_color('red')
+#             plt.xlim(0,duration)
+#             plt.ylim(0,ylim)
+#             count+=1
+
 def vary_weight_plot(varying_weights,ids,stim_ids,duration,plt,num_recs,np,ylim,title=''):
+    if len(varying_weights)!=num_recs:
+        raise Exception("incorrect number of weight recordings taken (num_recs={}, len(varyingweights={})".format(num_recs,len(varying_weights)))
     if len(ids)>0:
-        #varying_weights_array = np.array(varying_weights)
         repeats = np.linspace(0, duration, num_recs)
         sr = math.sqrt(len(ids))
         num_cols = np.ceil(sr)
         num_rows = np.ceil(len(ids)/num_cols)
 
-        plt.figure(title)
-        plt.suptitle("weight updates for all connections")
+        if stim_ids:
+            plt.figure(title)
+            plt.suptitle("non-pattern synapse weight updates for post neurons")
+            plt.figure(title + "pattern")
+            plt.suptitle("pattern synapse weight updates for post neurons")
+        else:
+            plt.figure(title)
+            plt.suptitle("synapse weight updates for post neurons")
 
         count=0
         for id in ids:
-            plt.subplot(num_rows,num_cols,count+1)
-            id_times = []
+            id_times = [[] for _ in range(num_recs)]
+            id_times_pattern = [[] for _ in range(num_recs)]
+            rec_index = 0
             for reading in varying_weights:
-                id_times.append(reading[id])
+                for (pre, post, weight) in reading:
+                    if post == id:
+                        if pre in stim_ids:
+                            id_times_pattern[rec_index].append(weight)
+                        else:
+                            id_times[rec_index].append(weight)
+                rec_index +=1
 
-            id_times=map(list, zip(*id_times))
 
-            #weights=varying_weights_array[:,id]
-            #every number of connections per neuron over time should be equal(no struc plasticity)
-            #insane way to get each time element from the weights list
-            # if len(weights.shape)>1:
-            #     times = np.zeros((len(weights[0]),len(weights)))
-            #     for i in range(len(weights[0])):
-            #         for j in range(len(weights)):
-            #             times[i,j]=weights[j][i]
-            #     for t in times:
-            #         plt.plot(repeats, t)
-            # else:
-            #     plt.plot(repeats, weights)
-            for t in id_times:
-                plt.plot(repeats,t)
-            label = plt.ylabel("ID:{}".format(str(id+1)))
-            if id in stim_ids:
-                label.set_color('red')
-            plt.xlim(0,duration)
-            plt.ylim(0,ylim)
+            plt.figure(title)
+            plt.subplot(num_rows,num_cols,count+1)
+            id_times = numpy.array(id_times)
+            if len(id_times.shape)>1:
+                id_times=map(list, zip(*id_times))
+                for t in id_times:
+                    plt.plot(repeats,t)
+                label = plt.ylabel("ID:{}".format(str(id+1)))
+                plt.xlim(0,duration)
+                plt.ylim(0,ylim)
+            if id_times_pattern:
+                plt.figure(title + "pattern")
+                plt.subplot(num_rows, num_cols, count + 1)
+                id_times_pattern = numpy.array(id_times_pattern)
+                if len(id_times_pattern.shape) > 1:
+                    id_times_pattern = map(list, zip(*id_times_pattern))
+                    for t in id_times_pattern:
+                        plt.plot(repeats, t)
+                label = plt.ylabel("ID:{}".format(str(id + 1)))
+                plt.xlim(0, duration)
+                plt.ylim(0, ylim)
+            #else:
+            #    plt.plot(repeats,id_times)
             count+=1
-
-def weight_dist_plot(varying_weights,num_ticks,plt,np=numpy,title=None):
+def weight_dist_plot(varying_weights,num_ticks,plt,w_min,w_max,np=numpy,title=None):
     #varying_weights_array = np.array(varying_weights)
     #initial_weights = varying_weights_array[0][:]
     # init_weights = []
@@ -291,19 +352,23 @@ def weight_dist_plot(varying_weights,num_ticks,plt,np=numpy,title=None):
     # else:
     #     init_weights = varying_weights_array[0][:]
     #     fin_weights = varying_weights_array[-1][:]
-    initial_weights = varying_weights[0]
-    init_weights = []
-    for weights in initial_weights:
-        for weight in weights:
-            init_weights.append(weight)
-    final_weights = varying_weights[-1]
-    fin_weights = []
-    for weights in final_weights:
-        for weight in weights:
-            fin_weights.append(weight)
+    initial_weights = numpy.array(varying_weights[0])
+    if len(initial_weights.shape) > 1:
+        init_weights = []
+        for weights in initial_weights:
+            for weight in weights:
+                init_weights.append(weight)
+        final_weights = varying_weights[-1]
+        fin_weights = []
+        for weights in final_weights:
+            for weight in weights:
+                fin_weights.append(weight)
+    else:
+        init_weights = varying_weights[0]
+        fin_weights = varying_weights[-1]
     plt.figure(title)
-    plt.hist(init_weights,bins=100,alpha=0.5)
-    plt.hist(fin_weights,bins=100,alpha=0.5)
+    plt.hist(init_weights,bins=100,alpha=0.5,range=(w_min,w_max))
+    plt.hist(fin_weights,bins=100,alpha=0.5,range=(w_min,w_max))
     plt.legend(["first recording", "last recording"])
 
 def cell_voltage_plot_8(v, plt, duration_ms, time_step_ms,scale_factor=0.001, id=0, title=''):
@@ -490,10 +555,17 @@ def neuron_correlation(spike_train,time_window, stimulus_onset_times,max_id,np=n
         counts.append(np.zeros(max_id + 1))
         #loop through each stimulus onset time and check all neuron firing times
         #save neuron index if firing is within time window of stimulus onset
+        # for time in stimulus:
+        #     for (neuron_id, spike_time) in spike_train:
+        #         if spike_time > time and spike_time <= (time + time_window) and (neuron_id,time) not in correlations[stimulus_index]:
+        #             correlations[stimulus_index].append((neuron_id,time))
         for time in stimulus:
-            for (neuron_id, spike_time) in spike_train:
-                if spike_time > time and spike_time <= (time + time_window) and (neuron_id,time) not in correlations[stimulus_index]:
-                    correlations[stimulus_index].append((neuron_id,time))
+            neuron_id=1
+            for neuron in spike_train:
+                for spike_time in neuron:
+                    if spike_time > time and spike_time <= (time + time_window) and (neuron_id,time) not in correlations[stimulus_index]:
+                        correlations[stimulus_index].append((neuron_id,time))
+                neuron_id+=1
 
         for (id,time) in correlations[stimulus_index]:
             counts[stimulus_index][id] += 1
