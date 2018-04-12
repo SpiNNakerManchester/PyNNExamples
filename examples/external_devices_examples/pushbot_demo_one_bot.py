@@ -6,11 +6,6 @@
 #  Import libraries
 ###########################################
 import spynnaker8 as p
-
-# To plot the events of retina
-from pyNN.utility.plotting import Figure, Panel
-import matplotlib.pyplot as plt
-
 import numpy as np
 
 
@@ -182,8 +177,7 @@ conn_list = conn_list_left + conn_list_right + conn_list_middle_up
 # Winner-takes-all connections from driver_pop to motor neurons
 w_motor = 0.1
 conn_motor_exc = [
-    (0, 1, w_motor * 2, 1), (1, 0, w_motor * 2, 1)] # + [
-    #    (2, 0, w_motor, 1), (2, 1, w_motor, 1)]
+    (0, 1, w_motor * 2, 1), (1, 0, w_motor * 2, 1)]
 conn_motor_inh = [(0, 0, w_motor * 2, 1), (1, 1, w_motor * 2, 1)] + [
     (2, 0, w_motor, 1), (2, 1, w_motor, 1)]
 
@@ -250,34 +244,3 @@ p.run_forever()
 viewer.join()
 
 p.end()
-
-# # Get event IDs and time from SpiNNaker
-# spikes = exc_pop.get_data('spikes')
-# spikes2 = inh_pop.get_data('spikes')
-# spikes3 = driver_pop.get_data('spikes')
-#
-# # End simulation
-# p.end()
-#
-# ###########################################
-# #  Plots
-# ###########################################
-#
-# plt.figure()
-# Figure(
-#     # raster plot of the presynaptic neuron spike times
-#     Panel(spikes.segments[0].spiketrains,
-#           yticks=True, markersize=0.4, xlim=(0, simtime)),
-#     title="Retina")
-#
-#
-# plt.show()
-#
-# # Number of events
-# a = spikes3.segments[0].spiketrains
-# ret = spikes.segments[0].spiketrains
-# print(
-#     '# of spikes for left driver neuron:{} and right driver neuron:{}'.format(
-#         len(a[0]), len(a[1])))
-# print('# of spikes for retina population: {}'.format(
-#     sum([len(ret[i]) for i in range(retina_resolution.value.n_neurons)])))
