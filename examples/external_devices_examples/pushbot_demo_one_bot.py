@@ -22,7 +22,7 @@ import numpy as np
 UART_ID = 0
 
 # SpiNNaker link ID (IO Board connected to)
-spinnaker_link = 0
+spinnaker_link = 1
 
 # IP Address of the SpiNNaker board connected to (or None if only one)
 board_address = None  # "10.162.242.14" #"10.162.242.13" "192.168.240.1"
@@ -32,7 +32,7 @@ retina_resolution = \
     p.external_devices.PushBotRetinaResolution.DOWNSAMPLE_16_X_16
 
 # Simulation time [ms]
-simtime = 60000
+simtime = 240000
 
 # Simulate with 1 ms time step
 p.setup(1.0)
@@ -82,7 +82,8 @@ pushbot = p.Population(
 )
 
 # Retina population ( num of neurons:n_pixel*n_pixel*2 )
-pushbot_retina = p.Population(retina_resolution.value.n_neurons, retina_device)
+pushbot_retina = p.Population(
+    retina_resolution.value.n_neurons / 2, retina_device)
 
 
 # Network implementation
@@ -90,11 +91,11 @@ pushbot_retina = p.Population(retina_resolution.value.n_neurons, retina_device)
 # only the neurons receiving enough number of retina events to break the
 # inhibition will activate the relevant neurons to drive the robot
 exc_pop = p.Population(
-    retina_resolution.value.n_neurons,
+    retina_resolution.value.n_neurons / 2,
     p.IF_curr_exp(cm=0.75, tau_m=1.0),
     label='exc_pop')
 inh_pop = p.Population(
-    retina_resolution.value.n_neurons,
+    retina_resolution.value.n_neurons / 2,
     p.IF_curr_exp(cm=0.75, tau_m=1.0, i_offset=13, tau_refrac=0.01),
     label='inh_pop')
 
@@ -125,13 +126,13 @@ start_of_right = retina_resolution.value.pixels - n_conn
 end_of_right = retina_resolution.value.pixels
 
 # Connection weights for this connection list
-w_conn = 10
+w_conn = 20
 
 # Connection delays for this connection list
 d_conn = 1
 
 # Array containing id of each neuron
-arr = np.arange(retina_resolution.value.n_neurons)
+arr = np.arange(retina_resolution.value.n_neurons / 2)
 
 # Determines which neuron IDs are on the left group
 id_to_left = (arr % retina_resolution.value.pixels) < end_of_left
@@ -151,16 +152,19 @@ id_to_middle_up_3 = (
     (retina_resolution.value.pixels / 2))
 
 # The variable to determine which neuron IDs are on the middle-up
-id_to_middle_up = id_to_middle_up_1 & id_to_middle_up_2 & id_to_middle_up_3
+id_to_middle_up = id_to_middle_up_1 & id_to_middle_up_2  # & id_to_middle_up_3
 
 # Extracts the neuron IDs to be connected to the left neuron of driver_pop
 id_to_left = np.extract(id_to_left, arr)
+print "left =", id_to_left
 
 # Extracts the neuron IDs to be connected to the right neuron of driver_pop
 id_to_right = np.extract(id_to_right, arr)
+print "right =", id_to_right
 
 # Extracts the neuron IDs to be connected to the forward neuron of driver_pop
 id_to_middle_up = np.extract(id_to_middle_up, arr)
+print "middle =", id_to_middle_up
 
 # Conn list: (source neuron, target neuron, weight, delay)
 # Creates connection list to connect left neuron
@@ -170,17 +174,18 @@ conn_list_left = [(i, 0, w_conn, d_conn) for i in id_to_left]
 conn_list_right = [(i, 1, w_conn, d_conn) for i in id_to_right]
 
 # Creates connection list to connect forward neuron
-conn_list_middle_up = [(i, 2, w_conn / 2, d_conn) for i in id_to_middle_up]
+conn_list_middle_up = [(i, 2, w_conn, d_conn) for i in id_to_middle_up]
 
 # Concatenates the lists into one list
 conn_list = conn_list_left + conn_list_right + conn_list_middle_up
 
 # Winner-takes-all connections from driver_pop to motor neurons
-w_motor = 20
+w_motor = 0.1
 conn_motor_exc = [
-    (0, 1, w_motor, 1), (1, 0, w_motor, 1)] + [
-        (2, 0, w_motor, 1), (2, 1, w_motor, 1)]
-conn_motor_inh = [(0, 0, w_motor, 1), (1, 1, w_motor, 1)]
+    (0, 1, w_motor * 2, 1), (1, 0, w_motor * 2, 1)] # + [
+    #    (2, 0, w_motor, 1), (2, 1, w_motor, 1)]
+conn_motor_inh = [(0, 0, w_motor * 2, 1), (1, 1, w_motor * 2, 1)] + [
+    (2, 0, w_motor, 1), (2, 1, w_motor, 1)]
 
 # Creates connection list from retina population to exc_pop
 # Each neuron in retina population excites the neuron with the same ID in
@@ -224,9 +229,9 @@ p.Projection(
 ###########################################
 
 # Record spikes
-exc_pop.record(['spikes'])
-inh_pop.record(['spikes'])
-driver_pop.record(['spikes'])
+# exc_pop.record(['spikes'])
+# inh_pop.record(['spikes'])
+# driver_pop.record(['spikes'])
 
 # Record spikes and membrane potentials
 # driver_pop.record(['spikes','v'])
@@ -239,36 +244,40 @@ p.external_devices.activate_live_output_for(
 viewer.start()
 
 # Start simulation
-p.run(simtime)
+p.run_forever()
+# p.run(simtime)
 
-# Get event IDs and time from SpiNNaker
-spikes = exc_pop.get_data('spikes')
-spikes2 = inh_pop.get_data('spikes')
-spikes3 = driver_pop.get_data('spikes')
+viewer.join()
 
-# End simulation
 p.end()
 
-
-###########################################
-#  Plots
-###########################################
-
-plt.figure()
-Figure(
-    # raster plot of the presynaptic neuron spike times
-    Panel(spikes.segments[0].spiketrains,
-          yticks=True, markersize=0.4, xlim=(0, simtime)),
-    title="Retina")
-
-
-plt.show()
-
-# Number of events
-a = spikes3.segments[0].spiketrains
-ret = spikes.segments[0].spiketrains
-print(
-    '# of spikes for left driver neuron:{} and right driver neuron:{}'.format(
-        len(a[0]), len(a[1])))
-print('# of spikes for retina population: {}'.format(
-    sum([len(ret[i]) for i in range(retina_resolution.value.n_neurons)])))
+# # Get event IDs and time from SpiNNaker
+# spikes = exc_pop.get_data('spikes')
+# spikes2 = inh_pop.get_data('spikes')
+# spikes3 = driver_pop.get_data('spikes')
+#
+# # End simulation
+# p.end()
+#
+# ###########################################
+# #  Plots
+# ###########################################
+#
+# plt.figure()
+# Figure(
+#     # raster plot of the presynaptic neuron spike times
+#     Panel(spikes.segments[0].spiketrains,
+#           yticks=True, markersize=0.4, xlim=(0, simtime)),
+#     title="Retina")
+#
+#
+# plt.show()
+#
+# # Number of events
+# a = spikes3.segments[0].spiketrains
+# ret = spikes.segments[0].spiketrains
+# print(
+#     '# of spikes for left driver neuron:{} and right driver neuron:{}'.format(
+#         len(a[0]), len(a[1])))
+# print('# of spikes for retina population: {}'.format(
+#     sum([len(ret[i]) for i in range(retina_resolution.value.n_neurons)])))
