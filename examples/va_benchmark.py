@@ -80,7 +80,7 @@ assert tau_m == cm * Rm                # just to check
 n_exc = int(round((n * r_ei / (1 + r_ei))))  # number of excitatory cells
 n_inh = n - n_exc                            # number of inhibitory cells
 
-print n_exc, n_inh
+print("{} {}".format(n_exc, n_inh))
 
 w_exc = None
 w_inh = None
@@ -89,7 +89,7 @@ if benchmark == "COBA":
     celltype = p.IF_cond_exp
     w_exc = Gexc * 1e-3              # We convert conductances to uS
     w_inh = Ginh * 1e-3
-    print w_exc, w_inh
+    print("{} {}".format(w_exc, w_inh))
 elif benchmark == "CUBA":
     celltype = p.IF_curr_exp
     w_exc = 1e-3 * Gexc * (Erev_exc - v_mean)  # (nA) weight of exc synapses
@@ -117,10 +117,10 @@ if simulator_name == 'spiNNaker':
 np = 1
 
 host_name = socket.gethostname()
-print "Host #%d is on %s" % (np, host_name)
+print("Host #%d is on %s" % (np, host_name))
 
-print "%s Initialising the simulator with %d thread(s)..." % (
-    node_id, extra['threads'])
+print("%s Initialising the simulator with %d thread(s)..." % (
+    node_id, extra['threads']))
 
 cell_params = {'tau_m': tau_m,
                'tau_syn_E': tau_exc,
@@ -133,7 +133,7 @@ cell_params = {'tau_m': tau_m,
                'i_offset': 0
                }
 
-print cell_params
+print(cell_params)
 
 if (benchmark == "COBA"):
     cell_params['e_rev_E'] = Erev_exc
@@ -141,7 +141,7 @@ if (benchmark == "COBA"):
 
 timer.start()
 
-print "%s Creating cell populations..." % node_id
+print("%s Creating cell populations..." % node_id)
 exc_cells = p.Population(
     n_exc, celltype(**cell_params), label="Excitatory_Cells")
 inh_cells = p.Population(
@@ -156,13 +156,13 @@ if benchmark == "COBA":
     ext_conn = p.FixedProbabilityConnector(rconn)
     ext_stim.record("spikes")
 
-print "%s Initialising membrane potential to random values..." % node_id
+print("%s Initialising membrane potential to random values..." % node_id)
 rng = NumpyRNG(seed=rngseed, parallel_safe=parallel_safe)
 uniformDistr = RandomDistribution('uniform', [v_reset, v_thresh], rng=rng)
 exc_cells.set(v=uniformDistr)
 inh_cells.set(v=uniformDistr)
 
-print "%s Connecting populations..." % node_id
+print("%s Connecting populations..." % node_id)
 exc_conn = p.FixedProbabilityConnector(pconn, rng=rng)
 inh_conn = p.FixedProbabilityConnector(pconn, rng=rng)
 
@@ -189,16 +189,16 @@ if benchmark == "COBA":
         synapse_type=p.StaticSynapse(weight=0.1))
 
 # === Setup recording ===
-print "%s Setting up recording..." % node_id
+print("%s Setting up recording..." % node_id)
 exc_cells.record("spikes")
 
 buildCPUTime = timer.diff()
 
 # === Run simulation ===
-print "%d Running simulation..." % node_id
+print("%d Running simulation..." % node_id)
 
-print "timings: number of neurons:", n
-print "timings: number of synapses:", n * n * pconn
+print("timings: number of neurons: {}".format(n))
+print("timings: number of synapses: {}".format(n * n * pconn))
 
 p.run(tstop)
 
@@ -220,16 +220,16 @@ plt.show()
 writeCPUTime = timer.diff()
 
 if node_id == 0:
-    print "\n--- Vogels-Abbott Network Simulation ---"
-    print "Nodes                  : %d" % np
-    print "Simulation type        : %s" % benchmark
-    print "Number of Neurons      : %d" % n
-    print "Number of Synapses     : %s" % connections
-    print "Excitatory conductance : %g nS" % Gexc
-    print "Inhibitory conductance : %g nS" % Ginh
-    print "Build time             : %g s" % buildCPUTime
-    print "Simulation time        : %g s" % simCPUTime
-    print "Writing time           : %g s" % writeCPUTime
+    print("\n--- Vogels-Abbott Network Simulation ---")
+    print("Nodes                  : %d" % np)
+    print("Simulation type        : %s" % benchmark)
+    print("Number of Neurons      : %d" % n)
+    print("Number of Synapses     : %s" % connections)
+    print("Excitatory conductance : %g nS" % Gexc)
+    print("Inhibitory conductance : %g nS" % Ginh)
+    print("Build time             : %g s" % buildCPUTime)
+    print("Simulation time        : %g s" % simCPUTime)
+    print("Writing time           : %g s" % writeCPUTime)
 
 
 # === Finished with simulator ===

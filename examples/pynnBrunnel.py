@@ -112,7 +112,7 @@ nu_ex = eta * V_th / (J_E * C_E * tau_m)
 # nu_ex*C_E  the factor 1000.0 changes the units from
 # spikes per ms to spikes per second.
 p_rate = 1000.0 * nu_ex * C_E
-print "Rate is: %f HZ" % (p_rate / 1000)
+print("Rate is: %f HZ" % (p_rate / 1000))
 
 # Neural Parameters
 pynn.setup(timestep=1.0, min_delay=1.0, max_delay=16.0)
@@ -217,7 +217,7 @@ esp = E_pop.get_data("spikes")
 Figure(
     # raster plot of the presynaptic neuron spike times
     Panel(esp.segments[0].spiketrains,
-          yticks=True, markersize=01, xlim=(0, sim_time)),
+          yticks=True, markersize=1, xlim=(0, sim_time)),
     title="Simple synfire chain example",
     annotations="Simulated with {}".format(pynn.name())
 )
