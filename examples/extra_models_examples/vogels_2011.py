@@ -96,7 +96,7 @@ numpy.save("plastic_spikes.npy", plastic_spikes_numpy)
 plastic_weights = plastic_ie_projection.get('weight', 'array')
 # Weights(format="array")
 mean_weight = numpy.average(plastic_weights)
-print "Mean learnt ie weight:%f" % mean_weight
+print("Mean learnt ie weight:%f" % mean_weight)
 
 # Create plot
 fig, axes = pylab.subplots(3)
