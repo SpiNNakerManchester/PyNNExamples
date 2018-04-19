@@ -38,15 +38,15 @@ noise_rate = 10.#1.#
 duration = 360.0 * 1000.
 num_recordings = int(numpy.ceil(duration/4000))
 w2s =2.
-w_max = w2s/2.#w2s/10#w2s/stim_size#w2s/num_pattern_neurons#1.#1.#
+w_max = w2s/2.#2*w2s/num_pattern_neurons#w2s/10#w2s/stim_size#1.#1.#
 #start_weight = w_max/2.
 av_weight = w_max/2.
 ten_perc = av_weight/10.
 start_weight = RandomDistribution('uniform',(av_weight-ten_perc,av_weight+ten_perc))
 tau_plus=16#30.#16.7#
 tau_minus=30.#33.7
-a_plus = 0.01#0.001#0.005#0.005#0.0075#0.0015#0.0025#
-a_minus = 0.01#0.001#0.005#0.005#0.001#0.002#
+a_plus = 0.001#0.0001#1./32#0.005#0.001#0.0075#0.0015#0.0025#
+a_minus = 0.001#0.0001#1./32#0.005#0.001#0.001#0.002#
 max_tau_plus_delta,max_tau_minus_delta,min_w_delta = stdp_param_check(a_plus,a_minus,w_max,tau_minus,tau_plus)
 
 # SpiNNaker setup
@@ -55,18 +55,20 @@ sim.set_number_of_neurons_per_core(sim.SpikeSourcePoisson,32)
 sim.set_number_of_neurons_per_core(sim.IF_curr_exp,64)
 
 #sos_pattern = [1.,201.,401.,601.,1101.,1601.,1801.,2001.]
-fifty_ms_pattern = [27,34,4,35,46,42,29,0,47,49]#np.random.choice(50,10,replace = False)
+pattern_duration = 100
+pattern = [75, 36, 16,  0, 94, 24, 38, 92, 12,  2]#np.random.choice(pattern_duration,10,replace = False)#
+#fifty_ms_pattern = [27,34,4,35,46,42,29,0,47,49]#np.random.choice(50,10,replace = False)
 
 #pattern should occur at a rate of approx 6Hz
-pattern_rate = 1.#6.#
-num_pattern_presentations = int((duration/1000.)*pattern_rate)
-pattern_period = 1000./pattern_rate
+pattern_repeat_rate = 1.#0.1#6.#
+num_pattern_presentations = int((duration/1000.)*pattern_repeat_rate)
+pattern_repeat_period = 1000./pattern_repeat_rate
 stim_times = []
 for i in range(num_pattern_presentations):
-    #+- 100ms variation in pattern start time
-    random_variation = int(200*(np.random.rand()-0.5))
-    for beep in fifty_ms_pattern:
-        stim_times.append(beep+i*pattern_period+random_variation)
+    #variation in pattern start time, should not overlap
+    random_variation = int((pattern_repeat_period-pattern_duration)*(np.random.rand()-0.5))
+    for beep in pattern:
+        stim_times.append(beep+i*pattern_repeat_period+random_variation)
 
 max_pattern_spike = max(stim_times)
 
@@ -96,13 +98,20 @@ acinh2ac_proj = sim.Projection(target_inh,target_pop,sim.AllToAllConnector(),syn
 
 pattern_pop = sim.Population(1,sim.SpikeSourceArray(spike_times=stim_times))
 
+
 if num_pattern_neurons>0:
     ext_stim = sim.Population(
         stim_size - num_pattern_neurons, sim.SpikeSourcePoisson(rate=noise_rate, duration=duration),
         # stim_size, sim.SpikeSourcePoisson(rate=noise_rate, duration=duration*0.9),
         label="stim_poisson_{}Hz".format(noise_rate))
+
+    # noise2pattern_pop = sim.Population(
+    #     num_pattern_neurons, sim.SpikeSourcePoisson(rate=noise_rate, duration=duration*0.9),#90% duration to examine target pattern
+    #       label = "pattern_stim_poisson_{}Hz".format(noise_rate))
+
+    #increased pattern pop noise
     noise2pattern_pop = sim.Population(
-        num_pattern_neurons, sim.SpikeSourcePoisson(rate=noise_rate, duration=duration*0.9),#90 duration to examine target pattern
+        num_pattern_neurons, sim.SpikeSourcePoisson(rate=noise_rate*10, duration=duration * 0.9),
         label="pattern_stim_poisson_{}Hz".format(noise_rate))
 
     chosen_int = numpy.random.choice(stim_size,num_pattern_neurons,replace=False).tolist()
@@ -121,7 +130,7 @@ if num_pattern_neurons>0:
         noise2pattern_proj_list.append((noise_index,post))
         noise_index+=1
     pattern_proj = sim.Projection(pattern_pop,pre_pop,sim.FromListConnector(pattern_proj_list),synapse_type=sim.StaticSynapse(weight=w2s))
-    noise2pattern_proj = sim.Projection(noise2pattern_pop,pre_pop,sim.FromListConnector(noise2pattern_proj_list),synapse_type=sim.StaticSynapse(weight=w2s))
+    #noise2pattern_proj = sim.Projection(noise2pattern_pop,pre_pop,sim.FromListConnector(noise2pattern_proj_list),synapse_type=sim.StaticSynapse(weight=w2s))
     noise_proj = sim.Projection(ext_stim,pre_pop,sim.FromListConnector(noise_proj_list),synapse_type=sim.StaticSynapse(weight=w2s))
 
 else:
@@ -135,8 +144,8 @@ else:
 
 # Plastic Connection between pre_pop and post_pop
 stdp_model = sim.STDPMechanism(
-    #timing_dependence=sim.SpikePairRule(
-    timing_dependence=sim.extra_models.SpikeNearestPairRule(
+    timing_dependence=sim.SpikePairRule(
+    #timing_dependence=sim.extra_models.SpikeNearestPairRule(
         tau_plus=tau_plus, tau_minus=tau_minus, A_plus=a_plus, A_minus=a_minus),
     weight_dependence=sim.AdditiveWeightDependence(
         w_min=0.0, w_max=w_max), weight=start_weight)
@@ -148,7 +157,7 @@ stdp_proj=sim.Projection(
 weights = stdp_proj.get("weight", "list", with_address=True)
 
 #target noise for STDP stable tests
-#target_noise = sim.Population(1, sim.SpikeSourcePoisson(rate=1., duration=duration))
+target_noise = sim.Population(target_pop_size, sim.SpikeSourcePoisson(rate=noise_rate, duration=duration*0.9))
 #target_noise_proj = sim.Projection(target_noise,target_pop,sim.OneToOneConnector(),synapse_type=sim.StaticSynapse(weight=w2s))
 
 varying_weights=[]
@@ -187,7 +196,7 @@ num_recordings+=1
 weight = [weight for (pre, post, weight) in weights]
 
 print "max weight = {}, min weight = {}".format(max(weight),min(weight))
-print "pattern times: {}".format(fifty_ms_pattern)
+print "pattern times: {}".format(pattern)
 
 # print "----------Weight scaling + STDP parameters----------"
 # print "max_tau_plus:{}".format(max_tau_plus_delta), "max_tau_minus:{}".format(max_tau_minus_delta),\

@@ -495,7 +495,8 @@ def normal_dist_connection_builder(pre_size,post_size,RandomDistribution,
     conn_list = []
 
     for post in xrange(post_size):
-        mu = int(dist / 2) + post * dist
+        #mu = int(dist / 2) + post * dist
+        mu = dist / 2. + post * dist
         an2ch = RandomDistribution('normal', (mu, sigma), rng=rng)
         an_idxs = an2ch.next(n=conn_num)
         pre_check = []
@@ -507,10 +508,10 @@ def normal_dist_connection_builder(pre_size,post_size,RandomDistribution,
                         weight = conn_weight
                     else:#assumes rand dist
                         weight = conn_weight.next(n=1)
-                        if type(delay)!=float:
-                            conn_delay = delay.next(n=1)
-                        else:
-                            conn_delay = delay
+                    if type(delay)!=float:
+                        conn_delay = delay.next(n=1)
+                    else:
+                        conn_delay = delay
                     conn_list.append((pre, int(post), weight, conn_delay))
                 pre_check.append(pre)
 
