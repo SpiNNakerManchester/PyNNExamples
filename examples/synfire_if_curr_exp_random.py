@@ -45,7 +45,7 @@ p.Projection(input_pop, main_pop, p.FromListConnector(injectionConnection))
 
 main_pop.record(['v', 'gsyn_exc', 'gsyn_inh', 'spikes'])
 
-print "Running for {} ms".format(run_time)
+print("Running for {} ms".format(run_time))
 p.run(run_time)
 # get data (could be done as one, but can be done bit by bit as well)
 data = main_pop.get_data(['v', 'gsyn_exc', 'spikes', 'gsyn_inh'])
