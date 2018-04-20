@@ -66,7 +66,7 @@ v = sEMD.get_data(['v'])  # read membrane voltage
 current_exc = sEMD.get_data(['gsyn_exc'])  # read excitatory
 current_inh = sEMD.get_data(['gsyn_inh'])  # read inhibitory
 
-print datum
+print (datum)
 
 # plots
 Figure(
