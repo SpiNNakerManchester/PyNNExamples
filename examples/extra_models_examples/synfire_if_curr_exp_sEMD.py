@@ -72,7 +72,7 @@ print(datum)
 Figure(
     # raster plot of the presynaptic neuron spike times
     Panel(spikes.segments[0].spiketrains,
-          yticks=True, markersize=0.2, xlim=(0, run_time)),
+          yticks=True, markersize=1.5, xlim=(0, run_time)),
     # membrane potential of the postsynaptic neuron
     Panel(v.segments[0].filter(name='v')[0],
           ylabel="Membrane potential (mV)",
@@ -84,7 +84,7 @@ Figure(
           xlabel="Time (ms)", xticks=True,
           ylabel="gsyn inhibitory (mV)",
           data_labels=[sEMD.label], yticks=True, xlim=(0, run_time)),
-    title="Simple synfire chain example",
+    title="SEMD example",
     annotations="Simulated with {}".format(p.name())
 )
 plt.show()
