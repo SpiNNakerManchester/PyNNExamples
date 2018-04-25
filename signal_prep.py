@@ -352,20 +352,27 @@ def weight_dist_plot(varying_weights,num_ticks,plt,w_min,w_max,np=numpy,title=No
     # else:
     #     init_weights = varying_weights_array[0][:]
     #     fin_weights = varying_weights_array[-1][:]
-    initial_weights = numpy.array(varying_weights[0])
+    #assumes varying weights is a list of connectionsholders, for a distribution plot we don't care about the ids
+    v_weights = []
+    for neuron,reading in enumerate(varying_weights):
+        v_weights.append([])
+        for (pre, post, weight) in reading:
+            v_weights[neuron].append(weight)
+
+    initial_weights = numpy.array(v_weights[0])
     if len(initial_weights.shape) > 1:
         init_weights = []
         for weights in initial_weights:
             for weight in weights:
                 init_weights.append(weight)
-        final_weights = varying_weights[-1]
+        final_weights = v_weights[-1]
         fin_weights = []
         for weights in final_weights:
             for weight in weights:
                 fin_weights.append(weight)
     else:
-        init_weights = varying_weights[0]
-        fin_weights = varying_weights[-1]
+        init_weights = v_weights[0]
+        fin_weights = v_weights[-1]
     plt.figure(title)
     plt.hist(init_weights,bins=100,alpha=0.5,range=(w_min,w_max))
     plt.hist(fin_weights,bins=100,alpha=0.5,range=(w_min,w_max))
@@ -572,7 +579,7 @@ def neuron_correlation(spike_train,time_window, stimulus_onset_times,max_id,np=n
             counts[stimulus_index][id] += 1
         stimulus_index+=1
     selective_neuron_ids = []
-    significant_spike_count = 6.#np.mean(counts)
+    significant_spike_count = np.mean(counts)#6.#
     for i in range(len(counts)):
         id_count = 0
         selective_neuron_ids.append([])
