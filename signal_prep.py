@@ -2,6 +2,7 @@ import numpy
 import math
 from scipy.io import wavfile
 from scipy.signal import resample
+from matplotlib.ticker import FormatStrFormatter
 
 def generate_signal(signal_type="tone",fs=22050.,dBSPL=40.,
                     freq=3000.,duration=0.5,ramp_duration=0.003,
@@ -147,14 +148,18 @@ def psth_plot(plt,target_neuron_ids,spike_trains,bin_width,
     plt.xlabel("time (s)")
 
 def psth_plot_8(plt, target_neuron_ids, spike_trains, bin_width,
-              duration, scale_factor=0.001, title='PSTH'):
+              duration, scale_factor=0.001, title='PSTH',filepath=None):
     PSTH = generate_psth_8(target_neuron_ids, spike_trains, bin_width=bin_width,
                          duration=duration, scale_factor=scale_factor)
     x = numpy.linspace(0, duration, len(PSTH))
     plt.figure(title)
     plt.plot(x, PSTH)
+    max_rate = max(PSTH)
+    plt.ylim((0,max_rate+1))
     plt.ylabel("firing rate (sp/s)")
     plt.xlabel("time (s)")
+    if filepath is not None:
+        plt.savefig(filepath + '/{}.eps'.format(title))
 
 def spike_raster_plot(spikes,plt,duration,ylim,scale_factor=0.001,title=None):
     if len(spikes) > 0:
@@ -173,7 +178,7 @@ def spike_raster_plot(spikes,plt,duration,ylim,scale_factor=0.001,title=None):
         plt.ylabel("neuron ID")
         plt.xlabel("time (s)")
 
-def spike_raster_plot_8(spikes,plt,duration,ylim,scale_factor=0.001,title=None):
+def spike_raster_plot_8(spikes,plt,duration,ylim,scale_factor=0.001,title=None,filepath=None,xlim=None):
     if len(spikes) > 0:
         neuron_index = 1
         spike_ids = []
@@ -195,6 +200,11 @@ def spike_raster_plot_8(spikes,plt,duration,ylim,scale_factor=0.001,title=None):
         plt.xlim(0, duration)
         plt.ylabel("neuron ID")
         plt.xlabel("time (s)")
+        if xlim is not None:
+            plt.xlim(xlim)
+        if filepath is not None:
+            plt.savefig(filepath + '/{}.eps'.format(title))
+
 
 def multi_spike_raster_plot(spikes_list,plt,duration,ylim,scale_factor=0.001,marker_size=3,dopamine_spikes=[],title=''):
     plt.figure(title)
@@ -278,7 +288,7 @@ def weight_array_to_group_list(weight_array,from_ids,to_ids):
 #             plt.ylim(0,ylim)
 #             count+=1
 
-def vary_weight_plot(varying_weights,ids,stim_ids,duration,plt,num_recs,np,ylim,title=''):
+def vary_weight_plot(varying_weights,ids,stim_ids,duration,plt,num_recs,np,ylim,title='',filepath=None):
     if len(varying_weights)!=num_recs:
         raise Exception("incorrect number of weight recordings taken (num_recs={}, len(varyingweights={})".format(num_recs,len(varying_weights)))
     if len(ids)>0:
@@ -286,14 +296,18 @@ def vary_weight_plot(varying_weights,ids,stim_ids,duration,plt,num_recs,np,ylim,
         sr = math.sqrt(len(ids))
         num_cols = np.ceil(sr)
         num_rows = np.ceil(len(ids)/num_cols)
+        if num_rows >1 and num_cols > 1:
+            figsize = (5*num_cols,3*num_rows)
+        else:
+            figsize = (8,6)
 
         if stim_ids:
-            plt.figure(title)
+            plt.figure(title,figsize=figsize)
             plt.suptitle("non-pattern synapse weight updates for post neurons")
-            plt.figure(title + "pattern")
+            plt.figure(title + "pattern",figsize=figsize)
             plt.suptitle("pattern synapse weight updates for post neurons")
         else:
-            plt.figure(title)
+            plt.figure(title,figsize=figsize)
             plt.suptitle("synapse weight updates for post neurons")
 
         count=0
@@ -319,6 +333,9 @@ def vary_weight_plot(varying_weights,ids,stim_ids,duration,plt,num_recs,np,ylim,
                 for t in id_times:
                     plt.plot(repeats,t)
                 label = plt.ylabel("ID:{}".format(str(id+1)))
+                plt.gca().yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
+                plt.xticks(np.linspace(0,duration,5))
+                plt.yticks(np.linspace(0,ylim,3))
                 plt.xlim(0,duration)
                 plt.ylim(0,ylim)
             if id_times_pattern:
@@ -330,12 +347,22 @@ def vary_weight_plot(varying_weights,ids,stim_ids,duration,plt,num_recs,np,ylim,
                     for t in id_times_pattern:
                         plt.plot(repeats, t)
                 label = plt.ylabel("ID:{}".format(str(id + 1)))
+                plt.gca().yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
+                plt.xticks(np.linspace(0,duration,5))
+                plt.yticks(np.linspace(0,ylim,3))
                 plt.xlim(0, duration)
                 plt.ylim(0, ylim)
             #else:
             #    plt.plot(repeats,id_times)
             count+=1
-def weight_dist_plot(varying_weights,num_ticks,plt,w_min,w_max,np=numpy,title=None):
+        if filepath is not None:
+            plt.figure(title)
+            plt.savefig(filepath+'/non_pattern_weights.eps')
+            if stim_ids:
+                plt.figure(title + "pattern")
+                plt.savefig(filepath+'/pattern_weights.eps')
+
+def weight_dist_plot(varying_weights,num_ticks,plt,w_min,w_max,np=numpy,title=None,filepath=None):
     #varying_weights_array = np.array(varying_weights)
     #initial_weights = varying_weights_array[0][:]
     # init_weights = []
@@ -377,6 +404,11 @@ def weight_dist_plot(varying_weights,num_ticks,plt,w_min,w_max,np=numpy,title=No
     plt.hist(init_weights,bins=100,alpha=0.5,range=(w_min,w_max))
     plt.hist(fin_weights,bins=100,alpha=0.5,range=(w_min,w_max))
     plt.legend(["first recording", "last recording"])
+    plt.ylabel("number of synapses")
+    plt.xlabel("weight of synapse")
+    if filepath is not None:
+        plt.savefig(filepath + '/stdp_weight_distribution.eps')
+
 
 def cell_voltage_plot_8(v, plt, duration_ms, time_step_ms,scale_factor=0.001, id=0, title=''):
     times = range(0,int(duration_ms),int(time_step_ms))
@@ -553,7 +585,7 @@ def stimulus_onset_detector(spike_train_an_ms,num_an_fibres,duration,num_classes
 # stimulus onset times is a list of onset times lists for each stimulus
 # expected time window values of 0.5s - 1s
 # spike time is the output skies from a population, format: [(neuron_id,spike_time),(...),...]
-def neuron_correlation(spike_train,time_window, stimulus_onset_times,max_id,np=numpy):
+def neuron_correlation(spike_train,time_window, stimulus_onset_times,max_id,np=numpy,significant_spike_count=None):
     correlations = []#1st dimension is stimulus class
     #counts = np.asarray([np.zeros(max_id + 1), np.zeros(max_id + 1)])
     counts=[]
@@ -579,7 +611,8 @@ def neuron_correlation(spike_train,time_window, stimulus_onset_times,max_id,np=n
             counts[stimulus_index][id] += 1
         stimulus_index+=1
     selective_neuron_ids = []
-    significant_spike_count = np.mean(counts)#6.#
+    if significant_spike_count is None:
+        significant_spike_count = np.mean(counts)#6.#
     for i in range(len(counts)):
         id_count = 0
         selective_neuron_ids.append([])
@@ -597,3 +630,40 @@ def neuron_correlation(spike_train,time_window, stimulus_onset_times,max_id,np=n
                     selective_neuron_ids[i].append(id_count)
             id_count += 1
     return np.asarray(counts),selective_neuron_ids,significant_spike_count#correlations
+
+def selective_neuron_search(pattern_spikes,spike_train,duration,time_window,final_pattern_period,plt,filepath=None,np=numpy,significant_spike_count=None):
+
+    #take final 10% of pattern spikes
+    stimulus_times=[]
+    for pattern in pattern_spikes:
+        stimulus_times.append([time for time in pattern if time>final_pattern_period])
+
+    max_id = len(spike_train)
+    counts,selective_neuron_ids,significant_spike_count = neuron_correlation(np.asarray(spike_train),time_window,
+                                                                             stimulus_times,max_id,significant_spike_count=significant_spike_count)
+
+    print "significant spike count: {}".format(significant_spike_count)
+    max_count = counts.max()
+    plt.figure(figsize=(20,10))
+    title = "{}ms post-stimulus spike count for target layer".format(time_window)
+    plt.title(title)
+    plt.xlabel("neuron ID")
+    plt.ylabel("spike count")
+    plt.plot(counts.T)
+    legend_string=[]
+    for i in range(len(stimulus_times)):
+        legend_string.append("stimulus {}".format(i+1))
+    plt.legend(legend_string)
+    plt.ylim((0,max_count+1))
+
+    for i in range(len(selective_neuron_ids)):
+        print selective_neuron_ids[i]
+
+    if filepath is not None:
+        plt.savefig(filepath+"/{}.eps".format(title))
+        import csv
+        from itertools import izip_longest
+        with open(filepath+"/selective_neurons.csv","w+") as f:
+            writer = csv.writer(f)
+            for values in izip_longest(*selective_neuron_ids):
+                writer.writerow(values)
