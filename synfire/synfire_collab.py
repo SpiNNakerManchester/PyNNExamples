@@ -61,5 +61,5 @@ if __name__ == '__main__':
             offset += n_neurons
         pylab.savefig("results.png")
     except Exception as ex:
-        print ex
-        print spikes
+        print(ex)
+        print(spikes)

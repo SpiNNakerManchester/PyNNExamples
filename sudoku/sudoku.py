@@ -26,9 +26,9 @@ def read_output(visualiser, out):
     while result is None:
         line = out.readline()
         if line:
-            print line
+            print(line)
         result = visualiser.poll()
-    print "Visualiser exited: {} - quitting".format(result)
+    print("Visualiser exited: {} - quitting".format(result))
     global running
     global ended
     if running and not ended:
@@ -64,10 +64,10 @@ def activate_visualiser(old_vis):
         #        args=[visualiser, visualiser.stdout]).start()
     except Exception:
         if not old_vis:
-            print "This example depends on " \
-                  "https://github.com/SpiNNakerManchester/sPyNNakerVisualisers"
+            print("This example depends on https://github.com/"
+                  "SpiNNakerManchester/sPyNNakerVisualisers")
             traceback.print_exc()
-            print "trying old visualiser"
+            print("trying old visualiser")
             activate_visualiser(old_vis=True)
         else:
             raise
@@ -76,7 +76,7 @@ def activate_visualiser(old_vis):
 activate_visualiser(old_vis=("OLD_VIS" in os.environ))
 
 p.setup(timestep=1.0)
-print "Creating Sudoku Network..."
+print("Creating Sudoku Network...")
 n_cell = int(90 * fact)   # total number of neurons in a cell
 n_stim = 30               # number of neurons in each stimulation source
 n_N = n_cell / 9          # number of neurons per value in cell
@@ -205,7 +205,7 @@ cell_params_lif = {
     'spikes_per_second': 200
 }
 
-print "Creating Populations..."
+print("Creating Populations...")
 cells = p.Population(n_total, p.IF_curr_exp, cell_params_lif, label="Cells")
 cells.record("spikes")
 ext.activate_live_output_for(cells, tag=1, port=17897)
@@ -213,7 +213,7 @@ ext.activate_live_output_for(cells, tag=1, port=17897)
 #
 # add a noise source to each cell
 #
-print "Creating Noise Sources..."
+print("Creating Noise Sources...")
 noise = p.Population(
     n_total, p.SpikeSourcePoisson,
     {"rate": 20.0},
@@ -225,7 +225,7 @@ p.Projection(noise, cells, p.OneToOneConnector(),
 #
 # set up the cell internal inhibitory connections
 #
-print "Setting up cell inhibition..."
+print("Setting up cell inhibition...")
 connections = list()
 for x in range(9):
     for y in range(9):
@@ -258,7 +258,7 @@ def interCell(x, y, r, c, connections):
     connections.extend(connections_intC)
 
 
-print "Setting up inhibition between cells..."
+print("Setting up inhibition between cells...")
 for x in range(9):
     for y in range(9):
         for r in range(9):
@@ -277,7 +277,7 @@ p.Projection(cells, cells, conn_intC, receptor_type="inhibitory")
 #
 # set up & connect the initial (stimulation) conditions
 #
-print "Fixing initial numbers..."
+print("Fixing initial numbers...")
 s = 0
 connections_stim = []
 for x in range(9):
