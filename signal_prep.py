@@ -178,7 +178,8 @@ def spike_raster_plot(spikes,plt,duration,ylim,scale_factor=0.001,title=None):
         plt.ylabel("neuron ID")
         plt.xlabel("time (s)")
 
-def spike_raster_plot_8(spikes,plt,duration,ylim,scale_factor=0.001,title=None,filepath=None,xlim=None):
+def spike_raster_plot_8(spikes,plt,duration,ylim,scale_factor=0.001,title=None,filepath=None,xlim=None,
+                        pattern_times=None,pattern_duration=None):
     if len(spikes) > 0:
         neuron_index = 1
         spike_ids = []
@@ -200,10 +201,34 @@ def spike_raster_plot_8(spikes,plt,duration,ylim,scale_factor=0.001,title=None,f
         plt.xlim(0, duration)
         plt.ylabel("neuron ID")
         plt.xlabel("time (s)")
+
+        if pattern_times is not None:
+            #obtain onset times for pattern
+            onset_times=[]
+            for i,stimulus in enumerate(pattern_times):
+                onset_times.append([])
+                onset=0
+                for time in stimulus:
+                    if time>=onset:
+                        onset_times[i].append(time * scale_factor)
+                        onset = time+pattern_duration
+            #plot block of translucent colour per pattern
+            ax = plt.gca()
+            pattern_legend=[]
+            legend_labels=[]
+            colours = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'w']
+            for i,pattern in enumerate(onset_times):
+                pattern_legend.append(plt.Line2D([0], [0], color=colours[i%8], lw=4,alpha=0.2))
+                legend_labels.append("pattern {}".format(i+1))
+                for onset in pattern:
+                    x_block = (onset,onset+scale_factor*pattern_duration)
+                    ax.fill_between(x_block,ylim,alpha=0.2,facecolor=colours[i%8],lw=0)
+            plt.legend(pattern_legend,legend_labels,bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
+                        ncol=len(onset_times), mode="expand", borderaxespad=0.)
         if xlim is not None:
             plt.xlim(xlim)
         if filepath is not None:
-            plt.savefig(filepath + '/{}.eps'.format(title))
+            plt.savefig(filepath + '/{}.pdf'.format(title))#switched to pdf as using transparent images
 
 
 def multi_spike_raster_plot(spikes_list,plt,duration,ylim,scale_factor=0.001,marker_size=3,dopamine_spikes=[],title=''):
@@ -407,7 +432,7 @@ def weight_dist_plot(varying_weights,num_ticks,plt,w_min,w_max,np=numpy,title=No
     plt.ylabel("number of synapses")
     plt.xlabel("weight of synapse")
     if filepath is not None:
-        plt.savefig(filepath + '/stdp_weight_distribution.eps')
+        plt.savefig(filepath + '/stdp_weight_distribution.pdf')#switched to pdf as using transparent images
 
 
 def cell_voltage_plot_8(v, plt, duration_ms, time_step_ms,scale_factor=0.001, id=0, title=''):
@@ -600,12 +625,10 @@ def neuron_correlation(spike_train,time_window, stimulus_onset_times,max_id,np=n
         #         if spike_time > time and spike_time <= (time + time_window) and (neuron_id,time) not in correlations[stimulus_index]:
         #             correlations[stimulus_index].append((neuron_id,time))
         for time in stimulus:
-            neuron_id=1
-            for neuron in spike_train:
+            for neuron_id,neuron in enumerate(spike_train):
                 for spike_time in neuron:
-                    if spike_time > time and spike_time <= (time + time_window) and (neuron_id,time) not in correlations[stimulus_index]:
-                        correlations[stimulus_index].append((neuron_id,time))
-                neuron_id+=1
+                    if spike_time > time and spike_time <= (time + time_window) and (neuron_id+1,spike_time) not in correlations[stimulus_index]:
+                        correlations[stimulus_index].append((neuron_id+1,spike_time))
 
         for (id,time) in correlations[stimulus_index]:
             counts[stimulus_index][id] += 1
@@ -631,15 +654,28 @@ def neuron_correlation(spike_train,time_window, stimulus_onset_times,max_id,np=n
             id_count += 1
     return np.asarray(counts),selective_neuron_ids,significant_spike_count#correlations
 
-def selective_neuron_search(pattern_spikes,spike_train,duration,time_window,final_pattern_period,plt,filepath=None,np=numpy,significant_spike_count=None):
+def selective_neuron_search(pattern_spikes,spike_train,time_window,final_pattern_start,
+                            plt,filepath=None,np=numpy,significant_spike_count=None):
 
     #take final 10% of pattern spikes
     stimulus_times=[]
     for pattern in pattern_spikes:
-        stimulus_times.append([time for time in pattern if time>final_pattern_period])
+        stimulus_times.append([time for time in pattern if time>=final_pattern_start])
+    final_spike_train=[]
+    for train in spike_train:
+        final_spike_train.append([time for time in train if time>=final_pattern_start])
+
+    # onset_times = []
+    # for i, stimulus in enumerate(stimulus_times):
+    #     onset_times.append([])
+    #     onset = 0
+    #     for time in stimulus:
+    #         if time >= onset:
+    #             onset_times[i].append(time)
+    #             onset = time + pattern_duration
 
     max_id = len(spike_train)
-    counts,selective_neuron_ids,significant_spike_count = neuron_correlation(np.asarray(spike_train),time_window,
+    counts,selective_neuron_ids,significant_spike_count = neuron_correlation(final_spike_train,time_window,
                                                                              stimulus_times,max_id,significant_spike_count=significant_spike_count)
 
     print "significant spike count: {}".format(significant_spike_count)
