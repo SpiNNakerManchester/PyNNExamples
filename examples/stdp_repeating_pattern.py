@@ -45,7 +45,7 @@ cell_params = {'cm': 0.25,  # nF
 
 #simulation parameters
 stim_size = 1000
-target_pop_size = 256
+target_pop_size = 32#128
 num_pattern_neurons = 10#20#100#stim_size*0.1#100#
 max_sync_pattern_neurons = num_pattern_neurons/2.
 p_connect = 0.35#0.6#1.0#
@@ -54,7 +54,7 @@ p_response=probability_of_one_post_respond_to_stimulus(p_connect=p_connect,n_pat
 # if p_response<1.:
 #     raise IOError("the probability that one post neuron will respond to a pattern is {} reconsider simulation parameters".format(p_response))
 number_of_firings_per_pattern =50#10#1# TODO: get to root of this max limit
-num_patterns =6#1#5#
+num_patterns =2#1#5#
 noise_rate = 20.#20.#1.#TODO:derive equation for the ratio of this and num_pattern_neurons (SNR) from fan in
 #num_recordings = 10#2#
 duration = 360. * 1000.
@@ -263,24 +263,33 @@ print "max weight = {}, min weight = {}".format(max(weight),min(weight))
 for i,pattern in enumerate(stim_times):
     print "pattern {} times: {}".format(i+1,pattern)
 print "p response: {}".format(p_response)
+# obtain onset times for pattern
+onset_times = []
+for i, stimulus in enumerate(stim_times):
+    onset_times.append([])
+    onset = 0
+    for time in stimulus:
+        if time >= onset:
+            onset_times[i].append(time * 0.001)
+            onset = time + pattern_duration
 if target_pop_size <= 100:
     vary_weight_plot(varying_weights,range(int(target_pop_size)),chosen_int,duration/1000.,
                              plt,np=numpy,num_recs=num_recordings,ylim=w_max+(w_max/10.),filepath=results_directory)
 
     spike_raster_plot_8(target_data.segments[0].spiketrains,plt,duration/1000.,target_pop_size+1,0.001,
-                        title="target pop activity",filepath=results_directory,pattern_times=stim_times,pattern_duration=pattern_duration)
+                        title="target pop activity",filepath=results_directory,onset_times=onset_times,pattern_duration=pattern_duration)
     spike_raster_plot_8(target_data.segments[0].spiketrains,plt,duration/1000.,target_pop_size+1,0.001,
                         title="target pop final activity",filepath=results_directory,xlim=(0.001*(final_pattern_start_time-1),0.001*duration),
-                        pattern_times=stim_times,pattern_duration=pattern_duration)
+                        onset_times=onset_times,pattern_duration=pattern_duration)
 else:
     #vary_weight_plot(varying_weights,range(100),chosen_int,duration/1000.,
     # vary_weight_plot(varying_weights,chosen_int,chosen_int,duration/1000.,
     #                          plt,np=numpy,num_recs=num_recordings,ylim=w_max+(w_max/10.))
     spike_raster_plot_8(target_data.segments[0].spiketrains,plt,duration/1000.,target_pop_size+1,0.001,
-                        title="target pop activity",filepath=results_directory,pattern_times=stim_times,pattern_duration=pattern_duration)
+                        title="target pop activity",filepath=results_directory,pattern_times=onset_times,pattern_duration=pattern_duration)
     spike_raster_plot_8(target_data.segments[0].spiketrains,plt,duration/1000.,target_pop_size+1,0.001,
                         title="target pop final activity",filepath=results_directory,xlim=(0.001*(final_pattern_start_time-1),0.001*duration),
-                        pattern_times=stim_times,pattern_duration=pattern_duration)
+                        pattern_times=onset_times,pattern_duration=pattern_duration)
 
 weight_dist_plot(varying_weights,1,plt,0.0,w_max,title="pre-pop weight distribution",filepath=results_directory)
 selective_neuron_search(stim_times,target_data.segments[0].spiketrains,time_window=3.,

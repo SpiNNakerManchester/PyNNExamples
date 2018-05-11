@@ -2,17 +2,19 @@ import numpy as np
 from signal_prep import *
 import matplotlib.pylab as plt
 from scipy.io import loadmat
+from itertools import izip_longest
+import csv
 
 pattern_spikes = np.load('./pattern_spikes.npy')
 #max_time = int(max(pattern_spikes)/1000.)
-duration = 60000
+duration = 120*1000
 num_pattern_firings = 10
 #pattern_b_spikes = np.load('./pattern_b_spikes.npy')
 #take final 10% of pattern spikes 60*10*0.9:60*10
 stimulus_times=[]
 for pattern in pattern_spikes:
     #stimulus_times.append(pattern[duration*num_pattern_firings*0.9:duration*num_pattern_firings-1].tolist())
-    stimulus_times.append(pattern[pattern>duration*0.9])
+    stimulus_times.append([time for time in pattern if time > duration * 0.9])
 #stimulus_times.append(pattern_b_spikes[60*10*0.9:60*10-1].tolist())
 
 spike_train = np.load('./target_spikes.npy')
@@ -46,4 +48,8 @@ plt.ylim((0,max_count+1))
 for i in range(len(selective_neuron_ids)):
     print selective_neuron_ids[i]
 
+with open("selective_neurons.csv","w+") as f:
+    writer = csv.writer(f)
+    for values in izip_longest(*selective_neuron_ids):
+        writer.writerow(values)
 plt.show()

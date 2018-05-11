@@ -74,7 +74,7 @@ def generate_signal(signal_type="tone",fs=22050.,dBSPL=40.,
         signal[-i] *= ramp
     if silence:
         # add silence
-        num_silence_samples = numpy.ceil(fs*silence_duration)
+        num_silence_samples = int(numpy.ceil(fs*silence_duration))
         signal = numpy.concatenate((numpy.zeros(num_silence_samples),signal,numpy.zeros(num_silence_samples)))
 
     if plt:
@@ -179,7 +179,7 @@ def spike_raster_plot(spikes,plt,duration,ylim,scale_factor=0.001,title=None):
         plt.xlabel("time (s)")
 
 def spike_raster_plot_8(spikes,plt,duration,ylim,scale_factor=0.001,title=None,filepath=None,xlim=None,
-                        pattern_times=None,pattern_duration=None):
+                        onset_times=None,pattern_duration=None):
     if len(spikes) > 0:
         neuron_index = 1
         spike_ids = []
@@ -202,16 +202,7 @@ def spike_raster_plot_8(spikes,plt,duration,ylim,scale_factor=0.001,title=None,f
         plt.ylabel("neuron ID")
         plt.xlabel("time (s)")
 
-        if pattern_times is not None:
-            #obtain onset times for pattern
-            onset_times=[]
-            for i,stimulus in enumerate(pattern_times):
-                onset_times.append([])
-                onset=0
-                for time in stimulus:
-                    if time>=onset:
-                        onset_times[i].append(time * scale_factor)
-                        onset = time+pattern_duration
+        if onset_times is not None:
             #plot block of translucent colour per pattern
             ax = plt.gca()
             pattern_legend=[]
@@ -337,8 +328,11 @@ def vary_weight_plot(varying_weights,ids,stim_ids,duration,plt,num_recs,np,ylim,
 
         count=0
         for id in ids:
+            if stim_ids:
+                id_times_pattern = [[] for _ in range(num_recs)]
+            else:
+                id_times_pattern = []
             id_times = [[] for _ in range(num_recs)]
-            id_times_pattern = [[] for _ in range(num_recs)]
             rec_index = 0
             for reading in varying_weights:
                 for (pre, post, weight) in reading:
@@ -580,12 +574,39 @@ def normal_dist_connection_builder(pre_size,post_size,RandomDistribution,
                 pre_check.append(pre)
 
     return conn_list
+#find stimulus onset times from audio signal
+def audio_stimulus_onset_detector(audio_signal,Fs,num_classes):
+    import numpy as np
+    #average samples over previous 10ms absolute values
+    num_10ms_samples = Fs*0.01
+    envelope_upper_threshold = 0.00005
+    envelope_lower_threshold = 0.00002
+    stimulus_times = []
+    for j in range(num_classes):
+        stimulus_times.append([])
+    class_index=0
+    triggered = False
+    for i,sample in enumerate(audio_signal):
+        if i>=num_10ms_samples:
+            envelope = np.mean(np.absolute(audio_signal[int(i-num_10ms_samples):i]))
+            if envelope > envelope_upper_threshold and triggered == False:
+                stimulus_times[class_index].append(i/Fs)
+                if class_index < (num_classes - 1):
+                    class_index += 1
+                else:
+                    class_index = 0
+                triggered = True
+            if envelope < envelope_lower_threshold and triggered == True:
+                triggered = False
 
+    return  stimulus_times
 #find stimulus onset times from AN spikes
+#assumes interleaved class presentations (a,b,c,a,b,c)
 def stimulus_onset_detector(spike_train_an_ms,num_an_fibres,duration,num_classes):
     #calculate psth with 10ms bin widths across all AN fibres to get average full spectrum response
-    PSTH = generate_psth(range(num_an_fibres), spike_train_an_ms, bin_width=0.01,
+    PSTH = generate_psth_8(range(num_an_fibres), spike_train_an_ms, bin_width=0.01,
                          duration=duration, scale_factor=0.001)
+
     stimulus_times = []
     for j in range(num_classes):
         stimulus_times.append([])
