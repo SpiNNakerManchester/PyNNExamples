@@ -7,7 +7,7 @@ from matplotlib.ticker import FormatStrFormatter
 def generate_signal(signal_type="tone",fs=22050.,dBSPL=40.,
                     freq=3000.,duration=0.5,ramp_duration=0.003,
                     silence_duration=0.05,modulation_freq=0.,
-                    modulation_depth=1.,plt=None,file_name=None, silence=True,title=''):
+                    modulation_depth=1.,plt=None,file_name=None, silence=True,title='',ascending=True):
     T = 1./fs
     amp = 1. * 28e-6 * 10. ** (dBSPL / 20.)
     num_samples = numpy.ceil(fs * duration)
@@ -33,7 +33,8 @@ def generate_signal(signal_type="tone",fs=22050.,dBSPL=40.,
             phi = phi + delta
             f = f + f_delta
             delta = 2. * numpy.pi * f * T
-
+	if not ascending:
+	    signal = signal[::-1]
     elif signal_type == "file":
         #silence = False
         if file_name:
@@ -49,8 +50,8 @@ def generate_signal(signal_type="tone",fs=22050.,dBSPL=40.,
             signal = numpy.float32(signal)
             max_val=numpy.max(numpy.abs(signal))
             for i in range(len(signal)):
-                if signal[i] == max_val:
-                    print
+                # if signal[i] == max_val:
+                #     print
                 signal[i]/=max_val
                 signal[i]*=-amp #set loudness
         else:
@@ -429,12 +430,18 @@ def weight_dist_plot(varying_weights,num_ticks,plt,w_min,w_max,np=numpy,title=No
         plt.savefig(filepath + '/stdp_weight_distribution.pdf')#switched to pdf as using transparent images
 
 
-def cell_voltage_plot_8(v, plt, duration_ms, time_step_ms,scale_factor=0.001, id=0, title=''):
+def cell_voltage_plot_8(v, plt, duration_ms, time_step_ms,scale_factor=0.001, id=None, title=''):
     times = range(0,int(duration_ms),int(time_step_ms))
     scaled_times = [time*scale_factor for time in times]
-    membrane_voltage = v[id]
-    plt.figure(title + str(id + 1))
-    plt.plot(scaled_times, membrane_voltage)
+    membrane_voltage = v[0]
+    if id is not None:
+        mem_v = [v_t[id] for v_t in membrane_voltage]
+        title = title + str(id + 1)
+    else:
+        mem_v = membrane_voltage
+        title = title + "{} neurons".format(membrane_voltage.shape[1])
+    plt.figure(title)
+    plt.plot(scaled_times, mem_v)
 
 def cell_voltage_plot(v,plt,duration,scale_factor=0.001,id=0,title=''):
         times = [i[1] for i in v if i[0]==id]
@@ -451,16 +458,16 @@ def distance_dependent_connectivity(pop_size,weights,delays,min_increment=0,max_
         #
         increment = numpy.unique(
             numpy.round(abs(numpy.random.normal(loc=0, scale=numpy.sqrt(max_increment - 1), size=max_increment))))
-        increment = increment[(increment >= min_increment) & (increment < max_increment)]
-        for inc in increment:
+        limited_increment = [inc for inc in increment if inc >= min_increment and inc < max_increment]#increment[(increment >= min_increment) & (increment < max_increment)]
+        for inc in limited_increment:
             post_index = pre_index + inc
             if post_index < pop_size:
                 conns.append((pre_index, post_index, weights[int(inc)],delays[int(inc)]))
 
         rev_increment = numpy.unique(
             numpy.round(abs(numpy.random.normal(loc=0, scale=numpy.sqrt(max_increment - 1), size=max_increment))))
-        rev_increment = rev_increment[(rev_increment >= min_increment) & (rev_increment < max_increment)]
-        for r_inc in rev_increment:
+        limited_rev_increment = [inc for inc in rev_increment if inc >= min_increment and inc < max_increment]#rev_increment[(rev_increment >= min_increment) & (rev_increment < max_increment)]
+        for r_inc in limited_rev_increment:
             rev_post_index = pre_index - r_inc
             if rev_post_index >= 0:
                 conns.append((pre_index, rev_post_index, weights[int(r_inc)],delays[int(r_inc)]))
@@ -501,8 +508,8 @@ def test_filter(audio_data,b0,b1,b2,a0,a1,a2):
     past_concha=numpy.zeros(2)
     concha=numpy.zeros(len(audio_data))
     for i in range(441,len(audio_data)):
-        if i>=1202:
-            print ''
+        # if i>=1202:
+            # print ''
         concha[i]=(b0 * audio_data[i]
                   + b1 * audio_data[i-1]#past_input[0]
                   + b2 * audio_data[i-2]#past_input[1]
@@ -629,8 +636,7 @@ def stimulus_onset_detector(spike_train_an_ms,num_an_fibres,duration,num_classes
     return stimulus_times
 
 # stimulus onset times is a list of onset times lists for each stimulus
-# expected time window values of 0.5s - 1s
-# spike time is the output skies from a population, format: [(neuron_id,spike_time),(...),...]
+# spike time is the output spikes from a population
 def neuron_correlation(spike_train,time_window, stimulus_onset_times,max_id,np=numpy,significant_spike_count=None):
     correlations = []#1st dimension is stimulus class
     #counts = np.asarray([np.zeros(max_id + 1), np.zeros(max_id + 1)])
@@ -685,15 +691,6 @@ def selective_neuron_search(pattern_spikes,spike_train,time_window,final_pattern
     final_spike_train=[]
     for train in spike_train:
         final_spike_train.append([time for time in train if time>=final_pattern_start])
-
-    # onset_times = []
-    # for i, stimulus in enumerate(stimulus_times):
-    #     onset_times.append([])
-    #     onset = 0
-    #     for time in stimulus:
-    #         if time >= onset:
-    #             onset_times[i].append(time)
-    #             onset = time + pattern_duration
 
     max_id = len(spike_train)
     counts,selective_neuron_ids,significant_spike_count = neuron_correlation(final_spike_train,time_window,
