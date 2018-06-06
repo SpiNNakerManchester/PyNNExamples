@@ -65,11 +65,6 @@ min_delay = 1.
 max_delay = 51.
 stdp_delays = RandomDistribution('uniform',(min_delay,max_delay))#1.#
 
-# SpiNNaker setup
-sim.setup(timestep=1.0, min_delay=1.0, max_delay=max_delay)
-sim.set_number_of_neurons_per_core(sim.SpikeSourceArray,32)
-sim.set_number_of_neurons_per_core(sim.IF_curr_exp,16)
-
 Fs = 22050.
 # audio_data = generate_signal(signal_type='file',dBSPL=40.,fs=Fs,ramp_duration=0.01,silence=True,silence_duration=0.1,
 #                              file_name='../../OME_SpiNN/1speakers_{}numbers_300repeats.wav'.format(num_patterns),plt=None)#10speakers_2numbers_5repeats.wav
@@ -96,11 +91,16 @@ for train in stim_times:
     if train.size>0 and train.max()>duration:
         duration = train.max()
 duration=duration.item()
-duration  = 120*1000.
+duration  = 180*1000.
 final_pattern_start_time = duration*0.9
 
 stim_size = stim_times.size
 num_recordings = int(numpy.ceil(duration/4000))
+
+# SpiNNaker setup
+sim.setup(timestep=1.0, min_delay=1.0, max_delay=max_delay)
+sim.set_number_of_neurons_per_core(sim.SpikeSourceArray,32)
+sim.set_number_of_neurons_per_core(sim.IF_curr_exp,16)
 
 pre_pop = sim.Population(stim_size,sim.IF_curr_exp,cell_params,label="pre_pop")
 pre_pop.record("spikes")
@@ -181,11 +181,11 @@ if nearest_pair:
 
 else:
     results_directory = '/home/rjames/Dropbox (The University of Manchester)/EarProject/Pattern_recognition' \
-                        '/pair_stdp/AN_input_{}patterns_{}fibres_{}targets_{}pattern_neurons_{}p_con_{}sp{}num{}s'.format(num_patterns,stim_size,
+                        '/pair_stdp/AN_inputinterleaved_{}patterns_{}fibres_{}targets_{}pattern_neurons_{}p_con_{}sp{}num{}s'.format(num_patterns,stim_size,
                                                                                                                       target_pop_size,num_pattern_neurons,p_connect,
                                                                                                                       1, 1, duration/1000.) + print_delays
 
-results_directory = None
+# results_directory = None
 if results_directory is not None:
     if not os.path.isdir(results_directory):
         bashCommand = ["mkdir",results_directory]

@@ -2,4 +2,5 @@
 .settings/
 .pydevproject
 *.pyc
+*.npy
 .idea/

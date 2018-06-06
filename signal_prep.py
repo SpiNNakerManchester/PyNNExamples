@@ -338,7 +338,7 @@ def vary_weight_plot(varying_weights,ids,stim_ids,duration,plt,num_recs,np,ylim,
             for reading in varying_weights:
                 for (pre, post, weight) in reading:
                     if post == id:
-                        if pre in stim_ids:
+                        if stim_ids and pre in stim_ids:
                             id_times_pattern[rec_index].append(weight)
                         else:
                             id_times[rec_index].append(weight)
@@ -353,9 +353,12 @@ def vary_weight_plot(varying_weights,ids,stim_ids,duration,plt,num_recs,np,ylim,
                 for t in id_times:
                     plt.plot(repeats,t)
                 label = plt.ylabel("ID:{}".format(str(id+1)))
-                plt.gca().yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
                 plt.xticks(np.linspace(0,duration,5))
-                plt.yticks(np.linspace(0,ylim,3))
+                if num_rows > 2:
+                    plt.gca().yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
+                    plt.yticks(np.linspace(0,ylim,3))
+                else:
+                    plt.xlabel('time (s)')
                 plt.xlim(0,duration)
                 plt.ylim(0,ylim)
             if id_times_pattern:
@@ -367,9 +370,12 @@ def vary_weight_plot(varying_weights,ids,stim_ids,duration,plt,num_recs,np,ylim,
                     for t in id_times_pattern:
                         plt.plot(repeats, t)
                 label = plt.ylabel("ID:{}".format(str(id + 1)))
-                plt.gca().yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
                 plt.xticks(np.linspace(0,duration,5))
-                plt.yticks(np.linspace(0,ylim,3))
+                if num_rows > 2:
+                    plt.gca().yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
+                    plt.yticks(np.linspace(0,ylim,3))
+                else:
+                    plt.xlabel('time (s)')
                 plt.xlim(0, duration)
                 plt.ylim(0, ylim)
             #else:
@@ -377,10 +383,10 @@ def vary_weight_plot(varying_weights,ids,stim_ids,duration,plt,num_recs,np,ylim,
             count+=1
         if filepath is not None:
             plt.figure(title)
-            plt.savefig(filepath+'/non_pattern_weights.eps')
+            plt.savefig(filepath+'/{}_weights.eps'.format(title))
             if stim_ids:
                 plt.figure(title + "pattern")
-                plt.savefig(filepath+'/pattern_weights.eps')
+                plt.savefig(filepath+'/{}_pattern_weights.eps'.format(title))
 
 def weight_dist_plot(varying_weights,num_ticks,plt,w_min,w_max,np=numpy,title=None,filepath=None):
     #varying_weights_array = np.array(varying_weights)
@@ -430,7 +436,7 @@ def weight_dist_plot(varying_weights,num_ticks,plt,w_min,w_max,np=numpy,title=No
         plt.savefig(filepath + '/stdp_weight_distribution.pdf')#switched to pdf as using transparent images
 
 
-def cell_voltage_plot_8(v, plt, duration_ms, time_step_ms,scale_factor=0.001, id=None, title=''):
+def cell_voltage_plot_8(v, plt, duration_ms, time_step_ms,scale_factor=0.001, id=None, title='',filepath=None):
     times = range(0,int(duration_ms),int(time_step_ms))
     scaled_times = [time*scale_factor for time in times]
     membrane_voltage = v[0]
@@ -442,6 +448,10 @@ def cell_voltage_plot_8(v, plt, duration_ms, time_step_ms,scale_factor=0.001, id
         title = title + "{} neurons".format(membrane_voltage.shape[1])
     plt.figure(title)
     plt.plot(scaled_times, mem_v)
+    plt.xlabel('time (s)')
+    plt.ylabel('membrane voltage (mV)')
+    if filepath is not None:
+        plt.savefig(filepath + '/' + title + '_memV.eps')
 
 def cell_voltage_plot(v,plt,duration,scale_factor=0.001,id=0,title=''):
         times = [i[1] for i in v if i[0]==id]
@@ -721,3 +731,6 @@ def selective_neuron_search(pattern_spikes,spike_train,time_window,final_pattern
             writer = csv.writer(f)
             for values in izip_longest(*selective_neuron_ids):
                 writer.writerow(values)
+
+#assumes input connectivity in varying_weights format
+# def connection_plot(varying_weights)
