@@ -22,7 +22,7 @@ neuron_params = {
     'v_thresh': -50.0,
     'v_thresh_resting': -50,
     'v_thresh_tau': 700,
-    'v_thresh_adaptation': 1,
+    'v_thresh_adaptation': 10,
     }
 
 pop_exc = p.Population(1, p.extra_models.IFCurrExpGrazAdaptive(**neuron_params), label='test')
