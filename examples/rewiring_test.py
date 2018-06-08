@@ -35,16 +35,17 @@ duration = 20*1000
 pop_size =10
 
 pre_pop = sim.Population(pop_size,sim.IF_curr_exp,cell_params,label="pre")
-post_pop = sim.Population(pop_size,sim.IF_curr_exp,target_cell_params,label="post")
+post_pop = sim.Population(pop_size,sim.IF_curr_exp,cell_params,label="post")
 
 source_spikes = sim.Population(2,sim.SpikeSourcePoisson(rate=10.,duration=duration))
 
 source_list = [(0,4),(0,5)]
-source_pre_proj = sim.Projection(source_spikes,pre_pop,sim.FromListConnector(source_list),synapse_type=sim.StaticSynapse(weight=w2s,delay=1.))
+source_pre_proj = sim.Projection(source_spikes,pre_pop,sim.FromListConnector(source_list),
+                                 synapse_type=sim.StaticSynapse(weight=w2s,delay=1.))
 
 post_pop.set_constraint(ChipAndCoreConstraint(0,1))
 plastic_projection = sim.Projection(
-    pre_pop, post_pop, sim.FixedNumberPreConnector(2),synapse_type=sim.StructuralMechanismStatic(weight=w2s_post),
+    pre_pop, post_pop, sim.FixedNumberPreConnector(2),synapse_type=sim.StructuralMechanismStatic(weight=w2s/2),
     label="plastic_projection")
 
 pre_pop.record(["spikes"])

@@ -208,13 +208,13 @@ def spike_raster_plot_8(spikes,plt,duration,ylim,scale_factor=0.001,title=None,f
             ax = plt.gca()
             pattern_legend=[]
             legend_labels=[]
-            colours = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'w']
+            colours = ['b', 'g', 'r', 'c', 'm', 'y', 'k','w']
             for i,pattern in enumerate(onset_times):
                 pattern_legend.append(plt.Line2D([0], [0], color=colours[i%8], lw=4,alpha=0.2))
                 legend_labels.append("pattern {}".format(i+1))
                 for onset in pattern:
                     x_block = (onset,onset+scale_factor*pattern_duration)
-                    ax.fill_between(x_block,ylim,alpha=0.2,facecolor=colours[i%8],lw=0)
+                    ax.fill_between(x_block,ylim,alpha=0.2,facecolor=colours[i%8],lw=0.5)
             plt.legend(pattern_legend,legend_labels,bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
                         ncol=len(onset_times), mode="expand", borderaxespad=0.)
         if xlim is not None:
