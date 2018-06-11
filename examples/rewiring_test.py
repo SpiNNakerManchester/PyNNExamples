@@ -45,7 +45,7 @@ source_pre_proj = sim.Projection(source_spikes,pre_pop,sim.FromListConnector(sou
 
 post_pop.set_constraint(ChipAndCoreConstraint(0,1))
 plastic_projection = sim.Projection(
-    pre_pop, post_pop, sim.FixedNumberPreConnector(2),synapse_type=sim.StructuralMechanismStatic(weight=w2s/2),
+    pre_pop, post_pop, sim.FixedNumberPreConnector(2),synapse_type=sim.StructuralMechanismStatic(weight=w2s/2, grid=[1, pop_size]),
     label="plastic_projection")
 
 pre_pop.record(["spikes"])
