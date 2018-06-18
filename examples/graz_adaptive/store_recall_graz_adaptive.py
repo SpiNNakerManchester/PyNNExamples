@@ -427,10 +427,33 @@ Figure(
           yticks=True, markersize=0.2, xlim=(0, runtime)),
 )
 
-for spikes in hidden_data.segments[0].spiketrains:
-    print "\n\n\n"
-    for s in spikes:
-        print s.magnitude
+
+n=1
+for n in [0,1]:
+
+    for i in hidden_data.segments[0].spiketrains[0]:
+        print i.magnitude
+
+    print "\n\n\n\n\n"
+    print "*************************************"
+
+    for i in hidden_data.segments[0].filter(name='gsyn_inh')[0]:
+        print i.magnitude[n]
+
+    print "\n\n\n\n\n"
+    print "*************************************"
+
+    for i in hidden_data.segments[0].filter(name='v')[0]:
+        print i.magnitude[n]
+
+    print "\n\n\n\n\n"
+    print "*************************************"
+
+    for i in hidden_data.segments[0].filter(name='gsyn_exc')[0]:
+        print i.magnitude[n]
+
+
+
 
 plt.show()
 p.end()

@@ -6,7 +6,7 @@ from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 
 p.setup(1)
-runtime=100
+runtime=100000
 
 spike_times=[10, 15]
 pop_input = p.Population(1, p.SpikeSourceArray,
