@@ -211,7 +211,7 @@ def spike_raster_plot_8(spikes,plt,duration,ylim,scale_factor=0.001,title=None,f
             colours = ['b', 'g', 'r', 'c', 'm', 'y', 'k','w']
             for i,pattern in enumerate(onset_times):
                 pattern_legend.append(plt.Line2D([0], [0], color=colours[i%8], lw=4,alpha=0.2))
-                legend_labels.append("pattern {}".format(i+1))
+                legend_labels.append("s{}".format(i+1))
                 for onset in pattern:
                     x_block = (onset,onset+scale_factor*pattern_duration)
                     ax.fill_between(x_block,ylim,alpha=0.2,facecolor=colours[i%8],lw=0.5)
@@ -433,7 +433,7 @@ def weight_dist_plot(varying_weights,num_ticks,plt,w_min,w_max,np=numpy,title=No
     plt.ylabel("number of synapses")
     plt.xlabel("weight of synapse")
     if filepath is not None:
-        plt.savefig(filepath + '/stdp_weight_distribution.pdf')#switched to pdf as using transparent images
+        plt.savefig(filepath + '/'+title+'.pdf')#switched to pdf as using transparent images
 
 
 def cell_voltage_plot_8(v, plt, duration_ms, time_step_ms,scale_factor=0.001, id=None, title='',filepath=None):
@@ -734,3 +734,29 @@ def selective_neuron_search(pattern_spikes,spike_train,time_window,final_pattern
 
 #assumes input connectivity in varying_weights format
 # def connection_plot(varying_weights)
+
+def connection_hist_plot(varying_weights,pre_size,post_size,plt,title='',filepath=None):
+    import numpy as np
+    incoming_connections=[[]for _ in range(post_size)]
+    source_list=[]
+    target_list=[]
+    #take final reading
+    final_connections = varying_weights[-1]
+
+    for (source,target,weight) in final_connections:
+        if source is not None and weight>0.01:
+            if source in incoming_connections[target]:
+                print "multapse detected!"
+            incoming_connections[target].append(source)
+            source_list.append(source)
+            target_list.append(target)
+    out_figure = title+'pre_pop outgoing connections'
+    plt.figure(out_figure)
+    plt.hist(source_list,bins=pre_size,alpha=0.5,range=(0,pre_size))
+    if filepath is not None:
+        plt.savefig(filepath + '/'+out_figure+'.eps')
+    in_figure = title+'post_pop incoming connections'
+    plt.figure(in_figure)
+    plt.hist(target_list,bins=post_size,alpha=0.5,range=(0,post_size))
+    if filepath is not None:
+        plt.savefig(filepath + '/'+in_figure+'.eps')
