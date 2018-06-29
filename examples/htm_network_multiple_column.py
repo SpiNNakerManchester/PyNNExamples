@@ -37,7 +37,7 @@ w2s_target = 5.
 
 input_pop_size =1
 column_size = 16#32
-number_of_columns = 50
+number_of_columns = 100#50
 active_pop_size = column_size*number_of_columns
 cd_pop_size = int(1 * active_pop_size)
 # assume 1% of 2048 columns are active per 1            scaled_a_plus = int(round(self._a_plus *self._w_max * w))
@@ -45,13 +45,13 @@ cd_pop_size = int(1 * active_pop_size)
 #we assume each column fires at around 10Hz, producing approx. 20 active columns per ms
 column_firing_rate = 2.#10.
 isi = 1000./column_firing_rate
-num_firings = 1200 #TODO: run longer tests
+num_firings = 600
 predict_delay = 10#8
 input_spikes = []
 # for j in range(number_of_columns):
 #     input_spikes.append([(j*column_offset)+i*isi for i in range(1,num_firings)])#[10.,30,50]
 num_patterns_in_sequence = 4
-num_sequences = 2 #ABCD XBCY
+num_sequences = 1 #ABCD XBCY
 num_columns_active_per_pattern = 5#int(0.15*number_of_columns)
 column_offset = 20.#int(isi/num_patterns_in_sequence)#isi/number_of_columns
 
@@ -255,7 +255,7 @@ structure_model_with_stdp_pred = sim.StructuralMechanismSTDP(
     stdp_model=stdp_model,
     weight=0.,  # Use this weights when creating a new synapse
     max_weight=0.001,#w_max,#
-    s_max=3,  # Maximum allowed fan-in per target-layer neuron TODO:try reducing this number
+    s_max=5,  # Maximum allowed fan-in per target-layer neuron
     #grid=[np.sqrt(active_pop_size), np.sqrt(active_pop_size)],  # 2d spatial org of neurons
     grid=[cd_pop_size, 1], # 1d spatial org of neurons, uncomment this if wanted
     #random_partner=True,  # Choose a partner neuron for formation at random,
@@ -337,7 +337,7 @@ results_directory = '/home/rjames/Dropbox (The University of Manchester)/EarProj
                     '/HTM/{}_patterns_{}sequences_{}columns_{}active_neurons_{}Hz_{}cds_{}Taup_{}taumin_{}alpha_spike_pair_structural_plasticty'\
                     .format(num_patterns_in_sequence,num_sequences,number_of_columns,column_size,column_firing_rate,cd_pop_size,tau_plus,tau_minus,a_plus)
 
-# results_directory = None
+results_directory = None
 if results_directory is not None:
     if not os.path.isdir(results_directory):
         bashCommand = ["mkdir",results_directory]
@@ -353,11 +353,11 @@ weight_dist_plot(varying_weights_cd,1,plt,0.0,w_max,title="cd->active weight dis
 weight_dist_plot(varying_weights,1,plt,w_min_cd,w_max_cd,title="active->cd weight distribution",filepath=results_directory)
 
 spike_raster_plot_8(active_data.segments[0].spiketrains,plt,duration/1000.,active_pop_size+1,0.001,title="active pop activity",filepath=results_directory,
-                    onset_times=onset_times,pattern_duration=pattern_duration)
+                    )#onset_times=onset_times,pattern_duration=pattern_duration)
 spike_raster_plot_8(active_data.segments[0].spiketrains,plt,duration/1000.,active_pop_size+1,0.001,title="active pop activity_final",filepath=results_directory,
                     onset_times=onset_times,pattern_duration=pattern_duration,xlim=(onset_times[0][-1],0.001*duration))
 spike_raster_plot_8(cd_data.segments[0].spiketrains,plt,duration/1000.,cd_pop_size+1,0.001,title="cd pop activity",filepath=results_directory,
-                    onset_times=onset_times,pattern_duration=pattern_duration)
+                    )#onset_times=onset_times,pattern_duration=pattern_duration)
 spike_raster_plot_8(cd_data.segments[0].spiketrains,plt,duration/1000.,cd_pop_size+1,0.001,title="cd pop activity_final",filepath=results_directory,
                     onset_times=onset_times,pattern_duration=pattern_duration,xlim=(onset_times[0][-1],0.001*duration))
 
@@ -383,8 +383,8 @@ if results_directory is not None:
     #                         final_pattern_start =ms_onset_times[0][-1],plt=plt,filepath=results_directory,np=np,
     #                         significant_spike_count=1)
 
-connection_hist_plot(varying_weights_cd, pre_size=cd_pop_size, post_size=active_pop_size,plt=plt,title="cd->active",filepath=results_directory)
-connection_hist_plot(varying_weights, pre_size=active_pop_size, post_size=cd_pop_size,plt=plt,title="active->cd",filepath=results_directory)
+    connection_hist_plot(varying_weights_cd, pre_size=cd_pop_size, post_size=active_pop_size,plt=plt,title="cd->active",filepath=results_directory)
+    connection_hist_plot(varying_weights, pre_size=active_pop_size, post_size=cd_pop_size,plt=plt,title="active->cd",filepath=results_directory)
 
 if results_directory is None:
     plt.show()
