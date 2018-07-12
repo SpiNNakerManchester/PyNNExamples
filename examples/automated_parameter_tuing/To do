@@ -1,0 +1,36 @@
+Problems to discuss
+- Mention the bug that took ages to identify
+- Problems with memory have now emerged
+- Have worked on visualisation
+- FEEDBACK 7/7/2018
+
+
+To do
+- Reduce size of weight list by doing convolution
+- Change accuracy calculation
+- Change selection to just selBest
+
+
+
+- See if convergence with 250 gens
+- Mave a visualiser tool that will look at pickled populations
+- Sort out the weightings of the costs/fitnesses and constraints
+- Move common functions into one .py and try ES
+- Sort out a lock for the computationally intensive part to load balance
+- Investigate memory usage (possibly use a sparse matrix class)
+- Rename gene and individual
+
+Things to think about:
+- GA initialisation
+- We want 100,000 evaluations
+
+- Change model parameters to be more realistic.
+- Do some research on and sort out cost function.
+- Run model for a long time.
+- How would this be run on SpiNNaker directly?
+
+Done
+- Get model to work!
+- Make a child object of Network model that is simpler
+- Visualsie the hidden layers 
+- Sort out the output

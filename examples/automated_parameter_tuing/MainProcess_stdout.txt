@@ -1,0 +1,19 @@
+Process MainProcess started.
+Process MainProcess stopped unexpectedly.
+
+Look at:MainProcess_stdout.txt and MainProcess_stderror.txt
+Process MainProcess started.
+Process MainProcess stopped unexpectedly.
+
+Look at:MainProcess_stdout.txt and MainProcess_stderror.txt
+Process MainProcess started.
+Process MainProcess stopped unexpectedly.
+
+Look at:MainProcess_stdout.txt and MainProcess_stderror.txt
+Both weights and assigned values must be a sequence of numbers when assigning to values of <class 'deap.creator.FitnessMin'>. Currently assigning value(s) None of <type 'NoneType'> to a fitness with weights (-1.0, -0.0001, 1.0).
+ntEndCommon/spinn_front_end_common/interface/spinnaker.cfg', '/home/edwardjones/git/sPyNNaker/spynnaker/pyNN/spynnaker.cfg', '/home/edwardjones/.spynnaker.cfg']
+setting up pops
+setting up projs
+setting up recorders
+running sim
+signal only works in main thread
