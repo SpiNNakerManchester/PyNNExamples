@@ -1,3 +1,7 @@
+import sys
+#This needs to be streamlined to make code portable
+sys.path.append('/localhome/mbaxsej2/optimisation_env/NE15')
+print(sys.path)
 from decimal import *
 import spynnaker8 as sim
 import pickle
@@ -15,13 +19,11 @@ from os.path import expanduser
 import sys, os
 from time import sleep
 from spinnman.exceptions import SpinnmanIOException
-from duplicity.globals import num_retries
 from spinn_front_end_common.utilities import globals_variables
 from elephant.statistics import mean_firing_rate
-from __init__ import set_number_of_neurons_per_core
 from numpy import number
 
-home = expanduser("~")
+home = os.environ['VIRTUAL_ENV']
 NE15_path = home + '/git/NE15'
 
 #np.array([(,,)], dtype=[('input', 'i4'),('output', 'i4'), ('weight', 'f4')])
@@ -138,7 +140,7 @@ class NetworkModel(object):
                     return;
     
     def select_random_test_images(self):
-        mndata = MNIST(home + '/mnist')
+        mndata = MNIST(home)
         mndata.gz = True
         images, labels = mndata.load_testing()
         number_test_images = 10
