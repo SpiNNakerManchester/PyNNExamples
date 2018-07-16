@@ -1,6 +1,8 @@
 from deap import algorithms, base, creator, tools
 from basic_network import ConvMnistModel, MnistModel, NetworkModel
 import pickle
+import random
+import time
 import multiprocessing
 import numpy as np
 import sys
@@ -9,6 +11,8 @@ import matplotlib.pyplot as plt
 
 def pool_init():  
     gc.collect()
+    #get lock would be better
+    #time.sleep(random.randint(0,20))
     return;
 
 def evalModel(gene):

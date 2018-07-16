@@ -1,7 +1,7 @@
 import sys
 #This needs to be streamlined to make code portable
 sys.path.append('/localhome/mbaxsej2/optimisation_env/NE15')
-print(sys.path)
+#print(sys.path)
 from decimal import *
 import spynnaker8 as sim
 import pickle
@@ -127,7 +127,7 @@ class NetworkModel(object):
             run_sim()
             if self.cost == None:
                 raise Exception
-        except Exception as e:
+	except Exception as e:
                 print(e)
                 if num_retries < max_retries:
                     num_retries += 1
