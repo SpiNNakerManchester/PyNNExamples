@@ -1,20 +1,9 @@
 import sys
-<<<<<<< HEAD
-<<<<<<< HEAD
 #Dependencies need to be sorted
 sys.path.append('/localhome/mbaxsej2/optimisation_env/NE15')
 home = os.environ['VIRTUAL_ENV']
 NE15_path = home + '/git/NE15'
-=======
 #This needs to be streamlined to make code portable
-sys.path.append('/localhome/mbaxsej2/optimisation_env/NE15')
-print(sys.path)
->>>>>>> f8a1835678b67e9581a284e96f344325d47b726e
-=======
-#This needs to be streamlined to make code portable
-sys.path.append('/localhome/mbaxsej2/optimisation_env/NE15')
-print(sys.path)
->>>>>>> f8a1835678b67e9581a284e96f344325d47b726e
 from decimal import *
 import spynnaker8 as sim
 import pickle
@@ -35,22 +24,6 @@ from spinnman.exceptions import SpinnmanIOException
 from spinn_front_end_common.utilities import globals_variables
 from elephant.statistics import mean_firing_rate
 from numpy import number
-<<<<<<< HEAD
-<<<<<<< HEAD
-import traceback
-=======
-=======
->>>>>>> f8a1835678b67e9581a284e96f344325d47b726e
-
-home = os.environ['VIRTUAL_ENV']
-NE15_path = home + '/git/NE15'
-
-#np.array([(,,)], dtype=[('input', 'i4'),('output', 'i4'), ('weight', 'f4')])
-    
-<<<<<<< HEAD
->>>>>>> f8a1835678b67e9581a284e96f344325d47b726e
-=======
->>>>>>> f8a1835678b67e9581a284e96f344325d47b726e
 
 class NetworkModel(object):
     '''Class representing model'''
@@ -150,25 +123,12 @@ class NetworkModel(object):
             run_sim()
             if self.cost == None:
                 raise Exception
-<<<<<<< HEAD
-<<<<<<< HEAD
 	except Exception as e:
 		traceback.print_exc()
                 print(e)
                 if num_retries < max_retries:
                     num_retries += 1
 		    sleep(20)
-=======
-=======
->>>>>>> f8a1835678b67e9581a284e96f344325d47b726e
-        except Exception as e:
-                print(e)
-                if num_retries < max_retries:
-                    num_retries += 1
-<<<<<<< HEAD
->>>>>>> f8a1835678b67e9581a284e96f344325d47b726e
-=======
->>>>>>> f8a1835678b67e9581a284e96f344325d47b726e
                     print("Retry %d..." % num_retries)
                     globals_variables.unset_simulator()
                     self.test_model(num_retries)
