@@ -1,4 +1,4 @@
-import sys
+import sys, os
 #Dependencies need to be sorted
 sys.path.append('/localhome/mbaxsej2/optimisation_env/NE15')
 home = os.environ['VIRTUAL_ENV']
@@ -18,7 +18,6 @@ import random
 from poisson.poisson_tools import poisson_generator
 from mnist import MNIST
 from os.path import expanduser
-import sys, os
 from time import sleep
 from spinnman.exceptions import SpinnmanIOException
 from spinn_front_end_common.utilities import globals_variables
