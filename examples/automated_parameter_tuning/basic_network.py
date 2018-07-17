@@ -1,7 +1,8 @@
 import sys
-#This needs to be streamlined to make code portable
+#Dependencies need to be sorted
 sys.path.append('/localhome/mbaxsej2/optimisation_env/NE15')
-#print(sys.path)
+home = os.environ['VIRTUAL_ENV']
+NE15_path = home + '/git/NE15'
 from decimal import *
 import spynnaker8 as sim
 import pickle
@@ -22,12 +23,7 @@ from spinnman.exceptions import SpinnmanIOException
 from spinn_front_end_common.utilities import globals_variables
 from elephant.statistics import mean_firing_rate
 from numpy import number
-
-home = os.environ['VIRTUAL_ENV']
-NE15_path = home + '/git/NE15'
-
-#np.array([(,,)], dtype=[('input', 'i4'),('output', 'i4'), ('weight', 'f4')])
-    
+import traceback
 
 class NetworkModel(object):
     '''Class representing model'''
@@ -128,9 +124,11 @@ class NetworkModel(object):
             if self.cost == None:
                 raise Exception
 	except Exception as e:
+		traceback.print_exc()
                 print(e)
                 if num_retries < max_retries:
                     num_retries += 1
+		    sleep(20)
                     print("Retry %d..." % num_retries)
                     globals_variables.unset_simulator()
                     self.test_model(num_retries)

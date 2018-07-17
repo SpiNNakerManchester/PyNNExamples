@@ -41,6 +41,7 @@ def evalModel(gene):
         print ("Process " + current.name + " stopped unexpectedly.") 
         print(e)
         print("Look at:" + f_name + " and " + g_name)
+	sys.exit()
         return
     
 def pickle_population(pop, gen, log, checkpoint_name):
