@@ -83,7 +83,7 @@ class NetworkModel(object):
                 counter += 1        
         return weights_1, weights_2;
     
-    def test_model(self, num_retries=0, lock):
+    def test_model(self, lock, num_retries=0):
         '''Testing the model against test data with retry'''
         
         max_retries = 10

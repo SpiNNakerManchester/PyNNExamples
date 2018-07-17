@@ -13,14 +13,13 @@ from functools import partial
 #GA and parallelisation variables
 
 parallel_on = True
-NUM_PROCESSES = 50 
+NUM_PROCESSES = 5 
 IND_SIZE = (int(ConvMnistModel.filter_size**2)) + (ConvMnistModel.pop_1_size * ConvMnistModel.output_pop_size)
 POP_SIZE = 100 
 NGEN = 10000 
 toolbox = base.Toolbox()
 
 #Setting up GA
-lock = multiprocessing.Lock()
 creator.create("FitnessMin", base.Fitness, weights=(1.0,))
 creator.create("Individual", list, fitness=creator.FitnessMin)
 
@@ -28,7 +27,7 @@ toolbox.register("attribute", random.uniform, -10, 10)
 toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.attribute, n=IND_SIZE)
 toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
-toolbox.register("evaluate", evalModel, lock=lock)
+toolbox.register("evaluate", evalModel)
 toolbox.register("mate", tools.cxTwoPoint)
 toolbox.register("mutate", tools.mutGaussian, mu=0.0, sigma=0.2, indpb=0.2)
 toolbox.register("select", tools.selBest)
@@ -41,7 +40,10 @@ checkpoint_name = "logbooks/checkpoint.pkl"
 
 def main(checkpoint = None):
     global logbook
-
+    l = multiprocessing.Lock()
+    if parallel_on:
+        pool = multiprocessing.Pool(NUM_PROCESSES, initializer=pool_init, maxtasksperchild=1, initargs=(l,))
+        toolbox.register("map", pool.map)
     try:
         with open(checkpoint, "r") as cp_file:
             cp = pickle.load(cp_file)
@@ -71,7 +73,7 @@ def main(checkpoint = None):
         offspring.extend(varied_offspring)
         print("Evaluating the genes with an invalid fitness...")
         invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
-        fitnesses = toolbox.map(toolbox.evaluate, invalid_ind, lock)
+        fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
         
         if g==0:
             evals = POP_SIZE
@@ -95,9 +97,6 @@ def main(checkpoint = None):
 
 if __name__ == "__main__":
     
-    if parallel_on:
-        pool = multiprocessing.Pool(NUM_PROCESSES, initializer=pool_init, maxtasksperchild=1)
-        toolbox.register("map", pool.map)
 
     main(checkpoint_name)
     

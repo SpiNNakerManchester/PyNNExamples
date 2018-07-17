@@ -9,11 +9,13 @@ import sys
 import gc
 import matplotlib.pyplot as plt
 
-def pool_init():  
+def pool_init(l):  
+    global lock
+    lock = l
     gc.collect()
     return;
 
-def evalModel(gene, lock):
+def evalModel(gene):
     '''evaluates the model'''
     gc.collect()
     current = multiprocessing.current_process()
@@ -33,6 +35,8 @@ def evalModel(gene, lock):
         sys.stderr = old_stderr            
         print ("Process " + current.name + " finished sucessfully: %s" % (model.cost,)) 
         return model.cost;
+    except KeyboardInterrupt:
+        raise KeyboardInterruptError()
     except Exception as e:
         sys.stdout = old_stdout
         sys.stderr = old_stderr
