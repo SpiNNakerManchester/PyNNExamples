@@ -1,8 +1,11 @@
 from deap import algorithms, base, creator, tools
 from basic_network import ConvMnistModel, MnistModel, NetworkModel
 import pickle
+<<<<<<< HEAD
 import random
 import time
+=======
+>>>>>>> f8a1835678b67e9581a284e96f344325d47b726e
 import multiprocessing
 import numpy as np
 import sys
@@ -11,8 +14,11 @@ import matplotlib.pyplot as plt
 
 def pool_init():  
     gc.collect()
+<<<<<<< HEAD
     #get lock would be better
     #time.sleep(random.randint(0,20))
+=======
+>>>>>>> f8a1835678b67e9581a284e96f344325d47b726e
     return;
 
 def evalModel(gene):
@@ -41,7 +47,10 @@ def evalModel(gene):
         print ("Process " + current.name + " stopped unexpectedly.") 
         print(e)
         print("Look at:" + f_name + " and " + g_name)
+<<<<<<< HEAD
 	sys.exit()
+=======
+>>>>>>> f8a1835678b67e9581a284e96f344325d47b726e
         return
     
 def pickle_population(pop, gen, log, checkpoint_name):
@@ -98,4 +107,8 @@ def stats_setup():
     mstats.register("std", np.std)
     mstats.register("min", np.min)
     mstats.register("max", np.max)
+<<<<<<< HEAD
     return logbook, mstats'''
+=======
+    return logbook, mstats'''
+>>>>>>> f8a1835678b67e9581a284e96f344325d47b726e
