@@ -20,6 +20,7 @@ NGEN = 10000
 toolbox = base.Toolbox()
 
 #Setting up GA
+lock = multiprocessing.Lock()
 creator.create("FitnessMin", base.Fitness, weights=(1.0,))
 creator.create("Individual", list, fitness=creator.FitnessMin)
 
@@ -27,7 +28,7 @@ toolbox.register("attribute", random.uniform, -10, 10)
 toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.attribute, n=IND_SIZE)
 toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
-toolbox.register("evaluate", evalModel)
+toolbox.register("evaluate", evalModel, lock=lock)
 toolbox.register("mate", tools.cxTwoPoint)
 toolbox.register("mutate", tools.mutGaussian, mu=0.0, sigma=0.2, indpb=0.2)
 toolbox.register("select", tools.selBest)
@@ -40,6 +41,7 @@ checkpoint_name = "logbooks/checkpoint.pkl"
 
 def main(checkpoint = None):
     global logbook
+
     try:
         with open(checkpoint, "r") as cp_file:
             cp = pickle.load(cp_file)
@@ -69,7 +71,7 @@ def main(checkpoint = None):
         offspring.extend(varied_offspring)
         print("Evaluating the genes with an invalid fitness...")
         invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
-        fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
+        fitnesses = toolbox.map(toolbox.evaluate, invalid_ind, lock)
         
         if g==0:
             evals = POP_SIZE

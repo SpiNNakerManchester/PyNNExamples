@@ -23,6 +23,7 @@ from spinnman.exceptions import SpinnmanIOException
 from spinn_front_end_common.utilities import globals_variables
 from elephant.statistics import mean_firing_rate
 from numpy import number
+import multiprocessing
 
 class NetworkModel(object):
     '''Class representing model'''
@@ -82,12 +83,12 @@ class NetworkModel(object):
                 counter += 1        
         return weights_1, weights_2;
     
-    def test_model(self, num_retries=0):
+    def test_model(self, num_retries=0, lock):
         '''Testing the model against test data with retry'''
         
         max_retries = 10
         
-        def run_sim():            
+        def run_sim(lock):            
             print("setting up")
             sim.setup(self.timestep)
             sim.set_number_of_neurons_per_core(sim.IF_curr_exp, self.neurons_per_core)
@@ -105,9 +106,12 @@ class NetworkModel(object):
             pop_1.record(["spikes"])
             output_pop.record(["spikes"])
             input_pop.record(["spikes"]) 
-            
+            lock.acquire()
+            print("lock acquired")
             print("running sim")
             sim.run(self.simtime)
+            lock.release()
+            print("lock released")
             print("getting data")
             self.spiketrains['input_pop'] = input_pop.get_data(variables=["spikes"]).segments[0].spiketrains
             self.spiketrains['pop_1'] = pop_1.get_data(variables=["spikes"]).segments[0].spiketrains
@@ -119,7 +123,7 @@ class NetworkModel(object):
             return;
                   
         try:
-            run_sim()
+            run_sim(lock)
             if self.cost == None:
                 raise Exception
 	except Exception as e:

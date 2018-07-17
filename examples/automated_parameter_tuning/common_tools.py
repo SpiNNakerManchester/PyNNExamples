@@ -13,7 +13,7 @@ def pool_init():
     gc.collect()
     return;
 
-def evalModel(gene):
+def evalModel(gene, lock):
     '''evaluates the model'''
     gc.collect()
     current = multiprocessing.current_process()
@@ -28,7 +28,7 @@ def evalModel(gene):
     sys.stderr = g
     try:
         model = ConvMnistModel(gene)
-        model.test_model()
+        model.test_model(lock=lock)
         sys.stdout = old_stdout
         sys.stderr = old_stderr            
         print ("Process " + current.name + " finished sucessfully: %s" % (model.cost,)) 
