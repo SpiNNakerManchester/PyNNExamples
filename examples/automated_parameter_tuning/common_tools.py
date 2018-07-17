@@ -2,8 +2,11 @@ from deap import algorithms, base, creator, tools
 from basic_network import ConvMnistModel, MnistModel, NetworkModel
 import pickle
 <<<<<<< HEAD
+<<<<<<< HEAD
 import random
 import time
+=======
+>>>>>>> f8a1835678b67e9581a284e96f344325d47b726e
 =======
 >>>>>>> f8a1835678b67e9581a284e96f344325d47b726e
 import multiprocessing
@@ -15,8 +18,11 @@ import matplotlib.pyplot as plt
 def pool_init():  
     gc.collect()
 <<<<<<< HEAD
+<<<<<<< HEAD
     #get lock would be better
     #time.sleep(random.randint(0,20))
+=======
+>>>>>>> f8a1835678b67e9581a284e96f344325d47b726e
 =======
 >>>>>>> f8a1835678b67e9581a284e96f344325d47b726e
     return;
@@ -48,7 +54,10 @@ def evalModel(gene):
         print(e)
         print("Look at:" + f_name + " and " + g_name)
 <<<<<<< HEAD
+<<<<<<< HEAD
 	sys.exit()
+=======
+>>>>>>> f8a1835678b67e9581a284e96f344325d47b726e
 =======
 >>>>>>> f8a1835678b67e9581a284e96f344325d47b726e
         return
@@ -108,7 +117,11 @@ def stats_setup():
     mstats.register("min", np.min)
     mstats.register("max", np.max)
 <<<<<<< HEAD
+<<<<<<< HEAD
     return logbook, mstats'''
+=======
+    return logbook, mstats'''
+>>>>>>> f8a1835678b67e9581a284e96f344325d47b726e
 =======
     return logbook, mstats'''
 >>>>>>> f8a1835678b67e9581a284e96f344325d47b726e
