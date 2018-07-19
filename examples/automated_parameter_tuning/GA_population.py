@@ -33,12 +33,41 @@ toolbox.register("mutate", tools.mutGaussian, mu=0.0, sigma=0.2, indpb=0.2)
 toolbox.register("select", tools.selBest)
 CXPB = 0.5
 MUTPB = 0.2
+#the proportion of the population that is selected and mated
+sel_factor = 10
+
+
 
 #Statistics setup
 logbook, mstats = stats_setup()
 checkpoint_name = "logbooks/checkpoint.pkl"
 
+def mAndM(population, toolbox, crossover_rate, mutation_rate, sel_factor):
+    '''adapted from DEAP.algorithms.varAnd'''
+    # create an offspring population the size of the population pre-selection
+    offspring = [toolbox.clone(ind) for ind in population for i in range(0, sel_factor)]
+    # shuffle offspring
+    random.shuffle(offspring)
+    
+    # crossover
+    for i in range(1, len(offspring), 2):
+        if random.random() < crossover_rate:
+            offspring[i - 1], offspring[i] = toolbox.mate(offspring[i - 1], offspring[i])
+            del offspring[i - 1].fitness.values, offspring[i].fitness.values
+    # mutation
+    for i in range(len(offspring)):
+        if random.random() < mutation_rate:
+            offspring[i], = toolbox.mutate(offspring[i])
+            del offspring[i].fitness.values
+
+    return offspring
+
+
+
+
 def main(checkpoint = None):
+    '''algorithm adapted from DEAP.algorithms.eaSimple'''
+
     global logbook
     try:
         with open(checkpoint, "r") as cp_file:
@@ -59,14 +88,12 @@ def main(checkpoint = None):
     
     for g in range(gen+1, NGEN):
         print ("Generation %d..." % g)
-        print("Selecting and cloning the next generation...")
-        offspring = toolbox.select(pop, (len(pop)/2))
-        
-        offspring = list(map(toolbox.clone, offspring))
+        print("Selecting %d from a population of %d..."% ( (len(pop)/sel_factor), len(pop)))
+        offspring = toolbox.select(pop, (len(pop)/sel_factor))
         
         print("Applying crossover and mutation on the offspring...")
-        varied_offspring = algorithms.varAnd(offspring, toolbox, CXPB, MUTPB)
-        offspring.extend(varied_offspring)
+        offspring = mAndM(offspring, toolbox, CXPB, MUTPB, sel_factor)
+        
         print("Evaluating the genes with an invalid fitness...")
         invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
         fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
