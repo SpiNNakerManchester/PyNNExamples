@@ -9,42 +9,6 @@ import sys
 import gc
 import matplotlib.pyplot as plt
 
-def pool_init(l):  
-    global lock
-    lock = l
-    gc.collect()
-    return;
-
-def evalModel(gene):
-    '''evaluates the model'''
-    gc.collect()
-    current = multiprocessing.current_process()
-    print ("Process " + current.name + " started.")
-    f_name = "errorlog/" + current.name +"_stdout.txt"
-    g_name = "errorlog/" + current.name + "_stderror.txt"
-    f = open(f_name, 'w')
-    g = open(g_name, 'w')
-    old_stdout = sys.stdout
-    old_stderr = sys.stderr
-    sys.stdout = f
-    sys.stderr = g
-    try:
-        model = ConvMnistModel(gene)
-        model.test_model(lock=lock)
-        sys.stdout = old_stdout
-        sys.stderr = old_stderr            
-        print ("Process " + current.name + " finished sucessfully: %s" % (model.cost,)) 
-        return model.cost;
-    except KeyboardInterrupt:
-        raise KeyboardInterruptError()
-    except Exception as e:
-        sys.stdout = old_stdout
-        sys.stderr = old_stderr
-        print ("Process " + current.name + " stopped unexpectedly.") 
-        print(e)
-        print("Look at:" + f_name + " and " + g_name)
-        sys.exit()
-        return
     
 def pickle_population(pop, gen, log, checkpoint_name):
     print("Pickling population from generation %d..." % gen)

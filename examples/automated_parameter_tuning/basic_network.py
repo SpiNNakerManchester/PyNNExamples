@@ -4,6 +4,7 @@ sys.path.append('/localhome/mbaxsej2/optimisation_env/NE15')
 home = os.environ['VIRTUAL_ENV']
 NE15_path = home + '/git/NE15'
 #This needs to be streamlined to make code portable
+import traceback
 from decimal import *
 import spynnaker8 as sim
 import pickle
@@ -24,6 +25,42 @@ from spinn_front_end_common.utilities import globals_variables
 from elephant.statistics import mean_firing_rate
 from numpy import number
 import multiprocessing
+import gc
+
+def pool_init(l):  
+    gc.collect()
+    global lock
+    lock = l 
+
+def evalModel(gene):
+    '''evaluates the model'''
+    current = multiprocessing.current_process()
+    print ("Process " + current.name + " started.")
+    f_name = "errorlog/" + current.name +"_stdout.txt"
+    g_name = "errorlog/" + current.name + "_stderror.txt"
+    f = open(f_name, 'w')
+    g = open(g_name, 'w')
+    old_stdout = sys.stdout
+    old_stderr = sys.stderr
+    sys.stdout = f
+    sys.stderr = g
+    try:
+        model = ConvMnistModel(gene)
+        model.test_model()
+        sys.stdout = old_stdout
+        sys.stderr = old_stderr            
+        print ("Process " + current.name + " finished sucessfully: %s" % (model.cost,)) 
+        return model.cost;
+    except KeyboardInterrupt:
+        raise KeyboardInterruptError()
+    except Exception as e:
+        sys.stdout = old_stdout
+        sys.stderr = old_stderr
+        print ("Process " + current.name + " stopped unexpectedly.") 
+        print(e)
+        print("Look at:" + f_name + " and " + g_name)
+        sys.exit()
+        return
 
 class NetworkModel(object):
     '''Class representing model'''
@@ -83,16 +120,16 @@ class NetworkModel(object):
                 counter += 1        
         return weights_1, weights_2;
     
-    def test_model(self, lock, num_retries=0):
+    def test_model(self, num_retries=0):
         '''Testing the model against test data with retry'''
         
         max_retries = 10
         
-        def run_sim(lock):            
+        def run_sim():            
             print("setting up")
             sim.setup(self.timestep)
             sim.set_number_of_neurons_per_core(sim.IF_curr_exp, self.neurons_per_core)
-            sleep(0.5) # such that 
+            sleep(0.5)  
             print("setting up pops")
             input_pop = sim.Population(self.input_pop_size, sim.SpikeSourceArray(self.spiketrains['input_pop']), label="input")
             pop_1 = sim.Population(self.pop_1_size, sim.IF_curr_exp(), label="pop_1")
@@ -108,10 +145,11 @@ class NetworkModel(object):
             input_pop.record(["spikes"]) 
             lock.acquire()
             print("lock acquired")
-            print("running sim")
-            sim.run(self.simtime)
+	    sleep(11)
             lock.release()
             print("lock released")
+            print("running sim")
+            sim.run(self.simtime)
             print("getting data")
             self.spiketrains['input_pop'] = input_pop.get_data(variables=["spikes"]).segments[0].spiketrains
             self.spiketrains['pop_1'] = pop_1.get_data(variables=["spikes"]).segments[0].spiketrains
@@ -121,9 +159,9 @@ class NetworkModel(object):
             self.cost_function()
             print("done")
             return;
-                  
-        try:
-            run_sim(lock)
+        
+	try:
+            run_sim()
             if self.cost == None:
                 raise Exception
 	except Exception as e:

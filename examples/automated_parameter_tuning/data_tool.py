@@ -1,18 +1,18 @@
 '''A tool to allow pickled data to be viewed'''
 import argparse
 from deap import algorithms, base, creator, tools
-from basic_network import MnistModel, NetworkModel
+from basic_network import  ConvMnistModel, MnistModel, NetworkModel,pool_init, evalModel
 import random
-from common_tools import pool_init, evalModel, data_summary, stats_setup, pickle_population
+from common_tools import data_summary, stats_setup, pickle_population
 
 import pickle
 from common_tools import data_summary
 
-IND_SIZE = (MnistModel.input_pop_size * MnistModel.pop_1_size) + (MnistModel.pop_1_size * MnistModel.output_pop_size)
+IND_SIZE = (
 toolbox = base.Toolbox()
 
 #Setting up GA
-creator.create("FitnessMin", base.Fitness, weights=(1.0))
+creator.create("FitnessMin", base.Fitness, :q:weights=(1.0))
 creator.create("Gene", list, fitness=creator.FitnessMin)
 
 toolbox.register("attribute", random.uniform, -10, 10)
@@ -43,7 +43,7 @@ try:
 except IOError:
     print("No checkpoint found...")
 
-#data_summary(logbook)
+data_summary(logbook)
 
 
 

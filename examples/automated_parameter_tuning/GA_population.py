@@ -1,5 +1,5 @@
-from common_tools import pool_init, evalModel, data_summary, stats_setup, pickle_population
-from basic_network import ConvMnistModel, MnistModel, NetworkModel
+from common_tools import data_summary, stats_setup, pickle_population
+from basic_network import ConvMnistModel, MnistModel, NetworkModel, pool_init, evalModel
 from deap import algorithms, base, creator, tools
 import random
 import numpy as np
@@ -13,10 +13,10 @@ from functools import partial
 #GA and parallelisation variables
 
 parallel_on = True
-NUM_PROCESSES = 5 
+NUM_PROCESSES = 50 
 IND_SIZE = (int(ConvMnistModel.filter_size**2)) + (ConvMnistModel.pop_1_size * ConvMnistModel.output_pop_size)
-POP_SIZE = 100 
-NGEN = 10000 
+POP_SIZE = 100
+NGEN = 100000 
 toolbox = base.Toolbox()
 
 #Setting up GA
@@ -40,10 +40,6 @@ checkpoint_name = "logbooks/checkpoint.pkl"
 
 def main(checkpoint = None):
     global logbook
-    l = multiprocessing.Lock()
-    if parallel_on:
-        pool = multiprocessing.Pool(NUM_PROCESSES, initializer=pool_init, maxtasksperchild=1, initargs=(l,))
-        toolbox.register("map", pool.map)
     try:
         with open(checkpoint, "r") as cp_file:
             cp = pickle.load(cp_file)
@@ -64,7 +60,7 @@ def main(checkpoint = None):
     for g in range(gen+1, NGEN):
         print ("Generation %d..." % g)
         print("Selecting and cloning the next generation...")
-        offspring = toolbox.select(pop, len(pop))
+        offspring = toolbox.select(pop, (len(pop)/2))
         
         offspring = list(map(toolbox.clone, offspring))
         
@@ -96,7 +92,11 @@ def main(checkpoint = None):
 
 
 if __name__ == "__main__":
-    
+   
+    if parallel_on: 
+	l=multiprocessing.Lock()
+        pool = multiprocessing.Pool(NUM_PROCESSES, initializer=pool_init, initargs=(l,), maxtasksperchild=1)
+        toolbox.register("map", pool.map)
 
     main(checkpoint_name)
     
