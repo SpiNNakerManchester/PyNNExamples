@@ -26,6 +26,7 @@ from elephant.statistics import mean_firing_rate
 from numpy import number
 import multiprocessing
 import gc
+from spalloc.job import JobDestroyedError
 
 def pool_init(l):  
     gc.collect()
@@ -51,6 +52,11 @@ def evalModel(gene):
         sys.stderr = old_stderr            
         print ("Process " + current.name + " finished sucessfully: %s" % (model.cost,)) 
         return model.cost;
+      
+    except JobDestroyedError as e:
+        print(e)
+	raise e
+	sys.exit()    
     except KeyboardInterrupt:
         raise KeyboardInterruptError()
     except Exception as e:
@@ -164,6 +170,11 @@ class NetworkModel(object):
             run_sim()
             if self.cost == None:
                 raise Exception
+
+        except JobDestroyedError as e:
+            print(e)
+	    raise e
+	    sys.exit()    
 	except Exception as e:
 		traceback.print_exc()
                 print(e)
