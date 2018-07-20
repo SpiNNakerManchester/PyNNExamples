@@ -37,15 +37,19 @@ w2s_target = 5.
 
 input_pop_size =1
 column_size = 16#32
-number_of_columns = 100#50
+number_of_columns = 50#250
 active_pop_size = column_size*number_of_columns
-cd_pop_size = int(1 * active_pop_size)
+cd_pop_size = int(2 * active_pop_size)
+if 0:#cd_pop_size<2000:
+    get_weights=True
+else:
+    get_weights=False
 # assume 1% of 2048 columns are active per 1            scaled_a_plus = int(round(self._a_plus *self._w_max * w))
 #if each column fired at 1Hz then there would be approx. 2 active columns per timestep
 #we assume each column fires at around 10Hz, producing approx. 20 active columns per ms
 column_firing_rate = 2.#10.
 isi = 1000./column_firing_rate
-num_firings = 600
+num_firings =300#1200
 predict_delay = 10#8
 input_spikes = []
 # for j in range(number_of_columns):
@@ -92,15 +96,16 @@ sim.set_number_of_neurons_per_core(sim.IF_curr_exp,32)
 sim.set_number_of_neurons_per_core(sim.SpikeSourcePoisson,32)
 
 duration = num_firings * isi
-num_recordings =20
+max_period = 10000.#60000.#
+num_recordings =int((duration/max_period)+1)
 #================================================================================================
 # Populations
 #================================================================================================
 input_pop = sim.Population(num_columns_active_per_pattern*num_patterns_in_sequence*num_sequences,sim.SpikeSourceArray(spike_times=input_spikes))
 #one large population containing multiple 'columns'
-active_pop =sim.Population(active_pop_size,sim.IF_curr_exp,cell_params,label="active_pop")
+active_pop =sim.Population(active_pop_size,sim.IF_curr_exp,cell_params,label="active_fixed_weight_scale")#label="active_pop")#
 # cd_pop = sim.Population(num_columns_active_per_pattern*num_patterns_in_sequence,sim.SpikeSourceArray(spike_times=predict_spikes))
-cd_pop = sim.Population(cd_pop_size,sim.IF_curr_exp,target_cell_params,label="fixed_weight_scale")
+cd_pop = sim.Population(cd_pop_size,sim.IF_curr_exp,target_cell_params,label="cd_fixed_weight_scale")
 noise_rate=1.
 noise_pop_active = sim.Population(
         active_pop_size, sim.SpikeSourcePoisson(rate=noise_rate, duration=duration),
@@ -157,8 +162,8 @@ initial_sync_num = 3.#num_columns_active_per_pattern#column_size#30.#15.#13.#30.
 av_weight = w2s_target/initial_sync_num
 w_max_cd = av_weight*1.1#w2s_target/2.#
 w_min_cd = av_weight*0.5#0
-a_plus_cd = 0.5#0.1
-a_minus_cd = 0.5#0.1
+a_plus_cd = 0.5#1.#
+a_minus_cd = 0.5#1.#
 tau_plus_cd = 16.
 tau_minus_cd =30.
 # ten_perc = av_weight/10.
@@ -192,8 +197,9 @@ structure_model_with_stdp = sim.StructuralMechanismSTDP(
     weight=av_weight,  # Use this weights when creating a new synapse
     max_weight=av_weight*0.9*2.,#av_weight*2,
     s_max=int(initial_sync_num*1.5),#int(num_columns_active_per_pattern*1.5),  # Maximum allowed fan-in per target-layer neuron
-    #TODO: maybe weight scale for the post population should be calculated using this value?
+    #TODO: weight scale for the post population should be calculated using this value?
     grid=[active_pop_size, 1], # 1d spatial org of neurons, uncomment this if wanted
+    random_partner=False,
     #selecting one of the last neurons to have spiked
     f_rew=10 ** 4,  # Hz
     p_elim_dep=1.,#0.99,
@@ -212,8 +218,8 @@ active_cd_projection = sim.Projection(
 #================================================================================================
 tau_plus=16.
 tau_minus=30.
-a_plus =0.2#1#0.001#
-a_minus =0.2#1.#0.5#1#0.001#
+a_plus =1.#0.5#0.001#
+a_minus =1.#0.5#0.5#1#0.001#
 w_min = 0
 w_max = wpred
 stdp_initial_weight = 0.#RandomDistribution('uniform',(0.,w_max/10.))
@@ -258,11 +264,11 @@ structure_model_with_stdp_pred = sim.StructuralMechanismSTDP(
     s_max=5,  # Maximum allowed fan-in per target-layer neuron
     #grid=[np.sqrt(active_pop_size), np.sqrt(active_pop_size)],  # 2d spatial org of neurons
     grid=[cd_pop_size, 1], # 1d spatial org of neurons, uncomment this if wanted
-    #random_partner=True,  # Choose a partner neuron for formation at random,
+    random_partner=False,  # Choose a partner neuron for formation at random,
     # as opposed to selecting one of the last neurons to have spiked
     f_rew=10 ** 4,  # Hz
     p_elim_pot=0.,
-    p_elim_dep=1,
+    p_elim_dep=0.1,
     delay=stdp_delays  # Use this delay when creating a new synapse
 )
 
@@ -280,36 +286,38 @@ cd_active_projection = sim.Projection(
 #================================================================================================
 #  Run simuluation
 #================================================================================================
-weights_cd = cd_active_projection.get("weight", "list", with_address=True)
-weights = active_cd_projection.get("weight", "list", with_address=True)
 
-varying_weights=[]
-varying_weights_cd=[]
+if get_weights:
+    weights_cd = cd_active_projection.get("weight", "list", with_address=True)
+    weights = active_cd_projection.get("weight", "list", with_address=True)
+    varying_weights=[]
+    varying_weights_cd=[]
 
 run_one=True
 for i in range(num_recordings):
     sim.run(duration/num_recordings)
-    if run_one:
-        weights_list = []
-        for (source, target, weight) in weights:
-            weights_list.append((source, target, weight))
-        varying_weights.append(weights_list)
-        weights_cd_list = []
-        for (source, target, weight) in weights_cd:
-            weights_cd_list.append((source, target, weight))
+    if get_weights:
+        if run_one:
+            weights_list = []
+            for (source, target, weight) in weights:
+                weights_list.append((source, target, weight))
+            varying_weights.append(weights_list)
+            weights_cd_list = []
+            for (source, target, weight) in weights_cd:
+                weights_cd_list.append((source, target, weight))
+            varying_weights_cd.append(weights_cd_list)
+            run_one = False
+        weights_cd = cd_active_projection.get("weight", "list", with_address=True)
+        weights_cd_list=[]
+        for (source,target,weight) in weights_cd:
+            weights_cd_list.append((source,target,weight))
         varying_weights_cd.append(weights_cd_list)
-        run_one = False
-    weights_cd = cd_active_projection.get("weight", "list", with_address=True)
-    weights_cd_list=[]
-    for (source,target,weight) in weights_cd:
-        weights_cd_list.append((source,target,weight))
-    varying_weights_cd.append(weights_cd_list)
 
-    weights = active_cd_projection.get("weight", "list", with_address=True)
-    weights_list=[]
-    for (source,target,weight) in weights:
-        weights_list.append((source,target,weight))
-    varying_weights.append(weights_list)
+        weights = active_cd_projection.get("weight", "list", with_address=True)
+        weights_list=[]
+        for (source,target,weight) in weights:
+            weights_list.append((source,target,weight))
+        varying_weights.append(weights_list)
 
 active_data =active_pop.get_data(["spikes"])
 cd_data = cd_pop.get_data(["spikes"])
@@ -337,7 +345,8 @@ results_directory = '/home/rjames/Dropbox (The University of Manchester)/EarProj
                     '/HTM/{}_patterns_{}sequences_{}columns_{}active_neurons_{}Hz_{}cds_{}Taup_{}taumin_{}alpha_spike_pair_structural_plasticty'\
                     .format(num_patterns_in_sequence,num_sequences,number_of_columns,column_size,column_firing_rate,cd_pop_size,tau_plus,tau_minus,a_plus)
 
-results_directory = None
+# results_directory = None
+# results_directory+='_nocdact_10timescale'
 if results_directory is not None:
     if not os.path.isdir(results_directory):
         bashCommand = ["mkdir",results_directory]
@@ -349,11 +358,18 @@ if results_directory is not None:
 #                  title='Predictive Neuron to Active Neuron Weight',
 #                  filepath=results_directory)
 
-weight_dist_plot(varying_weights_cd,1,plt,0.0,w_max,title="cd->active weight distribution",filepath=results_directory)
-weight_dist_plot(varying_weights,1,plt,w_min_cd,w_max_cd,title="active->cd weight distribution",filepath=results_directory)
+if get_weights:
+    weight_dist_plot(varying_weights_cd,1,plt,0.0,w_max,title="cd->active weight distribution",filepath=results_directory)
+    weight_dist_plot(varying_weights,1,plt,w_min_cd,w_max_cd,title="active->cd weight distribution",filepath=results_directory)
+    connection_hist_plot(varying_weights_cd, pre_size=cd_pop_size, post_size=active_pop_size, plt=plt,
+                         title="cd->active", filepath=results_directory)
+    connection_hist_plot(varying_weights, pre_size=active_pop_size, post_size=cd_pop_size, plt=plt, title="active->cd",
+                         filepath=results_directory)
 
 spike_raster_plot_8(active_data.segments[0].spiketrains,plt,duration/1000.,active_pop_size+1,0.001,title="active pop activity",filepath=results_directory,
                     )#onset_times=onset_times,pattern_duration=pattern_duration)
+spike_raster_plot_8(active_data.segments[0].spiketrains,plt,duration/1000.,active_pop_size+1,0.001,title="active pop activity_start",filepath=results_directory,
+                    onset_times=onset_times,pattern_duration=pattern_duration,xlim=(onset_times[0][0],onset_times[0][1]))
 spike_raster_plot_8(active_data.segments[0].spiketrains,plt,duration/1000.,active_pop_size+1,0.001,title="active pop activity_final",filepath=results_directory,
                     onset_times=onset_times,pattern_duration=pattern_duration,xlim=(onset_times[0][-1],0.001*duration))
 spike_raster_plot_8(cd_data.segments[0].spiketrains,plt,duration/1000.,cd_pop_size+1,0.001,title="cd pop activity",filepath=results_directory,
@@ -367,7 +383,6 @@ spike_raster_plot_8(cd_data.segments[0].spiketrains,plt,duration/1000.,cd_pop_si
 # cell_voltage_plot_8(mem_v, plt, duration, 1.,scale_factor=0.001,id=inh_id,title='Inhibited Active Neuron',filepath=results_directory)
 
 if results_directory is not None:
-    np.savez(results_directory+'/varying_weights',varying_weights=varying_weights,varying_weights_cd=varying_weights_cd)
 
     final_active_spike_train = []
     for train in active_data.segments[0].spiketrains:
@@ -382,9 +397,11 @@ if results_directory is not None:
         # selective_neuron_search(ms_onset_times,active_data.segments[0].spiketrains,time_window=pattern_duration,
     #                         final_pattern_start =ms_onset_times[0][-1],plt=plt,filepath=results_directory,np=np,
     #                         significant_spike_count=1)
-
-    connection_hist_plot(varying_weights_cd, pre_size=cd_pop_size, post_size=active_pop_size,plt=plt,title="cd->active",filepath=results_directory)
-    connection_hist_plot(varying_weights, pre_size=active_pop_size, post_size=cd_pop_size,plt=plt,title="active->cd",filepath=results_directory)
+    if get_weights:
+        np.savez(results_directory + '/varying_weights', varying_weights=varying_weights,
+                 varying_weights_cd=varying_weights_cd)
+        # connection_hist_plot(varying_weights_cd, pre_size=cd_pop_size, post_size=active_pop_size,plt=plt,title="cd->active",filepath=results_directory)
+        # connection_hist_plot(varying_weights, pre_size=active_pop_size, post_size=cd_pop_size,plt=plt,title="active->cd",filepath=results_directory)
 
 if results_directory is None:
     plt.show()

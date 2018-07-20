@@ -26,12 +26,14 @@ def generate_signal(signal_type="tone",fs=22050.,dBSPL=40.,
         phi = 0
         f = freq[0]
         delta = 2. * numpy.pi * f * T
-        f_delta = (freq[1] - freq[0]) /num_samples
+        # f_delta = (freq[1] - freq[0]) /num_samples
+        f_delta = numpy.power((freq[1] / freq[0]),1./num_samples)# 1.0002534220677803#(freq[1] / freq[0]) /num_samples
         signal = []
         for i in range(int(num_samples)):
             signal.append(-amp * numpy.sin(phi))
             phi = phi + delta
-            f = f + f_delta
+            f = f * f_delta
+            # f = f + f_delta
             delta = 2. * numpy.pi * f * T
 	if not ascending:
 	    signal = signal[::-1]
@@ -209,6 +211,7 @@ def spike_raster_plot_8(spikes,plt,duration,ylim,scale_factor=0.001,title=None,f
             pattern_legend=[]
             legend_labels=[]
             colours = ['b', 'g', 'r', 'c', 'm', 'y', 'k','w']
+            # labels = ['A','B','C',]
             for i,pattern in enumerate(onset_times):
                 pattern_legend.append(plt.Line2D([0], [0], color=colours[i%8], lw=4,alpha=0.2))
                 legend_labels.append("s{}".format(i+1))

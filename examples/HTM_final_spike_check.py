@@ -1,7 +1,8 @@
 import numpy as np
 
 #read final spikes file
-results_directory = "/home/rjames/Dropbox (The University of Manchester)/EarProject/Pattern_recognition/HTM/4_patterns_2sequences_50columns_16active_neurons_2.0Hz_800cds_16.0Taup_30.0taumin_0.2alpha_spike_pair_structural_plasticty/"
+# results_directory = "/home/rjames/Dropbox (The University of Manchester)/EarProject/Pattern_recognition/HTM/4_patterns_2sequences_50columns_16active_neurons_2.0Hz_800cds_16.0Taup_30.0taumin_0.2alpha_spike_pair_structural_plasticty/"
+results_directory = "/home/rjames/Dropbox (The University of Manchester)/EarProject/Pattern_recognition/HTM/4_patterns_2sequences_50columns_16active_neurons_2.0Hz_800cds_16.0Taup_30.0taumin_1.0alpha_spike_pair_structural_plasticty"
 final_spikes = np.load(results_directory+"/final_spike_trains.npz")
 
 ms_onset_times = final_spikes['ms_onset_times']

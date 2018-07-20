@@ -47,8 +47,8 @@ predict_spikes = [i*isi-predict_delay for i in range(1,num_firings)]#[5.]
 
 tau_plus=16.
 tau_minus=30.
-a_plus =0.1#0.001#
-a_minus =0.1#0.001#
+a_plus =0.5#0.001#
+a_minus =0.5#0.001#
 w_min = 0
 w_max = wpred
 
@@ -57,7 +57,7 @@ sim.setup(timestep=1.0, min_delay=1.0, max_delay=51.0)
 
 #create populations
 input_pop = sim.Population(1,sim.SpikeSourceArray(spike_times=input_spikes))
-active_pop =sim.Population(active_pop_size,sim.IF_curr_exp,cell_params,label="active_pop")
+active_pop =sim.Population(active_pop_size,sim.IF_curr_exp,cell_params,label="fixed_weight_scale")
 cd_pop = sim.Population(1,sim.SpikeSourceArray(spike_times=predict_spikes))
 
 active_pop.record(["spikes","v"])
