@@ -1,5 +1,5 @@
 from common_tools import pool_init, evalModel, data_summary, stats_setup
-from basic_network import MnistModel, NetworkModel
+from basic_network import MnistModel, NetworkModel, ConvMnistModel
 from deap import algorithms, base, creator, tools
 import random
 import numpy as np
@@ -9,12 +9,13 @@ import pickle
 
 from functools import partial
 
+#Adapted from DEAP examples
 
 #GA and parallelisation variables
 
 parallel_on = True
 NUM_PROCESSES = 10
-IND_SIZE = (MnistModel.input_pop_size * MnistModel.pop_1_size) + (MnistModel.pop_1_size * MnistModel.output_pop_size)
+IND_SIZE = (ConvMnistModel.input_pop_size * ConvMnistModel.pop_1_size) + (ConvMnistModel.pop_1_size * ConvMnistModel.output_pop_size)
 POP_SIZE = 20
 NGEN = 320
 toolbox = base.Toolbox()
