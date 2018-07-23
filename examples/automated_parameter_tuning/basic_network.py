@@ -54,7 +54,8 @@ def evalModel(gene):
         return model.cost;
       
     except JobDestroyedError as e:
-        print(e)
+        traceback.print_exc()
+	print(e)
 	raise e
 	sys.exit()    
     except KeyboardInterrupt:
@@ -149,11 +150,11 @@ class NetworkModel(object):
             pop_1.record(["spikes"])
             output_pop.record(["spikes"])
             input_pop.record(["spikes"]) 
-            lock.acquire()
-            print("lock acquired")
-	    sleep(11)
-            lock.release()
-            print("lock released")
+            #lock.acquire()
+            #print("lock acquired")
+	    #sleep(11)
+            #lock.release()
+            #print("lock released")
             print("running sim")
             sim.run(self.simtime)
             print("getting data")

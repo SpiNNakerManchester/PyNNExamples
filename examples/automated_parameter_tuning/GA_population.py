@@ -13,10 +13,10 @@ from functools import partial
 #GA and parallelisation variables
 
 parallel_on = True
-NUM_PROCESSES = 20 
+NUM_PROCESSES = 5 
 IND_SIZE = (int(ConvMnistModel.filter_size**2)) + (ConvMnistModel.pop_1_size * ConvMnistModel.output_pop_size)
 POP_SIZE = 100
-NGEN = 100000 
+NGEN = 10000000 
 toolbox = base.Toolbox()
 
 #Setting up GA
