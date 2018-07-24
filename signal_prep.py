@@ -440,9 +440,10 @@ def weight_dist_plot(varying_weights,num_ticks,plt,w_min,w_max,np=numpy,title=No
 
 
 def cell_voltage_plot_8(v, plt, duration_ms, time_step_ms,scale_factor=0.001, id=None, title='',filepath=None):
-    times = range(0,int(duration_ms),int(time_step_ms))
-    scaled_times = [time*scale_factor for time in times]
+    # times = range(0,int(duration_ms),int(time_step_ms))
     membrane_voltage = v[0]
+    times = range(0,membrane_voltage.shape[0])
+    scaled_times = [time*scale_factor for time in times]
     if id is not None:
         mem_v = [v_t[id] for v_t in membrane_voltage]
         title = title + str(id + 1)
@@ -763,3 +764,31 @@ def connection_hist_plot(varying_weights,pre_size,post_size,plt,title='',filepat
     plt.hist(target_list,bins=post_size,alpha=0.5,range=(0,post_size))
     if filepath is not None:
         plt.savefig(filepath + '/'+in_figure+'.eps')
+
+def sparsity_measure(onset_times,output_spikes,onset_window=5.,from_time=0):
+    import numpy as np
+    n_neurons = float(len(output_spikes))
+    sparsity_matrix = [[] for _ in range(len(onset_times))]
+    # np_output_spikes = [[0.]for _ in range(int(n_neurons))]
+    # for id, neuron in enumerate(output_spikes):
+    #     for spike in neuron:
+    #         np_output_spikes[id].append(spike.item())
+    # np_output_spikes = np.asarray(np_output_spikes)
+
+    #go through each stimulus onset time and bin all the subsequent output spike IDs that fall in onset time + onset window
+    for id,stimulus in enumerate(onset_times):
+        for time in stimulus:
+            if time >= from_time:
+                #only care if at least one spike per neuron has occured in window
+                # active = np.logical_and((np_output_spikes>=time) & (np_output_spikes<(time+onset_window)))
+                # a =  n_z & np.ones(n_neurons)
+                counts = np.zeros(n_neurons)
+                for out_id,neuron in enumerate(output_spikes):
+                    for output_spike in neuron:
+                        if output_spike >= time and output_spike < (time+onset_window) and counts[out_id]==0.:
+                            counts[out_id]+=1
+                #calculate sum of active neurons
+                sum = np.sum(counts)
+                #record the percentage of total active IDs in each bin relative to the total number of neurons in output spikes
+                sparsity_matrix[id].append((sum/n_neurons)*100.)
+    return sparsity_matrix

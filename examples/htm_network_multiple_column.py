@@ -345,7 +345,7 @@ results_directory = '/home/rjames/Dropbox (The University of Manchester)/EarProj
                     '/HTM/{}_patterns_{}sequences_{}columns_{}active_neurons_{}Hz_{}cds_{}Taup_{}taumin_{}alpha_spike_pair_structural_plasticty'\
                     .format(num_patterns_in_sequence,num_sequences,number_of_columns,column_size,column_firing_rate,cd_pop_size,tau_plus,tau_minus,a_plus)
 
-# results_directory = None
+results_directory = None
 # results_directory+='_nocdact_10timescale'
 if results_directory is not None:
     if not os.path.isdir(results_directory):
