@@ -137,20 +137,24 @@ jee = 3.
 
 # Noise projections
 sim.Projection(
-    i_noise_pre, pre_pop, sim.OneToOneConnector(), receptor_type='excitatory',
+    i_noise_pre, pre_pop, sim.OneToOneConnector(),
+    receptor_type='excitatory',
     synapse_type=sim.StaticSynapse(weight=jee * 0.05))
 sim.Projection(
-    i_noise_post, post_pop, sim.OneToOneConnector(), receptor_type='excitatory',
+    i_noise_post, post_pop, sim.OneToOneConnector(),
+    receptor_type='excitatory',
     synapse_type=sim.StaticSynapse(weight=jee * 0.05))
 
 # Additional Inputs projections
 for i in range(len(i_add_pre)):
     sim.Projection(
-        i_add_pre[i], pre_pop, sim.OneToOneConnector(), receptor_type='excitatory',
+        i_add_pre[i], pre_pop, sim.OneToOneConnector(),
+        receptor_type='excitatory',
         synapse_type=sim.StaticSynapse(weight=jee * 0.05))
 for i in range(len(i_add_post)):
     sim.Projection(
-        i_add_post[i], post_pop, sim.OneToOneConnector(), receptor_type='excitatory',
+        i_add_post[i], post_pop, sim.OneToOneConnector(),
+        receptor_type='excitatory',
         synapse_type=sim.StaticSynapse(weight=jee * 0.05))
 
 # Structurally plastic connection between pre_pop and post_pop
