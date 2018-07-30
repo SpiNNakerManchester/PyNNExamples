@@ -21,9 +21,17 @@ NGEN = 320
 toolbox = base.Toolbox()
 
 #Setting up ES
-creator.create("FitnessMin", base.Fitness, weights=(-1.0, -0.0001, 1.0))
-creator.create("Gene", list, fitness=creator.FitnessMin)
+creator.create("FitnessMin", base.Fitness, weights=(1.0,))
+creator.create("Individual", list, fitness=creator.FitnessMin)
 creator.create("Strategy", np.array)
+
+toolbox.register("attribute", random.uniform, -10, 10)
+toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.attribute, n=IND_SIZE)
+toolbox.register("population", tools.initRepeat, list, toolbox.individual)
+
+toolbox.register("evaluate", evalModel)
+toolbox.register("select", tools.selBest)
+
 
 def generateES(icls, scls, size, imin, imax, smin, smax):
     ind = icls(random.uniform(imin, imax) for _ in range(size))

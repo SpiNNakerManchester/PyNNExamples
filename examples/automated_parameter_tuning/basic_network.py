@@ -398,7 +398,7 @@ class ConvMnistModel(NetworkModel):
     '''convolutional MNIST model'''
     on_duration = 200
     off_duration = 10
-    timestep=1
+    timestep=1.0
     neurons_per_core=255
     input_pop_size=784
     filter_size = 5
