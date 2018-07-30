@@ -113,7 +113,7 @@ input_to_columns_list=[]
 
 for i in range(input_pop_size):
     for j in range(column_size):
-        input_to_columns_list.append((i,j))
+        input_to_columns_list.append((i,j+i*column_size))
 
 input_projection = sim.Projection(input_pop,active_pop,sim.FromListConnector(input_to_columns_list),
                                   synapse_type=sim.StaticSynapse(weight=w2s,delay=1.))
