@@ -779,12 +779,10 @@ def sparsity_measure(onset_times,output_spikes,onset_window=5.,from_time=0):
     for id,stimulus in enumerate(onset_times):
         for time in stimulus:
             if time >= from_time:
-                #only care if at least one spike per neuron has occured in window
-                # active = np.logical_and((np_output_spikes>=time) & (np_output_spikes<(time+onset_window)))
-                # a =  n_z & np.ones(n_neurons)
-                counts = np.zeros(n_neurons)
+                counts = np.zeros(int(n_neurons))
                 for out_id,neuron in enumerate(output_spikes):
                     for output_spike in neuron:
+                        # only care if at least one spike per neuron has occured in window
                         if output_spike >= time and output_spike < (time+onset_window) and counts[out_id]==0.:
                             counts[out_id]+=1
                 #calculate sum of active neurons

@@ -14,14 +14,14 @@ target_cell_params = {'cm': 0.25,  # nF
                'i_offset': 0.0,
                'tau_m': 2.,#3.,#10.0,
                'tau_refrac': 1.0,#2.0,#
-               'tau_syn_E': 1.0,#2.5,
-               'tau_syn_I': 1.0,#2.5,
+              # 'tau_syn_E': 1.0,#2.5,
+              # 'tau_syn_I': 1.0,#2.5,
                'v_reset': -70.0,
                'v_rest': -65.0,
                'v_thresh': -55.4
                }
 
-w2s_target = 5.
+w2s_target = 2.5#5.
 
 connection_weight = w2s_target#/2.
 number_of_inputs = 1
