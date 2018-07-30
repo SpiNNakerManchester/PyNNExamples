@@ -16,7 +16,7 @@ parallel_on = True
 NUM_PROCESSES = 5 
 IND_SIZE = (int(ConvMnistModel.filter_size**2)) + (ConvMnistModel.pop_1_size * ConvMnistModel.output_pop_size)
 POP_SIZE = 100
-NGEN = 10000000 
+NGEN = 10
 toolbox = base.Toolbox()
 
 #Setting up GA

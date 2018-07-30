@@ -1,8 +1,10 @@
 import sys, os
+from neo.core import Segment, SpikeTrain
+from quantities import s, ms
 #Dependencies need to be sorted
-sys.path.append('/localhome/mbaxsej2/optimisation_env/NE15')
-home = os.environ['VIRTUAL_ENV']
-NE15_path = home + '/git/NE15'
+#sys.path.append('/localhome/mbaxsej2/optimisation_env/NE15')
+#home = os.environ['VIRTUAL_ENV']
+#NE15_path = home + '/git/NE15'
 #This needs to be streamlined to make code portable
 import traceback
 from decimal import *
@@ -22,11 +24,14 @@ from os.path import expanduser
 from time import sleep
 from spinnman.exceptions import SpinnmanIOException
 from spinn_front_end_common.utilities import globals_variables
-from elephant.statistics import mean_firing_rate
+from elephant.statistics import mean_firing_rate, instantaneous_rate
 from numpy import number
 import multiprocessing
 import gc
 from spalloc.job import JobDestroyedError
+
+
+home = os.path.expanduser("~")
 
 def pool_init(l):  
     gc.collect()
@@ -53,11 +58,11 @@ def evalModel(gene):
         print ("Process " + current.name + " finished sucessfully: %s" % (model.cost,)) 
         return model.cost;
       
-    except JobDestroyedError as e:
-        traceback.print_exc()
-	print(e)
-	raise e
-	sys.exit()    
+    #except JobDestroyedError as e:
+    #    traceback.print_exc()
+	#print(e)
+	#raise e
+	#sys.exit()    
     except KeyboardInterrupt:
         raise KeyboardInterruptError()
     except Exception as e:
@@ -72,9 +77,8 @@ def evalModel(gene):
 class NetworkModel(object):
     '''Class representing model'''
    
-    def __init__(self, simtime, timestep, neurons_per_core, input_pop_size, pop_1_size, output_pop_size, on_duration, off_duration, gene=None):
+    def __init__(self, timestep, neurons_per_core, input_pop_size, pop_1_size, output_pop_size, on_duration, off_duration, gene=None):
         self.spiketrains = {}
-        self.simtime = simtime
         self.timestep = timestep
         self.neurons_per_core = neurons_per_core
         self.input_pop_size = input_pop_size
@@ -85,16 +89,88 @@ class NetworkModel(object):
             gene = self.generate_test_gene()
         self.gene = gene
         self.weights_1, self.weights_2 = self.gene_to_weights()
-        self.cost = None
+        self.on_duration = on_duration
+        self.off_duration = off_duration 
+        self.test_set = [2,2,2,2,2,2,2,2,2,2]
+        self.number_digits = len(self.test_set)
+        self.number_tests = sum(self.test_set)
+        self.simtime = (self.on_duration + self.off_duration)*self.number_tests
         self.test_images = None
         self.test_labels = None
         self.test_periods = None
-        self.select_random_test_images()
-        self.label = None
-        self.on_duration = on_duration
-        self.off_duration = off_duration   
+        self.cost = None
+        
+
+        self.generate_test_data()
         self.generate_input_st() 
-        self.test_periods = self.generate_test_periods()
+
+        
+    def generate_test_data(self):
+        #picking test images from data in accordance with test_set  
+        mndata = MNIST(home)
+        mndata.gz = True
+        images, labels = mndata.load_testing()
+        
+        test_data = [[] for i in range(self.number_digits)]
+        
+
+        for label, image in zip(labels, images):
+            test_data[label].append(image)
+            
+        test_images = [[] for i in range(self.number_digits)]
+        test_labels = []
+        
+        for i in range(len(self.test_set)):
+            for j in range(self.test_set[i]):
+                pick = random.randint(0,len(test_data[i]))
+                picked_image = test_data[i][pick]
+                test_images[i].append(picked_image)
+                test_labels.append(i)
+        self.test_images = test_images
+        self.test_labels = np.asarray(test_labels)
+        
+        # generating the time periods to identify when input presented in the spike train
+        
+        test_time = self.on_duration + self.off_duration
+        self.test_periods = np.arange(start= 0, step= test_time, stop= test_time*(self.number_tests+1))
+        print(self.test_periods)       
+        return;
+    
+    def one_hot_encode_labels(self):
+        label_array = np.zeros((self.number_tests, self.number_digits))
+        cumulative_test = np.cumsum(self.test_set)
+        
+        counter = 0
+        for i in range(self.number_digits):
+            for j in range(self.test_set[i]):
+                label_array[counter][i] = 1
+                counter += 1
+        label_array = np.asarray(label_array, dtype=int)
+        return label_array;
+    
+    def generate_input_st(self):
+        '''Generating the poisson spiketrains from image'''
+        linear_test_images = []
+        for i in self.test_images:
+            for j in i:
+                linear_test_images.append(j)
+        
+        spikes_all = np.empty((784,), dtype=np.object_)
+        spikes_all.fill([])
+        for i in range(self.number_tests):
+            img = np.reshape(linear_test_images[i], (28,28))
+            img = np.divide(img, 255.0)
+            height, width = img.shape
+            max_freq = 1000 #Hz
+            spikes = poisson.mnist_poisson_gen(numpy.array([img.reshape(height*width)]),\
+                                                height, width, max_freq, self.on_duration, self.off_duration)
+            spikes = np.asarray(spikes)
+            for j in range(0, len(spikes)):
+                spikes[j] = [x+(self.on_duration*i)+(self.off_duration*i) for x in spikes[j]]
+                spikes_all[j] = spikes_all[j] + spikes[j]
+        self.spiketrains['input_pop'] = spikes_all        
+        
+        return;
 
     def generate_test_gene(self):
         '''generates a test gene'''
@@ -117,13 +193,13 @@ class NetworkModel(object):
         for i in range(0, self.input_pop_size):
             for j in range (0, self.pop_1_size):
                 if abs(self.gene[counter]) > 0.05:
-                    weights_1.append((i, j, self.gene[counter], 0.1))
+                    weights_1.append((i, j, self.gene[counter], 1))
                 counter += 1
         
         for i in range(0, self.pop_1_size):
             for j in range (0, self.output_pop_size):
                 if abs(self.gene[counter]) > 0.05:
-                    weights_2.append((i, j, self.gene[counter], 0.1))
+                    weights_2.append((i, j, self.gene[counter], 1))
                 counter += 1        
         return weights_1, weights_2;
     
@@ -171,13 +247,13 @@ class NetworkModel(object):
             run_sim()
             if self.cost == None:
                 raise Exception
-
-        except JobDestroyedError as e:
-            print(e)
-	    raise e
-	    sys.exit()    
+        
+        #except JobDestroyedError as e:
+        #    print(e)
+	    #raise e
+	    #sys.exit()    
 	except Exception as e:
-		traceback.print_exc()
+		#traceback.print_exc()
                 print(e)
                 if num_retries < max_retries:
                     num_retries += 1
@@ -190,75 +266,30 @@ class NetworkModel(object):
                     raise Exception
                     return;
     
-    def select_random_test_images(self):
-        mndata = MNIST(home)
-        mndata.gz = True
-        images, labels = mndata.load_testing()
-        number_test_images = 10
-        self.test_images = np.empty((10, 784))
-        self.test_labels = np.empty((10))    
-        for i in range(0, number_test_images):
-            index = random.randrange(0, len(images))
-            self.test_images[i] = images[index]
-            self.test_labels[i] = labels[index]
-        return;
     
-    def one_hot_encode_labels(self):
-        label_array = np.zeros((len(self.test_labels), 10))
-        self.test_labels = np.asarray(self.test_labels, dtype=int)
-        label_array[np.arange(10), self.test_labels] = 1
-        return label_array;
-        
-    def generate_test_periods(self):
-        number_test= len(self.test_images)
-        test_time = self.on_duration + self.off_duration
-        test_periods = np.arange(start= 0, step= test_time, stop= test_time*11)
-        return test_periods;
-    
-    def generate_input_st(self):
-        '''Generating the poisson spiketrains from image'''
-        number_tests = len(self.test_images)
-
-        spikes_all = np.empty((784,), dtype=np.object_)
-        spikes_all.fill([])
-        for i in range(1,number_tests):
-            img = np.reshape(self.test_images[i], [28,28])
-            img = np.divide(img, 255.0)
-            height, width = img.shape
-            max_freq = 1000 #Hz
-            spikes = poisson.mnist_poisson_gen(numpy.array([img.reshape(height*width)]),\
-                                                height, width, max_freq, self.on_duration, self.off_duration)
-            spikes = np.asarray(spikes)
-            for j in range(0, len(spikes)):
-                spikes[j] = [x+(self.on_duration*i)+(self.off_duration*i) for x in spikes[j]]
-                spikes_all[j] = spikes_all[j] + spikes[j]
-        self.spiketrains['input_pop'] = spikes_all        
-        
-        return;
     
     def cost_function(self):
         '''Returns the value of the cost function for the test.'''
         label_array = self.one_hot_encode_labels()
         spiketrain = self.spiketrains["output_pop"]
-        rates = np.zeros([10,10])
-        for i in range(0, len(self.test_periods)-1):
-            for j in range(0, len(spiketrain)):
+        rates = np.zeros((self.number_tests, self.number_digits))
+        for i in range(len(self.test_periods)-1):
+            for j in range(len(spiketrain)):
                 rates[i][j] = mean_firing_rate(spiketrain[j], self.test_periods[i], self.test_periods[i+1])
+
+        normalised_rates = np.divide(rates, rates.sum(axis=1)[:, None])
         
-        normalised_rates = rates / rates.sum(axis=0)
-        predictions = np.argmax(normalised_rates, axis=0)
+        print(normalised_rates)
         
-        #print(predictions)
-        #print(self.test_labels)
+        predictions = np.argmax(normalised_rates, axis=1)
+
+        print(predictions)
+        print(self.test_labels)
         
         accuracy_array = np.array(predictions == self.test_labels)
-        accuracy = np.true_divide(np.sum(accuracy_array),len(accuracy_array))        
-        
-
-        
+        accuracy = np.true_divide(np.sum(accuracy_array),len(accuracy_array))         
         
         '''
-        
         output = np.divide(spikes, float(np.sum(spikes)))
         
         #Cross entropy
@@ -267,13 +298,14 @@ class NetworkModel(object):
             if output[i]>0.0:
                 cross_entropy += label_list[i]*math.log(output[i])/math.log(2)
         cross_entropy = cross_entropy * -1
-        '''
+
         #L1 norm (minimise to give sparsity)
         #average weight magnitude
         norm  = 0.0
         for i in self.gene:
             norm += abs(i)
         norm = norm/len(self.gene)
+        '''
         
         self.cost = (accuracy,)
         
@@ -289,17 +321,28 @@ class NetworkModel(object):
 
     
     def visualise_input(self):
-        pylab.figure(1)
-        spikes = self.spiketrains['input_pop']
-        output = []
-        for spike in spikes:
-            output.append(sum(1 for i in spike))
-        output = np.divide(output, float(np.sum(output)))
-        output = np.reshape(output,(28,28))
-        plt.imshow(output)
-        pylab.figure(2)
-        plt.imshow(self.img)
+        
+        #must be adapted for variable length input (train set other than all ones)
+        
+        input_spiketrain = self.spiketrains['input_pop']
+        input_neo = Segment()
+        
+        for i in input_spiketrain:
+            input_neo.spiketrains.append(SpikeTrain(times=i*ms, t_stop=2100))
+       
+        mean_firing_rates = []
+        
+        for st in input_neo.spiketrains:
+            mean_firing_rates.append(float(mean_firing_rate(st, self.test_periods[9], self.test_periods[10])))
+        print mean_firing_rates
+        
+        inimage = np.reshape(np.asarray(mean_firing_rates), (28,28))
+        plt.imshow(inimage)
+        plt.show()
+        
+        
         return;
+
     
     def visualise_input_weights(self):
         
@@ -349,15 +392,13 @@ class NetworkModel(object):
 
 class MnistModel(NetworkModel):
     def __init__(self, gene=None):
-        super(MnistModel, self).__init__(simtime=2100, timestep=0.1, neurons_per_core=255, input_pop_size=784, pop_1_size=100, output_pop_size=10, on_duration=200, off_duration=10, gene=None)
+        super(MnistModel, self).__init__(timestep=1, neurons_per_core=255, input_pop_size=784, pop_1_size=100, output_pop_size=10, on_duration=200, off_duration=10, gene=None)
 
 class ConvMnistModel(NetworkModel):
     '''convolutional MNIST model'''
-    number_test_images = 10
     on_duration = 200
     off_duration = 10
-    simtime=(on_duration + off_duration)*number_test_images
-    timestep=0.1
+    timestep=1
     neurons_per_core=255
     input_pop_size=784
     filter_size = 5
@@ -369,12 +410,10 @@ class ConvMnistModel(NetworkModel):
     
         
     def __init__(self, gene=None):
-        super(ConvMnistModel, self).__init__(self.simtime, self.timestep, self.neurons_per_core, self.input_pop_size, self.pop_1_size, self.output_pop_size, self.on_duration, self.off_duration, gene=None)
+        super(ConvMnistModel, self).__init__(self.timestep, self.neurons_per_core, self.input_pop_size, self.pop_1_size, self.output_pop_size, self.on_duration, self.off_duration, gene=None)
 
     def gene_to_weights(self):
         '''converts gene to convolutional weights in gene1 and fully connected gene2'''
-  
-        
         filter_square_size = self.filter_size**2
         
         gene1 = self.gene[:filter_square_size]
@@ -396,12 +435,12 @@ class ConvMnistModel(NetworkModel):
                     for l in range(0, self.filter_size):
                         #filter column index
                         # (input image, output neurons, weight matrix)
-                        weights_1.append(((top_left_position+(k*self.image_size)+l), neuron_number, gene1[(k*self.filter_size)+l], 0.1))
+                        weights_1.append(((top_left_position+(k*self.image_size)+l), neuron_number, gene1[(k*self.filter_size)+l], 1))
         counter = 0
       
         for i in range(0, self.pop_1_size):
             for j in range(0, self.output_pop_size):
-                weights_2.append((i,j,gene2[counter], 0.1))
+                weights_2.append((i,j,gene2[counter], 1))
                 counter += 1
                 
         return weights_1, weights_2
@@ -427,10 +466,12 @@ class ConvMnistModel(NetworkModel):
         
 # Test code
 #Conv test code
-#testModel = ConvMnistModel(5)
+testModel = ConvMnistModel(5)
+#print(testModel.test_labels)
 
+#testModel.visualise_input()
 #testModel = MnistModel()
-#testModel.spiketrains = pickle.load( open( "testModelstsave.p", "rb" ) )
+testModel.spiketrains = pickle.load( open( "testModelstsave.p", "rb" ) )
 #print(testModel.spiketrains["output_pop"])
 #testModel.one_hot_encode_labels()
 #testModel.generate_test_periods()
@@ -440,8 +481,7 @@ class ConvMnistModel(NetworkModel):
 #testModel.visualise_input()
 #testModel.visualise_input_weights()
 #testModel.visualise_output_weights()
-#testModel.cost_function()
-#print(testModel.cost)
+testModel.cost_function()
   
 
 

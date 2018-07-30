@@ -27,9 +27,9 @@ def data_summary(logbook):
     avg_ce = logbook.chapters["cross_entropy"].select("avg")
     avg_norm = logbook.chapters["norm"].select("avg")
     
-    weights = (-1.0, -1.0, 2.0)
+    #weights = (-1.0, -1.0, 2.0)
     
-    fitness = (weights[0]*np.asfarray(avg_ce)) + (weights[1]*np.asfarray(avg_norm)) + (weights[2]*np.asfarray(avg_accuracy))
+    #fitness = (weights[0]*np.asfarray(avg_ce)) + (weights[1]*np.asfarray(avg_norm)) + (weights[2]*np.asfarray(avg_accuracy))
     
     fig, ax1 = plt.subplots()
     line1 = ax1.plot(gen, avg_accuracy, "b-")
