@@ -23,7 +23,10 @@ toolbox = base.Toolbox()
 creator.create("FitnessMin", base.Fitness, weights=(1.0,))
 creator.create("Individual", list, fitness=creator.FitnessMin)
 
-toolbox.register("attribute", random.uniform, -10, 10)
+#For continuous networks
+#toolbox.register("attribute", random.uniform, -10, 10)
+#Reduced parameter space by restricting weights
+toolbox.register("attribute", random.randint, -1, 0, 1)
 toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.attribute, n=IND_SIZE)
 toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
