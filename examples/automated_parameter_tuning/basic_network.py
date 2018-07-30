@@ -3,8 +3,9 @@ from neo.core import Segment, SpikeTrain
 from quantities import s, ms
 #Dependencies need to be sorted
 #sys.path.append('/localhome/mbaxsej2/optimisation_env/NE15')
-#home = os.environ['VIRTUAL_ENV']
-#NE15_path = home + '/git/NE15'
+home = os.environ['VIRTUAL_ENV']
+NE15_path = home + '/git/NE15'
+sys.path.append(NE15_path)
 #This needs to be streamlined to make code portable
 import traceback
 from decimal import *
@@ -31,7 +32,7 @@ import gc
 from spalloc.job import JobDestroyedError
 
 
-home = os.path.expanduser("~")
+#home = os.path.expanduser("~")
 
 def pool_init(l):  
     gc.collect()
@@ -77,21 +78,25 @@ def evalModel(gene):
 class NetworkModel(object):
     '''Class representing model'''
    
-    def __init__(self, timestep, neurons_per_core, input_pop_size, pop_1_size, output_pop_size, on_duration, off_duration, gene=None):
+    def __init__(self, timestep, neurons_per_core, input_pop_size, pop_1_size, output_pop_size, on_duration, off_duration, gene):
         self.spiketrains = {}
         self.timestep = timestep
         self.neurons_per_core = neurons_per_core
         self.input_pop_size = input_pop_size
         self.pop_1_size = pop_1_size
         self.output_pop_size = output_pop_size
-        if gene == None:
+        '''if gene == None:
             print("generating test gene")
             gene = self.generate_test_gene()
+	else:
+	    print("gene found")
+	'''
         self.gene = gene
+	print("converting gene to weights")
         self.weights_1, self.weights_2 = self.gene_to_weights()
         self.on_duration = on_duration
-        self.off_duration = off_duration 
-        self.test_set = [2,2,2,2,2,2,2,2,2,2]
+        self.off_duration = off_duration
+        self.test_set = [4,4,4,4,4,4,4,4,4,4]
         self.number_digits = len(self.test_set)
         self.number_tests = sum(self.test_set)
         self.simtime = (self.on_duration + self.off_duration)*self.number_tests
@@ -100,8 +105,9 @@ class NetworkModel(object):
         self.test_periods = None
         self.cost = None
         
-
+	print("generating test data")
         self.generate_test_data()
+	print("geneting input spiketrain")
         self.generate_input_st() 
 
         
@@ -122,7 +128,7 @@ class NetworkModel(object):
         
         for i in range(len(self.test_set)):
             for j in range(self.test_set[i]):
-                pick = random.randint(0,len(test_data[i]))
+                pick = random.randint(0,len(test_data[i])-1)
                 picked_image = test_data[i][pick]
                 test_images[i].append(picked_image)
                 test_labels.append(i)
@@ -133,7 +139,7 @@ class NetworkModel(object):
         
         test_time = self.on_duration + self.off_duration
         self.test_periods = np.arange(start= 0, step= test_time, stop= test_time*(self.number_tests+1))
-        print(self.test_periods)       
+        #print(self.test_periods)       
         return;
     
     def one_hot_encode_labels(self):
@@ -193,13 +199,13 @@ class NetworkModel(object):
         for i in range(0, self.input_pop_size):
             for j in range (0, self.pop_1_size):
                 if abs(self.gene[counter]) > 0.05:
-                    weights_1.append((i, j, self.gene[counter], 1))
+                    weights_1.append((i, j, self.gene[counter], 1.0))
                 counter += 1
         
         for i in range(0, self.pop_1_size):
             for j in range (0, self.output_pop_size):
                 if abs(self.gene[counter]) > 0.05:
-                    weights_2.append((i, j, self.gene[counter], 1))
+                    weights_2.append((i, j, self.gene[counter], 1.0))
                 counter += 1        
         return weights_1, weights_2;
     
@@ -279,12 +285,12 @@ class NetworkModel(object):
 
         normalised_rates = np.divide(rates, rates.sum(axis=1)[:, None])
         
-        print(normalised_rates)
+        #print(normalised_rates)
         
         predictions = np.argmax(normalised_rates, axis=1)
 
-        print(predictions)
-        print(self.test_labels)
+        #print(predictions)
+        #print(self.test_labels)
         
         accuracy_array = np.array(predictions == self.test_labels)
         accuracy = np.true_divide(np.sum(accuracy_array),len(accuracy_array))         
@@ -409,8 +415,8 @@ class ConvMnistModel(NetworkModel):
 
     
         
-    def __init__(self, gene=None):
-        super(ConvMnistModel, self).__init__(self.timestep, self.neurons_per_core, self.input_pop_size, self.pop_1_size, self.output_pop_size, self.on_duration, self.off_duration, gene=None)
+    def __init__(self, gene):
+        super(ConvMnistModel, self).__init__(self.timestep, self.neurons_per_core, self.input_pop_size, self.pop_1_size, self.output_pop_size, self.on_duration, self.off_duration, gene)
 
     def gene_to_weights(self):
         '''converts gene to convolutional weights in gene1 and fully connected gene2'''
@@ -466,12 +472,12 @@ class ConvMnistModel(NetworkModel):
         
 # Test code
 #Conv test code
-testModel = ConvMnistModel(5)
+#testModel = ConvMnistModel(5)
 #print(testModel.test_labels)
 
 #testModel.visualise_input()
 #testModel = MnistModel()
-testModel.spiketrains = pickle.load( open( "testModelstsave.p", "rb" ) )
+#testModel.spiketrains = pickle.load( open( "testModelstsave.p", "rb" ) )
 #print(testModel.spiketrains["output_pop"])
 #testModel.one_hot_encode_labels()
 #testModel.generate_test_periods()
@@ -481,7 +487,7 @@ testModel.spiketrains = pickle.load( open( "testModelstsave.p", "rb" ) )
 #testModel.visualise_input()
 #testModel.visualise_input_weights()
 #testModel.visualise_output_weights()
-testModel.cost_function()
+#testModel.cost_function()
   
 
 
