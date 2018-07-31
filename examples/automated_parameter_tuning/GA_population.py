@@ -34,7 +34,7 @@ toolbox.register("evaluate", evalModel)
 toolbox.register("mate", tools.cxTwoPoint)
 #for continuous networks
 #toolbox.register("mutate", tools.mutGaussian, mu=0.0, sigma=0.2, indpb=0.2)
-toolbox.regists("mutate", tools.mutUniformInt, -1, 1, indpb=0.2)
+toolbox.register("mutate", tools.mutUniformInt, low=-1,up=1, indpb=0.2)
 toolbox.register("select", tools.selBest)
 CXPB = 0.5
 MUTPB = 0.2

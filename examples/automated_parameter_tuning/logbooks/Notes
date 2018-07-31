@@ -13,4 +13,9 @@ gene_to_weights fixed, ignores weights under magnitude 0.05
 
 784_100_10_242g
 
+Convolutional nets:
+
+first runs showed 10 random digits (of any kind) to network 
+
+
 40 test images - accuracy worked out better (random choice of certain digits)
