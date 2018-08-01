@@ -8,15 +8,15 @@ from common_tools import data_summary, stats_setup, pickle_population
 import pickle
 from common_tools import data_summary
 
-IND_SIZE = (
+IND_SIZE = (int(ConvMnistModel.filter_size**2)) + (ConvMnistModel.pop_1_size * ConvMnistModel.output_pop_size)
 toolbox = base.Toolbox()
 
 #Setting up GA
-creator.create("FitnessMin", base.Fitness, :q:weights=(1.0))
-creator.create("Gene", list, fitness=creator.FitnessMin)
+creator.create("FitnessMin", base.Fitness, weights=(1.0))
+creator.create("Individual", list, fitness=creator.FitnessMin)
 
 toolbox.register("attribute", random.uniform, -10, 10)
-toolbox.register("gene", tools.initRepeat, creator.Gene, toolbox.attribute, n=IND_SIZE)
+toolbox.register("gene", tools.initRepeat, creator.Individual, toolbox.attribute, n=IND_SIZE)
 toolbox.register("population", tools.initRepeat, list, toolbox.gene)
 
 
@@ -36,9 +36,9 @@ try:
         print("Checkpoint found... Generation %d" % gen)        
         
         testModel = MnistModel(pop[0])
-        testModel.visualise_input()
-        testModel.visualise_input_weights()
-        testModel.visualise_output_weights()
+        testModel.visualise_filter()
+        #testModel.visualise_input_weights()
+        #testModel.visualise_output_weights()
         
 except IOError:
     print("No checkpoint found...")

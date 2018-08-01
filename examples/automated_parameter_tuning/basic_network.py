@@ -1,9 +1,11 @@
 import sys, os
+import copy
 from neo.core import Segment, SpikeTrain
 from quantities import s, ms
 #Dependencies need to be sorted
 #sys.path.append('/localhome/mbaxsej2/optimisation_env/NE15')
-home = os.environ['VIRTUAL_ENV']
+home = os.path.expanduser("~")
+#home = os.environ['VIRTUAL_ENV']
 NE15_path = home + '/git/NE15'
 sys.path.append(NE15_path)
 #This needs to be streamlined to make code portable
@@ -30,16 +32,14 @@ from numpy import number
 import multiprocessing
 import gc
 from spalloc.job import JobDestroyedError
-
-
-#home = os.path.expanduser("~")
+import pprint
 
 def pool_init(l):  
     gc.collect()
     global lock
     lock = l 
 
-def evalModel(gene):
+def evalModel(gene, gen):
     '''evaluates the model'''
     current = multiprocessing.current_process()
     print ("Process " + current.name + " started.")
@@ -52,7 +52,7 @@ def evalModel(gene):
     sys.stdout = f
     sys.stderr = g
     try:
-        model = ConvMnistModel(gene)
+        model = ConvMnistModel(gene, gen)
         model.test_model()
         sys.stdout = old_stdout
         sys.stderr = old_stderr            
@@ -74,25 +74,86 @@ def evalModel(gene):
         print("Look at:" + f_name + " and " + g_name)
         sys.exit()
         return
+    
+    
+def evalPopulation(popgen):
+    '''evaluates a population of individuals'''
+    popgen = np.asarray(popgen)
+    print(len(popgen[0][0]))
+    pop = popgen[0][:]
+    print(pop)
+    gen = popgen[1]
+    print(gen)
+    
+    if len(pop)< 1:
+        return;
+    
+    current = multiprocessing.current_process()
+    print ("Process " + current.name + " started.")
+    f_name = "errorlog/" + current.name +"_stdout.txt"
+    g_name = "errorlog/" + current.name + "_stderror.txt"
+    f = open(f_name, 'w')
+    g = open(g_name, 'w')
+    old_stdout = sys.stdout
+    old_stderr = sys.stderr
+    #sys.stdout = f
+    #sys.stderr = g
+    
+    
+    print("setting up canonicalModel")
+    canonicalModel = ConvMnistModel(pop[0], True, gen)
+    canonicalModel.set_up_sim()
+    canonicalModel.test_model()
+    
+    models_dict = {}
+    fitnesses = []
+    models_dict[0] = canonicalModel
+    
+    for i in range(1,len(pop)):
+        models_dict[i] = copy.copy(canonicalModel)
+        models_dict[i].gene = pop[i]
+        models_dict[i].weights_1, models_dict[i].weights_2 = models_dict[i].gene_to_weights()
+        models_dict[i].spiketrains = copy.copy(canonicalModel.spiketrains)
+        models_dict[i].test_model()
+    
+    sim.run(canonicalModel.simtime)
+    
+    for i in range(0, len(pop)):
+        print(i)
+        models_dict[i].get_sim_data()
 
+    sim.end()   
+
+    for i in range(0, len(pop)):
+        models_dict[i].cost_function()
+        fitnesses.extend(models_dict[i].cost)
+        
+    sys.stdout = old_stdout
+    sys.stderr = old_stderr
+    print(fitnesses)            
+    print ("Process " + current.name + " finished sucessfully: %s" % np.average(np.asarray(fitnesses)))
+    
+    return fitnesses;
+    
+    
 class NetworkModel(object):
     '''Class representing model'''
    
-    def __init__(self, timestep, neurons_per_core, input_pop_size, pop_1_size, output_pop_size, on_duration, off_duration, gene):
+    def __init__(self, timestep, neurons_per_core, input_pop_size, pop_1_size, output_pop_size, on_duration, off_duration, gene=None, exsim=False, gen=0):
         self.spiketrains = {}
         self.timestep = timestep
         self.neurons_per_core = neurons_per_core
         self.input_pop_size = input_pop_size
         self.pop_1_size = pop_1_size
         self.output_pop_size = output_pop_size
-        '''if gene == None:
+        if gene == None:
             print("generating test gene")
             gene = self.generate_test_gene()
-	else:
-	    print("gene found")
-	'''
+    	else:
+    	    print("gene found")
+	    
         self.gene = gene
-	print("converting gene to weights")
+        print("converting gene to weights")
         self.weights_1, self.weights_2 = self.gene_to_weights()
         self.on_duration = on_duration
         self.off_duration = off_duration
@@ -100,16 +161,55 @@ class NetworkModel(object):
         self.number_digits = len(self.test_set)
         self.number_tests = sum(self.test_set)
         self.simtime = (self.on_duration + self.off_duration)*self.number_tests
+        self.gen = gen
         self.test_images = None
         self.test_labels = None
         self.test_periods = None
         self.cost = None
         
-	print("generating test data")
+    	print("generating test data")
         self.generate_test_data()
-	print("geneting input spiketrain")
-        self.generate_input_st() 
+    	print("generating input spiketrain")
+        self.generate_input_st()
+        self.exsim = exsim 
+        if not self.exsim:
+            self.set_up_sim()
+            
+        self.input_pop = None    
+        self.pop_1 = None
+        self.ouput = None
 
+        
+    def set_up_sim(self):
+        print("setting up simulator")
+        sim.setup(self.timestep)
+        sim.set_number_of_neurons_per_core(sim.IF_curr_exp, self.neurons_per_core)
+        self.input_pop = sim.Population(self.input_pop_size, sim.SpikeSourceArray(self.spiketrains['input_pop']), label="input")
+        return;
+    
+    def set_up_model(self):
+        print("setting up pops")
+        self.pop_1 = sim.Population(self.pop_1_size, sim.IF_curr_exp(), label="pop_1")
+        self.output_pop = sim.Population(self.output_pop_size, sim.IF_curr_exp(), label="output_pop")
+        print("setting up projs")
+        self.input_proj = sim.Projection(self.input_pop, self.pop_1, sim.FromListConnector(self.weights_1), 
+                                    synapse_type=sim.StaticSynapse())
+        self.output_proj = sim.Projection(self.pop_1, self.output_pop, sim.FromListConnector(self.weights_2), 
+                                    synapse_type=sim.StaticSynapse())
+        print("setting up recorders")
+        self.pop_1.record(["spikes"])
+        self.output_pop.record(["spikes"])
+        self.input_pop.record(["spikes"])
+        return;
+    
+    def get_sim_data(self):            
+        print("getting data")
+        self.spiketrains['input_pop'] = self.input_pop.get_data(variables=["spikes"]).segments[0].spiketrains
+        self.spiketrains['pop_1'] = self.pop_1.get_data(variables=["spikes"]).segments[0].spiketrains
+        self.spiketrains['output_pop'] = self.output_pop.get_data(variables=["spikes"]).segments[0].spiketrains
+        return;
+    
+        
         
     def generate_test_data(self):
         #picking test images from data in accordance with test_set  
@@ -128,7 +228,9 @@ class NetworkModel(object):
         
         for i in range(len(self.test_set)):
             for j in range(self.test_set[i]):
-                pick = random.randint(0,len(test_data[i])-1)
+                #pick = random.randint(0,len(test_data[i])-1)
+                length = len(test_data[i])
+                pick = (self.gen+length) % length
                 picked_image = test_data[i][pick]
                 test_images[i].append(picked_image)
                 test_labels.append(i)
@@ -214,63 +316,35 @@ class NetworkModel(object):
         
         max_retries = 10
         
-        def run_sim():            
-            print("setting up")
-            sim.setup(self.timestep)
-            sim.set_number_of_neurons_per_core(sim.IF_curr_exp, self.neurons_per_core)
-            sleep(0.5)  
-            print("setting up pops")
-            input_pop = sim.Population(self.input_pop_size, sim.SpikeSourceArray(self.spiketrains['input_pop']), label="input")
-            pop_1 = sim.Population(self.pop_1_size, sim.IF_curr_exp(), label="pop_1")
-            output_pop = sim.Population(self.output_pop_size, sim.IF_curr_exp(), label="output_pop")
-            print("setting up projs")
-            self.input_proj = sim.Projection(input_pop, pop_1, sim.FromListConnector(self.weights_1), 
-                                        synapse_type=sim.StaticSynapse())
-            self.output_proj = sim.Projection(pop_1, output_pop, sim.FromListConnector(self.weights_2), 
-                                        synapse_type=sim.StaticSynapse())
-            print("setting up recorders")
-            pop_1.record(["spikes"])
-            output_pop.record(["spikes"])
-            input_pop.record(["spikes"]) 
-            #lock.acquire()
-            #print("lock acquired")
-	    #sleep(11)
-            #lock.release()
-            #print("lock released")
+        def run_sim():
             print("running sim")
             sim.run(self.simtime)
-            print("getting data")
-            self.spiketrains['input_pop'] = input_pop.get_data(variables=["spikes"]).segments[0].spiketrains
-            self.spiketrains['pop_1'] = pop_1.get_data(variables=["spikes"]).segments[0].spiketrains
-            self.spiketrains['output_pop'] = output_pop.get_data(variables=["spikes"]).segments[0].spiketrains
-            sim.end()
-            print("running cost function")
-            self.cost_function()
-            print("done")
             return;
         
-	try:
-            run_sim()
-            if self.cost == None:
-                raise Exception
-        
-        #except JobDestroyedError as e:
-        #    print(e)
-	    #raise e
-	    #sys.exit()    
-	except Exception as e:
-		#traceback.print_exc()
-                print(e)
-                if num_retries < max_retries:
-                    num_retries += 1
-		    sleep(20)
-                    print("Retry %d..." % num_retries)
-                    globals_variables.unset_simulator()
-                    self.test_model(num_retries)
-                    return;
-                if num_retries == max_retries:
+        try:
+            self.set_up_model()
+            
+            if not self.exsim:
+                run_sim()
+                self.get_sim_data()
+                sim.end()
+                print("running cost function")
+                self.cost_function()
+                if self.cost == None:
                     raise Exception
-                    return;
+          
+        except Exception as e:
+            print(e)
+            if num_retries < max_retries:
+                num_retries += 1
+                sleep(20)
+                print("Retry %d..." % num_retries)
+                globals_variables.unset_simulator()
+                self.test_model(num_retries)
+                return;
+            if num_retries == max_retries:
+                raise Exception
+        return;
     
     
     
@@ -282,7 +356,9 @@ class NetworkModel(object):
         for i in range(len(self.test_periods)-1):
             for j in range(len(spiketrain)):
                 rates[i][j] = mean_firing_rate(spiketrain[j], self.test_periods[i], self.test_periods[i+1])
-
+        
+        print(rates.sum(axis=1)[:, None])
+        
         normalised_rates = np.divide(rates, rates.sum(axis=1)[:, None])
         
         #print(normalised_rates)
@@ -412,11 +488,9 @@ class ConvMnistModel(NetworkModel):
     conv_per_line = image_size-filter_size+1 
     pop_1_size = int(conv_per_line**2)
     output_pop_size = 10
-
-    
-        
-    def __init__(self, gene):
-        super(ConvMnistModel, self).__init__(self.timestep, self.neurons_per_core, self.input_pop_size, self.pop_1_size, self.output_pop_size, self.on_duration, self.off_duration, gene)
+           
+    def __init__(self, gene=None, exsim=False, gen=0):
+        super(ConvMnistModel, self).__init__(self.timestep, self.neurons_per_core, self.input_pop_size, self.pop_1_size, self.output_pop_size, self.on_duration, self.off_duration, gene, exsim, gen)
 
     def gene_to_weights(self):
         '''converts gene to convolutional weights in gene1 and fully connected gene2'''
@@ -472,7 +546,7 @@ class ConvMnistModel(NetworkModel):
         
 # Test code
 #Conv test code
-#testModel = ConvMnistModel(5)
+#testModel = ConvMnistModel()
 #print(testModel.test_labels)
 
 #testModel.visualise_input()
