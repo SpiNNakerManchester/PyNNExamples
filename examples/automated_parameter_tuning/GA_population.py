@@ -14,10 +14,10 @@ from functools import partial
 #GA and parallelisation variables
 
 parallel_on = True
-NUM_PROCESSES = 2
+NUM_PROCESSES = 100 
 IND_SIZE = (int(ConvMnistModel.filter_size**2)) + (ConvMnistModel.pop_1_size * ConvMnistModel.output_pop_size)
-POP_SIZE = 20
-NGEN = 1
+POP_SIZE = 20000
+NGEN = 10000000000
 toolbox = base.Toolbox()
 
 #Setting up GA
@@ -36,10 +36,10 @@ toolbox.register("evaluatepop", evalPopulation)
 toolbox.register("mate", tools.cxTwoPoint)
 #for continuous networks
 #toolbox.register("mutate", tools.mutGaussian, mu=0.0, sigma=0.2, indpb=0.2)
-toolbox.register("mutate", tools.mutUniformInt, low=-1,up=1, indpb=0.2)
+toolbox.register("mutate", tools.mutUniformInt, low=-1,up=1, indpb=0.001)
 toolbox.register("select", tools.selBest)
 CXPB = 0.5
-MUTPB = 0.2
+MUTPB = 1
 #the proportion of the population that is selected and mated
 sel_factor = 10
 

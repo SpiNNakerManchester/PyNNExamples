@@ -4,8 +4,8 @@ from neo.core import Segment, SpikeTrain
 from quantities import s, ms
 #Dependencies need to be sorted
 #sys.path.append('/localhome/mbaxsej2/optimisation_env/NE15')
-home = os.path.expanduser("~")
-#home = os.environ['VIRTUAL_ENV']
+#home = os.path.expanduser("~")
+home = os.environ['VIRTUAL_ENV']
 NE15_path = home + '/git/NE15'
 sys.path.append(NE15_path)
 #This needs to be streamlined to make code portable
@@ -93,8 +93,8 @@ def evalPopulation(popgen):
     g = open(g_name, 'w')
     old_stdout = sys.stdout
     old_stderr = sys.stderr
-    #sys.stdout = f
-    #sys.stderr = g
+    sys.stdout = f
+    sys.stderr = g
     
     
     print("setting up canonicalModel")
