@@ -22,8 +22,8 @@ import time
 timestr = time.strftime("%Y%m%d-%H%M%S")
 
 p.setup(0.1)    # 0.1ms time step
-runtime = 2000  # Run time [ms]
-rt = np.array([[500, 1500, 2000], [0, 6, 0]])
+runtime = 4000  # Run time [ms]
+rt = np.array([[1000, 1500, 1500], [0, 6, 0]])
 
 rate = 0           # Frequency of random stimulation [Hz]
 stim_dur = 2000      # Duration of random stimulation [ms]
@@ -103,7 +103,8 @@ d_inh = p.RandomDistribution(
 # === Thalamic poisson source =====
 
 src_Thal = p.Population(
-        Thal_n, p.SpikeSourcePoisson(rate=rate, duration=stim_dur),
+        Thal_n, p.SpikeSourcePoisson(rate=rate),
+        # duration=stim_dur),
         label="expoisson")
 
 # === L2/3 Excitatory and Inhibitory populations ======
@@ -180,7 +181,7 @@ for i in range(3):
     run_for = (rt[0, i].astype(int))
     rate = (rt[1, i].astype(int))
     src_Thal.set(rate=rate)
-    src_Thal.set(duration=run_for)
+#     src_Thal.set(duration=run_for)
     p.run(run_for)
 
 # === Gather data for plots ===
