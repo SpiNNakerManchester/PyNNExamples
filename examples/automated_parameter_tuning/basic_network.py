@@ -79,11 +79,8 @@ def evalModel(gene, gen):
 def evalPopulation(popgen):
     '''evaluates a population of individuals'''
     popgen = np.asarray(popgen)
-    print(len(popgen[0][0]))
     pop = popgen[0][:]
-    print(pop)
     gen = popgen[1]
-    print(gen)
     
     if len(pop)< 1:
         return;
@@ -129,10 +126,8 @@ def evalPopulation(popgen):
         fitnesses.extend(models_dict[i].cost)
         
     sys.stdout = old_stdout
-    sys.stderr = old_stderr
-    print(fitnesses)            
-    print ("Process " + current.name + " finished sucessfully: %s" % np.average(np.asarray(fitnesses)))
-    
+    sys.stderr = old_stderr          
+    print ("Process " + current.name + " finished sucessfully, average accuracy:: %s" % np.average(np.asarray(fitnesses)))
     return fitnesses;
     
     
@@ -357,7 +352,6 @@ class NetworkModel(object):
             for j in range(len(spiketrain)):
                 rates[i][j] = mean_firing_rate(spiketrain[j], self.test_periods[i], self.test_periods[i+1])
         
-        print(rates.sum(axis=1)[:, None])
         
         normalised_rates = np.divide(rates, rates.sum(axis=1)[:, None])
         
@@ -390,8 +384,6 @@ class NetworkModel(object):
         '''
         
         self.cost = (accuracy,)
-        
-        print(self.cost)
         return;
 
     def generate_poisson_spiketrains(self, rate):

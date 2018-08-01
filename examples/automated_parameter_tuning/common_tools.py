@@ -9,13 +9,20 @@ import sys
 import gc
 import matplotlib.pyplot as plt
 
+def flatten_fitnesses(fitnesses):
+    fitnesses_final = []
+    for fitnesslist in fitnesses:
+        fitnesses_final.extend(fitnesslist)
+    
+    return fitnesses_final;
+
 def split_population(pop, subpop_size, gen):
     '''splits a population into a number of subpopulations of subpop_size'''
     #ceiling division
     number_subpops = -(-len(pop)//subpop_size)
     subpops = []
     for i in range (0, len(pop)+1, subpop_size):
-        subpops.append((pop[i:i+1], gen))
+        subpops.append((pop[i:i+subpop_size], gen))
     return subpops;
 
 def pickle_population(pop, gen, log, checkpoint_name):

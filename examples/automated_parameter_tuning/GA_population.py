@@ -1,4 +1,4 @@
-from common_tools import data_summary, stats_setup, pickle_population, split_population
+from common_tools import flatten_fitnesses, data_summary, stats_setup, pickle_population, split_population
 from basic_network import ConvMnistModel, MnistModel, NetworkModel, pool_init, evalModel, evalPopulation
 from deap import algorithms, base, creator, tools
 import random
@@ -16,7 +16,7 @@ from functools import partial
 parallel_on = True
 NUM_PROCESSES = 2
 IND_SIZE = (int(ConvMnistModel.filter_size**2)) + (ConvMnistModel.pop_1_size * ConvMnistModel.output_pop_size)
-POP_SIZE = 100
+POP_SIZE = 20
 NGEN = 1
 toolbox = base.Toolbox()
 
@@ -92,12 +92,12 @@ def main(checkpoint = None):
         #240 = 5 networks per chip * 48 chips per board
         subpops = split_population(pop, subpop_size, gen)
         fitnesses = toolbox.map(toolbox.evaluatepop, subpops)
-        print(fitnesses)
-                
+        fitnesses = flatten_fitnesses(fitnesses)
+        
         #fitnesses = toolbox.evaluatepop(pop)
         #fitnesses = toolbox.map(toolbox.evaluate, pop)
         for ind, fit in zip(pop, fitnesses):
-            ind.fitness.values = fit
+            ind.fitness.values = fit,
         pickle_population(pop, gen, logbook, checkpoint)
         
     for g in range(gen+1, NGEN):
@@ -112,12 +112,12 @@ def main(checkpoint = None):
 
         subpops = split_population(invalid_ind, subpop_size, g)
         fitnesses = toolbox.map(toolbox.evaluatepop, subpops)
-        
+        fitnesses = flatten_fitnesses(fitnesses)
         #fitnesses = toolbox.map(toolbox.evaluatepop, invalid_ind)      
         #fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
                     
         for ind, fit in zip(invalid_ind, fitnesses):
-            ind.fitness.values = fit
+            ind.fitness.values = fit,
             evals += 1
 
         print("Updating population...")
