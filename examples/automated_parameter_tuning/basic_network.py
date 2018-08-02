@@ -2,7 +2,6 @@ import sys, os
 import copy
 from neo.core import Segment, SpikeTrain
 from quantities import s, ms
-from duplicity.globals import num_retries
 #Dependencies need to be sorted
 #sys.path.append('/localhome/mbaxsej2/optimisation_env/NE15')
 #home = os.path.expanduser("~")
