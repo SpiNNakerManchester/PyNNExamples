@@ -98,9 +98,10 @@ def evalPopulation(popgen):
 
     def eval(num_retries=0):
         
-        max_retries = 4
+        max_retries = 4 
         if num_retries < max_retries:
             try:
+		sleep(20)
                 print("setting up canonicalModel")
                 canonicalModel = ConvMnistModel(pop[0], True, gen)
                 canonicalModel.set_up_sim()
