@@ -97,7 +97,7 @@ def evalPopulation(popgen):
     sys.stdout = f
     sys.stderr = g
     
-    def canonicalModel_set_up(num_retries=10):
+    def canonicalModel_set_up(num_retries=5):
         try:
             print("setting up canonicalModel")
             canonicalModel = ConvMnistModel(pop[0], True, gen)
@@ -105,13 +105,15 @@ def evalPopulation(popgen):
             canonicalModel.test_model()
             return
         except Exception:
+	    sleep(2)
             canonicalModel_set_up(num_retries-1)
     
-    def run_sim(num_retries=10):
+    def run_sim(num_retries=5):
         try:
             sim.run(canonicalModel.simtime)
             return
         except Exception:
+	    sleep(2)
             run_sim(num_retries-1)
             
     
