@@ -2,6 +2,7 @@ import sys, os
 import copy
 from neo.core import Segment, SpikeTrain
 from quantities import s, ms
+from duplicity.globals import num_retries
 #Dependencies need to be sorted
 #sys.path.append('/localhome/mbaxsej2/optimisation_env/NE15')
 #home = os.path.expanduser("~")
@@ -96,11 +97,25 @@ def evalPopulation(popgen):
     sys.stdout = f
     sys.stderr = g
     
+    def canonicalModel_set_up(num_retries=10):
+        try:
+            print("setting up canonicalModel")
+            canonicalModel = ConvMnistModel(pop[0], True, gen)
+            canonicalModel.set_up_sim()
+            canonicalModel.test_model()
+            return
+        except Exception:
+            canonicalModel_set_up(num_retries-1)
     
-    print("setting up canonicalModel")
-    canonicalModel = ConvMnistModel(pop[0], True, gen)
-    canonicalModel.set_up_sim()
-    canonicalModel.test_model()
+    def run_sim(num_retries=10):
+        try:
+            sim.run(canonicalModel.simtime)
+            return
+        except Exception:
+            run_sim(num_retries-1)
+            
+    
+    canonicalModel_set_up()
     
     models_dict = {}
     fitnesses = []
@@ -113,7 +128,7 @@ def evalPopulation(popgen):
         models_dict[i].spiketrains = copy.copy(canonicalModel.spiketrains)
         models_dict[i].test_model()
     
-    sim.run(canonicalModel.simtime)
+    run_sim()
     
     for i in range(0, len(pop)):
         print(i)
