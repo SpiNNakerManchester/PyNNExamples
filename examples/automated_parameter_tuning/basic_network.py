@@ -97,39 +97,52 @@ def evalPopulation(popgen):
     sys.stdout = f
     sys.stderr = g
 
-    print("setting up canonicalModel")
-    canonicalModel = ConvMnistModel(pop[0], True, gen)
-    canonicalModel.set_up_sim()
-    canonicalModel.test_model()
-    
-    models_dict = {}
-    fitnesses = []
-    models_dict[0] = canonicalModel
-    
-    for i in range(1,len(pop)):
-        models_dict[i] = copy.copy(canonicalModel)
-        models_dict[i].gene = pop[i]
-        models_dict[i].weights_1, models_dict[i].weights_2 = models_dict[i].gene_to_weights()
-        models_dict[i].spiketrains = copy.copy(canonicalModel.spiketrains)
-        models_dict[i].test_model()
-    
-    sim.run(canonicalModel.simtime)
-    
-    for i in range(0, len(pop)):
-        print(i)
-        models_dict[i].get_sim_data()
-
-    sim.end()   
-
-    for i in range(0, len(pop)):
-        models_dict[i].cost_function()
-        fitnesses.extend(models_dict[i].cost)
+    def eval(num_retries=0):
         
+        max_retries = 4
+        if num_retries < max_retries:
+            try:
+                print("setting up canonicalModel")
+                canonicalModel = ConvMnistModel(pop[0], True, gen)
+                canonicalModel.set_up_sim()
+                canonicalModel.test_model()
+                
+                models_dict = {}
+                fitnesses = []
+                models_dict[0] = canonicalModel
+                
+                for i in range(1,len(pop)):
+                    models_dict[i] = copy.copy(canonicalModel)
+                    models_dict[i].gene = pop[i]
+                    models_dict[i].weights_1, models_dict[i].weights_2 = models_dict[i].gene_to_weights()
+                    models_dict[i].spiketrains = copy.copy(canonicalModel.spiketrains)
+                    models_dict[i].test_model()
+            
+                sim.run(canonicalModel.simtime)
+                
+                for i in range(0, len(pop)):
+                    print(i)
+                    models_dict[i].get_sim_data()
+            
+                sim.end()   
+            
+                for i in range(0, len(pop)):
+                    models_dict[i].cost_function()
+                    fitnesses.extend(models_dict[i].cost)
+                    
+                return fitnesses;
+            except Exception:
+                eval(num_retries+1)
+                return;
+        else:
+            raise Exception('eval() reached maximum number of retries')
+            return;
+    
+    fitnesses = eval()
     sys.stdout = old_stdout
     sys.stderr = old_stderr          
     print ("Process " + current.name + " finished sucessfully, average accuracy:: %s" % np.average(np.asarray(fitnesses)))
     return fitnesses;
-    
     
 class NetworkModel(object):
     '''Class representing model'''
