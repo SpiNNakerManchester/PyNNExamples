@@ -96,26 +96,11 @@ def evalPopulation(popgen):
     old_stderr = sys.stderr
     sys.stdout = f
     sys.stderr = g
-    
-    def canonicalModel_set_up(num_retries=10):
-        try:
-            print("setting up canonicalModel")
-            canonicalModel = ConvMnistModel(pop[0], True, gen)
-            canonicalModel.set_up_sim()
-            canonicalModel.test_model()
-            return
-        except Exception:
-            canonicalModel_set_up(num_retries-1)
-    
-    def run_sim(num_retries=10):
-        try:
-            sim.run(canonicalModel.simtime)
-            return
-        except Exception:
-            run_sim(num_retries-1)
-            
-    
-    canonicalModel_set_up()
+
+    print("setting up canonicalModel")
+    canonicalModel = ConvMnistModel(pop[0], True, gen)
+    canonicalModel.set_up_sim()
+    canonicalModel.test_model()
     
     models_dict = {}
     fitnesses = []
@@ -128,7 +113,7 @@ def evalPopulation(popgen):
         models_dict[i].spiketrains = copy.copy(canonicalModel.spiketrains)
         models_dict[i].test_model()
     
-    run_sim()
+    sim.run(canonicalModel.simtime)
     
     for i in range(0, len(pop)):
         print(i)
