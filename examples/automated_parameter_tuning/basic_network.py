@@ -78,7 +78,9 @@ def evalModel(gene, gen):
     
 def evalPopulation(popgen):
     '''evaluates a population of individuals'''
+    current = multiprocessing.current_process()
     popgen = np.asarray(popgen)
+    print ("Process " + current.name + " started.")
     pop = popgen[0][:]
     gen = popgen[1]
     
@@ -131,12 +133,17 @@ def evalPopulation(popgen):
                     fitnesses.extend(models_dict[i].cost)
                     
                 return fitnesses;
-            except Exception:
-                eval(num_retries+1)
+            except Exception as e:
+		traceback.print_exc()
+		print(e)
+                print("Retry %d..." % num_retries)
+                globals_variables.unset_simulator()
+		eval(num_retries+1)
                 return;
         else:
-            raise Exception('eval() reached maximum number of retries')
-            return;
+            raise Exception('eval() reached maximum number of retries %s'% current)
+            print(current)
+	    return;
     
     fitnesses = eval()
     sys.stdout = old_stdout
