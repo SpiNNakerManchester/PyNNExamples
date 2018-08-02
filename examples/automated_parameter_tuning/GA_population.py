@@ -7,6 +7,7 @@ import multiprocessing
 from spinnman.exceptions import SpinnmanIOException, SpinnmanException
 import pickle
 import pprint
+import gc
 
 from functools import partial
 
@@ -93,6 +94,7 @@ def main(checkpoint = None):
         
         subpops = split_population(pop, subpop_size, gen)
         fitnesses = toolbox.map(toolbox.evaluatepop, subpops)
+        gc.collect()
         fitnesses = flatten_fitnesses(fitnesses)
         
         #fitnesses = toolbox.evaluatepop(pop)
@@ -100,6 +102,7 @@ def main(checkpoint = None):
         for ind, fit in zip(pop, fitnesses):
             ind.fitness.values = fit,
         pickle_population(pop, gen, logbook, checkpoint)
+        gc.collect()
         
     for g in range(gen+1, NGEN):
         print ("Generation %d..." % g)
@@ -113,6 +116,7 @@ def main(checkpoint = None):
 
         subpops = split_population(invalid_ind, subpop_size, g)
         fitnesses = toolbox.map(toolbox.evaluatepop, subpops)
+        gc.collect()
         fitnesses = flatten_fitnesses(fitnesses)
         #fitnesses = toolbox.map(toolbox.evaluatepop, invalid_ind)      
         #fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
@@ -129,7 +133,7 @@ def main(checkpoint = None):
         logbook.record(gen=g, evals=len(invalid_ind), **record)
         print("Pickling population...")
         pickle_population(pop, g, logbook, checkpoint)
-    
+        gc.collect()
     return;
 
 
