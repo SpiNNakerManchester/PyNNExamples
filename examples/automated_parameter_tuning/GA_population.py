@@ -18,6 +18,9 @@ NUM_PROCESSES = 100
 IND_SIZE = (int(ConvMnistModel.filter_size**2)) + (ConvMnistModel.pop_1_size * ConvMnistModel.output_pop_size)
 POP_SIZE = 20000
 NGEN = 10000000000
+subpop_size = 240
+#240 = 5 networks per chip * 48 chips per board
+
 toolbox = base.Toolbox()
 
 #Setting up GA
@@ -88,8 +91,6 @@ def main(checkpoint = None):
         gen = 0
         print("Evaluating Generation 0")
         
-        subpop_size = 240
-        #240 = 5 networks per chip * 48 chips per board
         subpops = split_population(pop, subpop_size, gen)
         fitnesses = toolbox.map(toolbox.evaluatepop, subpops)
         fitnesses = flatten_fitnesses(fitnesses)
