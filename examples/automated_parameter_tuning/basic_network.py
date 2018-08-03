@@ -4,8 +4,8 @@ from neo.core import Segment, SpikeTrain
 from quantities import s, ms
 #Dependencies need to be sorted
 #sys.path.append('/localhome/mbaxsej2/optimisation_env/NE15')
-#home = os.path.expanduser("~")
-home = os.environ['VIRTUAL_ENV']
+home = os.path.expanduser("~")
+#home = os.environ['VIRTUAL_ENV']
 NE15_path = home + '/git/NE15'
 sys.path.append(NE15_path)
 #This needs to be streamlined to make code portable
@@ -80,10 +80,11 @@ def evalModel(gene, gen):
         return
     
     
-def evalPopulation(pop, gen):
+def evalPopulation(generation, pop):
     '''evaluates a population of individuals'''
     current = multiprocessing.current_process()
-    popgen = np.asarray(popgen)
+    pop = [l.tolist() for l in pop]
+
     print ("Process " + current.name + " started.")
     
     if len(pop)< 1:
@@ -103,9 +104,9 @@ def evalPopulation(pop, gen):
         max_retries = 4 
         if num_retries < max_retries:
             try:
-		sleep(20)
+                sleep(20)
                 print("setting up canonicalModel")
-                canonicalModel = ConvMnistModel(pop[0], True, gen)
+                canonicalModel = ConvMnistModel(pop[0], True, generation)
                 canonicalModel.set_up_sim()
                 canonicalModel.test_model()
                 
@@ -133,12 +134,13 @@ def evalPopulation(pop, gen):
                     fitnesses.extend(models_dict[i].cost)
                     
                 return fitnesses;
+            
             except Exception as e:
-		traceback.print_exc()
-		print(e)
+                traceback.print_exc()
+                print(e)
                 print("Retry %d..." % num_retries)
                 globals_variables.unset_simulator()
-		return eval(num_retries+1);
+                return eval(num_retries+1);
         else:
             raise Exception('eval() reached maximum number of retries %s'% current)
             print(current)

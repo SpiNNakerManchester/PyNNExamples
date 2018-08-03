@@ -8,6 +8,7 @@ from spinnman.exceptions import SpinnmanIOException, SpinnmanException
 import pickle
 import pprint
 import gc
+from itertools import repeat
 #To supress warnings about having packages compiled against earlier numpy version
 import warnings
 warnings.filterwarnings("ignore", message="numpy.dtype size changed")
@@ -18,11 +19,11 @@ from functools import partial
 #GA and parallelisation variables
 
 parallel_on = True
-NUM_PROCESSES = 5 
+NUM_PROCESSES = 2 
 IND_SIZE = (int(ConvMnistModel.filter_size**2)) + (ConvMnistModel.pop_1_size * ConvMnistModel.output_pop_size)
-POP_SIZE = 2400
-NGEN = 10000000000
-subpop_size = 240 
+POP_SIZE = 100
+NGEN = 1000000
+SUBPOP_SIZE = 50 
 #240 = 5 networks per chip * 48 chips per board
 
 toolbox = base.Toolbox()
@@ -39,7 +40,6 @@ toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.att
 toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
 toolbox.register("evaluate", evalModel)
-toolbox.register("evaluatepop", evalPopulation)
 toolbox.register("mate", tools.cxTwoPoint)
 #for continuous networks
 #toolbox.register("mutate", tools.mutGaussian, mu=0.0, sigma=0.2, indpb=0.2)
@@ -89,14 +89,17 @@ def main(checkpoint = None):
             gen = cp["generation"]
             logbook = cp["logbook"]
             print("Checkpoint found... Generation %d" % gen)
-	    print("Population size %s" % len(pop))
+            print("Population size %s" % len(pop))
     except IOError:
         print("No checkpoint found...")
-	print("Generating population of size %s" % POP_SIZE)
+        print("Generating population of size %s" % POP_SIZE)
         pop = toolbox.population(POP_SIZE)
         gen = 0
         print("Evaluating Generation 0")
-        fitnesses = toolbox.map(toolbox.evaluatepop, pop, repeat(gen))
+        toolbox.register("evaluatepop", evalPopulation, gen)
+        pop_split = np.array_split(np.asarray(pop), -(-len(pop)/SUBPOP_SIZE))
+        fitnesses = toolbox.map(toolbox.evaluatepop, pop_split)
+        fitnesses = np.concatenate(fitnesses).ravel().tolist()
         gc.collect()
         for ind, fit in zip(pop, fitnesses):
             ind.fitness.values = fit,
@@ -104,6 +107,7 @@ def main(checkpoint = None):
         gc.collect()
         
     for g in range(gen+1, NGEN):
+        print("ok")
         print ("Generation %d..." % g)
         print("Selecting %d from a population of %d..."% ( (len(pop)/sel_factor), len(pop)))
         offspring = toolbox.select(pop, (len(pop)/sel_factor))
@@ -112,12 +116,14 @@ def main(checkpoint = None):
         
         print("Evaluating the genes with an invalid fitness...")
         invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
-        fitnesses = toolbox.map(toolbox.evaluatepop, invalid_ind, repeat(g))
+        toolbox.register("evaluatepop", evalPopulation, g)
+        invalid_ind_split = np.array_split(np.asarray(invalid_ind), -(-len(invalid_ind)/SUBPOP_SIZE))
+        fitnesses = toolbox.map(toolbox.evaluatepop, invalid_ind_split)
+        fitnesses = np.concatenate(fitnesses).ravel().tolist()
         gc.collect()
                     
         for ind, fit in zip(invalid_ind, fitnesses):
             ind.fitness.values = fit,
-            evals += 1
 
         print("Updating population...")
         pop[:] = offspring
@@ -136,7 +142,7 @@ if __name__ == "__main__":
     if parallel_on: 
         l=multiprocessing.Lock()
         pool = multiprocessing.Pool(NUM_PROCESSES, initializer=pool_init, initargs=(l,), maxtasksperchild=1)
-        toolbox.register("map", pool.map, chunksize=subpop_size)
+        toolbox.register("map", pool.map)
 
     main(checkpoint_name)
     
