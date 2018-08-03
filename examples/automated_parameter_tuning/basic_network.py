@@ -87,8 +87,6 @@ def evalPopulation(popgen):
     if len(pop)< 1:
         return;
     
-    current = multiprocessing.current_process()
-    print ("Process " + current.name + " started.")
     f_name = "errorlog/" + current.name +"_stdout.txt"
     g_name = "errorlog/" + current.name + "_stderror.txt"
     f = open(f_name, 'w')
