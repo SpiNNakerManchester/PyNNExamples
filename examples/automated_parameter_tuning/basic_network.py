@@ -136,8 +136,7 @@ def evalPopulation(popgen):
 		print(e)
                 print("Retry %d..." % num_retries)
                 globals_variables.unset_simulator()
-		eval(num_retries+1)
-                return;
+		return eval(num_retries+1);
         else:
             raise Exception('eval() reached maximum number of retries %s'% current)
             print(current)
