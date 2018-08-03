@@ -34,6 +34,10 @@ import gc
 from spalloc.job import JobDestroyedError
 import pprint
 
+import warnings
+warnings.filterwarnings("ignore", message="numpy.dtype size changed")
+warnings.filterwarnings("ignore", message="numpy.ufunc size changed")
+
 def pool_init(l):  
     gc.collect()
     global lock
@@ -83,7 +87,7 @@ def evalPopulation(popgen):
     print ("Process " + current.name + " started.")
     pop = popgen[0][:]
     gen = popgen[1]
-    
+
     if len(pop)< 1:
         return;
     
@@ -193,14 +197,14 @@ class NetworkModel(object):
 
         
     def set_up_sim(self):
-        print("setting up simulator")
+        print("setting up simulator and common input population")
         sim.setup(self.timestep)
         sim.set_number_of_neurons_per_core(sim.IF_curr_exp, self.neurons_per_core)
         self.input_pop = sim.Population(self.input_pop_size, sim.SpikeSourceArray(self.spiketrains['input_pop']), label="input")
         return;
     
     def set_up_model(self):
-        print("setting up pops")
+        print("setting up pop_1 and output_pop")
         self.pop_1 = sim.Population(self.pop_1_size, sim.IF_curr_exp(), label="pop_1")
         self.output_pop = sim.Population(self.output_pop_size, sim.IF_curr_exp(), label="output_pop")
         print("setting up projs")
@@ -209,15 +213,15 @@ class NetworkModel(object):
         self.output_proj = sim.Projection(self.pop_1, self.output_pop, sim.FromListConnector(self.weights_2), 
                                     synapse_type=sim.StaticSynapse())
         print("setting up recorders")
-        self.pop_1.record(["spikes"])
+        #self.pop_1.record(["spikes"])
         self.output_pop.record(["spikes"])
-        self.input_pop.record(["spikes"])
+        #self.input_pop.record(["spikes"])
         return;
     
     def get_sim_data(self):            
         print("getting data")
-        self.spiketrains['input_pop'] = self.input_pop.get_data(variables=["spikes"]).segments[0].spiketrains
-        self.spiketrains['pop_1'] = self.pop_1.get_data(variables=["spikes"]).segments[0].spiketrains
+        #self.spiketrains['input_pop'] = self.input_pop.get_data(variables=["spikes"]).segments[0].spiketrains
+        #self.spiketrains['pop_1'] = self.pop_1.get_data(variables=["spikes"]).segments[0].spiketrains
         self.spiketrains['output_pop'] = self.output_pop.get_data(variables=["spikes"]).segments[0].spiketrains
         return;
     

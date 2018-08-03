@@ -8,6 +8,12 @@ from spinnman.exceptions import SpinnmanIOException, SpinnmanException
 import pickle
 import pprint
 import gc
+#To supress warnings about having packages compiled against earlier numpy version
+import warnings
+warnings.filterwarnings("ignore", message="numpy.dtype size changed")
+warnings.filterwarnings("ignore", message="numpy.ufunc size changed")
+
+
 
 from functools import partial
 
@@ -19,7 +25,7 @@ NUM_PROCESSES = 5
 IND_SIZE = (int(ConvMnistModel.filter_size**2)) + (ConvMnistModel.pop_1_size * ConvMnistModel.output_pop_size)
 POP_SIZE = 2400
 NGEN = 10000000000
-subpop_size = 240
+subpop_size = 240 
 #240 = 5 networks per chip * 48 chips per board
 
 toolbox = base.Toolbox()
@@ -86,16 +92,18 @@ def main(checkpoint = None):
             gen = cp["generation"]
             logbook = cp["logbook"]
             print("Checkpoint found... Generation %d" % gen)
+	    print("Population size %s" % len(pop))
     except IOError:
         print("No checkpoint found...")
+	print("Generating population of size %s" % POP_SIZE)
         pop = toolbox.population(POP_SIZE)
         gen = 0
         print("Evaluating Generation 0")
         
-        subpops = split_population(pop, subpop_size, gen)
-        fitnesses = toolbox.map(toolbox.evaluatepop, subpops)
+        #subpops = split_population(pop, subpop_size, gen)
+        fitnesses = toolbox.map(toolbox.evaluatepop, pop)
         gc.collect()
-        fitnesses = flatten_fitnesses(fitnesses)
+        #fitnesses = flatten_fitnesses(fitnesses)
         
         #fitnesses = toolbox.evaluatepop(pop)
         #fitnesses = toolbox.map(toolbox.evaluate, pop)
@@ -114,10 +122,10 @@ def main(checkpoint = None):
         print("Evaluating the genes with an invalid fitness...")
         invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
 
-        subpops = split_population(invalid_ind, subpop_size, g)
-        fitnesses = toolbox.map(toolbox.evaluatepop, subpops)
+        #subpops = split_population(invalid_ind, subpop_size, g)
+        fitnesses = toolbox.map(toolbox.evaluatepop, pop)
         gc.collect()
-        fitnesses = flatten_fitnesses(fitnesses)
+        #fitnesses = flatten_fitnesses(fitnesses)
         #fitnesses = toolbox.map(toolbox.evaluatepop, invalid_ind)      
         #fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
                     
@@ -142,7 +150,7 @@ if __name__ == "__main__":
     if parallel_on: 
         l=multiprocessing.Lock()
         pool = multiprocessing.Pool(NUM_PROCESSES, initializer=pool_init, initargs=(l,), maxtasksperchild=1)
-        toolbox.register("map", pool.map)
+        toolbox.register("map", pool.map, chunksize=subpop_size)
 
     main(checkpoint_name)
     
