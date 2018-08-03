@@ -12,9 +12,6 @@ import gc
 import warnings
 warnings.filterwarnings("ignore", message="numpy.dtype size changed")
 warnings.filterwarnings("ignore", message="numpy.ufunc size changed")
-
-
-
 from functools import partial
 
 
@@ -99,14 +96,8 @@ def main(checkpoint = None):
         pop = toolbox.population(POP_SIZE)
         gen = 0
         print("Evaluating Generation 0")
-        
-        #subpops = split_population(pop, subpop_size, gen)
-        fitnesses = toolbox.map(toolbox.evaluatepop, pop)
+        fitnesses = toolbox.map(toolbox.evaluatepop, pop, repeat(gen))
         gc.collect()
-        #fitnesses = flatten_fitnesses(fitnesses)
-        
-        #fitnesses = toolbox.evaluatepop(pop)
-        #fitnesses = toolbox.map(toolbox.evaluate, pop)
         for ind, fit in zip(pop, fitnesses):
             ind.fitness.values = fit,
         pickle_population(pop, gen, logbook, checkpoint)
@@ -121,13 +112,8 @@ def main(checkpoint = None):
         
         print("Evaluating the genes with an invalid fitness...")
         invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
-
-        #subpops = split_population(invalid_ind, subpop_size, g)
-        fitnesses = toolbox.map(toolbox.evaluatepop, pop)
+        fitnesses = toolbox.map(toolbox.evaluatepop, invalid_ind, repeat(g))
         gc.collect()
-        #fitnesses = flatten_fitnesses(fitnesses)
-        #fitnesses = toolbox.map(toolbox.evaluatepop, invalid_ind)      
-        #fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
                     
         for ind, fit in zip(invalid_ind, fitnesses):
             ind.fitness.values = fit,

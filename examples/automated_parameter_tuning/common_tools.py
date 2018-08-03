@@ -8,6 +8,10 @@ import numpy as np
 import sys
 import gc
 import matplotlib.pyplot as plt
+import warnings
+warnings.filterwarnings("ignore", message="numpy.dtype size changed")
+warnings.filterwarnings("ignore", message="numpy.ufunc size changed")
+
 
 def flatten_fitnesses(fitnesses):
     fitnesses_final = []

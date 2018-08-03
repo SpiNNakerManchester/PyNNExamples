@@ -80,14 +80,12 @@ def evalModel(gene, gen):
         return
     
     
-def evalPopulation(popgen):
+def evalPopulation(pop, gen):
     '''evaluates a population of individuals'''
     current = multiprocessing.current_process()
     popgen = np.asarray(popgen)
     print ("Process " + current.name + " started.")
-    pop = popgen[0][:]
-    gen = popgen[1]
-
+    
     if len(pop)< 1:
         return;
     
