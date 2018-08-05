@@ -246,7 +246,7 @@ class NetworkModel(object):
             for j in range(self.test_set[i]):
                 #pick = random.randint(0,len(test_data[i])-1)
                 length = len(test_data[i])
-                pick = ((self.gen+length) % length)+(gen*self.test_set[i])
+                pick = ((self.gen+length) % length)+(self.gen*self.test_set[i])
                 picked_image = test_data[i][pick+j]
                 test_images[i].append(picked_image)
                 test_labels.append(i)
