@@ -4,8 +4,8 @@ from neo.core import Segment, SpikeTrain
 from quantities import s, ms
 #Dependencies need to be sorted
 #sys.path.append('/localhome/mbaxsej2/optimisation_env/NE15')
-home = os.path.expanduser("~")
-#home = os.environ['VIRTUAL_ENV']
+#home = os.path.expanduser("~")
+home = os.environ['VIRTUAL_ENV']
 NE15_path = home + '/git/NE15'
 sys.path.append(NE15_path)
 #This needs to be streamlined to make code portable
@@ -173,7 +173,7 @@ class NetworkModel(object):
         self.weights_1, self.weights_2 = self.gene_to_weights()
         self.on_duration = on_duration
         self.off_duration = off_duration
-        self.test_set = [4,4,4,4,4,4,4,4,4,4]
+        self.test_set = [5,5,5,5,5,5,5,5,5,5]
         self.number_digits = len(self.test_set)
         self.number_tests = sum(self.test_set)
         self.simtime = (self.on_duration + self.off_duration)*self.number_tests
@@ -246,8 +246,8 @@ class NetworkModel(object):
             for j in range(self.test_set[i]):
                 #pick = random.randint(0,len(test_data[i])-1)
                 length = len(test_data[i])
-                pick = (self.gen+length) % length
-                picked_image = test_data[i][pick]
+                pick = ((self.gen+length) % length)+(gen*self.test_set[i])
+                picked_image = test_data[i][pick+j]
                 test_images[i].append(picked_image)
                 test_labels.append(i)
         self.test_images = test_images
