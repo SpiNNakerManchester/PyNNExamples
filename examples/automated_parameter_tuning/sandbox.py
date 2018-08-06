@@ -1,5 +1,6 @@
 import multiprocessing
 import numpy as np
+import pickle
 
 data = range(100)
 
@@ -19,3 +20,12 @@ print(chunk(data,10))
 print(result)
 result = np.asarray(result)
 print(np.concatenate(result).ravel().tolist())
+
+def load_data():
+    data_filename = 'processed_training_data'
+    infile = open(data_filename,'rb')
+    test_data = pickle.load(infile)
+    print([len(list) for list in test_data])
+    return;
+
+load_data()

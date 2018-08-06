@@ -19,9 +19,9 @@ from functools import partial
 #GA and parallelisation variables
 
 parallel_on = True
-NUM_PROCESSES = 5 
+NUM_PROCESSES = 2
 IND_SIZE = (int(ConvMnistModel.filter_size**2)) + (ConvMnistModel.pop_1_size * ConvMnistModel.output_pop_size)
-POP_SIZE = 2400
+POP_SIZE = 480
 NGEN = 1000000
 SUBPOP_SIZE = 240 
 #240 = 5 networks per chip * 48 chips per board

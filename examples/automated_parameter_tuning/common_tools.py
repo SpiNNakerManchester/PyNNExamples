@@ -1,3 +1,4 @@
+import os
 from deap import algorithms, base, creator, tools
 from basic_network import ConvMnistModel, MnistModel, NetworkModel
 import pickle
@@ -11,6 +12,37 @@ import matplotlib.pyplot as plt
 import warnings
 warnings.filterwarnings("ignore", message="numpy.dtype size changed")
 warnings.filterwarnings("ignore", message="numpy.ufunc size changed")
+from mnist import MNIST
+#sys.path.append('/localhome/mbaxsej2/optimisation_env/NE15')
+home = os.path.expanduser("~")
+#home = os.environ['VIRTUAL_ENV']
+NE15_path = home + '/git/NE15'
+sys.path.append(NE15_path)
+#This needs to be streamlined to make code portable
+
+def set_up_training_data():
+    #picking test images from data 
+    number_digits = 10
+    
+    mndata = MNIST(home)
+    mndata.gz = True
+    images, labels = mndata.load_training()
+    
+    test_data = [[] for i in range(number_digits)]
+    
+    for label, image in zip(labels, images):
+            test_data[label].append(image)
+            
+    print(len(test_data))
+    print([len(list) for list in test_data])
+            
+    data_filename = 'training_data/processed_training_data.pkl'
+    outfile = open(data_filename,'wb')
+    pickle.dump(test_data, outfile)
+    outfile.close()
+    
+    return;
+
 
 
 def flatten_fitnesses(fitnesses):
@@ -75,6 +107,9 @@ def stats_setup():
     mstats.register("min", np.min, axis=0)
     mstats.register("max", np.max, axis=0)
     return logbook, mstats
+
+#set_up_training_data()
+
 '''
 multiobjective
 def stats_setup():

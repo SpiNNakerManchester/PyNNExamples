@@ -2,13 +2,11 @@ import sys, os
 import copy
 from neo.core import Segment, SpikeTrain
 from quantities import s, ms
-#Dependencies need to be sorted
 #sys.path.append('/localhome/mbaxsej2/optimisation_env/NE15')
-#home = os.path.expanduser("~")
-home = os.environ['VIRTUAL_ENV']
+home = os.path.expanduser("~")
+#home = os.environ['VIRTUAL_ENV']
 NE15_path = home + '/git/NE15'
 sys.path.append(NE15_path)
-#This needs to be streamlined to make code portable
 import traceback
 from decimal import *
 import spynnaker8 as sim
@@ -173,7 +171,7 @@ class NetworkModel(object):
         self.weights_1, self.weights_2 = self.gene_to_weights()
         self.on_duration = on_duration
         self.off_duration = off_duration
-        self.test_set = [5,5,5,5,5,5,5,5,5,5]
+        self.test_set = [6,6,6,6,6,6,6,6,6,6]
         self.number_digits = len(self.test_set)
         self.number_tests = sum(self.test_set)
         self.simtime = (self.on_duration + self.off_duration)*self.number_tests
@@ -224,35 +222,41 @@ class NetworkModel(object):
         #self.spiketrains['pop_1'] = self.pop_1.get_data(variables=["spikes"]).segments[0].spiketrains
         self.spiketrains['output_pop'] = self.output_pop.get_data(variables=["spikes"]).segments[0].spiketrains
         return;
-    
-        
         
     def generate_test_data(self):
-        #picking test images from data in accordance with test_set  
-        mndata = MNIST(home)
-        mndata.gz = True
-        images, labels = mndata.load_testing()
         
-        test_data = [[] for i in range(self.number_digits)]
+        training_data_filename = 'training_data/training_data_' + str(self.gen) +'.pkl'
         
-
-        for label, image in zip(labels, images):
-            test_data[label].append(image)
+        lock.acquire()
+        if os.path.isfile(training_data_filename):
+            print("training data found, loading from file...")
+            training_data_file = open(training_data_filename, 'rb')
+            training_data = pickle.load(training_data_file)
+            self.test_images = training_data[0]
+            self.test_labels = training_data[1]
+        else:
+            print("no training data found, generating it...")        
+            data_filename = 'processed_training_data'
+            infile = open(data_filename,'rb')
+            test_data = pickle.load(infile)
             
-        test_images = [[] for i in range(self.number_digits)]
-        test_labels = []
-        
-        for i in range(len(self.test_set)):
-            for j in range(self.test_set[i]):
-                #pick = random.randint(0,len(test_data[i])-1)
-                length = len(test_data[i])
-                pick = ((self.gen+length) % length)+(self.gen*self.test_set[i])
-                picked_image = test_data[i][pick+j]
-                test_images[i].append(picked_image)
-                test_labels.append(i)
-        self.test_images = test_images
-        self.test_labels = np.asarray(test_labels)
-        
+            test_images = [[] for i in range(len(self.test_set))]
+            test_labels = []
+            
+            for i in range(len(self.test_set)):
+                for j in range(self.test_set[i]):
+                    length = len(test_data[i])
+                    pick = ((self.gen+length) % length)+(self.gen*self.test_set[i])
+                    picked_image = test_data[i][pick+j]
+                    test_images[i].append(picked_image)
+                    test_labels.append(i)
+            self.test_images = test_images
+            self.test_labels = np.asarray(test_labels)
+            
+            training_data_file = open(training_data_filename, 'wb')
+            
+            pickle.dump((self.test_images,self.test_labels), training_data_file)
+        lock.release()
         # generating the time periods to identify when input presented in the spike train
         
         test_time = self.on_duration + self.off_duration
