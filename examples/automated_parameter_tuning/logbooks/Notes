@@ -17,5 +17,8 @@ Convolutional nets:
 
 first runs showed 10 random digits (of any kind) to network 
 
-
 40 test images - accuracy worked out better (random choice of certain digits)
+
+784_576c_10_2400p_111g_test_images_repeated.pkl - 10 test images (same repeated 4 times each by mistake)
+
+784_576c_10_2400p_50g_50t.pkl - 50 test images (5 per digit) from test data. Promising results after 50g ~33%
