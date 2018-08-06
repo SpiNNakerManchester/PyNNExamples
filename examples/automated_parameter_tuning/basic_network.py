@@ -2,9 +2,8 @@ import sys, os
 import copy
 from neo.core import Segment, SpikeTrain
 from quantities import s, ms
-#sys.path.append('/localhome/mbaxsej2/optimisation_env/NE15')
-home = os.path.expanduser("~")
-#home = os.environ['VIRTUAL_ENV']
+#home = os.path.expanduser("~")
+home = os.environ['VIRTUAL_ENV']
 NE15_path = home + '/git/NE15'
 sys.path.append(NE15_path)
 import traceback
@@ -51,8 +50,8 @@ def evalModel(gene, gen):
     g = open(g_name, 'w')
     old_stdout = sys.stdout
     old_stderr = sys.stderr
-    sys.stdout = f
-    sys.stderr = g
+    #sys.stdout = f
+    #sys.stderr = g
     try:
         model = ConvMnistModel(gene, gen)
         model.test_model()
@@ -81,13 +80,11 @@ def evalModel(gene, gen):
 def evalPopulation(generation, pop):
     '''evaluates a population of individuals'''
     current = multiprocessing.current_process()
-    pop = [l.tolist() for l in pop]
-
+    pop = [i.tolist() for i in pop]
     print ("Process " + current.name + " started.")
-    
     if len(pop)< 1:
-        return;
-    
+        print("population too small")
+	return;
     f_name = "errorlog/" + current.name +"_stdout.txt"
     g_name = "errorlog/" + current.name + "_stderror.txt"
     f = open(f_name, 'w')
@@ -96,13 +93,10 @@ def evalPopulation(generation, pop):
     old_stderr = sys.stderr
     sys.stdout = f
     sys.stderr = g
-
     def eval(num_retries=0):
-        
         max_retries = 4 
         if num_retries < max_retries:
             try:
-                sleep(20)
                 print("setting up canonicalModel")
                 canonicalModel = ConvMnistModel(pop[0], True, generation)
                 canonicalModel.set_up_sim()
@@ -136,7 +130,8 @@ def evalPopulation(generation, pop):
             except Exception as e:
                 traceback.print_exc()
                 print(e)
-                print("Retry %d..." % num_retries)
+                sleep(20)
+		print("Retry %d..." % num_retries)
                 globals_variables.unset_simulator()
                 return eval(num_retries+1);
         else:
