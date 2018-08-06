@@ -171,7 +171,7 @@ class NetworkModel(object):
         self.weights_1, self.weights_2 = self.gene_to_weights()
         self.on_duration = on_duration
         self.off_duration = off_duration
-        self.test_set = [6,6,6,6,6,6,6,6,6,6]
+        self.test_set = [5,5,5,5,5,5,5,5,5,5]
         self.number_digits = len(self.test_set)
         self.number_tests = sum(self.test_set)
         self.simtime = (self.on_duration + self.off_duration)*self.number_tests
@@ -224,6 +224,9 @@ class NetworkModel(object):
         return;
         
     def generate_test_data(self):
+        if not 'lock' in globals():
+            pool_init(multiprocessing.Lock())
+        
         
         training_data_filename = 'training_data/training_data_' + str(self.gen) +'.pkl'
         
