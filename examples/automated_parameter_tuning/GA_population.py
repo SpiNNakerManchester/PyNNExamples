@@ -121,7 +121,7 @@ def main(checkpoint = None):
         fitnesses = np.concatenate(fitnesses).ravel().tolist()
         gc.collect()
                     
-        for ind, fit in zip(invalid_ind, fitnesses):
+        for ind, fit in zip(offspring, fitnesses):
             ind.fitness.values = fit,
 
         print("Updating population...")
