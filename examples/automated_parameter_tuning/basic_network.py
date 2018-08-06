@@ -226,8 +226,7 @@ class NetworkModel(object):
     def generate_test_data(self):
         if not 'lock' in globals():
             pool_init(multiprocessing.Lock())
-        
-        
+                
         training_data_filename = 'training_data/training_data_' + str(self.gen) +'.pkl'
         
         lock.acquire()
@@ -239,7 +238,7 @@ class NetworkModel(object):
             self.test_labels = training_data[1]
         else:
             print("no training data found, generating it...")        
-            data_filename = 'processed_training_data'
+            data_filename = 'training_data/processed_training_data.pkl'
             infile = open(data_filename,'rb')
             test_data = pickle.load(infile)
             
@@ -556,8 +555,9 @@ class ConvMnistModel(NetworkModel):
         
         return test_gene
 
-    def visualise_filter(self):
-        filter_image = np.reshape(gene[:filter^2], (28,28))
+    @staticmethod
+    def visualise_filter(filter_image, filter_size):
+        filter_image = np.reshape(filter_image, (filter_size, filter_size))
         pylab.figure(3)
         plt.imshow(filter_image)
         plt.show()
