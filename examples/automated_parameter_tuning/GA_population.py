@@ -1,5 +1,5 @@
-from common_tools import flatten_fitnesses, data_summary, stats_setup, pickle_population, split_population
-from basic_network import ConvMnistModel, MnistModel, NetworkModel, pool_init, evalModel, evalPopulation
+from common_tools import flatten_fitnesses, data_summary, stats_setup, pickle_population, split_population, average_times, write_csv_data_file
+from basic_network import ConvMnistModel, MnistModel, NetworkModel, pool_init, evalModel, evalPopulation, timer
 from deap import algorithms, base, creator, tools
 import random
 import numpy as np
@@ -109,30 +109,42 @@ def main(checkpoint = None):
     for g in range(gen+1, NGEN):
         print("ok")
         print ("Generation %d..." % g)
+        t_start_gen = timer()
         print("Selecting %d from a population of %d..."% ( (len(pop)/sel_factor), len(pop)))
         offspring = toolbox.select(pop, (len(pop)/sel_factor))
+        t_end_select = timer()
         print("Applying crossover and mutation on the offspring...")
         offspring = mAndM(offspring, toolbox, CXPB, MUTPB, sel_factor)
-        
+        t_end_variation = timer()
         print("Evaluating the genes with an invalid fitness...")
         toolbox.register("evaluatepop", evalPopulation, g)
         offspring_split = np.array_split(np.asarray(offspring), -(-len(offspring)/SUBPOP_SIZE))
-        fitnesses = toolbox.map(toolbox.evaluatepop, offspring_split)
+        t_end_pop_preprocess = timer()
+        fitnesses, times_eval = toolbox.map(toolbox.evaluatepop, offspring_split)
+        t_end_evaluatepop = timer()
         fitnesses = np.concatenate(fitnesses).ravel().tolist()
         gc.collect()
                     
         for ind, fit in zip(offspring, fitnesses):
             ind.fitness.values = fit,
-
+            
         print("Updating population...")
         pop[:] = offspring
-        
+        t_end_pop_postprocess = timer()
         print("Recording stats")
         record = mstats.compile(pop)
         logbook.record(gen=g, evals=len(offspring), **record)
+        t_end_stats = timer()
         print("Pickling population...")
         pickle_population(pop, g, logbook, checkpoint)
         gc.collect()
+        t_end_gen = timer()
+        avg_times_eval = average_times(times_eval, SUBPOP_SIZE)
+        times_gen = (t_start_gen, t_end_select, t_end_variation, t_end_pop_preprocess, t_end_evaluatepop, t_end_pop_postprocess, t_end_stats, t_end_gen)
+        #t_start_gen, t_end_select, t_end_variation, t_end_pop_preprocess, t_end_evaluatepop, t_end_pop_postprocess, t_end_stats, t_end_gen, t_min, t_setup, t_run, t_gather, t_cost, avg_retry  
+        total_data = (SUBPOP_SIZE, POP_SIZE, NUM_PROCESSES) + times_gen + avg_times_eval
+        write_csv_data_file(total_data, "timing_data.csv")
+        SUBPOP_SIZE = SUBPOP_SIZE + 50
     return;
 
 

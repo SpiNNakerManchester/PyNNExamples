@@ -30,6 +30,7 @@ import multiprocessing
 import gc
 from spalloc.job import JobDestroyedError
 import pprint
+from timeit import default_timer as timer
 
 import warnings
 warnings.filterwarnings("ignore", message="numpy.dtype size changed")
@@ -79,6 +80,8 @@ def evalModel(gene, gen):
     
 def evalPopulation(generation, pop):
     '''evaluates a population of individuals'''
+    times = []
+    t_start_evalpop = timer()
     current = multiprocessing.current_process()
     pop = [i.tolist() for i in pop]
     print ("Process " + current.name + " started.")
@@ -97,6 +100,7 @@ def evalPopulation(generation, pop):
         max_retries = 4 
         if num_retries < max_retries:
             try:
+                t_start_eval = timer()
                 print("setting up canonicalModel")
                 canonicalModel = ConvMnistModel(pop[0], True, generation)
                 canonicalModel.set_up_sim()
@@ -112,20 +116,21 @@ def evalPopulation(generation, pop):
                     models_dict[i].weights_1, models_dict[i].weights_2 = models_dict[i].gene_to_weights()
                     models_dict[i].spiketrains = copy.copy(canonicalModel.spiketrains)
                     models_dict[i].test_model()
-            
+                t_end_setup = timer()
                 sim.run(canonicalModel.simtime)
-                
+                t_end_run = timer()
                 for i in range(0, len(pop)):
                     print(i)
                     models_dict[i].get_sim_data()
-            
+                
                 sim.end()   
-            
+                t_end_gather = timer()
                 for i in range(0, len(pop)):
                     models_dict[i].cost_function()
                     fitnesses.extend(models_dict[i].cost)
-                    
-                return fitnesses;
+                t_end_eval = timer()
+                times = (t_start_eval, t_end_setup, t_end_run, t_end_gather, t_end_eval, len(pop), num_retries)    
+                return fitnesses, times;
             
             except Exception as e:
                 traceback.print_exc()
@@ -139,11 +144,11 @@ def evalPopulation(generation, pop):
             print(current)
 	    return;
     
-    fitnesses = eval()
+    fitnesses, times = eval()
     sys.stdout = old_stdout
     sys.stderr = old_stderr          
     print ("Process " + current.name + " finished sucessfully, average accuracy:: %s" % np.average(np.asarray(fitnesses)))
-    return fitnesses;
+    return fitnesses, times;
     
 class NetworkModel(object):
     '''Class representing model'''

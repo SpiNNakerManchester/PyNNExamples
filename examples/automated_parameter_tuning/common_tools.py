@@ -10,6 +10,7 @@ import sys
 import gc
 import matplotlib.pyplot as plt
 import warnings
+import csv
 warnings.filterwarnings("ignore", message="numpy.dtype size changed")
 warnings.filterwarnings("ignore", message="numpy.ufunc size changed")
 from mnist import MNIST
@@ -18,6 +19,7 @@ home = os.path.expanduser("~")
 #home = os.environ['VIRTUAL_ENV']
 NE15_path = home + '/git/NE15'
 sys.path.append(NE15_path)
+
 
 def set_up_training_data():
     #picking test images from data 
@@ -41,8 +43,6 @@ def set_up_training_data():
     outfile.close()
     
     return;
-
-
 
 def flatten_fitnesses(fitnesses):
     fitnesses_final = []
@@ -107,7 +107,37 @@ def stats_setup():
     mstats.register("max", np.max, axis=0)
     return logbook, mstats
 
+
+test_times = [(1,1,2,3,5,240,4), (2,2,3,6,10,240,1), (4,4,6,10,22,100,0)]
+
+
+def average_times(times, subpop):
+    #(t_start_eval, t_end_setup, t_end_run, t_end_gather, t_end_eval, len(pop), num_retries)
+    times = np.array(times)
+    times_original = times.copy()
+    t_min = np.amin(times[:,0])
+    #get non-remainders
+    times = times[times[:,-2]== subpop]
+    other_stats = times[-2:,:]
+    times = times[:, :-2]
+    times = np.diff(times)
+    avg_times = np.average(times, axis=0).tolist()
+    avg_retry = np.average(times_original[:,-1])
+    avg_times = (t_min,) + tuple(avg_times) + (avg_retry,)
+    #(t_min, t_setup, t_run, t_gather, t_cost, avg_retry)    
+    return avg_times;
+
+print(average_times(test_times, 240))
 #set_up_training_data()
+
+def write_csv_data_file(data, filename):
+    data = list(data)
+    with open(filename, 'a') as file:
+        writer = csv.writer(file)
+        writer.writerow(data)
+
+    file.close()
+    return;
 
 '''
 multiobjective
