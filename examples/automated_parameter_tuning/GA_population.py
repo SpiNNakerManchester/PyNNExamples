@@ -1,4 +1,4 @@
-from common_tools import flatten_fitnesses, data_summary, stats_setup, pickle_population, split_population, average_times, write_csv_data_file
+from common_tools import flatten_fitnesses, data_summary, stats_setup, pickle_population, split_population, average_times, write_csv_data_file, split_fit
 from basic_network import ConvMnistModel, MnistModel, NetworkModel, pool_init, evalModel, evalPopulation, timer
 from deap import algorithms, base, creator, tools
 import random
@@ -19,11 +19,11 @@ from functools import partial
 #GA and parallelisation variables
 
 parallel_on = True
-NUM_PROCESSES = 100 
+NUM_PROCESSES = 10 
 IND_SIZE = (int(ConvMnistModel.filter_size**2)) + (ConvMnistModel.pop_1_size * ConvMnistModel.output_pop_size)
-POP_SIZE = 24000
+POP_SIZE = 240
 NGEN = 1000000
-SUBPOP_SIZE = 240
+SUBPOP_SIZE = 100 
 #240 = 5 networks per chip * 48 chips per board
 
 toolbox = base.Toolbox()
@@ -98,8 +98,10 @@ def main(checkpoint = None):
         print("Evaluating Generation 0")
         toolbox.register("evaluatepop", evalPopulation, gen)
         pop_split = np.array_split(np.asarray(pop), -(-len(pop)/SUBPOP_SIZE))
-        fitnesses = toolbox.map(toolbox.evaluatepop, pop_split)
-        fitnesses = np.concatenate(fitnesses).ravel().tolist()
+        fitnesses_and_times_eval = toolbox.map(toolbox.evaluatepop, pop_split)        
+	fitnesses, times = split_fit(fitnesses_and_times_eval)
+        print(fitnesses)
+	print(times)
         gc.collect()
         for ind, fit in zip(pop, fitnesses):
             ind.fitness.values = fit,
@@ -107,7 +109,8 @@ def main(checkpoint = None):
         gc.collect()
         
     for g in range(gen+1, NGEN):
-        print("ok")
+        global SUBPOP_SIZE
+	print("ok")
         print ("Generation %d..." % g)
         t_start_gen = timer()
         print("Selecting %d from a population of %d..."% ( (len(pop)/sel_factor), len(pop)))
@@ -120,9 +123,9 @@ def main(checkpoint = None):
         toolbox.register("evaluatepop", evalPopulation, g)
         offspring_split = np.array_split(np.asarray(offspring), -(-len(offspring)/SUBPOP_SIZE))
         t_end_pop_preprocess = timer()
-        fitnesses, times_eval = toolbox.map(toolbox.evaluatepop, offspring_split)
-        t_end_evaluatepop = timer()
-        fitnesses = np.concatenate(fitnesses).ravel().tolist()
+        fitnesses_and_times_eval = toolbox.map(toolbox.evaluatepop, offspring_split)
+	fitnesses, times = split_fit(fitnesses_and_times_eval)
+	t_end_evaluatepop = timer()
         gc.collect()
                     
         for ind, fit in zip(offspring, fitnesses):
@@ -141,10 +144,12 @@ def main(checkpoint = None):
         t_end_gen = timer()
         avg_times_eval = average_times(times_eval, SUBPOP_SIZE)
         times_gen = (t_start_gen, t_end_select, t_end_variation, t_end_pop_preprocess, t_end_evaluatepop, t_end_pop_postprocess, t_end_stats, t_end_gen)
-        #t_start_gen, t_end_select, t_end_variation, t_end_pop_preprocess, t_end_evaluatepop, t_end_pop_postprocess, t_end_stats, t_end_gen, t_min, t_setup, t_run, t_gather, t_cost, avg_retry  
+        #t_start_gen, t_end_select, t_end_variation, t_end_pop_preprocess, t_end_evaluatepop, t_end_pop_postprocess, t_end_stats, t_end_gen, number_evals, t_min, t_setup, t_run, t_gather, t_cost, avg_retry  
         total_data = (SUBPOP_SIZE, POP_SIZE, NUM_PROCESSES) + times_gen + avg_times_eval
         write_csv_data_file(total_data, "timing_data.csv")
-        SUBPOP_SIZE = SUBPOP_SIZE + 50
+        print("data written to file")
+	SUBPOP_SIZE = SUBPOP_SIZE + 50
+	print("SUBPOP_SIZE increased to %s" % SUBPOP_SIZE)
     return;
 
 

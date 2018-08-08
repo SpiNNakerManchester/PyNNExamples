@@ -143,7 +143,6 @@ def evalPopulation(generation, pop):
             raise Exception('eval() reached maximum number of retries %s'% current)
             print(current)
 	    return;
-    
     fitnesses, times = eval()
     sys.stdout = old_stdout
     sys.stderr = old_stderr          

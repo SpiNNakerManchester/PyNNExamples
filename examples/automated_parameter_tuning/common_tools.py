@@ -115,6 +115,7 @@ def average_times(times, subpop):
     #(t_start_eval, t_end_setup, t_end_run, t_end_gather, t_end_eval, len(pop), num_retries)
     times = np.array(times)
     times_original = times.copy()
+    number_evals = times.shape[1]
     t_min = np.amin(times[:,0])
     #get non-remainders
     times = times[times[:,-2]== subpop]
@@ -123,12 +124,22 @@ def average_times(times, subpop):
     times = np.diff(times)
     avg_times = np.average(times, axis=0).tolist()
     avg_retry = np.average(times_original[:,-1])
-    avg_times = (t_min,) + tuple(avg_times) + (avg_retry,)
+    avg_times = (number_evals, t_min,) + tuple(avg_times) + (avg_retry,)
     #(t_min, t_setup, t_run, t_gather, t_cost, avg_retry)    
     return avg_times;
 
-print(average_times(test_times, 240))
+#print(average_times(test_times, 240))
 #set_up_training_data()
+
+def split_fit(fit_times):
+    fitnesses = []
+    times = []
+    
+    for i in fit_times:
+        fitnesses.extend(i[0])
+        times.append(i[1])
+
+    return fitnesses, times
 
 def write_csv_data_file(data, filename):
     data = list(data)
