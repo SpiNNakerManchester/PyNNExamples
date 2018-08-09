@@ -83,7 +83,7 @@ def evalPopulation(generation, pop):
     times = []
     t_start_evalpop = timer()
     current = multiprocessing.current_process()
-    pop = [i.tolist() for i in pop]
+    #pop = [i.tolist() for i in pop]
     print ("Process " + current.name + " started.")
     if len(pop)< 1:
         print("population too small")

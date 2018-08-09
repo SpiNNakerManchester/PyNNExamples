@@ -19,11 +19,11 @@ from functools import partial
 #GA and parallelisation variables
 
 parallel_on = True
-NUM_PROCESSES = 10 
+NUM_PROCESSES = 100 
 IND_SIZE = (int(ConvMnistModel.filter_size**2)) + (ConvMnistModel.pop_1_size * ConvMnistModel.output_pop_size)
-POP_SIZE = 240
+POP_SIZE = 24000
 NGEN = 1000000
-SUBPOP_SIZE = 100 
+SUBPOP_SIZE = 110 
 #240 = 5 networks per chip * 48 chips per board
 
 toolbox = base.Toolbox()
@@ -97,11 +97,9 @@ def main(checkpoint = None):
         gen = 0
         print("Evaluating Generation 0")
         toolbox.register("evaluatepop", evalPopulation, gen)
-        pop_split = np.array_split(np.asarray(pop), -(-len(pop)/SUBPOP_SIZE))
+        pop_split = split_population(pop, SUBPOP_SIZE)
         fitnesses_and_times_eval = toolbox.map(toolbox.evaluatepop, pop_split)        
 	fitnesses, times = split_fit(fitnesses_and_times_eval)
-        print(fitnesses)
-	print(times)
         gc.collect()
         for ind, fit in zip(pop, fitnesses):
             ind.fitness.values = fit,
@@ -121,10 +119,11 @@ def main(checkpoint = None):
         t_end_variation = timer()
         print("Evaluating the genes with an invalid fitness...")
         toolbox.register("evaluatepop", evalPopulation, g)
-        offspring_split = np.array_split(np.asarray(offspring), -(-len(offspring)/SUBPOP_SIZE))
+        offspring_split = split_population(offspring, SUBPOP_SIZE)
         t_end_pop_preprocess = timer()
         fitnesses_and_times_eval = toolbox.map(toolbox.evaluatepop, offspring_split)
 	fitnesses, times = split_fit(fitnesses_and_times_eval)
+	print(times)
 	t_end_evaluatepop = timer()
         gc.collect()
                     
@@ -142,13 +141,14 @@ def main(checkpoint = None):
         pickle_population(pop, g, logbook, checkpoint)
         gc.collect()
         t_end_gen = timer()
-        avg_times_eval = average_times(times_eval, SUBPOP_SIZE)
+	print(SUBPOP_SIZE)
+        avg_times_eval = average_times(times, SUBPOP_SIZE)
         times_gen = (t_start_gen, t_end_select, t_end_variation, t_end_pop_preprocess, t_end_evaluatepop, t_end_pop_postprocess, t_end_stats, t_end_gen)
         #t_start_gen, t_end_select, t_end_variation, t_end_pop_preprocess, t_end_evaluatepop, t_end_pop_postprocess, t_end_stats, t_end_gen, number_evals, t_min, t_setup, t_run, t_gather, t_cost, avg_retry  
         total_data = (SUBPOP_SIZE, POP_SIZE, NUM_PROCESSES) + times_gen + avg_times_eval
         write_csv_data_file(total_data, "timing_data.csv")
         print("data written to file")
-	SUBPOP_SIZE = SUBPOP_SIZE + 50
+	SUBPOP_SIZE = SUBPOP_SIZE + 10
 	print("SUBPOP_SIZE increased to %s" % SUBPOP_SIZE)
     return;
 

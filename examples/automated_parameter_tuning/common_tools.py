@@ -51,13 +51,13 @@ def flatten_fitnesses(fitnesses):
     
     return fitnesses_final;
 
-def split_population(pop, subpop_size, gen):
+def split_population(pop, subpop_size):
     '''splits a population into a number of subpopulations of subpop_size'''
     #ceiling division
     number_subpops = -(-len(pop)//subpop_size)
     subpops = []
-    for i in range (0, len(pop)+1, subpop_size):
-        subpops.append((pop[i:i+subpop_size], gen))
+    for i in range (0, len(pop), subpop_size):
+        subpops.append(pop[i:i+subpop_size])
     return subpops;
 
 def pickle_population(pop, gen, log, checkpoint_name):
@@ -114,15 +114,20 @@ test_times = [(1,1,2,3,5,240,4), (2,2,3,6,10,240,1), (4,4,6,10,22,100,0)]
 def average_times(times, subpop):
     #(t_start_eval, t_end_setup, t_end_run, t_end_gather, t_end_eval, len(pop), num_retries)
     times = np.array(times)
+    print(times)
     times_original = times.copy()
     number_evals = times.shape[1]
     t_min = np.amin(times[:,0])
     #get non-remainders
-    times = times[times[:,-2]== subpop]
-    other_stats = times[-2:,:]
+    non_rem = times[:,-2]==subpop
+    print(non_rem)
+    times = times[non_rem,:]
     times = times[:, :-2]
+    print(times)
     times = np.diff(times)
-    avg_times = np.average(times, axis=0).tolist()
+    print(times)
+    avg_times = np.average(times, axis=0)
+    print(avg_times)
     avg_retry = np.average(times_original[:,-1])
     avg_times = (number_evals, t_min,) + tuple(avg_times) + (avg_retry,)
     #(t_min, t_setup, t_run, t_gather, t_cost, avg_retry)    
