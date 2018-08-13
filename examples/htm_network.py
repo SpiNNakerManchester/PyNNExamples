@@ -34,7 +34,7 @@ wpred = 0.05#1.
 w2s_target = 5.
 
 input_pop_size =1
-active_pop_size = 32
+active_pop_size = 8
 # assume 1% of 2048 columns are active per 1ms timestep
 #if each column fired at 1Hz then there would be approx. 2 active columns per timestep
 #we assume each column fires at around 10Hz, producing approx. 20 active columns per ms

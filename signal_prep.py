@@ -452,6 +452,7 @@ def cell_voltage_plot_8(v, plt, duration_ms, time_step_ms,scale_factor=0.001, id
         title = title + "{} neurons".format(membrane_voltage.shape[1])
     plt.figure(title)
     plt.plot(scaled_times, mem_v)
+    plt.xlim((0,duration_ms*scale_factor))
     plt.xlabel('time (s)')
     plt.ylabel('membrane voltage (mV)')
     if filepath is not None:
@@ -651,49 +652,68 @@ def stimulus_onset_detector(spike_train_an_ms,num_an_fibres,duration,num_classes
 
 # stimulus onset times is a list of onset times lists for each stimulus
 # spike time is the output spikes from a population
-def neuron_correlation(spike_train,time_window, stimulus_onset_times,max_id,np=numpy,significant_spike_count=None):
+def neuron_correlation(spike_train,time_window, stimulus_onset_times,max_id,noise_threshold,np=numpy,significant_spike_count=None):
     correlations = []#1st dimension is stimulus class
-    #counts = np.asarray([np.zeros(max_id + 1), np.zeros(max_id + 1)])
+    # #counts = np.asarray([np.zeros(max_id + 1), np.zeros(max_id + 1)])
     counts=[]
-    stimulus_index = 0
-    for stimulus in stimulus_onset_times:
-        correlations.append([])
+    # stimulus_index = 0
+    # for stimulus in stimulus_onset_times:
+    #     correlations.append([])
+    #     counts.append(np.zeros(max_id + 1))
+    #     #loop through each stimulus onset time and check all neuron firing times
+    #     #save neuron index if firing is within time window of stimulus onset
+    #     # for time in stimulus:
+    #     #     for (neuron_id, spike_time) in spike_train:
+    #     #         if spike_time > time and spike_time <= (time + time_window) and (neuron_id,time) not in correlations[stimulus_index]:
+    #     #             correlations[stimulus_index].append((neuron_id,time))
+    #     for time in stimulus:
+    #         for neuron_id,neuron in enumerate(spike_train):
+    #             for spike_time in neuron:
+    #                 if spike_time > time and spike_time <= (time + time_window) and (neuron_id+1,spike_time) not in correlations[stimulus_index]:
+    #                     correlations[stimulus_index].append((neuron_id+1,spike_time))
+    for stimulus_index, stimulus in enumerate(stimulus_onset_times):
+        correlations.append([[] for _ in range(int(max_id+1))])
         counts.append(np.zeros(max_id + 1))
-        #loop through each stimulus onset time and check all neuron firing times
-        #save neuron index if firing is within time window of stimulus onset
-        # for time in stimulus:
-        #     for (neuron_id, spike_time) in spike_train:
-        #         if spike_time > time and spike_time <= (time + time_window) and (neuron_id,time) not in correlations[stimulus_index]:
-        #             correlations[stimulus_index].append((neuron_id,time))
-        for time in stimulus:
-            for neuron_id,neuron in enumerate(spike_train):
-                for spike_time in neuron:
-                    if spike_time > time and spike_time <= (time + time_window) and (neuron_id+1,spike_time) not in correlations[stimulus_index]:
-                        correlations[stimulus_index].append((neuron_id+1,spike_time))
+        # counts.append(np.zeros(max_id + 1))
+        # loop through each stimulus onset time and check all neuron firing times
+        # save neuron index if firing is within time window of stimulus onset
+        for t_index, time in enumerate(stimulus):
+            for neuron in correlations[stimulus_index]:
+                neuron.append(0)
+            for (neuron_id, spike_time) in spike_train:
+                if spike_time > time and spike_time <= (time + time_window):
+                    correlations[stimulus_index][int(neuron_id)][t_index] += 1
 
-        for (id,time) in correlations[stimulus_index]:
-            counts[stimulus_index][id] += 1
-        stimulus_index+=1
-    selective_neuron_ids = []
+        #check which neurons have fired above or below the noise threshold
+        for id,neuron in enumerate(np.asarray(correlations[stimulus_index])):
+            #generate count of neuron firings that are above the noise threshold
+            counts[stimulus_index][id] = np.count_nonzero(neuron > noise_threshold)
+
     if significant_spike_count is None:
-        significant_spike_count = np.mean(counts)#6.#
-    for i in range(len(counts)):
-        id_count = 0
-        selective_neuron_ids.append([])
-        for count in counts[i]:
-            if count >= significant_spike_count:
+        significant_spike_count = np.mean(counts,axis=1)  # 6.#
+
+    selective_neuron_ids = selective_id_finder(counts, significant_spike_count)
+
+    return np.asarray(counts), selective_neuron_ids, significant_spike_count  # correlations
+
+def selective_id_finder(counts, significant_spike_count):
+    selective_neuron_ids = [[] for _ in range(len(counts))]
+    for i, stimulus in enumerate(counts):
+        for id_count, count in enumerate(stimulus):
+            if count >= significant_spike_count[i]:
                 others = range(len(counts))
                 others.remove(i)
                 # check neuron doesn't respond to other stimuli
                 # ensures neuron response is exclusive to a single class
                 exclusive = True
                 for j in others:
-                    if counts[j][id_count] !=0:#>= significant_spike_count:  #
+                    if counts[j][id_count] > 0:
                         exclusive = False
                 if exclusive:
                     selective_neuron_ids[i].append(id_count)
             id_count += 1
-    return np.asarray(counts),selective_neuron_ids,significant_spike_count#correlations
+
+    return selective_neuron_ids
 
 def selective_neuron_search(pattern_spikes,spike_train,time_window,final_pattern_start,
                             plt,filepath=None,np=numpy,significant_spike_count=None):
@@ -739,16 +759,15 @@ def selective_neuron_search(pattern_spikes,spike_train,time_window,final_pattern
 #assumes input connectivity in varying_weights format
 # def connection_plot(varying_weights)
 
-def connection_hist_plot(varying_weights,pre_size,post_size,plt,title='',filepath=None):
+def connection_hist_plot(varying_weights,pre_size,post_size,plt,title='',filepath=None,weight_min=0.000001):
     import numpy as np
     incoming_connections=[[]for _ in range(post_size)]
     source_list=[]
     target_list=[]
     #take final reading
     final_connections = varying_weights[-1]
-
     for (source,target,weight) in final_connections:
-        if source is not None and weight>0.01:
+        if source is not None and weight>weight_min:
             if source in incoming_connections[target]:
                 print "multapse detected!"
             incoming_connections[target].append(source)
@@ -779,14 +798,18 @@ def sparsity_measure(onset_times,output_spikes,onset_window=5.,from_time=0):
     for id,stimulus in enumerate(onset_times):
         for time in stimulus:
             if time >= from_time:
-                counts = np.zeros(int(n_neurons))
+                counts = np.zeros((int(n_neurons),onset_window))
                 for out_id,neuron in enumerate(output_spikes):
                     for output_spike in neuron:
                         # only care if at least one spike per neuron has occured in window
-                        if output_spike >= time and output_spike < (time+onset_window) and counts[out_id]==0.:
-                            counts[out_id]+=1
-                #calculate sum of active neurons
-                sum = np.sum(counts)
+                        if output_spike >= time and output_spike < (time+onset_window): #and counts[out_id]==0.:
+                            counts[out_id,int(output_spike.item()-time-1)]+=1
+                #calculate sum of active neurons across presentation
+                # sum =  np.sum(np.sum(counts,axis=0))
+                sum =  np.sum(counts,axis=0)
+                #average across timesteps in window
+                av = np.mean(sum)
                 #record the percentage of total active IDs in each bin relative to the total number of neurons in output spikes
-                sparsity_matrix[id].append((sum/n_neurons)*100.)
+                # sparsity_matrix[id].append((sum/(n_neurons*onset_window))*100.)
+                sparsity_matrix[id].append((av/(n_neurons))*100.)
     return sparsity_matrix

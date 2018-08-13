@@ -35,7 +35,7 @@ winh = 0.5
 wpred = 0.05#w2s/2.#0.05#1.
 w2s_target = 5.
 
-if 0:#cd_pop_size<2000:
+if 1:#cd_pop_size<2000:
     get_weights=True
 else:
     get_weights=False
@@ -47,11 +47,13 @@ else:
 # Open input
 #================================================================================================
 input_directory = "/home/rjames/Dropbox (The University of Manchester)/EarProject/Pattern_recognition/spike_trains/IC_spikes"
-input_spikes = np.load(input_directory+"/sparse_spikes_60.npy")
+input_spikes = np.load(input_directory+"/sparse_spikes.npy")
 max_time = 0
 for neuron in input_spikes:
     if neuron.size>0 and neuron.max() > max_time:
         max_time = neuron.max().item()
+
+duration = 20000.#max_time
 
 input_pop_size = len(input_spikes)
 column_size = 8#16#32
@@ -59,7 +61,8 @@ number_of_columns = input_pop_size#50#250
 active_pop_size = column_size*number_of_columns
 cd_pop_size = int(1 * active_pop_size)
 
-duration = max_time
+#aiming for about 2% active columns per timestep
+n_active_cells = 0.02*number_of_columns
 
 #================================================================================================
 # SpiNNaker setup
@@ -172,7 +175,7 @@ structure_model_with_stdp = sim.StructuralMechanismSTDP(
     stdp_model=stdp_model_cd,
     weight=av_weight,  # Use this weights when creating a new synapse
     max_weight=av_weight*0.9*2.,#av_weight*2,
-    s_max=int(initial_sync_num*1.5),#int(num_columns_active_per_pattern*1.5),  # Maximum allowed fan-in per target-layer neuron
+    s_max=int(n_active_cells),#int(initial_sync_num*1.5),#int(num_columns_active_per_pattern*1.5),  # Maximum allowed fan-in per target-layer neuron
     #TODO: weight scale for the post population should be calculated using this value?
     grid=[active_pop_size, 1], # 1d spatial org of neurons, uncomment this if wanted
     random_partner=False,
@@ -308,18 +311,27 @@ if get_weights:
     weight_dist_plot(varying_weights_cd,1,plt,0.0,w_max,title="cd->active weight distribution",filepath=results_directory)
     weight_dist_plot(varying_weights,1,plt,w_min_cd,w_max_cd,title="active->cd weight distribution",filepath=results_directory)
     connection_hist_plot(varying_weights_cd, pre_size=cd_pop_size, post_size=active_pop_size, plt=plt,
-                         title="cd->active", filepath=results_directory)
+                         title="cd->active", filepath=results_directory,weight_min=0.0)
     connection_hist_plot(varying_weights, pre_size=active_pop_size, post_size=cd_pop_size, plt=plt, title="active->cd",
                          filepath=results_directory)
 
+
+ear_file = numpy.load("/home/rjames/SpiNNaker_devel/OME_SpiNN/spike_trains_asc_test_60s.npz")
+onset_times = ear_file['onset_times']
+onset_times_s = []
+for times in onset_times:
+    onset_times_s.append([time/1000. for time in times])
+
+spike_raster_plot_8(input_spikes,plt,duration/1000.,len(input_spikes),0.001,title="input activity",filepath=results_directory,
+                    onset_times=onset_times_s,pattern_duration=100.)
 spike_raster_plot_8(active_data.segments[0].spiketrains,plt,duration/1000.,active_pop_size+1,0.001,title="active pop activity",filepath=results_directory,
-                    )#onset_times=onset_times,pattern_duration=pattern_duration)
+                    onset_times=onset_times_s,pattern_duration=100.)
 # spike_raster_plot_8(active_data.segments[0].spiketrains,plt,duration/1000.,active_pop_size+1,0.001,title="active pop activity_start",filepath=results_directory,
 #                     onset_times=onset_times,pattern_duration=pattern_duration,xlim=(onset_times[0][0],onset_times[0][1]))
 # spike_raster_plot_8(active_data.segments[0].spiketrains,plt,duration/1000.,active_pop_size+1,0.001,title="active pop activity_final",filepath=results_directory,
 #                     onset_times=onset_times,pattern_duration=pattern_duration,xlim=(onset_times[0][-1],0.001*duration))
 spike_raster_plot_8(cd_data.segments[0].spiketrains,plt,duration/1000.,cd_pop_size+1,0.001,title="cd pop activity",filepath=results_directory,
-                    )#onset_times=onset_times,pattern_duration=pattern_duration)
+                    onset_times=onset_times_s,pattern_duration=100.)
 # spike_raster_plot_8(cd_data.segments[0].spiketrains,plt,duration/1000.,cd_pop_size+1,0.001,title="cd pop activity_final",filepath=results_directory,
 #                     onset_times=onset_times,pattern_duration=pattern_duration,xlim=(onset_times[0][-1],0.001*duration))
 
