@@ -68,6 +68,14 @@ def pickle_population(pop, gen, log, checkpoint_name):
         pickle.dump(cp, cp_file)
     return;
 
+def pickle_strategy(strat, pop, gen, log, checkpoint_name):
+    print("Pickling strategy from generation %d..." % gen)
+    cp = dict(strategy=strat, population=pop, generation=gen, logbook=log)
+
+    with open(checkpoint_name, "wb") as cp_file:
+        pickle.dump(cp, cp_file)
+    return;
+
 def data_summary(logbook):
     print(logbook)
     gen = logbook.select("gen")

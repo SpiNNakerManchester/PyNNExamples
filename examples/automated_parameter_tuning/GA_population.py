@@ -105,14 +105,14 @@ def main(generations, checkpoint = None):
         toolbox.register("evaluatepop", evalPopulation, gen)
         pop_split = split_population(pop, SUBPOP_SIZE)
         fitnesses_and_times_eval = toolbox.map(toolbox.evaluatepop, pop_split)        
-	fitnesses, times = split_fit(fitnesses_and_times_eval)
+        fitnesses, times = split_fit(fitnesses_and_times_eval)
         gc.collect()
         for ind, fit in zip(pop, fitnesses):
             ind.fitness.values = fit,
         pickle_population(pop, gen, logbook, checkpoint)
         gc.collect()
         
-    for g in range(gen+1, NGEN):
+    for g in range(gen+1, NGEN+1):
         global SUBPOP_SIZE
 	print("ok")
         print ("Generation %d..." % g)
@@ -128,9 +128,8 @@ def main(generations, checkpoint = None):
         offspring_split = split_population(offspring, SUBPOP_SIZE)
         t_end_pop_preprocess = timer()
         fitnesses_and_times_eval = toolbox.map(toolbox.evaluatepop, offspring_split)
-	fitnesses, times = split_fit(fitnesses_and_times_eval)
-	print(times)
-	t_end_evaluatepop = timer()
+        fitnesses, times = split_fit(fitnesses_and_times_eval)
+        t_end_evaluatepop = timer()
         gc.collect()
                     
         for ind, fit in zip(offspring, fitnesses):
@@ -147,7 +146,6 @@ def main(generations, checkpoint = None):
         pickle_population(pop, g, logbook, checkpoint)
         gc.collect()
         t_end_gen = timer()
-	print(SUBPOP_SIZE)
         avg_times_eval = average_times(times, SUBPOP_SIZE)
         times_gen = (t_start_gen, t_end_select, t_end_variation, t_end_pop_preprocess, t_end_evaluatepop, t_end_pop_postprocess, t_end_stats, t_end_gen)
         #t_start_gen, t_end_select, t_end_variation, t_end_pop_preprocess, t_end_evaluatepop, t_end_pop_postprocess, t_end_stats, t_end_gen, number_evals, t_min, t_setup, t_run, t_gather, t_cost, avg_retry  
