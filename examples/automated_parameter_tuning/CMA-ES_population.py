@@ -20,9 +20,9 @@ from functools import partial
 #GA and parallelisation variables
 
 parallel_on = True
-NUM_PROCESSES = 2
+NUM_PROCESSES = 100 
 IND_SIZE = (int(ConvMnistModel.filter_size**2)) + (ConvMnistModel.pop_1_size * ConvMnistModel.output_pop_size)
-NGEN = 3
+NGEN = 100
 SUBPOP_SIZE = 171
 #240 = 5 networks per chip * 48 chips per board
 
@@ -32,7 +32,7 @@ toolbox = base.Toolbox()
 creator.create("Fitness", base.Fitness, weights=(1.0,))
 creator.create("Individual", list, fitness=creator.Fitness)
 
-toolbox.register("attribute", random.uniform, -10, 10)
+toolbox.register("attribute", random.uniform, -1.0, 1.0)
 toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.attribute, n=IND_SIZE)
 
 #Statistics setup
@@ -56,22 +56,22 @@ def eaGenerateUpdate(checkpoint, strategy, logbook, toolbox, gen, ngen, halloffa
         fitnesses_and_times_eval = toolbox.map(toolbox.evaluate, sub_pops)
         fitnesses, times = split_fit(fitnesses_and_times_eval)
         gc.collect()
-        
+        print("Adding fitness values to individuals...") 
         for ind, fit in zip(population, fitnesses):
             ind.fitness.values = fit,
-
+	print("Making hof...")
         if halloffame is not None:
             halloffame.update(population)
-
+	print("Updating strategy")
         # Update the strategy with the evaluated individuals
         toolbox.update(population)
-        
-        record = mstats.compile(population) if mstats is not None else {}
+        print("Recording stats")
+        record = stats.compile(population) if stats is not None else {}
         logbook.record(gen=g, nevals=len(population), **record)
         if verbose:
             print logbook.stream
-        
-        pickle_strategy(strategy, population, g, logbook, checkpoint)
+        print("Pickling strategy")
+        pickle_strategy(strategy, g, logbook, checkpoint)
         gc.collect()
     return logbook
 
@@ -93,12 +93,12 @@ def main(checkpoint = None):
         print("No checkpoint found...")
         gen = 0
         logbook = tools.Logbook()
-        strategy = cma.Strategy(centroid=[5.0]*N, sigma=5.0, lambda_=2)
+        strategy = cma.Strategy(centroid=[0.0]*N, sigma=0.5)
     
     toolbox.register("generate", strategy.generate, creator.Individual)
     toolbox.register("update", strategy.update)
 
-    logbook = eaGenerateUpdate(checkpoint, strategy, logbook, toolbox, gen=gen, ngen=NGEN, stats=stats, halloffame=hof)
+    logbook = eaGenerateUpdate(checkpoint, strategy, logbook, toolbox, gen=gen, ngen=NGEN, stats=mstats, halloffame=hof)
     
     return logbook;
 

@@ -15,8 +15,8 @@ warnings.filterwarnings("ignore", message="numpy.dtype size changed")
 warnings.filterwarnings("ignore", message="numpy.ufunc size changed")
 from mnist import MNIST
 #sys.path.append('/localhome/mbaxsej2/optimisation_env/NE15')
-home = os.path.expanduser("~")
-#home = os.environ['VIRTUAL_ENV']
+#home = os.path.expanduser("~")
+home = os.environ['VIRTUAL_ENV']
 NE15_path = home + '/git/NE15'
 sys.path.append(NE15_path)
 
@@ -68,9 +68,9 @@ def pickle_population(pop, gen, log, checkpoint_name):
         pickle.dump(cp, cp_file)
     return;
 
-def pickle_strategy(strat, pop, gen, log, checkpoint_name):
+def pickle_strategy(strat, gen, log, checkpoint_name):
     print("Pickling strategy from generation %d..." % gen)
-    cp = dict(strategy=strat, population=pop, generation=gen, logbook=log)
+    cp = dict(strategy=strat, generation=gen, logbook=log)
 
     with open(checkpoint_name, "wb") as cp_file:
         pickle.dump(cp, cp_file)

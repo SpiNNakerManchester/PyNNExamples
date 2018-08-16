@@ -2,8 +2,8 @@ import sys, os
 import copy
 from neo.core import Segment, SpikeTrain
 from quantities import s, ms
-home = os.path.expanduser("~")
-#home = os.environ['VIRTUAL_ENV']
+#home = os.path.expanduser("~")
+home = os.environ['VIRTUAL_ENV']
 NE15_path = home + '/git/NE15'
 sys.path.append(NE15_path)
 import traceback
