@@ -15,15 +15,22 @@ warnings.filterwarnings("ignore", message="numpy.dtype size changed")
 warnings.filterwarnings("ignore", message="numpy.ufunc size changed")
 from functools import partial
 
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument("checkpoint")
+args = parser.parse_args()
+checkpoint_name = args.checkpoint
+
+
 
 #GA and parallelisation variables
 
 parallel_on = True
 NUM_PROCESSES = 100 
 IND_SIZE = (int(ConvMnistModel.filter_size**2)) + (ConvMnistModel.pop_1_size * ConvMnistModel.output_pop_size)
-POP_SIZE = 24000
-NGEN = 1000000
-SUBPOP_SIZE = 110 
+POP_SIZE = 2400
+#NGEN = 1000000
+SUBPOP_SIZE = 171 
 #240 = 5 networks per chip * 48 chips per board
 
 toolbox = base.Toolbox()
@@ -52,7 +59,6 @@ sel_factor = 10
 
 #Statistics setup
 logbook, mstats = stats_setup()
-checkpoint_name = "logbooks/checkpoint.pkl"
 
 def mAndM(population, toolbox, crossover_rate, mutation_rate, sel_factor):
     '''adapted from DEAP.algorithms.varAnd'''
@@ -78,9 +84,9 @@ def mAndM(population, toolbox, crossover_rate, mutation_rate, sel_factor):
     return offspring;
 
 
-def main(checkpoint = None):
+def main(generations, checkpoint = None):
     '''algorithm adapted from DEAP.algorithms.eaSimple'''
-
+    NGEN = generations
     global logbook
     try:
         with open(checkpoint, "r") as cp_file:
@@ -108,7 +114,7 @@ def main(checkpoint = None):
         
     for g in range(gen+1, NGEN):
         global SUBPOP_SIZE
-        print("ok")
+	print("ok")
         print ("Generation %d..." % g)
         t_start_gen = timer()
         print("Selecting %d from a population of %d..."% ( (len(pop)/sel_factor), len(pop)))
@@ -122,9 +128,9 @@ def main(checkpoint = None):
         offspring_split = split_population(offspring, SUBPOP_SIZE)
         t_end_pop_preprocess = timer()
         fitnesses_and_times_eval = toolbox.map(toolbox.evaluatepop, offspring_split)
-        fitnesses, times = split_fit(fitnesses_and_times_eval)
-        print(times)
-        t_end_evaluatepop = timer()
+	fitnesses, times = split_fit(fitnesses_and_times_eval)
+	print(times)
+	t_end_evaluatepop = timer()
         gc.collect()
                     
         for ind, fit in zip(offspring, fitnesses):
@@ -141,15 +147,15 @@ def main(checkpoint = None):
         pickle_population(pop, g, logbook, checkpoint)
         gc.collect()
         t_end_gen = timer()
-        print(SUBPOP_SIZE)
+	print(SUBPOP_SIZE)
         avg_times_eval = average_times(times, SUBPOP_SIZE)
         times_gen = (t_start_gen, t_end_select, t_end_variation, t_end_pop_preprocess, t_end_evaluatepop, t_end_pop_postprocess, t_end_stats, t_end_gen)
         #t_start_gen, t_end_select, t_end_variation, t_end_pop_preprocess, t_end_evaluatepop, t_end_pop_postprocess, t_end_stats, t_end_gen, number_evals, t_min, t_setup, t_run, t_gather, t_cost, avg_retry  
         total_data = (SUBPOP_SIZE, POP_SIZE, NUM_PROCESSES) + times_gen + avg_times_eval
         write_csv_data_file(total_data, "timing_data.csv")
         print("data written to file")
-        SUBPOP_SIZE = SUBPOP_SIZE + 10
-        print("SUBPOP_SIZE increased to %s" % SUBPOP_SIZE)
+	#SUBPOP_SIZE = SUBPOP_SIZE + 2020202020202020202020202020202020202020 
+	#print("SUBPOP_SIZE increased to %s" % SUBPOP_SIZE)
     return;
 
 
@@ -160,7 +166,7 @@ if __name__ == "__main__":
         pool = multiprocessing.Pool(NUM_PROCESSES, initializer=pool_init, initargs=(l,), maxtasksperchild=1)
         toolbox.register("map", pool.map)
 
-    main(checkpoint_name)
+	main(100, checkpoint_name)
     
     if not len(logbook)== 0:
         data_summary(logbook)
