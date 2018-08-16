@@ -15,8 +15,8 @@ warnings.filterwarnings("ignore", message="numpy.dtype size changed")
 warnings.filterwarnings("ignore", message="numpy.ufunc size changed")
 from mnist import MNIST
 #sys.path.append('/localhome/mbaxsej2/optimisation_env/NE15')
-#home = os.path.expanduser("~")
-home = os.environ['VIRTUAL_ENV']
+home = os.path.expanduser("~")
+#home = os.environ['VIRTUAL_ENV']
 NE15_path = home + '/git/NE15'
 sys.path.append(NE15_path)
 
