@@ -15,15 +15,22 @@ warnings.filterwarnings("ignore", message="numpy.dtype size changed")
 warnings.filterwarnings("ignore", message="numpy.ufunc size changed")
 from functools import partial
 
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument("checkpoint")
+args = parser.parse_args()
+checkpoint_name = args.checkpoint
+
+
 
 #GA and parallelisation variables
 
 parallel_on = True
 NUM_PROCESSES = 100 
 IND_SIZE = (int(ConvMnistModel.filter_size**2)) + (ConvMnistModel.pop_1_size * ConvMnistModel.output_pop_size)
-POP_SIZE = 24000
-NGEN = 1000000
-SUBPOP_SIZE = 110 
+POP_SIZE = 2400
+#NGEN = 1000000
+SUBPOP_SIZE = 171 
 #240 = 5 networks per chip * 48 chips per board
 
 toolbox = base.Toolbox()
@@ -52,7 +59,6 @@ sel_factor = 10
 
 #Statistics setup
 logbook, mstats = stats_setup()
-checkpoint_name = "logbooks/checkpoint.pkl"
 
 def mAndM(population, toolbox, crossover_rate, mutation_rate, sel_factor):
     '''adapted from DEAP.algorithms.varAnd'''
@@ -78,9 +84,9 @@ def mAndM(population, toolbox, crossover_rate, mutation_rate, sel_factor):
     return offspring;
 
 
-def main(checkpoint = None):
+def main(generations, checkpoint = None):
     '''algorithm adapted from DEAP.algorithms.eaSimple'''
-
+    NGEN = generations
     global logbook
     try:
         with open(checkpoint, "r") as cp_file:
@@ -148,8 +154,8 @@ def main(checkpoint = None):
         total_data = (SUBPOP_SIZE, POP_SIZE, NUM_PROCESSES) + times_gen + avg_times_eval
         write_csv_data_file(total_data, "timing_data.csv")
         print("data written to file")
-	SUBPOP_SIZE = SUBPOP_SIZE + 10
-	print("SUBPOP_SIZE increased to %s" % SUBPOP_SIZE)
+	#SUBPOP_SIZE = SUBPOP_SIZE + 2020202020202020202020202020202020202020 
+	#print("SUBPOP_SIZE increased to %s" % SUBPOP_SIZE)
     return;
 
 
@@ -160,7 +166,7 @@ if __name__ == "__main__":
         pool = multiprocessing.Pool(NUM_PROCESSES, initializer=pool_init, initargs=(l,), maxtasksperchild=1)
         toolbox.register("map", pool.map)
 
-    main(checkpoint_name)
+	main(100, checkpoint_name)
     
     if not len(logbook)== 0:
         data_summary(logbook)

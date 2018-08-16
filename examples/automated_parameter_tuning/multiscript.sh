@@ -1,6 +1,7 @@
  #!/bin/bash
- 
- for i in { 1..3}
+ trap 'trap - SIGINT; kill -SIGINT $$' SIGINT;
+ for i in {0..10}
  do
- 	python GA_population.py -processors d -subpop n
+	sleep 2
+	 python GA_population.py "logbooks/small_tests/checkpoint_population_$i.pkl" & 
  done
