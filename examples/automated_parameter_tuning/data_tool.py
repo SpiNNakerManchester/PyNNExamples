@@ -49,7 +49,9 @@ checkpoint = "logbooks/checkpoint.pkl"
 
 try:
     with open(checkpoint, "r") as cp_file:
+        print("loading pickled file")
         cp = pickle.load(cp_file)
+        print("loading pickled population")
         pop = cp["population"]
         gen = cp["generation"]
         logbook = cp["logbook"]
