@@ -558,7 +558,8 @@ class ConvMnistModel(NetworkModel):
     def visualise_filter(filter_image, filter_size):
         filter_image = np.reshape(filter_image, (filter_size, filter_size))
         pylab.figure(3)
-        plt.imshow(filter_image)
+        plt.imshow(filter_image, cmap="gray")
+        plt.colorbar()
         plt.show()
             
         

@@ -108,7 +108,7 @@ def main(checkpoint = None):
         
     for g in range(gen+1, NGEN):
         global SUBPOP_SIZE
-	print("ok")
+        print("ok")
         print ("Generation %d..." % g)
         t_start_gen = timer()
         print("Selecting %d from a population of %d..."% ( (len(pop)/sel_factor), len(pop)))
@@ -122,9 +122,9 @@ def main(checkpoint = None):
         offspring_split = split_population(offspring, SUBPOP_SIZE)
         t_end_pop_preprocess = timer()
         fitnesses_and_times_eval = toolbox.map(toolbox.evaluatepop, offspring_split)
-	fitnesses, times = split_fit(fitnesses_and_times_eval)
-	print(times)
-	t_end_evaluatepop = timer()
+        fitnesses, times = split_fit(fitnesses_and_times_eval)
+        print(times)
+        t_end_evaluatepop = timer()
         gc.collect()
                     
         for ind, fit in zip(offspring, fitnesses):
@@ -141,15 +141,15 @@ def main(checkpoint = None):
         pickle_population(pop, g, logbook, checkpoint)
         gc.collect()
         t_end_gen = timer()
-	print(SUBPOP_SIZE)
+        print(SUBPOP_SIZE)
         avg_times_eval = average_times(times, SUBPOP_SIZE)
         times_gen = (t_start_gen, t_end_select, t_end_variation, t_end_pop_preprocess, t_end_evaluatepop, t_end_pop_postprocess, t_end_stats, t_end_gen)
         #t_start_gen, t_end_select, t_end_variation, t_end_pop_preprocess, t_end_evaluatepop, t_end_pop_postprocess, t_end_stats, t_end_gen, number_evals, t_min, t_setup, t_run, t_gather, t_cost, avg_retry  
         total_data = (SUBPOP_SIZE, POP_SIZE, NUM_PROCESSES) + times_gen + avg_times_eval
         write_csv_data_file(total_data, "timing_data.csv")
         print("data written to file")
-	SUBPOP_SIZE = SUBPOP_SIZE + 10
-	print("SUBPOP_SIZE increased to %s" % SUBPOP_SIZE)
+        SUBPOP_SIZE = SUBPOP_SIZE + 10
+        print("SUBPOP_SIZE increased to %s" % SUBPOP_SIZE)
     return;
 
 

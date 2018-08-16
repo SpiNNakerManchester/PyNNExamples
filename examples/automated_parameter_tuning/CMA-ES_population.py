@@ -15,14 +15,14 @@ warnings.filterwarnings("ignore", message="numpy.dtype size changed")
 warnings.filterwarnings("ignore", message="numpy.ufunc size changed")
 from functools import partial
 
+'''This code builds upon example code given in the DEAP documentation'''
 
 #GA and parallelisation variables
 
 parallel_on = True
-NUM_PROCESSES = 1
+NUM_PROCESSES = 10
 IND_SIZE = (int(ConvMnistModel.filter_size**2)) + (ConvMnistModel.pop_1_size * ConvMnistModel.output_pop_size)
-POP_SIZE = 24000
-NGEN = 1000000
+NGEN = 250
 SUBPOP_SIZE = 240
 #240 = 5 networks per chip * 48 chips per board
 
@@ -34,11 +34,49 @@ creator.create("Individual", list, fitness=creator.Fitness)
 
 toolbox.register("attribute", random.uniform, -10, 10)
 toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.attribute, n=IND_SIZE)
-toolbox.register("evaluate", evalModel)
+toolbox.register("evaluate", evalPopulation)
 
 #Statistics setup
 logbook, mstats = stats_setup()
 checkpoint_name = "logbooks/CMA-ES_checkpoint.pkl"
+
+def eaGenerateUpdate(toolbox, ngen, halloffame=None, stats=None,
+                     verbose=__debug__):
+    '''This function is a derivative of the eaGenerateUpdate in the DEAP library
+    and has been adapted to allow the population to be split into subpopulations
+    to be evaluated simulataneously on SpiNNaker.
+    '''
+    logbook = tools.Logbook()
+    logbook.header = ['gen', 'nevals'] + (stats.fields if stats else [])
+
+    for gen in range(ngen):
+        # Generate a new population
+        population = toolbox.generate()
+        
+        sub_pops = split_population(population, SUBPOP_SIZE)
+        toolbox.register("evaluatepop", evalPopulation, gen)
+        # Evaluate the individuals
+        fitnesses_and_times_eval = toolbox.map(toolbox.evaluate, subpops)
+        fitnesses, times = split_fit(fitnesses_and_times_eval)
+        gc.collect()
+        
+        for ind, fit in zip(population, fitnesses):
+            ind.fitness.values = fit
+
+        if halloffame is not None:
+            halloffame.update(population)
+
+        # Update the strategy with the evaluated individuals
+        toolbox.update(population)
+
+        record = stats.compile(population) if stats is not None else {}
+        logbook.record(gen=gen, nevals=len(population), **record)
+        if verbose:
+            print logbook.stream
+
+return population, logb
+
+
 
 def main(checkpoint = None):
     '''algorithm adapted from DEAP.algorithms.eaSimple'''
@@ -55,7 +93,7 @@ def main(checkpoint = None):
     stats.register("std", np.std)
     stats.register("min", np.min)
     stats.register("max", np.max)
-    algorithms.eaGenerateUpdate(toolbox, ngen=250, stats=stats, halloffame=hof)
+    algorithms.eaGenerateUpdate(toolbox, ngen=NGEN, stats=stats, halloffame=hof)
 
     gc.collect()
     return;

@@ -116,7 +116,7 @@ def average_times(times, subpop):
     times = np.array(times)
     print(times)
     times_original = times.copy()
-    number_evals = times.shape[1]
+    number_evals = times.shape[0]
     t_min = np.amin(times[:,0])
     #get non-remainders
     non_rem = times[:,-2]==subpop
