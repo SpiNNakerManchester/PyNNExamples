@@ -20,10 +20,10 @@ from functools import partial
 #GA and parallelisation variables
 
 parallel_on = True
-NUM_PROCESSES = 10
+NUM_PROCESSES = 100
 IND_SIZE = (int(ConvMnistModel.filter_size**2)) + (ConvMnistModel.pop_1_size * ConvMnistModel.output_pop_size)
-NGEN = 250
-SUBPOP_SIZE = 240
+NGEN = 10
+SUBPOP_SIZE = 171
 #240 = 5 networks per chip * 48 chips per board
 
 toolbox = base.Toolbox()
@@ -34,7 +34,6 @@ creator.create("Individual", list, fitness=creator.Fitness)
 
 toolbox.register("attribute", random.uniform, -10, 10)
 toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.attribute, n=IND_SIZE)
-toolbox.register("evaluate", evalPopulation)
 
 #Statistics setup
 logbook, mstats = stats_setup()
@@ -54,9 +53,9 @@ def eaGenerateUpdate(toolbox, ngen, halloffame=None, stats=None,
         population = toolbox.generate()
         
         sub_pops = split_population(population, SUBPOP_SIZE)
-        toolbox.register("evaluatepop", evalPopulation, gen)
+        toolbox.register("evaluate", evalPopulation, gen)
         # Evaluate the individuals
-        fitnesses_and_times_eval = toolbox.map(toolbox.evaluate, subpops)
+        fitnesses_and_times_eval = toolbox.map(toolbox.evaluate, sub_pops)
         fitnesses, times = split_fit(fitnesses_and_times_eval)
         gc.collect()
         
@@ -74,7 +73,10 @@ def eaGenerateUpdate(toolbox, ngen, halloffame=None, stats=None,
         if verbose:
             print logbook.stream
 
-return population, logb
+    return population, logbook
+
+
+
 
 
 
@@ -83,7 +85,7 @@ def main(checkpoint = None):
      
     np.random.seed(42)
     N = IND_SIZE
-    strategy = cma.Strategy(centroid=[5.0]*N, sigma=5.0, lambda_=20*N)
+    strategy = cma.Strategy(centroid=[5.0]*N, sigma=5.0, lambda_=2*N)
     toolbox.register("generate", strategy.generate, creator.Individual)
     toolbox.register("update", strategy.update)
 
@@ -93,7 +95,7 @@ def main(checkpoint = None):
     stats.register("std", np.std)
     stats.register("min", np.min)
     stats.register("max", np.max)
-    algorithms.eaGenerateUpdate(toolbox, ngen=NGEN, stats=stats, halloffame=hof)
+    eaGenerateUpdate(toolbox, ngen=NGEN, stats=stats, halloffame=hof)
 
     gc.collect()
     return;
