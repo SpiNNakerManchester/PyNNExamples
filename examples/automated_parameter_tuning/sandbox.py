@@ -1,31 +1,54 @@
-import multiprocessing
 import numpy as np
-import pickle
-
-data = range(100)
-
-def square(num):
-    return[i**2 for i in num]
-
-def chunk(list, chunk_size):
-    return [list[i:i+chunk_size] for i in range(0, len(list), chunk_size)]
-
-pool= multiprocessing.Pool(4)
-
-result = pool.map(square, chunk(data,10))
+import matplotlib.pyplot as plt
+from scipy.stats import multivariate_normal
+from scipy.misc import imresize
+from mpl_toolkits.mplot3d import Axes3D
+fig = plt.figure()
 
 
-print(data)
-print(chunk(data,10))
-print(result)
-result = np.asarray(result)
-print(np.concatenate(result).ravel().tolist())
 
-def load_data():
-    data_filename = 'processed_training_data'
-    infile = open(data_filename,'rb')
-    test_data = pickle.load(infile)
-    print([len(list) for list in test_data])
-    return;
 
-load_data()
+''' Adapted from https://stackoverflow.com/questions/44945111/how-to-efficiently-compute-the-heat-map-of-two-gaussian-distribution-in-python?noredirect=1&lq=1'''
+# create 2 kernels
+m1 = (0,0)
+s1 = np.eye(2)
+k1 = multivariate_normal(mean=m1, cov=s1)
+
+m2 = (0,0)
+s2 = 2*np.eye(2)
+k2 = multivariate_normal(mean=m2, cov=s2)
+
+
+
+
+# create a grid of (x,y) coordinates at which to evaluate the kernels
+xlim = (-10, 10)
+ylim = (-10, 10)
+xres = 500
+yres = 500
+
+x = np.linspace(xlim[0], xlim[1], xres)
+y = np.linspace(ylim[0], ylim[1], yres)
+xx, yy = np.meshgrid(x,y)
+
+# evaluate kernels at grid points
+xxyy = np.c_[xx.ravel(), yy.ravel()]
+zz = k1.pdf(xxyy) - k2.pdf(xxyy)
+
+#zz = np.clip(zz, -1, 1
+
+zz -= zz.mean()
+zz *= 1/zz.max()
+
+
+
+
+#zz = np.clip(np.rint(zz),-1,1)
+
+
+# reshape and plot image
+img = zz.reshape((xres,yres))
+img = imresize(img, (5,5), interp='bicubic')
+plt.imshow(img, cmap='gray')
+plt.colorbar()
+plt.show()

@@ -44,6 +44,37 @@ def set_up_training_data():
     
     return;
 
+def artificial_filter(population):
+    a= np.array(
+    [(0, 0, 0, 0, 0),
+     (0, 0, 1, 0, 0),
+     (0, 1, -1, 1, 0),
+     (0, 0, 1, 0, 0),
+     (0, 0, 0, 0, 0)])
+    b= np.array(
+    [(0, 0, 1, 0, 0),
+     (0, 1, -1, 1, 0),
+     (1, -1, -1, -1, 1),
+     (0, 1, -1, 1, 0),
+     (0, 0, 1, 0, 0)])
+    '''plt.imshow(a, cmap='gray')
+    plt.imshow(b, cmap='gray')
+    plt.show()
+    plt.imshow(b*-1, cmap='gray')
+    plt.colorbar()
+    plt.show()
+    print(a.ravel())
+    '''
+    filter = a.ravel()
+  
+            
+    for individual in population:
+        individual[:25] = filter.tolist()
+    
+    return population
+
+
+
 def flatten_fitnesses(fitnesses):
     fitnesses_final = []
     for fitnesslist in fitnesses:
