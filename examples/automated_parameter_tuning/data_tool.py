@@ -1,14 +1,15 @@
 '''A tool to allow pickled data to be viewed'''
 import matplotlib.pyplot as plt
-
+import pandas as pd
 import argparse
 import multiprocessing
 from deap import algorithms, base, creator, tools
 from basic_network import  ConvMnistModel, MnistModel, NetworkModel,pool_init, evalModel
 import random
-from common_tools import data_summary, stats_setup, pickle_population
+from common_tools import data_summary, stats_setup, pickle_population, write_csv_logbook_file
 import pickle
 import numpy as np
+from sphinx.domains import std
 
 IND_SIZE = (int(ConvMnistModel.filter_size**2)) + (ConvMnistModel.pop_1_size * ConvMnistModel.output_pop_size)
 toolbox = base.Toolbox()
@@ -17,7 +18,7 @@ toolbox = base.Toolbox()
 creator.create("Fitness", base.Fitness, weights=(1.0))
 creator.create("Individual", list, fitness=creator.Fitness)
 
-toolbox.register("attribute", random.uniform, -10, 10)
+toolbox.register("attribute", random.randint, -1, 1)
 toolbox.register("gene", tools.initRepeat, creator.Individual, toolbox.attribute, n=IND_SIZE)
 toolbox.register("population", tools.initRepeat, list, toolbox.gene)
 
@@ -101,31 +102,56 @@ logbook, mstats = stats_setup()
     
 ##
 
-checkpoint = "logbooks/logbooks/small_tests/.pkl"
+checkpoint = "logbooks/pop_24000_117g_init_pattern_6000b_6000-b.pkl"
+
 
 try:
     with open(checkpoint, "r") as cp_file:
         print("loading pickled file")
         cp = pickle.load(cp_file)
         print("loading pickled population")
-        pop = cp["population"]
-        gen = cp["generation"]
+        #pop = cp["population"]
+        #gen = cp["generation"]
         logbook = cp["logbook"]
-        print("Checkpoint found... Generation %d" % gen)        
-        average_filter(pop, 5)
-        best = characterise_best(pop)
-        print(best)
-        ConvMnistModel.visualise_filter(pop[best][:25], 5)
+        
+        print("logbook loaded")
+        print(logbook)
+        
+        gen = np.array(logbook.chapters["accuracy"].select("avg"))
+        avg = np.array(logbook.chapters["accuracy"].select("avg"))
+        max = np.array(logbook.chapters["accuracy"].select("max"))
+        min = np.array(logbook.chapters["accuracy"].select("min"))
+        std = np.array(logbook.chapters["accuracy"].select("std"))
+        
+        data = np.hstack((avg, max, min, std))
+        print(data)
+        label_list = ["avg", "max", "min", "std"]
+
+        df_logbook = pd.DataFrame(data)
+        print(df_logbook)
+        
+        df_logbook.columns = label_list
+        print(df_logbook)
+        df_logbook.transpose()
+        print(df_logbook)
+        #print("Checkpoint found... Generation %d" % gen)
+        filename = checkpoint + ".csv"      
+        
+        df_logbook.to_csv(filename, index=False)
+        '''
+#        average_filter(pop, 5)
+#        best = characterise_best(pop)
+#        print(best)
+ #       ConvMnistModel.visualise_filter(pop[best][:25], 5)
         #testModel = ConvMnistModel(pop[9], True)
         #testModel.visualise_filter()
         #testModel.visualise_input_weights()
         #testModel.visualise_output_weights()
-        
+        '''
 except IOError:
     print("No checkpoint found...")
 
-data_summary(logbook)
+#data_summary(logbook)
 
-'''
 
 

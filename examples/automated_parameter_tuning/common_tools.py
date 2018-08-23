@@ -194,6 +194,14 @@ def write_csv_data_file(data, filename):
     file.close()
     return;
 
+def write_csv_logbook_file(data, filename):
+    with open(filename, 'a') as file:
+        writer = csv.writer(file)
+        writer.writerow(data)
+
+    file.close()
+    return;
+
 '''
 multiobjective
 def stats_setup():

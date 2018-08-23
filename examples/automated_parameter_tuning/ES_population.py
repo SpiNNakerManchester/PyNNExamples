@@ -28,7 +28,7 @@ SUBPOP_SIZE = 171
 MIN_VALUE = -10
 MAX_VALUE = 10
 MIN_STRATEGY = 0.01
-MAX_STRATEGY = 3
+MAX_STRATEGY = 5
 
 #240 = 5 networks per chip * 48 chips per board
 
