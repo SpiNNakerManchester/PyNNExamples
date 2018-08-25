@@ -1,6 +1,6 @@
 library(ggplot2)
 
-ggplot(aes(x=as.numeric(row.names(checkpoint.pkl))-1), data=checkpoint.pkl) +
+ggplot(aes(x=as.numeric(row.names(unseeded))-1), data=unseeded) +
   scale_x_continuous(limits = c(0,121), breaks=seq(0,120,10), expand = c(0, 0)) +
   scale_y_continuous(limits = c(0,1), breaks=seq(0,1,0.1), expand = c(0, 0), labels = scales::percent) +
   scale_colour_hue(l=70)  +
@@ -14,3 +14,4 @@ ggplot(aes(x=as.numeric(row.names(checkpoint.pkl))-1), data=checkpoint.pkl) +
   theme(legend.title = element_blank()) +
   theme(legend.background = element_rect(size=0.5, linetype="solid", colour ="black"))+
   theme(panel.grid.minor = element_blank())
+
