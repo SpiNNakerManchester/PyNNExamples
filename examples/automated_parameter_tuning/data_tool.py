@@ -1,6 +1,7 @@
 '''A tool to allow pickled data to be viewed'''
 import matplotlib.pyplot as plt
-from sklearn.metrics import euclidean_distances
+from matplotlib import offsetbox
+from sklearn.metrics import pairwise_distances
 from sklearn.manifold import MDS
 import pandas as pd
 import argparse
@@ -149,6 +150,7 @@ def save_logbook_to_csv(logbook, checkpoint):
     return;
     
 def save_fitnesses_to_csv(pop, checkpoint):
+    #This doesn't work
     fitnesses = []
     for ind in pop:
         fitnesses.append(ind.fitness.values)
@@ -177,49 +179,106 @@ def multiple_filter_visualisation(pop):
     plt.show()
     return;   
 
-def population_distances(pop):
+def sampled_population_distances(pop):
     pop = np.array(pop)
-    pop = np.int8(pop)
-    return euclidean_distances(pop);
+    pop = np.int8(pop)    
+    pop = pop[:,:25]
+    print(pop.shape)
+    pop, cnt = np.unique(pop, return_counts=True, axis=0)
+    return pop, pairwise_distances(pop, metric="hamming"), cnt;
+
+def plot_embedding(sample, X, cnt, title=None):
+    '''adapted from http://scikit-learn.org/stable/auto_examples/manifold/plot_lle_digits.html'''
+    x_min, x_max = np.min(X, 0), np.max(X, 0)
+    X = (X - x_min) / (x_max - x_min)
+    
+    
+    plt.figure()
+    ax = plt.subplot(111)
+    order = cnt.argsort()[::-1]
+    cnt = cnt[order]
+    X=(X[order])
+    
+    plt.scatter(X[:,0],X[:,1], color="red")
+    
+    for i in range(X.shape[0]):
+        if cnt[i] < 80:
+            continue
+        plt.text(X[i, 0], X[i, 1], str(cnt[i]),
+                 fontdict={'weight': 'bold', 'size': 9},
+                 horizontalalignment='right', verticalalignment='top')
+    
+    
+    plt.xlabel("MDS Axis 1")
+    plt.ylabel("MDS Axis 2")
+    if hasattr(offsetbox, 'AnnotationBbox'):
+        # only print thumbnails with matplotlib > 1.0
+        shown_images = np.array([[1., 1.]])  # just something big
+        for i in range(X.shape[0]):
+            dist = np.sum((X[i] - shown_images) ** 2, 1)
+            if cnt[i]<80 or np.min(dist) < 0.01:
+                # don't show points that are too close or not important
+                continue
+            shown_images = np.r_[shown_images, [X[i]]]
+            imagebox = offsetbox.AnnotationBbox(offsetbox.OffsetImage(np.reshape(sample[i],(5,5)),
+                         zoom=5, cmap="gray_r"), X[i], pad=0.0, box_alignment=(0.0, 0.0))
+            ax.add_artist(imagebox)
+    plt.xticks([]), plt.yticks([])
+    if title is not None:
+        plt.title(title)
+    
+    plt.show()
+    return;
+
+def MDS_population(pop=None, distance_file=None):
+    try:
+            with open(distance_file, "r") as cp_file:
+                print("distances found")
+                cp = pickle.load(cp_file)
+                sampled= cp["sampled"]
+                distances = cp["distances"]
+                cnt = cp["cnt"]
+                
+    except IOError:
+                print("no distances, generating them...")
+                sampled, distances, cnt = sampled_population_distances(pop)
+                cp = {"sampled":sampled, "distances":distances, "cnt":cnt}
+                pickle.dump(cp, open(distance_file, "wb" ))
+    
+    print("doing the MDS")    
+    mds = MDS(2, max_iter=100, n_init=4, dissimilarity='precomputed')
+    Y = mds.fit_transform(distances)
+    plot_embedding(sampled, Y, cnt)
+    return;
 
 #average_average_filter()
 
-'''
+
 #Statistics setup
 logbook, mstats = stats_setup()
 
 #visualise_multiple_populations()
     
 ##
-'''
-checkpoint = "logbooks/pop_24000_1g_init_pattern_6000b_6000-b.pkl"
-distance_file = "logbooks/distances.pkl"
+
+checkpoint = "logbooks/pop_24000_227g_init_pattern_6000b_6000-b.pkl"
+distance_file = checkpoint + "distances.pkl"
 
 try:
     with open(checkpoint, "r") as cp_file:
         print("loading pickled file")
-        cp = pickle.load(cp_file)
+        #cp = pickle.load(cp_file)
         print("loading pickled population")
-        pop = cp["population"]
+        #pop = cp["population"]
         #gen = cp["generation"]
         #logbook = cp["logbook"]
         print("visualising")
-        try:
-            with open(distance_file, "r") as cp_file:
-                print("distances found")
-                distances = pickle.load(cp_file)
-                
-        except IOError:
-                print("no distances, generating them...")
-                distances = population_distances(pop)
-                pickle.dump(distances, open(distance_file, "wb" ))
-        print("doing the MDS")
-        mds = MDS(2, False, max_iter=2, n_init=1)
-        Y = mds.fit_transform(X)
-        pickle.dump(Y, open("logbooks/plot_output.pkl", "wb"))
+        MDS_population(distance_file=distance_file)
         
-        plt.scatter(Y[:, 0], Y[:, 1], c=color, cmap=plt.cm.Spectral)
-        plt.show()
+        #data_summary(logbook)
+        #save_logbook_to_csv(logbook, checkpoint)
+        
+        
         
         
         #multiple_filter_visualisation(pop)
