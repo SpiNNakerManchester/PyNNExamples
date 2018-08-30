@@ -199,16 +199,8 @@ def plot_embedding(sample, X, cnt, title=None):
     cnt = cnt[order]
     X=(X[order])
     
-    plt.scatter(X[:,0],X[:,1], color="red")
-    
-    for i in range(X.shape[0]):
-        if cnt[i] < 80:
-            continue
-        plt.text(X[i, 0], X[i, 1], str(cnt[i]),
-                 fontdict={'weight': 'bold', 'size': 9},
-                 horizontalalignment='right', verticalalignment='top')
-    
-    
+    plt.scatter(X[:,0],X[:,1], s=cnt, c=cnt, cmap="autumn")
+
     plt.xlabel("MDS Axis 1")
     plt.ylabel("MDS Axis 2")
     if hasattr(offsetbox, 'AnnotationBbox'):
@@ -216,14 +208,20 @@ def plot_embedding(sample, X, cnt, title=None):
         shown_images = np.array([[1., 1.]])  # just something big
         for i in range(X.shape[0]):
             dist = np.sum((X[i] - shown_images) ** 2, 1)
-            if cnt[i]<80 or np.min(dist) < 0.01:
+            
+            if cnt[i]< 100 or np.min(dist) < 0.01:
                 # don't show points that are too close or not important
                 continue
+            plt.text(X[i, 0], X[i, 1], str(cnt[i]),
+            fontdict={'weight': 'bold', 'size': 9},
+            horizontalalignment='right', verticalalignment='top')
             shown_images = np.r_[shown_images, [X[i]]]
             imagebox = offsetbox.AnnotationBbox(offsetbox.OffsetImage(np.reshape(sample[i],(5,5)),
                          zoom=5, cmap="gray_r"), X[i], pad=0.0, box_alignment=(0.0, 0.0))
             ax.add_artist(imagebox)
     plt.xticks([]), plt.yticks([])
+    cbar = plt.colorbar()
+    cbar.set_label("Number of individuals with filter")
     if title is not None:
         plt.title(title)
     
@@ -246,22 +244,26 @@ def MDS_population(pop=None, distance_file=None):
                 pickle.dump(cp, open(distance_file, "wb" ))
     
     print("doing the MDS")    
-    mds = MDS(2, max_iter=100, n_init=4, dissimilarity='precomputed')
+    mds = MDS(2, max_iter=1000, n_init=4, dissimilarity='precomputed')
     Y = mds.fit_transform(distances)
     plot_embedding(sampled, Y, cnt)
     return;
+
+
+
 
 #average_average_filter()
 
 
 #Statistics setup
-logbook, mstats = stats_setup()
+#logbook, mstats = stats_setup()
 
 #visualise_multiple_populations()
     
 ##
 
-checkpoint = "logbooks/pop_24000_227g_init_pattern_6000b_6000-b.pkl"
+checkpoint = "logbooks/784_576c_10_227g_24000p.pkl"
+#checkpoint = "logbooks/pop_24000_227g_init_pattern_6000b_6000-b.pkl"
 distance_file = checkpoint + "distances.pkl"
 
 try:
@@ -272,8 +274,9 @@ try:
         #pop = cp["population"]
         #gen = cp["generation"]
         #logbook = cp["logbook"]
+        pop =None
         print("visualising")
-        MDS_population(distance_file=distance_file)
+        MDS_population(pop, distance_file)
         
         #data_summary(logbook)
         #save_logbook_to_csv(logbook, checkpoint)
@@ -300,6 +303,6 @@ except IOError:
     print("No checkpoint found...")
 
 #data_summary(logbook)
-'''
-'''
+
+
 
