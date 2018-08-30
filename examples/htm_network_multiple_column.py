@@ -198,7 +198,7 @@ structure_model_with_stdp = sim.StructuralMechanismSTDP(
     max_weight=av_weight*0.9*2.,#av_weight*2,
     s_max=int(initial_sync_num*1.5),#int(num_columns_active_per_pattern*1.5),  # Maximum allowed fan-in per target-layer neuron
     #TODO: weight scale for the post population should be calculated using this value?
-    grid=[active_pop_size, 1], # 1d spatial org of neurons, uncomment this if wanted
+    #grid=[active_pop_size, 1], # 1d spatial org of neurons, uncomment this if wanted
     random_partner=False,
     #selecting one of the last neurons to have spiked
     f_rew=10 ** 4,  # Hz

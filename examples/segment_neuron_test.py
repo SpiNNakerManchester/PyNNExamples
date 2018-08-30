@@ -67,34 +67,28 @@ ex_params = {#'cm': 0.25,  # nF
                 'v_thresh': -55.6
                }
 
-w2s_target = 4.0#0.12#0.05#2.5#5.
+inh_params = {'cm': 0.25,  # nF
+               'i_offset': 0.0,
+               'tau_m': 2.,#3.,#10.0,
+               'tau_refrac': 1.0,#2.0,#
+               'tau_syn_E': 1.0,#2.5,
+               'tau_syn_I': 1.0,#2.5,#TODO:increase this to aid in fast inhib?
+               'v_reset': -70.0,
+               'v_rest': -65.0,
+               'v_thresh': -55.4
+               }
+
+w2s_target = 4.5#0.12#0.05#2.5#5.
 n_connections = 16
 initial_weight = w2s_target/n_connections
-connection_weight = initial_weight*2.#/2.
-number_of_inputs = 10
+connection_weight = w2s_target#initial_weight*2.#/2.
+number_of_inputs = 1
 inh_weight = initial_weight#(n_connections-number_of_inputs)*(initial_weight)#*2.
-
-av_weight = initial_weight
-w_max_cd = av_weight*2#1.1#w2s_target/2.#
-w_min_cd = 0.0#av_weight*0.5#0
-a_plus_cd = 0.1#1.#
-a_minus_cd = 0.1#1.#
-tau_plus_cd = 16.
-tau_minus_cd =30.#1.#
-ten_perc = av_weight/10.
-start_weight = av_weight#RandomDistribution('uniform',(av_weight-ten_perc,av_weight+ten_perc))
-
-stdp_model_cd = sim.STDPMechanism(
-        timing_dependence=sim.SpikePairRule(
-            tau_plus=tau_plus_cd, tau_minus=tau_minus_cd, A_plus=a_plus_cd, A_minus=a_minus_cd),
-        weight_dependence=sim.AdditiveWeightDependence(
-            w_min=w_min_cd, w_max=w_max_cd), weight=start_weight,delay=1.)
-
 
 input_spikes =[]
 inh_spikes = []
 isi = 100.
-n_repeats = 20
+n_repeats = 500
 
 for neuron in range(number_of_inputs):
     input_spikes.append([i*isi for i in range(n_repeats) if i<5 or i>10])
@@ -112,7 +106,8 @@ input_pop = sim.Population(number_of_inputs,sim.SpikeSourceArray(spike_times=inp
 inh_pop = sim.Population(1,sim.SpikeSourceArray(spike_times=inh_spikes))
 # cd_pop = sim.Population(1,sim.IF_curr_exp,target_cell_params)#,label="fixed_weight_scale")
 # cd_pop = sim.Population(1,sim.IF_cond_exp,inh_cond_params,label="fixed_weight_scale_cond")
-cd_pop = sim.Population(1,sim.IF_curr_exp,ex_params,label="fixed_weight_scale")
+# cd_pop = sim.Population(1,sim.IF_curr_exp,ex_params,label="fixed_weight_scale")
+cd_pop = sim.Population(1,sim.IF_curr_exp,inh_params,label="fixed_weight_scale")
 # inh_pop =
 
 cd_pop.record(["spikes","v"])
@@ -122,7 +117,7 @@ cd_pop.record(["spikes","v"])
 #================================================================================================
 input_projection = sim.Projection(input_pop,cd_pop,sim.AllToAllConnector(),synapse_type=sim.StaticSynapse(weight=connection_weight))
 #inh_projection = sim.Projection(inh_pop,cd_pop,sim.AllToAllConnector(),synapse_type=sim.StaticSynapse(weight=inh_weight),receptor_type='inhibitory')
-inh_projection = sim.Projection(inh_pop,cd_pop,sim.AllToAllConnector(),synapse_type=stdp_model_cd,receptor_type='inhibitory')
+# inh_projection = sim.Projection(inh_pop,cd_pop,sim.AllToAllConnector(),synapse_type=stdp_model_cd,receptor_type='inhibitory')
 
 duration = max(input_spikes[0])
 

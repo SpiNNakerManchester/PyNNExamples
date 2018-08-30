@@ -798,18 +798,23 @@ def sparsity_measure(onset_times,output_spikes,onset_window=5.,from_time=0):
     for id,stimulus in enumerate(onset_times):
         for time in stimulus:
             if time >= from_time:
-                counts = np.zeros((int(n_neurons),onset_window))
+                counts = np.zeros((int(n_neurons),int(onset_window)))
                 for out_id,neuron in enumerate(output_spikes):
                     for output_spike in neuron:
                         # only care if at least one spike per neuron has occured in window
                         if output_spike >= time and output_spike < (time+onset_window): #and counts[out_id]==0.:
-                            counts[out_id,int(output_spike.item()-time-1)]+=1
+                            if isinstance(output_spike, (int,float)):
+                                counts[out_id,int(output_spike-time-1)]+=1
+                            else:#assume quantity
+                                counts[out_id,int(output_spike.item()-time-1)]+=1
                 #calculate sum of active neurons across presentation
                 # sum =  np.sum(np.sum(counts,axis=0))
-                sum =  np.sum(counts,axis=0)
+                sum =  np.sum(counts,axis=1)
                 #average across timesteps in window
                 av = np.mean(sum)
+                # av = np.sum(sum)
                 #record the percentage of total active IDs in each bin relative to the total number of neurons in output spikes
                 # sparsity_matrix[id].append((sum/(n_neurons*onset_window))*100.)
-                sparsity_matrix[id].append((av/(n_neurons))*100.)
+                # sparsity_matrix[id].append((av/(n_neurons))*100.)
+                sparsity_matrix[id].append(av)
     return sparsity_matrix

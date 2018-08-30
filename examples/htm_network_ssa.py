@@ -46,8 +46,10 @@ else:
 #================================================================================================
 # Open input
 #================================================================================================
-input_directory = "/home/rjames/Dropbox (The University of Manchester)/EarProject/Pattern_recognition/spike_trains/IC_spikes"
-input_spikes = np.load(input_directory+"/sparse_spikes.npy")
+#input_directory = "/home/rjames/Dropbox (The University of Manchester)/EarProject/Pattern_recognition/spike_trains/IC_spikes"
+#input_spikes = np.load(input_directory+"/sparse_spikes.npy")
+sparse_input_file = np.load('./spatial_pooler.npz')
+input_spikes = sparse_input_file['column_spikes']
 max_time = 0
 for neuron in input_spikes:
     if neuron.size>0 and neuron.max() > max_time:
@@ -316,22 +318,24 @@ if get_weights:
                          filepath=results_directory)
 
 
-ear_file = numpy.load("/home/rjames/SpiNNaker_devel/OME_SpiNN/spike_trains_asc_test_60s.npz")
-onset_times = ear_file['onset_times']
+# ear_file = numpy.load("/home/rjames/SpiNNaker_devel/OME_SpiNN/spike_trains_asc_test_60s.npz")
+# onset_times = ear_file['onset_times']
+onset_times = sparse_input_file['onset_times']
+onset_window = sparse_input_file['onset_window']
 onset_times_s = []
 for times in onset_times:
     onset_times_s.append([time/1000. for time in times])
 
 spike_raster_plot_8(input_spikes,plt,duration/1000.,len(input_spikes),0.001,title="input activity",filepath=results_directory,
-                    onset_times=onset_times_s,pattern_duration=100.)
+                    onset_times=onset_times_s,pattern_duration=onset_window)
 spike_raster_plot_8(active_data.segments[0].spiketrains,plt,duration/1000.,active_pop_size+1,0.001,title="active pop activity",filepath=results_directory,
-                    onset_times=onset_times_s,pattern_duration=100.)
+                    onset_times=onset_times_s,pattern_duration=onset_window)
 # spike_raster_plot_8(active_data.segments[0].spiketrains,plt,duration/1000.,active_pop_size+1,0.001,title="active pop activity_start",filepath=results_directory,
 #                     onset_times=onset_times,pattern_duration=pattern_duration,xlim=(onset_times[0][0],onset_times[0][1]))
 # spike_raster_plot_8(active_data.segments[0].spiketrains,plt,duration/1000.,active_pop_size+1,0.001,title="active pop activity_final",filepath=results_directory,
 #                     onset_times=onset_times,pattern_duration=pattern_duration,xlim=(onset_times[0][-1],0.001*duration))
 spike_raster_plot_8(cd_data.segments[0].spiketrains,plt,duration/1000.,cd_pop_size+1,0.001,title="cd pop activity",filepath=results_directory,
-                    onset_times=onset_times_s,pattern_duration=100.)
+                    onset_times=onset_times_s,pattern_duration=onset_window)
 # spike_raster_plot_8(cd_data.segments[0].spiketrains,plt,duration/1000.,cd_pop_size+1,0.001,title="cd pop activity_final",filepath=results_directory,
 #                     onset_times=onset_times,pattern_duration=pattern_duration,xlim=(onset_times[0][-1],0.001*duration))
 

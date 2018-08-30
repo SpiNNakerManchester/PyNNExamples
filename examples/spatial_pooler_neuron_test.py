@@ -92,7 +92,7 @@ av_weight =w2s_target/4.#initial_weight #0.05
 w_max_cd = av_weight*2#1.1#initial_weight*2#w2s_target/2.#
 w_min_cd = 0.0#av_weight*0.5#0
 a_plus_cd = 0.1#1.#
-a_minus_cd = 0.1#1.#
+a_minus_cd = 0.1#0.05#1.#
 tau_plus_cd = 16.
 tau_minus_cd =30.#1.#
 ten_perc = av_weight/10.
@@ -129,7 +129,7 @@ structure_model_with_stdp = sim.StructuralMechanismSTDP(
 input_spikes =[]
 inh_spikes = []
 isi = 100.
-n_repeats = 100
+n_repeats = 200
 
 jitter_input = 10.
 jitter_inh = 10.
@@ -169,9 +169,11 @@ for i in range(n_repeats):
     for neuron in stim_2_ids:
         input_spikes[neuron].append(i * isi + isi/2. + int(jitter_input * (np.random.rand() - 0.5)))
     for neuron in inh_1_ids:
-        inh_spikes[neuron].append(i * isi - jitter_input/2.)#+ int(jitter_input * (np.random.rand() - 0.5)))
+        # inh_spikes[neuron].append(i * isi - jitter_input/2.)#+ int(jitter_input * (np.random.rand() - 0.5)))
+        inh_spikes[neuron].append(i * isi - jitter_input/2. + int(jitter_input * (np.random.rand() - 0.5)))
     for neuron in inh_2_ids:
-        inh_spikes[neuron].append(i * isi + isi/2. - jitter_input/2.)#+ int(jitter_input * (np.random.rand() - 0.5)))
+        # inh_spikes[neuron].append(i * isi + isi/2. - jitter_input/2.)#+ int(jitter_input * (np.random.rand() - 0.5)))
+        inh_spikes[neuron].append(i * isi - jitter_input/2. + isi/2. + int(jitter_input * (np.random.rand() - 0.5)))
 
 # input_p_connect_init = n_connections*(1./number_of_inputs)
 
@@ -210,10 +212,11 @@ inh_projection = sim.Projection(inh_pop,cd_pop,sim.FixedProbabilityConnector(0.0
 duration = n_repeats * isi
 max_period = 1000.#60000.#
 num_recordings =int((duration/max_period)+1)
+
+varying_weights = []
+varying_weights_inh = []
 if get_weights:
     weights = input_projection.get("weight", "list", with_address=True)
-    varying_weights = []
-    varying_weights_inh= []
 
 run_one=False#True
 for i in range(num_recordings):
@@ -248,6 +251,12 @@ cd_data = cd_pop.get_data(["spikes","v"])
 
 sim.end()
 
+sparsity_matrix = sparsity_measure(onset_times,cd_data.segments[0].spiketrains,onset_window=jitter_input,from_time=0)
+
+plt.figure()
+for stimulus in sparsity_matrix:
+    plt.plot(stimulus)
+
 inh1_weights = [weight for (source,dest,weight) in varying_weights_inh[-1] if source in inh_1_ids]
 inh2_weights = [weight for (source,dest,weight) in varying_weights_inh[-1] if source in inh_2_ids]
 
@@ -263,16 +272,13 @@ plt.hist(inh2_weights,bins=100)
 mem_v = cd_data.segments[0].filter(name='v')
 cell_voltage_plot_8(mem_v, plt, duration, [],scale_factor=0.001,title='cd pop')
 
-
-
 np.savez('./spatial_pooler',sparse_mem_v=mem_v,column_spikes = cd_data.segments[0].spiketrains,
          inh_pop_spikes=inh_spikes,varying_weights=varying_weights,varying_weights_inh=varying_weights_inh,
          onset_times=onset_times,onset_window=jitter_input)
 
-
 # spike_raster_plot_8(noise_data.segments[0].spiketrains,plt,duration/1000.,8001,0.001,title="noise input activity")
 spike_raster_plot_8(cd_data.segments[0].spiketrains,plt,duration/1000.,cd_pop_size+1,0.001,title="cd pop activity")
-spike_raster_plot_8(input_spikes,plt,duration/1000.,number_of_inputs+1,0.001,title="input activity")
+# spike_raster_plot_8(input_spikes,plt,duration/1000.,number_of_inputs+1,0.001,title="input activity")
 spike_raster_plot_8(inh_spikes,plt,duration/1000.,n_inh+1,0.001,title="inh activity")
 
 if get_weights:
