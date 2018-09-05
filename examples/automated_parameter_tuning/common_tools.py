@@ -44,6 +44,31 @@ def set_up_training_data():
     
     return;
 
+def set_up_testing_data():
+    #picking test images from data 
+    number_digits = 10
+    
+    mndata = MNIST(home)
+    mndata.gz = True
+    images, labels = mndata.load_testing()
+    
+    test_data = [[] for i in range(number_digits)]
+    
+    for label, image in zip(labels, images):
+            test_data[label].append(image)
+            
+    print(len(test_data))
+    print([len(list) for list in test_data])
+            
+    data_filename = 'training_data/processed_testing_data.pkl'
+    outfile = open(data_filename,'wb')
+    pickle.dump(test_data, outfile)
+    outfile.close()
+    print("complete")
+    return;
+
+
+
 def artificial_filter():
     a= np.array(
     [(0, 0, 0, 0, 0),
@@ -204,7 +229,7 @@ def write_csv_logbook_file(data, filename):
     return;
 
 #artificial_filter()
-
+#set_up_testing_data()
 
 '''
 multiobjective

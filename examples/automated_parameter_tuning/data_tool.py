@@ -7,7 +7,7 @@ import pandas as pd
 import argparse
 import multiprocessing
 from deap import algorithms, base, creator, tools
-from basic_network import  ConvMnistModel, MnistModel, NetworkModel,pool_init, evalModel
+from basic_network import  ConvMnistModel, MnistModel, NetworkModel,pool_init, evalModel, evalPopulationMnistTesting
 import random
 from common_tools import data_summary, stats_setup, pickle_population, write_csv_logbook_file
 import cPickle as pickle
@@ -19,7 +19,7 @@ IND_SIZE = (int(ConvMnistModel.filter_size**2)) + (ConvMnistModel.pop_1_size * C
 toolbox = base.Toolbox()
 
 #Setting up GA
-creator.create("Fitness", base.Fitness, weights=(1.0))
+creator.create("Fitness", base.Fitness, weights=(1.0,))
 creator.create("Individual", list, fitness=creator.Fitness)
 
 toolbox.register("attribute", random.randint, -1, 1)
@@ -47,6 +47,10 @@ def characterise_best(pop):
         if pop[i].fitness > pop[best].fitness:
             best=i
     return best;
+
+def characterise_best_pop(pop, number):
+    pop.sort(key=lambda individual: individual.fitness, reverse= True)
+    return pop[:number];
 
 def visualise_multiple(poplist, accuracy_list):
     
@@ -250,6 +254,7 @@ def MDS_population(pop=None, distance_file=None):
     return;
 
 
+    
 
 
 #average_average_filter()
@@ -269,17 +274,21 @@ distance_file = checkpoint + "distances.pkl"
 try:
     with open(checkpoint, "r") as cp_file:
         print("loading pickled file")
-        #cp = pickle.load(cp_file)
+        cp = pickle.load(cp_file)
         print("loading pickled population")
-        #pop = cp["population"]
+        pop = cp["population"]
         #gen = cp["generation"]
         #logbook = cp["logbook"]
-        pop =None
-        print("visualising")
-        MDS_population(pop, distance_file)
-        
+        #pop =None
+        #print("visualising")
+        #MDS_population(pop, distance_file)
         #data_summary(logbook)
         #save_logbook_to_csv(logbook, checkpoint)
+        #print(characterise_best(pop))
+        top_pop = characterise_best_pop(pop, 5)
+        print(evalPopulationMnistTesting(top_pop))
+        
+        
         
         
         

@@ -155,7 +155,7 @@ def main(generations, checkpoint = None):
         total_data = (SUBPOP_SIZE, POP_SIZE, NUM_PROCESSES) + times_gen + avg_times_eval
         write_csv_data_file(total_data, "timing_data.csv")
         print("data written to file")
-	#SUBPOP_SIZE = SUBPOP_SIZE + 2020202020202020202020202020202020202020 
+	#SUBPOP_SIZE = SUBPOP_SIZE + 20
 	#print("SUBPOP_SIZE increased to %s" % SUBPOP_SIZE)
     return;
 

@@ -148,6 +148,80 @@ def evalPopulation(generation, pop):
     sys.stderr = old_stderr          
     print ("Process " + current.name + " finished sucessfully, average accuracy:: %s" % np.average(np.asarray(fitnesses)))
     return fitnesses, times;
+
+def evalPopulationMnistTesting(pop):
+    '''evaluates a population of individuals'''
+    times = []
+    t_start_evalpop = timer()
+    current = multiprocessing.current_process()
+    #pop = [i.tolist() for i in pop]
+    print ("Process " + current.name + " started.")
+    if len(pop)< 1:
+        print("population too small")
+        return;
+    f_name = "errorlog/" + current.name +"_stdout.txt"
+    g_name = "errorlog/" + current.name + "_stderror.txt"
+    f = open(f_name, 'w')
+    g = open(g_name, 'w')
+    old_stdout = sys.stdout
+    old_stderr = sys.stderr
+    #sys.stdout = f
+    #sys.stderr = g
+    def eval(num_retries=0):
+        max_retries = 4 
+        if num_retries < max_retries:
+            try:
+                t_start_eval = timer()
+                print("setting up canonicalModel")
+                canonicalModel = ConvMnistModel(pop[0], True, gen=0)
+                canonicalModel.generate_full_test_data()
+                canonicalModel.set_up_sim()
+                canonicalModel.test_model()
+                
+                models_dict = {}
+                fitnesses = []
+                models_dict[0] = canonicalModel
+                
+                for i in range(1,len(pop)):
+                    models_dict[i] = copy.copy(canonicalModel)
+                    models_dict[i].gene = pop[i]
+                    models_dict[i].weights_1, models_dict[i].weights_2 = models_dict[i].gene_to_weights()
+                    models_dict[i].spiketrains = copy.copy(canonicalModel.spiketrains)
+                    models_dict[i].test_model()
+                t_end_setup = timer()
+                sim.run(canonicalModel.simtime)
+                t_end_run = timer()
+                for i in range(0, len(pop)):
+                    print(i)
+                    models_dict[i].get_sim_data()
+                
+                sim.end()   
+                t_end_gather = timer()
+                for i in range(0, len(pop)):
+                    models_dict[i].cost_function()
+                    fitnesses.extend(models_dict[i].cost)
+                t_end_eval = timer()
+                times = (t_start_eval, t_end_setup, t_end_run, t_end_gather, t_end_eval, len(pop), num_retries)    
+                return fitnesses, times;
+            
+            except Exception as e:
+                traceback.print_exc()
+                print(e)
+                sleep(20)
+                print("Retry %d..." % num_retries)
+                globals_variables.unset_simulator()
+                return eval(num_retries+1);
+        else:
+            raise Exception('eval() reached maximum number of retries %s'% current)
+            print(current)
+        return;
+    fitnesses, times = eval()
+    #sys.stdout = old_stdout
+    #sys.stderr = old_stderr          
+    print ("Process " + current.name + " finished sucessfully, average accuracy:: %s" % np.average(np.asarray(fitnesses)))
+    return fitnesses, times;
+
+
     
 class NetworkModel(object):
     '''Class representing model'''
@@ -265,6 +339,47 @@ class NetworkModel(object):
         #print(self.test_periods)       
         return;
     
+    def generate_full_test_data(self):
+        '''Generates a test data that is the MNIST test set. This could be tidied up.'''
+        print("Loading MNIST testing data")
+            
+        data_filename = 'training_data/processed_testing_data.pkl'
+        infile = open(data_filename,'rb')
+        test_data = pickle.load(infile)
+        
+        self.test_set = [len(list) for list in test_data]
+
+        
+        test_images = [[] for i in range(len(self.test_set))]
+        test_labels = []
+        
+        
+        for i in range(len(self.test_set)):
+            for j in range(self.test_set[i]):
+                length = len(test_data[i])
+                pick = ((self.gen+length) % length)+(self.gen*self.test_set[i])
+                picked_image = test_data[i][pick+j]
+                test_images[i].append(picked_image)
+                test_labels.append(i)
+        self.test_images = test_images
+        self.test_labels = np.asarray(test_labels)
+        self.number_digits = len(self.test_set)
+        self.number_tests = sum(self.test_set)
+        #print(self.number_digits)
+        #print(self.number_tests)
+
+        # generating the time periods to identify when input presented in the spike train
+        print("Generating time periods")
+        test_time = self.on_duration + self.off_duration
+        self.simtime = (self.on_duration + self.off_duration)*self.number_tests
+        #print(self.simtime)
+        self.test_periods = np.arange(start= 0, step= test_time, stop= test_time*(self.number_tests+1))
+        #print(len(self.test_periods))
+        self.generate_input_st()
+
+        return;
+    
+    
     def one_hot_encode_labels(self):
         label_array = np.zeros((self.number_tests, self.number_digits))
         cumulative_test = np.cumsum(self.test_set)
@@ -366,8 +481,6 @@ class NetworkModel(object):
             if num_retries == max_retries:
                 raise Exception
         return;
-    
-    
     
     def cost_function(self):
         '''Returns the value of the cost function for the test.'''
