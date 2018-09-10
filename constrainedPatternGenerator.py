@@ -3,7 +3,8 @@
 
    File: constrainedPatternGenerator.py
 
-   Class of N-of-M patterns with a constrained number of spikes in each given sub-interval of the complete pattern cycle.
+   Class of N-of-M patterns with a constrained number of spikes in each given
+   sub-interval of the complete pattern cycle.
 
    Used to provide greater predictability of signal term.
 """
@@ -48,7 +49,8 @@ class pattern(object):
         """
         """
         unordered_events = list()
-        rdNeurons = RandomDistribution('uniform', [0, self.totalNeurons-1], rng)
+        rdNeurons = RandomDistribution(
+            'uniform', [0, self.totalNeurons - 1], rng)
         rdTimes = RandomDistribution('uniform', (0, self.intervalWidth), rng)
         # randomNeurons = rdNeurons.next(self.firing)
         randomTimes = rdTimes.next(self.firing)
@@ -58,7 +60,8 @@ class pattern(object):
         usedArray = numpy.zeros(self.totalNeurons)
         index = 0
         for i in range(self.numIntervals):
-            intervalStart = int(i * self.intervalWidth * 5.0) / 5.0   # Snap times to 0.2 ms intervals
+            # Snap times to 0.2 ms intervals
+            intervalStart = int(i * self.intervalWidth * 5.0) / 5.0
             for j in range(numPerInterval):
                 newTime = intervalStart + int(randomTimes[index] * 5) / 5.0
                 # Randomly choose next neuron to fire (unique):
@@ -106,7 +109,8 @@ class pattern(object):
     def patternGraphicalView(self, pattNum):
         if self.events is not None:
             pylab.figure()
-            pylab.plot([i[1] for i in self.events], [i[0] for i in self.events], ".")
+            pylab.plot([i[1] for i in self.events],
+                       [i[0] for i in self.events], ".")
             pylab.xlabel('Time/ms')
             pylab.ylabel('spikes')
             pylab.title('Spikes of pattern %d' % pattNum)
@@ -115,8 +119,8 @@ class pattern(object):
         """
         Count the number of differences between this pattern and another.
         This pattern is considered to be the golden reference.
-        This pattern is a pattern-formatted list, the observed spikes is a list of
-        [neuron, time] pairs in neuron-then-time order.
+        This pattern is a pattern-formatted list, the observed spikes is a list
+        of [neuron, time] pairs in neuron-then-time order.
         """
         truePositives = 0
         falsePositives = 0
@@ -133,19 +137,24 @@ class pattern(object):
                 neuronID, timeIndex = spike
                 if pattNeuronID == neuronID:
                     # if display:
-                    #     print("Pattern: ", pattTimeIndex, ",  observed: ", timeIndex)
-                    # # Spike must be observed before its official time, but no more than windowSz before:
-                    # if timeIndex <= pattTimeIndex and (timeIndex + windowSz) >=  pattTimeIndex:
-                    #  spike must be observed within a tolerance value of its intended time:
-                    #  If difference is out by more than a half cycle, it's really closer to the spike
-                    #  in the next or previous cycle:
+                    #     print("Pattern: ", pattTimeIndex, ",  observed: ",
+                    #           timeIndex)
+                    # # Spike must be observed before its official time, but no
+                    # # more than windowSz before:
+                    # if (timeIndex <= pattTimeIndex and
+                    #     (timeIndex + windowSz) >=  pattTimeIndex):
+                    # # spike must be observed within a tolerance value of its
+                    # # intended time. If difference is out by more than a half
+                    # # cycle, it's really closer to the spike in the next or
+                    # # previous cycle:
                     timeDiff = pattTimeIndex - timeIndex
                     if timeDiff > halfCycle:
                         timeDiff -= self.cycleTime
                     elif timeDiff < -halfCycle:
                         timeDiff += self.cycleTime
                     if abs(timeDiff) <= tolerance:
-                        # if pattTimeIndex >= (timeIndex - tolerance) and pattTimeIndex <= (timeIndex + tolerance):
+                        # if (pattTimeIndex >= (timeIndex - tolerance)
+                        #     and pattTimeIndex <= (timeIndex + tolerance)):
                         # Spike is in correct position, but only count it once:
                         if not matched:
                             truePositives += 1
@@ -154,13 +163,16 @@ class pattern(object):
                             late += 1   # Observed spike was too late
                         elif timeDiff > 0:
                             early += 1  # Observed spike was too early
-                        # Remove this observed spike from the list so we don't use it again:
+                        # Remove this observed spike from the list so we don't
+                        # use it again:
                         myObservedSpikes.remove(spike)
             # Checked against all the observed spikes. Did we find a match?
             if not matched:
-                falseNegatives += 1  # Missing spike for this pattern - that's a false negative
+                falseNegatives += 1
+                # Missing spike for this pattern - that's a false negative
                 # print("False neg for teacher @ time ", pattTimeIndex)
-        # Checked all expected spikes against all observed spikes. Any left are false positives:
+        # Checked all expected spikes against all observed spikes. Any left are
+        # false positives:
         falsePositives = len(myObservedSpikes)
         # print("False pos list: ", myObservedSpikes)
 
@@ -168,20 +180,22 @@ class pattern(object):
 
     def extractBinnedValues(self, spikeTrain):
         """
-        SpikeTrain is a list of neuron ID/spike time pairs. Extract them and place them in
-        the binning matrix.
+        SpikeTrain is a list of neuron ID/spike time pairs. Extract them and
+        place them in the binning matrix.
         """
         for elem in spikeTrain:
             neuronID, timeStamp = elem
             binNum = int(timeStamp / self.binSize)
             if binNum > self.numBins:
-                print("ERROR! in patternGenerator.extractBinnedValues() time stamp ", timeStamp,
-                      "mapped to bin # ", binNum, " is too big (max ", self.numBins, ")")
+                print("ERROR! in patternGenerator.extractBinnedValues() time "
+                      "stamp ", timeStamp, "mapped to bin # ", binNum,
+                      " is too big (max ", self.numBins, ")")
                 quit()
 
             if neuronID < 0 or neuronID >= self.totalNeurons:
-                print("ERROR! in patternGenerator.extractBinnedValues(), neuronID ", neuronID,
-                      "is not in expected range, (0 to ", self.totalNeurons, ")")
+                print("ERROR! in patternGenerator.extractBinnedValues(), "
+                      "neuronID ", neuronID, "is not in expected range, "
+                      "(0 to ", self.totalNeurons, ")")
                 quit()
             self.binnedPattern[neuronID, binNum] += 1
 
@@ -202,7 +216,8 @@ class pattern(object):
         for neuron in range(self.totalNeurons):
             fsock.write("%d: " % neuron)
             for binNum in range(self.numBins):
-                fsock.write("%d" % int(self.binnedPattern[neuron, binNum] == 1))
+                fsock.write(
+                    "%d" % int(self.binnedPattern[neuron, binNum] == 1))
             fsock.write("\n")
         fsock.close()
 
@@ -238,9 +253,11 @@ class spikeStream(object):
         # Create empty streams, one per source neuron:
         if noise is not None:
             if rng is None:
-                print("ERROR in buildStream() - Noise added but no RNG specified!")
+                print("ERROR in buildStream() - "
+                      "Noise added but no RNG specified!")
                 quit()
-            rdTimes = RandomDistribution('exponential', [1000.0 / noise], rng=rng)
+            rdTimes = RandomDistribution(
+                'exponential', [1000.0 / noise], rng=rng)
         for i in range(numSources):
             baseList = list()
             if noise is not None:
@@ -253,10 +270,11 @@ class spikeStream(object):
                     numRandoms += 1
             self.streams.append(baseList)
 
-        # Go through order parameter, which is a list of the patterns to be appended.
-        # For each one, append it.
+        # Go through order parameter, which is a list of the patterns to be
+        # appended. For each one, append it.
         timePtr = 0
-        jitterDistribution = RandomDistribution('normal', (0.0, patterns[0].jitterSD), rng=rng)
+        jitterDistribution = RandomDistribution(
+            'normal', (0.0, patterns[0].jitterSD), rng=rng)
         for entry in order:
             if entry == -1:
                 # Add blank entry:
@@ -270,7 +288,8 @@ class spikeStream(object):
                     print("Pattern ", entry, " starts at time ", timePtr)
                 if entry >= len(patterns):
                     print("ERROR: Pattern set requested pattern ", entry,
-                          " and pattern set has only ", len(patterns), " patterns")
+                          " and pattern set has only ", len(patterns),
+                          " patterns")
                     return -1
                 elif entry < 0:
                     print("ERROR: Entry less than zero requested!")
