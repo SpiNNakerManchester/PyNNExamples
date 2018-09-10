@@ -1,5 +1,5 @@
+from __future__ import print_function
 
-import numpy
 
 class spikeTrains(object):
     """
@@ -15,11 +15,10 @@ class spikeTrains(object):
         """
         newSpikeList = list()
         for elem in inputSpikes:
-           neuronID, timeStamp = elem
-           newTime = timeStamp - startTime
+            neuronID, timeStamp = elem
+            newTime = timeStamp - startTime
+            if newTime < duration and newTime >= 0:
+                newSpikeList.append([neuronID, newTime])
 
-           if (newTime < duration and newTime >= 0):
-               newSpikeList.append([neuronID, newTime])
-
-        print "Found ", len(newSpikeList), " spikes"
+        print("Found ", len(newSpikeList), " spikes")
         return newSpikeList
