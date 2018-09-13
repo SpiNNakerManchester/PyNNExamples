@@ -37,6 +37,19 @@ authors:
   email: simon.davidson@manchester.ac.uk
   website: http://apt.cs.manchester.ac.uk/people/sdavidson/
   orcid: https://orcid.org/0000-0001-5385-442X
+- family-names: Rhodes
+  given-names: Oliver
+  affiliation:  "University Of Manchester"
+  email: oliver.rhodes@manchester.ac.uk
+  website: http://apt.cs.manchester.ac.uk/people/orhodes/
+  orcid: https://orcid.org/0000-0003-1728-2828
+- family-names: James
+  given-names: Robert
+  affiliation: "University Of Manchester"
+  email:
+  website:
+  orcid:
+
 
 title:
   Collection of example PyNN 0.8 and PyNN 0.9 scripts which run on SpiNNaker
