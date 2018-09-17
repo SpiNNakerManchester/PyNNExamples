@@ -92,27 +92,35 @@ def generate_signal(signal_type="tone",fs=22050.,dBSPL=40.,
 
 def generate_psth_8(target_neuron_ids,spike_trains,bin_width,
                   duration,scale_factor=0.001):
-    num_bins = numpy.ceil(duration/bin_width)
-    psth = numpy.zeros([len(target_neuron_ids),num_bins])
-    psth_row_index=0
-    for i in target_neuron_ids:
-        #extract target neuron times and scale
-        spike_times = spike_trains[i]
-        scaled_times= [spike_time.item() * scale_factor for spike_time in spike_times if spike_time*scale_factor<=duration]
-        scaled_times.sort()
-        bins = numpy.arange(bin_width,duration,bin_width)
-        for j in scaled_times:
-            idx = (numpy.abs(bins - j)).argmin()
-            if bins[idx] < j:
-                idx+=1
-            psth[psth_row_index][idx] += 1
-
-        #increment psth_row_index
-        psth_row_index += 1
-
-    sum= numpy.sum(psth,axis=0)
-    mean = sum/psth_row_index
-    output = [count * 1./bin_width for count in mean]
+    import numpy as np
+    bins = np.arange(bin_width*1000., duration*1000., bin_width*1000.)
+    if isinstance(spike_trains,list):
+        spike_trains = np.asarray(spike_trains)
+    target_neurons = spike_trains[target_neuron_ids]
+    hist=[]
+    for spike_times in target_neurons:
+        hist.append(np.histogram(spike_times,bins=bins)[0])
+    # psth = numpy.zeros([len(target_neuron_ids),num_bins])
+    # psth_row_index=0
+    # for i in target_neuron_ids:
+    #     #extract target neuron times and scale
+    #     spike_times = spike_trains[i]
+    #     scaled_times= [spike_time.item() * scale_factor for spike_time in spike_times if spike_time*scale_factor<=duration]
+    #     scaled_times.sort()
+    #     bins = numpy.arange(bin_width,duration,bin_width)
+    #     for j in scaled_times:
+    #         idx = (numpy.abs(bins - j)).argmin()
+    #         if bins[idx] < j:
+    #             idx+=1
+    #         psth[psth_row_index][idx] += 1
+    #
+    #     #increment psth_row_index
+    #     psth_row_index += 1
+    #
+    # sum= numpy.sum(psth,axis=0)
+    # mean = sum/psth_row_index
+    # output = [count * 1./bin_width for count in mean]
+    output = np.mean(hist,axis=0) * 1./bin_width
     return output
 
 def generate_psth(target_neuron_ids,spike_trains,bin_width,
@@ -430,8 +438,8 @@ def weight_dist_plot(varying_weights,num_ticks,plt,w_min,w_max,np=numpy,title=No
         init_weights = v_weights[0]
         fin_weights = v_weights[-1]
     plt.figure(title)
-    plt.hist(init_weights,bins=100,alpha=0.5,range=(w_min,w_max))
-    plt.hist(fin_weights,bins=100,alpha=0.5,range=(w_min,w_max))
+    plt.hist(init_weights,bins=100,alpha=0.5,range=(w_min,w_max*1.1))
+    plt.hist(fin_weights,bins=100,alpha=0.5,range=(w_min,w_max*1.1))
     plt.legend(["first recording", "last recording"])
     plt.ylabel("number of synapses")
     plt.xlabel("weight of synapse")
@@ -466,28 +474,56 @@ def cell_voltage_plot(v,plt,duration,scale_factor=0.001,id=0,title=''):
         plt.plot(scaled_times,membrane_voltage)
 
 #function to create a normal probability distribution of distance connectivity list
-def distance_dependent_connectivity(pop_size,weights,delays,min_increment=0,max_increment=1):
-    pre_index = 0
+def distance_dependent_connectivity(pop_size,weights=1.,delays=1.,min_increment=0,max_increment=1):
+    post_index = 0
     conns = []
-    while pre_index < pop_size:
+    # while pre_index < pop_size:
+    #     #
+    #     increment = numpy.unique(
+    #         numpy.round(abs(numpy.random.normal(loc=0, scale=numpy.sqrt(max_increment - 1), size=max_increment))))
+    #     limited_increment = [inc for inc in increment if inc >= min_increment and inc < max_increment]#increment[(increment >= min_increment) & (increment < max_increment)]
+    #     for inc in limited_increment:
+    #         post_index = pre_index + inc
+    #         if post_index < pop_size:
+    #             conns.append((pre_index, post_index, weights[int(inc)],delays[int(inc)]))
+    #
+    #     rev_increment = numpy.unique(
+    #         numpy.round(abs(numpy.random.normal(loc=0, scale=numpy.sqrt(max_increment - 1), size=max_increment))))
+    #     limited_rev_increment = [inc for inc in rev_increment if inc >= min_increment and inc < max_increment]#rev_increment[(rev_increment >= min_increment) & (rev_increment < max_increment)]
+    #     for r_inc in limited_rev_increment:
+    #         rev_post_index = pre_index - r_inc
+    #         if rev_post_index >= 0:
+    #             conns.append((pre_index, rev_post_index, weights[int(r_inc)],delays[int(r_inc)]))
+    #
+    #     pre_index += 1
+    while post_index < pop_size:
         #
         increment = numpy.unique(
             numpy.round(abs(numpy.random.normal(loc=0, scale=numpy.sqrt(max_increment - 1), size=max_increment))))
         limited_increment = [inc for inc in increment if inc >= min_increment and inc < max_increment]#increment[(increment >= min_increment) & (increment < max_increment)]
         for inc in limited_increment:
-            post_index = pre_index + inc
-            if post_index < pop_size:
-                conns.append((pre_index, post_index, weights[int(inc)],delays[int(inc)]))
+            pre_index = post_index + inc
+            if pre_index < pop_size:
+                if isinstance(weights,float):
+                    weight = weights
+                else:
+                    weight = weights.next(n=1)
+                if isinstance(delays,float):
+                    delay = delays
+                else:
+                    delay = delays.next(n=1)
+                # conns.append((pre_index, post_index, weight,delay))
+                conns.append((pre_index, post_index))
 
-        rev_increment = numpy.unique(
-            numpy.round(abs(numpy.random.normal(loc=0, scale=numpy.sqrt(max_increment - 1), size=max_increment))))
-        limited_rev_increment = [inc for inc in rev_increment if inc >= min_increment and inc < max_increment]#rev_increment[(rev_increment >= min_increment) & (rev_increment < max_increment)]
-        for r_inc in limited_rev_increment:
-            rev_post_index = pre_index - r_inc
-            if rev_post_index >= 0:
-                conns.append((pre_index, rev_post_index, weights[int(r_inc)],delays[int(r_inc)]))
+        # rev_increment = numpy.unique(
+        #     numpy.round(abs(numpy.random.normal(loc=0, scale=numpy.sqrt(max_increment - 1), size=max_increment))))
+        # limited_rev_increment = [inc for inc in rev_increment if inc >= min_increment and inc < max_increment]#rev_increment[(rev_increment >= min_increment) & (rev_increment < max_increment)]
+        # for r_inc in limited_rev_increment:
+        #     rev_post_index = pre_index - r_inc
+        #     if rev_post_index >= 0:
+        #         conns.append((pre_index, rev_post_index, weights[int(r_inc)],delays[int(r_inc)]))
 
-        pre_index += 1
+        post_index += 1
 
     return conns
 
@@ -571,12 +607,12 @@ def spike_train_join(spike_trains,num_neurons):
     return [spike_train_output,max_time]
 
 def normal_dist_connection_builder(pre_size,post_size,RandomDistribution,
-                                   rng,conn_num,dist,sigma,conn_weight,delay=1.):
+                                   rng,conn_num,dist,sigma,conn_weight=None,delay=1.):
     conn_list = []
 
     for post in xrange(post_size):
-        #mu = int(dist / 2) + post * dist
-        mu = dist / 2. + post * dist
+        mu = int(dist / 2) + post * dist
+        #mu = dist / 2. + post * dist
         an2ch = RandomDistribution('normal', (mu, sigma), rng=rng)
         an_idxs = an2ch.next(n=conn_num)
         pre_check = []
@@ -584,15 +620,20 @@ def normal_dist_connection_builder(pre_size,post_size,RandomDistribution,
             pre = int(pre)
             if pre >= 0 and pre < pre_size:
                 if pre not in pre_check:
-                    if type(conn_weight)==float:
-                        weight = conn_weight
-                    else:#assumes rand dist
-                        weight = conn_weight.next(n=1)
-                    if type(delay)!=float:
-                        conn_delay = delay.next(n=1)
+                    if conn_weight is None:
+                        conn_list.append((pre, int(post)))
                     else:
-                        conn_delay = delay
-                    conn_list.append((pre, int(post), weight, conn_delay))
+                        if type(conn_weight)==float:
+                            weight = conn_weight
+                        else:#assumes rand dist
+                            weight = conn_weight.next(n=1)
+                        if type(delay)!=float:
+                            conn_delay = delay.next(n=1)
+                        else:
+                            conn_delay = delay
+
+                        conn_list.append((pre, int(post), weight, conn_delay))
+
                 pre_check.append(pre)
 
     return conn_list
@@ -768,9 +809,9 @@ def connection_hist_plot(varying_weights,pre_size,post_size,plt,title='',filepat
     final_connections = varying_weights[-1]
     for (source,target,weight) in final_connections:
         if source is not None and weight>weight_min:
-            if source in incoming_connections[target]:
+            if source in incoming_connections[int(target)]:
                 print "multapse detected!"
-            incoming_connections[target].append(source)
+            incoming_connections[int(target)].append(source)
             source_list.append(source)
             target_list.append(target)
     out_figure = title+'pre_pop outgoing connections'
@@ -783,6 +824,35 @@ def connection_hist_plot(varying_weights,pre_size,post_size,plt,title='',filepat
     plt.hist(target_list,bins=post_size,alpha=0.5,range=(0,post_size))
     if filepath is not None:
         plt.savefig(filepath + '/'+in_figure+'.eps')
+
+def connection_surface_plot(varying_weights,pre_size,post_size,plt,title='',filepath=None,n_plots=2):
+    import numpy as np
+    incoming_connections=[[]for _ in range(post_size)]
+
+    plot_indices = [int(idx) for idx in np.linspace(0,len(varying_weights)-1,n_plots)]
+    for i in plot_indices:
+        final_connections = varying_weights[i]
+        surface = np.zeros((pre_size,post_size))
+        for (source,target,weight) in final_connections:
+            if source in incoming_connections[int(target)]:
+                print "multapse detected!"
+            incoming_connections[int(target)].append(source)
+            surface[source][target] += weight
+
+        figure = title + ' connection weights {}'.format(i)
+        plt.figure(figure)
+        plt.imshow(surface,vmin=0,vmax=surface.max(),interpolation='none',origin='lower',cmap='viridis')
+        plt.xlabel('target neuron')
+        plt.ylabel('source neuron')
+        plt.colorbar()
+        plt.tight_layout()
+
+    incoming_sum = np.sum(surface,axis=0)
+    x = np.arange(len(incoming_sum))
+    plt.figure(title + ' total incoming connection weights')
+    plt.bar(x,incoming_sum)
+    if filepath is not None:
+        plt.savefig(filepath + '/'+figure+'.eps')
 
 def sparsity_measure(onset_times,output_spikes,onset_window=5.,from_time=0):
     import numpy as np

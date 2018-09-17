@@ -34,21 +34,22 @@ wpred = 0.05#1.
 w2s_target = 5.
 
 input_pop_size =1
-active_pop_size = 8
+active_pop_size = 1#8
 # assume 1% of 2048 columns are active per 1ms timestep
 #if each column fired at 1Hz then there would be approx. 2 active columns per timestep
 #we assume each column fires at around 10Hz, producing approx. 20 active columns per ms
 column_firing_rate = 10.
-isi = 1000./column_firing_rate
-num_firings = 50
-predict_delay = 8
+isi = 50.#1000./column_firing_rate
+num_firings = 5
+predict_delay =1.# 8
 input_spikes = [i*isi for i in range(1,num_firings)]#[10.,30,50]
-predict_spikes = [i*isi-predict_delay for i in range(1,num_firings)]#[5.]
+# predict_spikes = [i*isi-predict_delay for i in range(1,num_firings)]#[5.]
+predict_spikes = [[i*isi-1 for i in range(1,num_firings)]]#[5.]
 
 tau_plus=16.
 tau_minus=30.
-a_plus =0.5#0.001#
-a_minus =0.5#0.001#
+a_plus =0.1#0.5#0.001#
+a_minus =0.1#0.5#0.001#
 w_min = 0
 w_max = wpred
 
@@ -69,13 +70,13 @@ for post in range(active_pop_size):
     for pre in range(active_pop_size):
         if pre!=post:
             inh_connection_list.append((pre,post))
-active_inh_active_projection = sim.Projection(active_pop,active_pop,sim.FromListConnector(inh_connection_list),synapse_type=sim.StaticSynapse(weight=winh),receptor_type='inhibitory')
+# active_inh_active_projection = sim.Projection(active_pop,active_pop,sim.FromListConnector(inh_connection_list),synapse_type=sim.StaticSynapse(weight=winh),receptor_type='inhibitory')
 
 stdp_model = sim.STDPMechanism(
         timing_dependence=sim.SpikePairRule(
             tau_plus=tau_plus, tau_minus=tau_minus, A_plus=a_plus, A_minus=a_minus),
         weight_dependence=sim.AdditiveWeightDependence(
-            w_min=w_min, w_max=w_max), weight=0.,delay=predict_delay)
+            w_min=w_min, w_max=w_max), weight=0.02,delay=predict_delay)
 
 cd_projection_list = [(0,0)]
 # cd_active_projection =  sim.Projection(cd_pop,active_pop,sim.FromListConnector(cd_projection_list),synapse_type=sim.StaticSynapse(weight=wpred,delay=1.))
@@ -117,10 +118,20 @@ vary_weight_plot(varying_weights,range(int(1)),None,duration/1000.,
                  title='Predictive Neuron to Active Neuron Weight',
                  filepath=results_directory)
 
-spike_raster_plot_8(active_data.segments[0].spiketrains,plt,duration/1000.,active_pop_size+1,0.001,title="active pop activity",filepath=results_directory)
+plt.figure()
+active_spikes = active_data.segments[0].spiketrains[0]
+ids = [1 for _ in active_spikes]
+for xc in active_spikes:
+    plt.axvline(x=xc)
+for xc in predict_spikes[0]:
+    plt.axvline(x=xc,color='r')
+# plt.plot(predict_spikes[0],'|',color='r')
+
+# spike_raster_plot_8(active_data.segments[0].spiketrains,plt,duration/1000.,active_pop_size+1,0.001,title="active pop activity",filepath=results_directory)
+# spike_raster_plot_8(predict_spikes,plt,duration/1000.,2,0.001,title="segment pop activity",filepath=results_directory)
 mem_v = active_data.segments[0].filter(name='v')
-cell_voltage_plot_8(mem_v, plt, duration, 1.,scale_factor=0.001,id=0,title='Predicted Active Neuron',filepath=results_directory)
-cell_voltage_plot_8(mem_v, plt, duration, 1.,scale_factor=0.001,id=1,title='Inhibited Active Neuron',filepath=results_directory)
+# cell_voltage_plot_8(mem_v, plt, duration, 1.,scale_factor=0.001,id=0,title='Predicted Active Neuron',filepath=results_directory)
+# cell_voltage_plot_8(mem_v, plt, duration, 1.,scale_factor=0.001,id=1,title='Inhibited Active Neuron',filepath=results_directory)
 # cell_voltage_plot_8(mem_v, plt, 100., 1.,scale_factor=0.001)
 if results_directory is None:
     plt.show()

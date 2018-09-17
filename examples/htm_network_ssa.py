@@ -46,18 +46,18 @@ else:
 #================================================================================================
 # Open input
 #================================================================================================
-#input_directory = "/home/rjames/Dropbox (The University of Manchester)/EarProject/Pattern_recognition/spike_trains/IC_spikes"
+input_directory = "/home/rjames/Dropbox (The University of Manchester)/EarProject/Pattern_recognition/spike_trains/"
 #input_spikes = np.load(input_directory+"/sparse_spikes.npy")
-sparse_input_file = np.load('./spatial_pooler.npz')
+sparse_input_file = np.load(input_directory+'/spatial_pooler_mult.npz')
 input_spikes = sparse_input_file['column_spikes']
-max_time = 0
-for neuron in input_spikes:
-    if neuron.size>0 and neuron.max() > max_time:
-        max_time = neuron.max().item()
+# max_time = 0
+# for neuron in input_spikes:
+#     if neuron.size>0 and neuron.max() > max_time:
+#         max_time = neuron.max().item()
 
-duration = 20000.#max_time
+duration = sparse_input_file['sim_duration']#20000.#max_time
 
-input_pop_size = len(input_spikes)
+input_pop_size = input_spikes.size
 column_size = 8#16#32
 number_of_columns = input_pop_size#50#250
 active_pop_size = column_size*number_of_columns
@@ -83,13 +83,13 @@ input_pop = sim.Population(input_pop_size,sim.SpikeSourceArray(spike_times=input
 active_pop =sim.Population(active_pop_size,sim.IF_curr_exp,cell_params,label="active_fixed_weight_scale")#label="active_pop")#
 # cd_pop = sim.Population(num_columns_active_per_pattern*num_patterns_in_sequence,sim.SpikeSourceArray(spike_times=predict_spikes))
 cd_pop = sim.Population(cd_pop_size,sim.IF_curr_exp,target_cell_params,label="cd_fixed_weight_scale")
-noise_rate=1.
-noise_pop_active = sim.Population(
-        active_pop_size, sim.SpikeSourcePoisson(rate=noise_rate, duration=duration),
-        label="stim_poisson_{}Hz".format(noise_rate))
-noise_pop_cd = sim.Population(
-        cd_pop_size, sim.SpikeSourcePoisson(rate=noise_rate, duration=duration),
-        label="stim_poisson_{}Hz".format(noise_rate))
+# noise_rate=1.
+# noise_pop_active = sim.Population(
+#         active_pop_size, sim.SpikeSourcePoisson(rate=noise_rate, duration=duration),
+#         label="stim_poisson_{}Hz".format(noise_rate))
+# noise_pop_cd = sim.Population(
+#         cd_pop_size, sim.SpikeSourcePoisson(rate=noise_rate, duration=duration),
+#         label="stim_poisson_{}Hz".format(noise_rate))
 
 active_pop.record(["spikes"])
 cd_pop.record(["spikes"])
@@ -151,9 +151,12 @@ tau_minus_cd =30.
 # start_weight = RandomDistribution('uniform',(av_weight-ten_perc,av_weight+ten_perc))
 
 stdp_model_cd = sim.STDPMechanism(
-        timing_dependence=sim.SpikePairRule(
-            tau_plus=tau_plus_cd, tau_minus=tau_minus_cd, A_plus=a_plus_cd, A_minus=a_minus_cd),
-        weight_dependence=sim.AdditiveWeightDependence(
+        # timing_dependence=sim.SpikePairRule(
+        #     tau_plus=tau_plus_cd, tau_minus=tau_minus_cd, A_plus=a_plus_cd, A_minus=a_minus_cd),
+        timing_dependence=sim.extra_models.Vogels2011Rule(alpha=0.2, tau=20.0,
+                                                          A_plus=a_plus_cd, A_minus=a_minus_cd),
+        # weight_dependence=sim.AdditiveWeightDependence(
+        weight_dependence=sim.MultiplicativeWeightDependence(
             w_min=w_min_cd, w_max=w_max_cd), weight=av_weight,delay=1.)
 
 # active_cd_projection = sim.Projection(active_pop,cd_pop,sim.FixedProbabilityConnector(p_connect=0.025),synapse_type=stdp_model_cd)
@@ -177,13 +180,14 @@ structure_model_with_stdp = sim.StructuralMechanismSTDP(
     stdp_model=stdp_model_cd,
     weight=av_weight,  # Use this weights when creating a new synapse
     max_weight=av_weight*0.9*2.,#av_weight*2,
-    s_max=int(n_active_cells),#int(initial_sync_num*1.5),#int(num_columns_active_per_pattern*1.5),  # Maximum allowed fan-in per target-layer neuron
+    s_max=int(initial_sync_num*1.5),#int(num_columns_active_per_pattern*1.5),  # Maximum allowed fan-in per target-layer neuron
     #TODO: weight scale for the post population should be calculated using this value?
-    grid=[active_pop_size, 1], # 1d spatial org of neurons, uncomment this if wanted
+    grid=[1,active_pop_size], # 1d spatial org of neurons, uncomment this if wanted
     random_partner=False,
     #selecting one of the last neurons to have spiked
+    sigma_form_forward=10.,
     f_rew=10 ** 4,  # Hz
-    p_elim_dep=1.,#0.99,
+    p_elim_dep=1.,#0.1,#0.99,
     p_elim_pot=0.,#0.1,#
     #delay=20  # Use this delay when creating a new synapse
 )
@@ -218,9 +222,10 @@ structure_model_with_stdp_pred = sim.StructuralMechanismSTDP(
     max_weight=0.001,#w_max,#
     s_max=5,  # Maximum allowed fan-in per target-layer neuron
     #grid=[np.sqrt(active_pop_size), np.sqrt(active_pop_size)],  # 2d spatial org of neurons
-    grid=[cd_pop_size, 1], # 1d spatial org of neurons, uncomment this if wanted
+    grid=[1,cd_pop_size], # 1d spatial org of neurons, uncomment this if wanted
     random_partner=False,  # Choose a partner neuron for formation at random,
     # as opposed to selecting one of the last neurons to have spiked
+    sigma_form_forward=10,
     f_rew=10 ** 4,  # Hz
     p_elim_pot=0.,
     p_elim_dep=0.1,
@@ -320,8 +325,11 @@ if get_weights:
 
 # ear_file = numpy.load("/home/rjames/SpiNNaker_devel/OME_SpiNN/spike_trains_asc_test_60s.npz")
 # onset_times = ear_file['onset_times']
-onset_times = sparse_input_file['onset_times']
-onset_window = sparse_input_file['onset_window']
+# onset_times = sparse_input_file['onset_times']
+# onset_window = sparse_input_file['onset_window']
+input_file = np.load(input_directory+"/IC_spikes/brainstem_asc_des_a_i_u_60s_20dB.npz")
+onset_times = input_file['onset_times']
+onset_window = 100.
 onset_times_s = []
 for times in onset_times:
     onset_times_s.append([time/1000. for time in times])
