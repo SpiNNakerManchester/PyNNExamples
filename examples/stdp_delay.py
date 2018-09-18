@@ -37,7 +37,7 @@ active_pop_size = input_pop_size
 
 isi = 200.
 num_firings = 50
-predict_delay = 1.#14/2.#14.#.8#1#
+predict_delay = 14#.1.#14/2.#8#1#
 input_spikes =[]
 for j in range(input_pop_size):
     input_spikes.append([i*isi + j*20. for i in range(1,num_firings) if i<20 or i>40])
@@ -78,7 +78,7 @@ stdp_model = sim.STDPMechanism(
             w_min=w_min, w_max=w_max), weight=0.02,delay=predict_delay)
 
 # cd_projection_list = [(0,1),(1,0),(0,0),(1,1)]
-cd_projection_list = [(0,1)]#[(0,1),(1,0)]
+# cd_projection_list = [(0,1)]#[(0,1),(1,0)]
 # cd_active_projection =  sim.Projection(cd_pop,active_pop,sim.FromListConnector(cd_projection_list),synapse_type=stdp_model)
 cd_active_projection =  sim.Projection(cd_pop,active_pop,sim.AllToAllConnector(),synapse_type=stdp_model)
 # noise_projection = sim.Projection(noise_pop,cd_pop,sim.OneToOneConnector(),synapse_type=sim.StaticSynapse(weight=w2s_target))
@@ -105,9 +105,9 @@ num_recordings+=1
 target_neurons = range(int(active_pop_size))#[1]#
 vary_weight_plot(varying_weights,target_neurons,None,duration/1000.,
                  plt,np=numpy,num_recs=num_recordings,ylim=w_max+(w_max/10.),
-                 title='Predictive Neuron to Active Neuron Weight (connection delay = {})'.format(predict_delay))
+                 title='Negative Window Predictive Neuron to Active Neuron Weight (connection delay = {})'.format(predict_delay),
+                 legend=True,figsize=(16,12),filepath=None)#"/home/rjames/Dropbox (The University of Manchester)/EarProject/Pattern_recognition/HTM/stdp_bug/stdp_delay")
 
-plt.figure('spike times (connection delay = {})'.format(predict_delay))
 active_spikes = active_data.segments[0].spiketrains
 predict_spikes = cd_data.segments[0].spiketrains
 delayed_predict_spikes=[]
@@ -120,13 +120,16 @@ legend_string=[]
 for i in range(input_pop_size):
     test_spikes.append(active_spikes[i])
     test_spikes.append(predict_spikes[i])
+    test_spikes.append(delayed_predict_spikes[i])
     legend_string.append('active_{}'.format(i))
     legend_string.append('segment_{}'.format(i))
+    legend_string.append('segment_delayed{}'.format(i))
 
 # test_spikes = [active_spikes[0],predict_spikes[0],delayed_predict_spikes[0],active_spikes[1],predict_spikes[1],delayed_predict_spikes[1]]
 # test_spikes = [active_spikes[0],predict_spikes[0],delayed_predict_spikes[0],active_spikes[1]]
 colours = ['b', 'g', 'r','c', 'm', 'y']
 neuron_legend = []
+plt.figure('spike times (connection delay = {})'.format(predict_delay),figsize=(16,12))
 for i,spikes in enumerate(test_spikes):
     for xc in spikes:
         plt.axvline(x=xc,color=colours[i%len(colours)])
@@ -135,6 +138,10 @@ for i,spikes in enumerate(test_spikes):
 plt.legend(neuron_legend,legend_string,
            bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
                         ncol=3, mode="expand", borderaxespad=0.)
+plt.xlabel("time(ms)")
+# plt.xlim(200,300)
+plt.savefig("/home/rjames/Dropbox (The University of Manchester)/EarProject/Pattern_recognition/HTM/stdp_bug/stdp_delay/total_timings_{}delay".format(predict_delay))
+
 # spike_raster_plot_8(active_spikes,plt,duration/1000.,3.,0.001,title="active pop activity")
 # spike_raster_plot_8(predict_spikes,plt,duration/1000.,3.,0.001,title="cd pop activity")
 
@@ -142,5 +149,4 @@ print "final weights:"
 for final_weights in varying_weights[-1]:
     print final_weights
 
-
-plt.show()
+# plt.show()

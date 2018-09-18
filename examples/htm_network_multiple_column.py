@@ -37,7 +37,7 @@ w2s_target = 5.
 
 input_pop_size =1
 column_size = 16#32
-number_of_columns = 4#50#250
+number_of_columns = 50#250
 active_pop_size = column_size*number_of_columns
 cd_pop_size = int(1 * active_pop_size)
 if 1:#cd_pop_size<2000:
@@ -56,7 +56,7 @@ input_spikes = []
 #     input_spikes.append([(j*column_offset)+i*isi for i in range(1,num_firings)])#[10.,30,50]
 num_patterns_in_sequence = 4
 num_sequences = 1 #ABCD XBCY
-num_columns_active_per_pattern =1# 5#int(0.15*number_of_columns)
+num_columns_active_per_pattern = 5#int(0.15*number_of_columns)
 column_offset = 20.#int(isi/num_patterns_in_sequence)#isi/number_of_columns
 
 #================================================================================================
@@ -70,7 +70,8 @@ if num_sequences > 1: #ABCDXY
             for _ in range(num_columns_active_per_pattern):
                 input_spikes.append([(pattern_index*column_offset)+i*isi + (j*isi/num_sequences) for i in range(1,num_firings)])
 else: #ABCD
-    chosen_columns = np.arange(number_of_columns)#np.random.choice(number_of_columns,num_columns_active_per_pattern*num_patterns_in_sequence,replace=False)
+    # chosen_columns = np.arange(number_of_columns)
+    chosen_columns = np.random.choice(number_of_columns,num_columns_active_per_pattern*num_patterns_in_sequence,replace=False)
     for pattern_index in range(num_patterns_in_sequence):
         for _ in range(num_columns_active_per_pattern):
             input_spikes.append([(pattern_index*column_offset)+i*isi for i in range(1,num_firings)])
@@ -194,7 +195,7 @@ stdp_model_cd = sim.STDPMechanism(
 
 # active_cd_projection = sim.Projection(active_pop,cd_pop,sim.FromListConnector(sparse_active_cd_projection_list),#(p_connect=0.05),#(p_connect=0.01),
 #                                       synapse_type=sim.StaticSynapse(weight=av_weight))
-stdp_delays = 1#14/2
+stdp_delays = 14#14/2
 structure_model_with_stdp = sim.StructuralMechanismSTDP(
     stdp_model=stdp_model_cd,
     weight=av_weight,  # Use this weights when creating a new synapse
@@ -249,7 +250,7 @@ for chosen in chosen_columns:
 
 # cd_active_projection =  sim.Projection(cd_pop,active_pop,sim.FromListConnector(cd_projection_list),
 #                                        synapse_type=sim.StaticSynapse(weight=wpred,delay=5.))
-cd_active_projection =  sim.Projection(cd_pop,active_pop,sim.FromListConnector(cd_projection_list),synapse_type=stdp_model)
+# cd_active_projection =  sim.Projection(cd_pop,active_pop,sim.FromListConnector(cd_projection_list),synapse_type=stdp_model)
 # cd_active_projection =  sim.Projection(cd_pop,active_pop,sim.FromListConnector(cd_projection_list),synapse_type=sim.StaticSynapse(weight=wpred,delay=25.))
 # p_connect = float(number_of_columns)/active_pop_size
 # cd_active_projection =  sim.Projection(cd_pop,active_pop,sim.FixedProbabilityConnector(p_connect=0.1),synapse_type=stdp_model)
@@ -277,7 +278,7 @@ structure_model_with_stdp_pred = sim.StructuralMechanismSTDP(
     random_partner=False,  # Choose a partner neuron for formation at random,
     # as opposed to selecting one of the last neurons to have spiked
     sigma_form_forward=10,
-    f_rew=10 ** 4,  #10 ** 4,  # Hz
+    f_rew=10 ** 2,  #10 ** 4,  # Hz
     p_elim_dep=0.9,#0.1,#1.,#0.5,#
     p_elim_pot=0.,
     # p_form_forward=0.1,
@@ -291,12 +292,12 @@ structure_model_with_stdp_pred = sim.StructuralMechanismSTDP(
 #     label="cd -> active null_projection"
 # )
 
-# cd_active_projection = sim.Projection(
-#      cd_pop,active_pop,
-#     sim.FixedProbabilityConnector(0.0),  # No initial connections
-#     synapse_type=structure_model_with_stdp_pred,
-#     label="cd -> active structurally_plastic_projection"
-# )
+cd_active_projection = sim.Projection(
+     cd_pop,active_pop,
+    sim.FixedProbabilityConnector(0.0),  # No initial connections
+    synapse_type=structure_model_with_stdp_pred,
+    label="cd -> active structurally_plastic_projection"
+)
 #================================================================================================
 #  Noise to Active and CD projections
 #================================================================================================
@@ -383,9 +384,9 @@ if get_weights:
     connection_surface_plot(varying_weights_cd, pre_size=cd_pop_size, post_size=active_pop_size, plt=plt,
                          title="cd->active", filepath=results_directory,n_plots=int(num_recordings))
     target_neurons = [16]  # range(int(2))
-    vary_weight_plot(varying_weights_cd, target_neurons, None, duration / 1000.,
-                     plt, np=numpy, num_recs=num_recordings, ylim=w_max + (w_max / 10.),
-                     title='Predictive Neuron to Active Neuron Weight (connection delay = {})'.format(stdp_delays))
+    # vary_weight_plot(varying_weights_cd, target_neurons, None, duration / 1000.,
+    #                  plt, np=numpy, num_recs=num_recordings, ylim=w_max + (w_max / 10.),
+    #                  title='Predictive Neuron to Active Neuron Weight (connection delay = {})'.format(stdp_delays))
     # connection_surface_plot(varying_weights, pre_size=active_pop_size, post_size=cd_pop_size, plt=plt, title="active->cd",
     #                      filepath=results_directory,n_plots=int(num_recordings/2))
     # connection_hist_plot(varying_weights_cd, pre_size=cd_pop_size, post_size=active_pop_size, plt=plt,

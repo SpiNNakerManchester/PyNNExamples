@@ -316,7 +316,7 @@ def weight_array_to_group_list(weight_array,from_ids,to_ids):
 #             plt.ylim(0,ylim)
 #             count+=1
 
-def vary_weight_plot(varying_weights,ids,stim_ids,duration,plt,num_recs,np,ylim,title='',filepath=None):
+def vary_weight_plot(varying_weights,ids,stim_ids,duration,plt,num_recs,np,ylim,title='',filepath=None,legend=None,figsize=None):
     if len(varying_weights)!=num_recs:
         raise Exception("incorrect number of weight recordings taken (num_recs={}, len(varyingweights={})".format(num_recs,len(varying_weights)))
     if len(ids)>0:
@@ -324,11 +324,12 @@ def vary_weight_plot(varying_weights,ids,stim_ids,duration,plt,num_recs,np,ylim,
         sr = math.sqrt(len(ids))
         num_cols = np.ceil(sr)
         num_rows = np.ceil(len(ids)/num_cols)
-        if num_rows >1 and num_cols > 1:
+        if num_rows >1 and num_cols > 1 and figsize is None:
             figsize = (5*num_cols,3*num_rows)
-        else:
+        elif figsize is None:
             figsize = (8,6)
-
+        else:
+            figsize = figsize
         if stim_ids:
             plt.figure(title,figsize=figsize)
             plt.suptitle("non-pattern synapse weight updates for post neurons")
@@ -340,6 +341,9 @@ def vary_weight_plot(varying_weights,ids,stim_ids,duration,plt,num_recs,np,ylim,
 
         count=0
         for id in ids:
+            if legend is not None:
+                legend_string=[]
+                legend_line=[]
             if stim_ids:
                 id_times_pattern = [[] for _ in range(num_recs)]
             else:
@@ -353,6 +357,10 @@ def vary_weight_plot(varying_weights,ids,stim_ids,duration,plt,num_recs,np,ylim,
                             id_times_pattern[rec_index].append(weight)
                         else:
                             id_times[rec_index].append(weight)
+                        if legend is not None and pre not in legend_string:
+                            legend_string.append("pre_id:{}".format(pre+1))
+
+
                 rec_index +=1
 
 
@@ -362,7 +370,13 @@ def vary_weight_plot(varying_weights,ids,stim_ids,duration,plt,num_recs,np,ylim,
             if len(id_times.shape)>1:
                 id_times=map(list, zip(*id_times))
                 for t in id_times:
-                    plt.plot(repeats,t)
+                    line, = plt.plot(repeats,t)
+                    if legend is not None:
+                        legend_line.append(plt.Line2D([0], [0], color=line.get_color(), lw=4))
+                if legend is not None:
+                    plt.legend(legend_line, legend_string,
+                               bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
+                               ncol=3, mode="expand", borderaxespad=0.)
                 label = plt.ylabel("ID:{}".format(str(id+1)))
                 plt.xticks(np.linspace(0,duration,5))
                 if num_rows > 2:
