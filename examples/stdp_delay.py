@@ -38,6 +38,7 @@ active_pop_size = input_pop_size
 isi = 200.
 num_firings = 50
 predict_delay = 14#.1.#14/2.#8#1#
+
 input_spikes =[]
 for j in range(input_pop_size):
     input_spikes.append([i*isi + j*20. for i in range(1,num_firings) if i<20 or i>40])
@@ -140,7 +141,7 @@ plt.legend(neuron_legend,legend_string,
                         ncol=3, mode="expand", borderaxespad=0.)
 plt.xlabel("time(ms)")
 # plt.xlim(200,300)
-plt.savefig("/home/rjames/Dropbox (The University of Manchester)/EarProject/Pattern_recognition/HTM/stdp_bug/stdp_delay/total_timings_{}delay".format(predict_delay))
+# plt.savefig("/home/rjames/Dropbox (The University of Manchester)/EarProject/Pattern_recognition/HTM/stdp_bug/stdp_delay/total_timings_{}delay".format(predict_delay))
 
 # spike_raster_plot_8(active_spikes,plt,duration/1000.,3.,0.001,title="active pop activity")
 # spike_raster_plot_8(predict_spikes,plt,duration/1000.,3.,0.001,title="cd pop activity")
@@ -149,4 +150,4 @@ print "final weights:"
 for final_weights in varying_weights[-1]:
     print final_weights
 
-# plt.show()
+plt.show()
