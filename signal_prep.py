@@ -902,3 +902,18 @@ def sparsity_measure(onset_times,output_spikes,onset_window=5.,from_time=0):
                 # sparsity_matrix[id].append((av/(n_neurons))*100.)
                 sparsity_matrix[id].append(av)
     return sparsity_matrix
+
+def repeat_test_spikes_gen(input_spikes,test_neuron_id,onset_times):
+    # go through all spikes from onset time -10ms to onset time + 60ms and add this value - the corresponding onset time offset to a new row in a matrix of responses
+    # the pre-existing psth function can then be used to plot the output of these collective responses
+    import numpy as np
+    spikes = input_spikes[test_neuron_id]
+    psth_spikes = []
+    for i, stimulus in enumerate(onset_times):
+        psth_spikes.append([])
+        for onset_time in stimulus:
+            a = spikes[spikes > onset_time - 10.]
+            b = a[a <= onset_time + 60.]
+            c = np.asarray([x.item() for x in b])
+            psth_spikes[i].append(c - onset_time - 10)
+    return psth_spikes

@@ -37,7 +37,7 @@ active_pop_size = input_pop_size
 
 isi = 200.
 num_firings = 50
-predict_delay = 14#.1.#14/2.#8#1#
+predict_delay = 16.#14#.1.#14/2.#8#1#
 
 input_spikes =[]
 for j in range(input_pop_size):
