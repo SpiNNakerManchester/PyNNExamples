@@ -93,7 +93,7 @@ def generate_signal(signal_type="tone",fs=22050.,dBSPL=40.,
 def generate_psth_8(target_neuron_ids,spike_trains,bin_width,
                   duration,scale_factor=0.001):
     import numpy as np
-    bins = np.arange(bin_width*1000., duration*1000., bin_width*1000.)
+    bins = np.arange(bin_width*1./scale_factor, duration*1./scale_factor, bin_width*1./scale_factor)
     if isinstance(spike_trains,list):
         spike_trains = np.asarray(spike_trains)
     target_neurons = spike_trains[target_neuron_ids]
@@ -621,34 +621,49 @@ def spike_train_join(spike_trains,num_neurons):
     return [spike_train_output,max_time]
 
 def normal_dist_connection_builder(pre_size,post_size,RandomDistribution,
-                                   rng,conn_num,dist,sigma,conn_weight=None,delay=1.):
+                                   conn_num,dist,sigma,conn_weight=None,delay=1.,p_connect=1.0,delay_scale=None,dist_weight=None):
+    import numpy as np
     conn_list = []
+    if pre_size > post_size:
+        post_scale = float(pre_size)/post_size
+        pre_scale = 1.
+    else:
+        post_scale = 1.
+        pre_scale = float(post_size)/pre_size
 
     for post in xrange(post_size):
-        mu = int(dist / 2) + post * dist
-        #mu = dist / 2. + post * dist
-        an2ch = RandomDistribution('normal', (mu, sigma), rng=rng)
-        an_idxs = an2ch.next(n=conn_num)
+        scaled_post = int(post*post_scale)
+        mu = int(dist / 2) + scaled_post * dist
+        # mu = dist / 2. + post * dist
+        pre_dist = RandomDistribution('normal_clipped',[mu,sigma,0,pre_size*pre_scale])
+        pre_idxs = pre_dist.next(n=conn_num)
         pre_check = []
-        for pre in an_idxs:
-            pre = int(pre)
-            if pre >= 0 and pre < pre_size:
-                if pre not in pre_check:
-                    if conn_weight is None:
-                        conn_list.append((pre, int(post)))
-                    else:
-                        if type(conn_weight)==float:
-                            weight = conn_weight
-                        else:#assumes rand dist
-                            weight = conn_weight.next(n=1)
-                        if type(delay)!=float:
-                            conn_delay = delay.next(n=1)
+        for pre in pre_idxs:
+            scaled_pre = int(np.round(pre / pre_scale))
+            # if scaled_pre >= 0 and scaled_pre < pre_size:
+            if scaled_pre not in pre_check and np.random.rand() <= p_connect:
+                if conn_weight is None:
+                    conn_list.append((scaled_pre, post))
+                else:
+                    if type(conn_weight) == float:
+                        weight = conn_weight
+                    elif dist_weight is not None:
+                        # p_dist = np.exp(float(abs(scaled_pre - post))/(post_size*post_scale) -1.)
+                        p_dist = float(abs(scaled_pre - post))/(post_size*post_scale)
+                        weight = dist_weight * p_dist
+                    else:  # assumes rand dist
+                        weight = conn_weight.next(n=1)
+                    if type(delay) != float:
+                        if delay_scale is not None:
+                            conn_delay = int(delay.next(n=1)) * delay_scale
                         else:
-                            conn_delay = delay
+                            conn_delay = delay.next(n=1)
+                    else:
+                        conn_delay = delay
 
-                        conn_list.append((pre, int(post), weight, conn_delay))
+                    conn_list.append((scaled_pre, post, weight, conn_delay))
 
-                pre_check.append(pre)
+            pre_check.append(scaled_pre)
 
     return conn_list
 #find stimulus onset times from audio signal
