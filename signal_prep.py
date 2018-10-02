@@ -91,9 +91,9 @@ def generate_signal(signal_type="tone",fs=22050.,dBSPL=40.,
     return signal
 
 def generate_psth_8(target_neuron_ids,spike_trains,bin_width,
-                  duration,scale_factor=0.001):
+                  duration):
     import numpy as np
-    bins = np.arange(bin_width*1./scale_factor, duration*1./scale_factor, bin_width*1./scale_factor)
+    bins = np.arange(bin_width*1000., duration*1000., bin_width*1000.)
     if isinstance(spike_trains,list):
         spike_trains = np.asarray(spike_trains)
     target_neurons = spike_trains[target_neuron_ids]
@@ -159,9 +159,9 @@ def psth_plot(plt,target_neuron_ids,spike_trains,bin_width,
     plt.xlabel("time (s)")
 
 def psth_plot_8(plt, target_neuron_ids, spike_trains, bin_width,
-              duration, scale_factor=0.001, title='PSTH',filepath=None):
+              duration,title='PSTH',filepath=None):
     PSTH = generate_psth_8(target_neuron_ids, spike_trains, bin_width=bin_width,
-                         duration=duration, scale_factor=scale_factor)
+                         duration=duration)
     x = numpy.linspace(0, duration, len(PSTH))
     plt.figure(title)
     plt.plot(x, PSTH)
@@ -636,7 +636,11 @@ def normal_dist_connection_builder(pre_size,post_size,RandomDistribution,
         mu = int(dist / 2) + scaled_post * dist
         # mu = dist / 2. + post * dist
         pre_dist = RandomDistribution('normal_clipped',[mu,sigma,0,pre_size*pre_scale])
-        pre_idxs = pre_dist.next(n=conn_num)
+        if isinstance(conn_num,float):
+            number_of_connections = conn_num
+        else:
+            number_of_connections = conn_num.next(n=1)
+        pre_idxs = pre_dist.next(n=number_of_connections)
         pre_check = []
         for pre in pre_idxs:
             scaled_pre = int(np.round(pre / pre_scale))
