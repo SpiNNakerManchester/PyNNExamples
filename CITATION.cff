@@ -1,0 +1,72 @@
+cff-version: 1.0.3
+message: If you use this software, please cite it as below.
+authors:
+- family-names: Stokes
+  given-names: Alan
+  orcid: https://orcid.org/0000-0002-6110-1484
+  affiliation: "University Of Manchester"
+  email: alan.stokes-2@manchester.ac.uk
+  website: http://www.cs.man.ac.uk/~stokesa6/
+- family-names: Rowley
+  given-names: Andrew
+  orcid: https://orcid.org/0000-0002-2646-8520
+  affiliation: "University Of Manchester"
+  email: Andrew.Rowley@manchester.ac.uk
+  website: https://www.researchgate.net/profile/Andrew_Rowley2
+- family-names: Gait
+  given-names: Andrew
+  orcid: http://orcid.org/0000-0001-9349-1096
+  affiliation: "University Of Manchester"
+  email: Andrew.Gait@manchester.ac.uk
+  website: https://personalpages.manchester.ac.uk/staff/Andrew.Gait/
+- family-names: Brenninkmeijer
+  given-names: Christian Y.
+  orcid: https://orcid.org/0000-0002-2937-7819
+  affiliation: "University Of Manchester"
+  email: christian.brenninkmeijer@manchester.ac.uk
+  website: https://www.researchgate.net/profile/Christian_Brenninkmeijer
+- family-names: Fellows
+  given-names: Donal
+  orcid: https://orcid.org/0000-0002-9091-5938
+  affiliation: "University Of Manchester"
+  email: donal.k.fellows@manchester.ac.uk
+  website: http://www.cs.manchester.ac.uk/about-us/staff/profile/?ea=donal.k.fellows
+- family-names: Davidson
+  given-names: Simon
+  affiliation: "University Of Manchester"
+  email: simon.davidson@manchester.ac.uk
+  website: http://apt.cs.manchester.ac.uk/people/sdavidson/
+  orcid: https://orcid.org/0000-0001-5385-442X
+- family-names: Rhodes
+  given-names: Oliver
+  affiliation:  "University Of Manchester"
+  email: oliver.rhodes@manchester.ac.uk
+  website: http://apt.cs.manchester.ac.uk/people/orhodes/
+  orcid: https://orcid.org/0000-0003-1728-2828
+- family-names: Jones
+  given_names: Edward
+  orcid: https://orcid.org/0000-0003-3856-0145
+  email: edwardgeorgejones@gmail.com
+  affiliation: "University Of Manchester"
+- family-names: James
+  given-names: Robert
+  affiliation: "University Of Manchester"
+  email: robert.james@manchester.ac.uk
+  website: http://apt.cs.manchester.ac.uk/people/rjames/
+  orcid: https://orcid.org/0000-0001-5709-2928
+
+title:
+  Collection of example PyNN 0.8 and PyNN 0.9 scripts which run on SpiNNaker
+  machines.
+version:
+date-released:
+url: http://spinnakermanchester.github.io/
+repository: https://github.com/SpiNNakerManchester/PyNN8Examples
+contact:
+- name: SpiNNaker Software Team
+  address: University of Manchester, Oxford Road
+  city: Manchester
+  post-code: M13 9PL
+  country: GB
+email: spinnakerusers@googlegroups.com
+identifier:
