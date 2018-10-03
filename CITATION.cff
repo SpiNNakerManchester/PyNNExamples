@@ -55,7 +55,6 @@ authors:
   website: http://apt.cs.manchester.ac.uk/people/rjames/
   orcid: https://orcid.org/0000-0001-5709-2928
 
-
 title:
   Collection of example PyNN 0.8 and PyNN 0.9 scripts which run on SpiNNaker
   machines.
