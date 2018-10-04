@@ -461,22 +461,28 @@ def weight_dist_plot(varying_weights,num_ticks,plt,w_min,w_max,np=numpy,title=No
         plt.savefig(filepath + '/'+title+'.pdf')#switched to pdf as using transparent images
 
 
-def cell_voltage_plot_8(v, plt, duration_ms, time_step_ms,scale_factor=0.001, id=None, title='',filepath=None):
+def cell_voltage_plot_8(v, plt, duration_ms, time_step_ms,scale_factor=0.001, id=None, title='',filepath=None,subplots=None):
     # times = range(0,int(duration_ms),int(time_step_ms))
     membrane_voltage = v[0]
     times = range(0,membrane_voltage.shape[0])
     scaled_times = [time*scale_factor for time in times]
     if id is not None:
         mem_v = [v_t[id] for v_t in membrane_voltage]
-        title = title + str(id + 1)
+        if isinstance(id,float):
+            title = title + str(id + 1)
     else:
         mem_v = membrane_voltage
         title = title + "{} neurons".format(membrane_voltage.shape[1])
-    plt.figure(title)
+    if subplots is None:
+        plt.figure(title)
+    else:
+        ax=plt.subplot(subplots[0],subplots[1],subplots[2])
+        ax.set_title(title)
     plt.plot(scaled_times, mem_v)
     plt.xlim((0,duration_ms*scale_factor))
-    plt.xlabel('time (s)')
-    plt.ylabel('membrane voltage (mV)')
+    if subplots is None:
+        plt.xlabel('time (s)')
+        plt.ylabel('membrane voltage (mV)')
     if filepath is not None:
         plt.savefig(filepath + '/' + title + '_memV.eps')
 
