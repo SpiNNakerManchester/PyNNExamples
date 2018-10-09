@@ -72,6 +72,7 @@ def activate_visualiser(old_vis):
         else:
             raise
 
+
 activate_visualiser(old_vis=("OLD_VIS" in os.environ))
 
 p.setup(timestep=1.0)
