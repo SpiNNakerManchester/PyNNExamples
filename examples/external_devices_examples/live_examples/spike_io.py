@@ -78,11 +78,13 @@ pop_backward = Frontend.Population(
 
 # Create injection populations
 injector_forward = Frontend.Population(
-    n_neurons, Frontend.external_devices.SpikeInjector(
-        **cell_params_spike_injector_with_key), label='spike_injector_forward')
+    n_neurons, Frontend.external_devices.SpikeInjector(),
+    label='spike_injector_forward',
+    additional_parameters=cell_params_spike_injector_with_key)
 injector_backward = Frontend.Population(
-    n_neurons, Frontend.external_devices.SpikeInjector(
-        **cell_params_spike_injector), label='spike_injector_backward')
+    n_neurons, Frontend.external_devices.SpikeInjector(),
+    label='spike_injector_backward',
+    additional_parameters=cell_params_spike_injector)
 
 # Create a connection from the injector into the populations
 Frontend.Projection(
@@ -172,9 +174,9 @@ live_spikes_connection_send.add_init_callback(
     "spike_injector_backward", init_pop)
 
 # Set up callbacks to occur at the start of simulation
-live_spikes_connection_send.add_start_callback(
+live_spikes_connection_send.add_start_resume_callback(
     "spike_injector_forward", send_input_forward)
-live_spikes_connection_send.add_start_callback(
+live_spikes_connection_send.add_start_resume_callback(
     "spike_injector_backward", send_input_backward)
 
 if not using_c_vis:

@@ -16,10 +16,10 @@ weight_input = 0.001
 
 pop_input = p.Population(100, p.SpikeSourcePoisson(rate=0), label="Input")
 
-pop_exc = p.Population(
-    n_exc, p.IF_curr_exp(spikes_per_second=100), label="Excitatory")
-pop_inh = p.Population(
-    n_inh, p.IF_curr_exp(spikes_per_second=100), label="Inhibitory")
+pop_exc = p.Population(n_exc, p.IF_curr_exp, label="Excitatory",
+                       additional_parameters={"spikes_per_second": 100})
+pop_inh = p.Population(n_inh, p.IF_curr_exp, label="Inhibitory",
+                       additional_parameters={"spikes_per_second": 100})
 stim_exc = p.Population(
     n_exc, p.SpikeSourcePoisson(rate=1000.0), label="Stim_Exc")
 stim_inh = p.Population(
@@ -77,6 +77,7 @@ def start_callback(label, connection):
         connection.set_rates(label, [(i, rate) for i in range(100)])
 
 
+print(pop_input.label)
 poisson_control.add_start_callback(pop_input.label, start_callback)
 
 p.run(5000)
