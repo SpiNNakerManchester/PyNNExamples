@@ -72,14 +72,13 @@ def activate_visualiser(old_vis):
         else:
             raise
 
-
 activate_visualiser(old_vis=("OLD_VIS" in os.environ))
 
 p.setup(timestep=1.0)
 print("Creating Sudoku Network...")
 n_cell = int(90 * fact)   # total number of neurons in a cell
 n_stim = 30               # number of neurons in each stimulation source
-n_N = n_cell / 9          # number of neurons per value in cell
+n_N = n_cell // 9         # number of neurons per value in cell
 
 # total number of neurons
 n_total = n_cell * 9 * 9
@@ -189,6 +188,8 @@ else:
 # init = [[0 for x in range(9)] for y in range(9)]
 corr = init
 
+p.set_number_of_neurons_per_core(p.IF_curr_exp, 200)
+
 #
 # set up the 9x9 cell array populations
 #
@@ -202,11 +203,11 @@ cell_params_lif = {
     'v_reset': -70.0,   # mV    reset membrane potential
     'v_rest': -65.0,    # mV    rest membrane potential
     'v_thresh': -50.0,  # mV    firing threshold voltage
-    'spikes_per_second': 200
 }
 
 print("Creating Populations...")
-cells = p.Population(n_total, p.IF_curr_exp, cell_params_lif, label="Cells")
+cells = p.Population(n_total, p.IF_curr_exp, cell_params_lif, label="Cells",
+                     additional_parameters={"spikes_per_second": 200})
 cells.record("spikes")
 ext.activate_live_output_for(cells, tag=1, port=17897)
 
