@@ -17,14 +17,14 @@ import numpy as np
 UART_ID = 0
 
 # SpiNNaker link ID (IO Board connected to)
-spinnaker_link = 1
+spinnaker_link = 0
 
 # IP Address of the SpiNNaker board connected to (or None if only one)
 board_address = None  # "10.162.242.14" #"10.162.242.13" "192.168.240.1"
 
 # Retina resolution
 retina_resolution = \
-    p.external_devices.PushBotRetinaResolution.DOWNSAMPLE_16_X_16
+    p.external_devices.PushBotRetinaResolution.DOWNSAMPLE_32_X_32
 
 # Simulation time [ms]
 simtime = 240000
@@ -72,13 +72,13 @@ pushbot = p.Population(
     len(devices), p.external_devices.PushBotLifSpinnakerLink(
         protocol=pushbot_protocol,
         devices=devices,
-        tau_syn_E=100.0),
+        tau_syn_E=5.0, tau_syn_I=5.0),
     label="PushBot"
 )
 
 # Retina population ( num of neurons:n_pixel*n_pixel*2 )
 pushbot_retina = p.Population(
-    retina_resolution.value.n_neurons / 2, retina_device)
+    retina_resolution.value.n_neurons, retina_device)
 
 
 # Network implementation
@@ -87,11 +87,11 @@ pushbot_retina = p.Population(
 # inhibition will activate the relevant neurons to drive the robot
 exc_pop = p.Population(
     retina_resolution.value.n_neurons / 2,
-    p.IF_curr_exp(cm=0.75, tau_m=1.0),
+    p.IF_cond_exp(cm=0.75, tau_m=1.0),
     label='exc_pop')
 inh_pop = p.Population(
     retina_resolution.value.n_neurons / 2,
-    p.IF_curr_exp(cm=0.75, tau_m=1.0, i_offset=13, tau_refrac=0.01),
+    p.IF_cond_exp(cm=0.75, tau_m=1.0, i_offset=13, tau_refrac=0.01),
     label='inh_pop')
 
 # A conceptual neuron population to drive motor neurons
@@ -121,7 +121,7 @@ start_of_right = retina_resolution.value.pixels - n_conn
 end_of_right = retina_resolution.value.pixels
 
 # Connection weights for this connection list
-w_conn = 20
+w_conn = 0.2
 
 # Connection delays for this connection list
 d_conn = 1
@@ -175,16 +175,14 @@ conn_list_middle_up = [(i, 2, w_conn, d_conn) for i in id_to_middle_up]
 conn_list = conn_list_left + conn_list_right + conn_list_middle_up
 
 # Winner-takes-all connections from driver_pop to motor neurons
-w_motor = 0.1
-conn_motor_exc = [
-    (0, 1, w_motor * 2, 1), (1, 0, w_motor * 2, 1)]
-conn_motor_inh = [(0, 0, w_motor * 2, 1), (1, 1, w_motor * 2, 1)] + [
-    (2, 0, w_motor, 1), (2, 1, w_motor, 1)]
+w_motor = 1
+conn_motor_exc = [(0, 1, w_motor, 1), (1, 0, w_motor, 1)]
+conn_motor_inh = [(0, 0, w_motor, 1), (1, 1, w_motor, 1)]
 
 # Creates connection list from retina population to exc_pop
 # Each neuron in retina population excites the neuron with the same ID in
 # exc_pop and its 8 neighbours including the diagonals
-w_conn, w_inh = (3.7, 100)  # (3.7,95)#(3.8, 90.)# (3.7,65,15)
+w_conn, w_inh = (0.35, 1.00)  # (3.7,95)#(3.8, 90.)# (3.7,65,15)
 
 conn_list_local = []
 n_row = retina_resolution.value.pixels
@@ -238,7 +236,7 @@ p.external_devices.activate_live_output_for(
 viewer.start()
 
 # Start simulation
-p.run_forever()
+p.external_devices.run_forever()
 # p.run(simtime)
 
 viewer.join()
