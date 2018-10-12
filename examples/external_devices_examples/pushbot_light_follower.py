@@ -7,6 +7,9 @@
 ###########################################
 import spynnaker8 as p
 import numpy as np
+import os
+import sys
+import subprocess
 
 
 ###########################################
@@ -229,16 +232,15 @@ p.Projection(
 # driver_pop.record(['spikes','v'])
 
 # Add a retina viewer to see what the pushbot sees
-viewer = p.external_devices.PushBotRetinaViewer(
-    retina_resolution.value, port=17895)
+viewer = subprocess.Popen(args=[
+    sys.executable, "pushbot_retina_viewer.py", "17895",
+    retina_resolution.name])
 p.external_devices.activate_live_output_for(
-    pushbot_retina, port=viewer.local_port, notify=False)
-viewer.start()
+    pushbot_retina, port=17895, notify=False)
 
 # Start simulation
 p.external_devices.run_forever()
 # p.run(simtime)
-
-viewer.join()
+viewer.wait()
 
 p.end()
