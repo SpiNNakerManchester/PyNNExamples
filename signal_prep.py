@@ -171,7 +171,7 @@ def psth_plot_8(plt, target_neuron_ids, spike_trains, bin_width,
     plt.xlabel("time (s)")
     if filepath is not None:
         plt.savefig(filepath + '/{}.eps'.format(title))
-
+    return PSTH
 def spike_raster_plot(spikes,plt,duration,ylim,scale_factor=0.001,title=None):
     if len(spikes) > 0:
         spike_times = [spike_time for (neuron_id, spike_time) in spikes]
@@ -479,7 +479,7 @@ def cell_voltage_plot_8(v, plt, duration_ms, time_step_ms,scale_factor=0.001, id
         ax=plt.subplot(subplots[0],subplots[1],subplots[2])
         ax.set_title(title)
     plt.plot(scaled_times, mem_v)
-    plt.xlim((0,duration_ms*scale_factor))
+    plt.xlim((0,duration_ms*0.001))
     if subplots is None:
         plt.xlabel('time (s)')
         plt.ylabel('membrane voltage (mV)')
@@ -627,8 +627,12 @@ def spike_train_join(spike_trains,num_neurons):
     return [spike_train_output,max_time]
 
 def normal_dist_connection_builder(pre_size,post_size,RandomDistribution,
-                                   conn_num,dist,sigma,conn_weight=None,delay=1.,p_connect=1.0,delay_scale=None,dist_weight=None):
+                                   conn_num,dist,sigma,conn_weight=None,delay=1.,p_connect=1.0,
+                                   delay_scale=None,dist_weight=None,posts=None,multapses=True):
     import numpy as np
+    if posts is None:
+        posts = xrange(post_size)
+
     conn_list = []
     if pre_size > post_size:
         post_scale = float(pre_size)/post_size
@@ -637,16 +641,16 @@ def normal_dist_connection_builder(pre_size,post_size,RandomDistribution,
         post_scale = 1.
         pre_scale = float(post_size)/pre_size
 
-    for post in xrange(post_size):
+    for post in posts:
         scaled_post = int(post*post_scale)
         mu = int(dist / 2) + scaled_post * dist
         # mu = dist / 2. + post * dist
         pre_dist = RandomDistribution('normal_clipped',[mu,sigma,0,pre_size*pre_scale])
-        if isinstance(conn_num,float):
+        if isinstance(conn_num,float) or isinstance(conn_num,int):
             number_of_connections = conn_num
         else:
             number_of_connections = conn_num.next(n=1)
-        pre_idxs = pre_dist.next(n=number_of_connections)
+        pre_idxs = pre_dist.next(n=int(number_of_connections))
         pre_check = []
         for pre in pre_idxs:
             scaled_pre = int(np.round(pre / pre_scale))
@@ -672,8 +676,8 @@ def normal_dist_connection_builder(pre_size,post_size,RandomDistribution,
                         conn_delay = delay
 
                     conn_list.append((scaled_pre, post, weight, conn_delay))
-
-            pre_check.append(scaled_pre)
+            if multapses is False:
+                pre_check.append(scaled_pre)
 
     return conn_list
 #find stimulus onset times from audio signal
@@ -928,7 +932,7 @@ def sparsity_measure(onset_times,output_spikes,onset_window=5.,from_time=0):
                 sparsity_matrix[id].append(av)
     return sparsity_matrix
 
-def repeat_test_spikes_gen(input_spikes,test_neuron_id,onset_times):
+def repeat_test_spikes_gen(input_spikes,test_neuron_id,onset_times,test_duration):
     # go through all spikes from onset time -10ms to onset time + 60ms and add this value - the corresponding onset time offset to a new row in a matrix of responses
     # the pre-existing psth function can then be used to plot the output of these collective responses
     import numpy as np
@@ -938,7 +942,7 @@ def repeat_test_spikes_gen(input_spikes,test_neuron_id,onset_times):
         psth_spikes.append([])
         for onset_time in stimulus:
             a = spikes[spikes > onset_time - 10.]
-            b = a[a <= onset_time + 60.]
-            c = np.asarray([x.item() for x in b])
-            psth_spikes[i].append(c - onset_time - 10)
+            b = a[a <= onset_time + test_duration]
+            c = np.asarray([x.item()- onset_time for x in b])
+            psth_spikes[i].append(c)
     return psth_spikes
