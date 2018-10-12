@@ -33,9 +33,8 @@ for i in range(0, nNeurons - 1):
 
 injectionConnection_1 = [(0, 0, weight_to_spike, 1)]
 injectionConnection_2 = [(1, nNeurons - 1, weight_to_spike, 1)]
-input_1 = [i for i in xrange(0, run_time, space_between_inputs)]
-input_2 = [i for i in xrange(second_spike_start, run_time,
-                             space_between_inputs)]
+input_1 = list(range(0, run_time, space_between_inputs))
+input_2 = list(range(second_spike_start, run_time, space_between_inputs))
 spikeArray = {'spike_times': [input_1, input_2],
               'max_on_chip_memory_usage_for_spikes_in_bytes': 640,
               'space_before_notification': 320}
