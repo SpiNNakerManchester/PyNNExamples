@@ -7,7 +7,6 @@
 ###########################################
 import spynnaker8 as p
 import numpy as np
-import os
 import sys
 import subprocess
 
