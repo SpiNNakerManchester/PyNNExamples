@@ -645,7 +645,7 @@ def normal_dist_connection_builder(pre_size,post_size,RandomDistribution,
         scaled_post = int(post*post_scale)
         mu = int(dist / 2) + scaled_post * dist
         # mu = dist / 2. + post * dist
-        pre_dist = RandomDistribution('normal_clipped',[mu,sigma,0,pre_size*pre_scale])
+        pre_dist = RandomDistribution('normal_clipped',[mu,sigma,0,pre_size*pre_scale -1])
         if isinstance(conn_num,float) or isinstance(conn_num,int):
             number_of_connections = conn_num
         else:
@@ -946,3 +946,136 @@ def repeat_test_spikes_gen(input_spikes,test_neuron_id,onset_times,test_duration
             c = np.asarray([x.item()- onset_time for x in b])
             psth_spikes[i].append(c)
     return psth_spikes
+
+def sub_pop_builder_inter(sim,post_size,post_type,post_params,pre_type,pre_params,pre_name,
+                          post_name,projection_list,sub_pre_pop_size=128.,max_post_per_core=64.,pre_pops=False):
+    import numpy as np
+    machine_chip_coordinates = [[0,0],[0,1],[1,0],[1,1]]
+
+    if not isinstance(pre_type,str):
+        raise Exception("non spike source array pre pops currently unsupported")
+    else:
+        input_spikes = pre_params
+    n_sub_pops = int(np.ceil(post_size / max_post_per_core))
+
+    post_pops =[]
+    pre_pop_size = int(len(input_spikes))
+    pre_post_projs =[]
+    sub_lists=[]
+    pres = []
+    post_offset = post_size / n_sub_pops
+    remaining_post_neurons = post_size
+    max_pre_index_per_projection=[]
+    chip_index = 0
+
+    #create pre pops
+    pre_offset = int(sub_pre_pop_size) #pre_pop_size / n_sub_pops
+
+    remaining_pre_neurons = pre_pop_size
+    pre_neuron = 0
+    #assume even dist of pre to post calculate how many posts per pre
+    n_post_steps = len(range(0, post_size, post_offset))
+    n_pre_steps = len(range(0,pre_pop_size,pre_offset))
+
+    if pre_pops is False:
+        pre_pops =[]
+        #evenly split points to create pre pop amongst n_steps
+        pre_iterations = np.linspace(0,n_post_steps-1,n_pre_steps,dtype=int)
+    else:#setup empty pre_iterations so we don't make new pre pops and calculate the pres list
+        pre_iterations = np.asarray([])
+        pres=[]
+        for pop in pre_pops:
+            pres.append(range(pre_neuron, int(pre_neuron + pop.size)))
+            pre_neuron += pop.size
+
+    #create post pops
+    for i, post_neuron in enumerate(range(0, post_size, post_offset)):
+
+        if post_neuron + post_offset < post_size:
+            pop_size = post_offset
+        else:
+            pop_size = remaining_post_neurons
+        post_pops.append(sim.Population(pop_size, post_type, post_params,
+                                        label=post_name + "_sub_pop_{}".format(i),
+                                        # constraints=[ChipAndCoreConstraint(machine_chip_coordinates[chip_index][0],
+                                                                           # machine_chip_coordinates[chip_index][1])]
+                                        ))
+        post_pops[i].record(["spikes"])
+        remaining_post_neurons -= pop_size
+        sub_lists.append([(pre,post,weight,delay) for (pre,post,weight,delay) in projection_list if
+                    post >= post_neuron and post < (post_neuron + post_offset)])
+        #create corresponding pre pops
+        if i in pre_iterations:
+            for _ in np.nonzero(pre_iterations==i)[0]:
+                if _ is not None:
+                    if pre_neuron + pre_offset < pre_pop_size:
+                        pop_size = pre_offset
+                    else:
+                        pop_size = remaining_pre_neurons
+                    pre_pops.append(
+                        sim.Population(pop_size, sim.SpikeSourceArray(spike_times=input_spikes[pre_neuron:pre_neuron+pop_size]),
+                                       label=pre_name + "_sub_pop_{}".format(i),
+                                        # constraints=[ChipAndCoreConstraint(machine_chip_coordinates[chip_index][0],
+                                        #                                    machine_chip_coordinates[chip_index][1])]
+                                                                           ))
+                    pres.append(range(pre_neuron,int(pre_neuron+pop_size)))
+                    remaining_pre_neurons-=pop_size
+                    pre_neuron += pre_offset
+                    chip_index+=1
+
+    for i, post_neuron in enumerate(range(0, post_size, post_offset)):
+        #go through each of the connections and setup relevant projections
+        pre_index_store=[]
+        pre_lists = [[] for _ in range(len(pres))]
+        for (pre,post,weight,delay) in sub_lists[i]:
+            #find sub pre pop index
+            for idx,ids in enumerate(pres):
+                if pre in ids:
+                    pre_index = idx
+                    if idx not in pre_index_store:
+                        pre_index_store.append(idx)
+                    break
+            # print pre_index
+            min_pre = min(pres[pre_index])
+            pre_lists[pre_index].append((pre - min_pre,post - post_neuron,weight,delay))
+        max_pre_index_per_projection.append(max(pre_index_store)-min(pre_index_store)+1)
+
+        for j,pre_list in enumerate(pre_lists):
+            if pre_list is not None and len(pre_list):
+                pre_post_projs.append(sim.Projection(pre_pops[j], post_pops[i], sim.FromListConnector(pre_list),
+                                              synapse_type=sim.StaticSynapse()))
+    return pre_pops,post_pops,pre_post_projs,max_pre_index_per_projection
+
+def sub_pop_projection_builder(pre_pops,post_pops,connection_list,sim,receptor_type='excitatory'):
+    import numpy as np
+    #used only if the pre and post subpops have already been created
+    post_index=0
+    pre_index=0
+    pres=np.asarray([[range(pre_index,pre_index+pre_pop.size)] for pre_pop in pre_pops])
+    posts=np.asarray([[range(post_index,post_index+post_pop.size)] for post_pop in post_pops])
+    pre_post_projs=[]
+
+    for i,post_pop in enumerate(post_pops):
+        post_connection_list = [(pre,post,weight,delay) for (pre,post,weight,delay) in connection_list if post in posts[i]]
+        pre_lists = [[] for _ in range(len(pres))]
+        for (pre,post,weight,delay) in post_connection_list:
+            for idx, ids in enumerate(pres):
+                if pre in ids:
+                    pre_index = idx
+                    break
+
+            pre_lists[pre_index].append((pre-min(pres[pre_index]),post-min(posts[i]),weight,delay))
+        for j, pre_list in enumerate(pre_lists):
+            if pre_list is not None and len(pre_list):
+                pre_post_projs.append(sim.Projection(pre_pops[j], post_pop, sim.FromListConnector(pre_list),
+                                                     synapse_type=sim.StaticSynapse()),receptor_type=receptor_type)
+    return pre_post_projs
+
+def get_sub_pop_spikes(target_pops):
+    output_spikes=[]
+    for pop in target_pops:
+        data = pop.get_data(["spikes"])
+        spikes = data.segments[0].spiketrains
+        for neuron in spikes:
+            output_spikes.append(neuron)
+    return output_spikes
