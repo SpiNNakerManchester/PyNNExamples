@@ -1,7 +1,7 @@
 import pylab
 try:
     import pyNN.spiNNaker as sim
-except Exception as e:
+except Exception:
     import spynnaker8 as sim
 
 # ------------------------------------------------------------------
