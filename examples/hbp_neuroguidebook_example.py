@@ -7,7 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 try:
     import pyNN.spiNNaker as sim
-except Exception as e:
+except Exception:
     import spynnaker8 as sim
 
 sim.setup(timestep=1.0, min_delay=1.0)
