@@ -1,13 +1,14 @@
 import numpy
 import math
 from scipy.io import wavfile
-from scipy.signal import resample
+# import scipy.signal
+from nnresample import resample
 from matplotlib.ticker import FormatStrFormatter
 
 def generate_signal(signal_type="tone",fs=22050.,dBSPL=40.,
                     freq=3000.,duration=0.5,ramp_duration=0.003,
                     silence_duration=0.05,modulation_freq=0.,
-                    modulation_depth=1.,plt=None,file_name=None, silence=True,title='',ascending=True):
+                    modulation_depth=1.,plt=None,file_name=None, silence=True,title='',ascending=True,channel=0):
     T = 1./fs
     amp = 1. * 28e-6 * 10. ** (dBSPL / 20.)
     num_samples = numpy.ceil(fs * duration)
@@ -42,12 +43,14 @@ def generate_signal(signal_type="tone",fs=22050.,dBSPL=40.,
         if file_name:
             [fs_f,signal] = wavfile.read(file_name)
             if len(signal.shape)>1:#stereo
-                signal = signal[:, 0]
+                signal = signal[:, channel]
             fs_f=numpy.float32(fs_f)
             if fs_f != fs:
                 secs = len(signal)/fs_f
                 num_resamples = secs * fs
-                signal = resample(signal,num_resamples)
+                # signal = scipy.signal.resample(signal,int(num_resamples))
+                # signal = scipy.signal.resample_poly(signal,int(num_resamples),len(signal))
+                signal = resample(signal,fs,fs_f)
 
             signal = numpy.float32(signal)
             max_val=numpy.max(numpy.abs(signal))
@@ -78,8 +81,15 @@ def generate_signal(signal_type="tone",fs=22050.,dBSPL=40.,
     if silence:
         # add silence
         num_silence_samples = int(numpy.ceil(fs*silence_duration))
-        signal = numpy.concatenate((numpy.zeros(num_silence_samples),signal,numpy.zeros(num_silence_samples)))
-
+        #silence is realistic noise -20dBSPL
+        #silence_amp = 1. * 28e-6 * 10. ** ((dBSPL - 60.) / 20.)
+        silence_amp = 1. * 28e-6 * 10. ** (-20. / 20.)
+        silence_samples = ((2*numpy.random.rand(num_silence_samples))-1.)*silence_amp
+        signal_silence_samples = ((2*numpy.random.rand(len(signal)))-1.)*silence_amp
+        signal = numpy.concatenate((silence_samples,signal+signal_silence_samples,silence_samples))
+        # signal = numpy.concatenate((numpy.zeros(num_silence_samples),signal,numpy.zeros(num_silence_samples)))
+    else:
+        signal=numpy.asarray(signal)
     if plt:
         plt.figure(title)
         time = numpy.linspace(0,len(signal)/fs,len(signal))
@@ -954,6 +964,7 @@ def sub_pop_builder_inter(sim,post_size,post_type,post_params,pre_type,pre_param
 
     if not isinstance(pre_type,str):
         raise Exception("non spike source array pre pops currently unsupported")
+        #TODO: allow for non SSA pre pops to be passed in e.g. SpiNNakEar outputs
     else:
         input_spikes = pre_params
     n_sub_pops = int(np.ceil(post_size / max_post_per_core))
@@ -1049,6 +1060,8 @@ def sub_pop_builder_inter(sim,post_size,post_type,post_params,pre_type,pre_param
 def sub_pop_projection_builder(pre_pops,post_pops,connection_list,sim,receptor_type='excitatory'):
     import numpy as np
     #used only if the pre and post subpops have already been created
+    if pre_pops is None or post_pops is None:
+        raise Exception("both input and output populations must already be initialised")
     post_index=0
     pre_index=0
     pres=np.asarray([[range(pre_index,pre_index+pre_pop.size)] for pre_pop in pre_pops])
