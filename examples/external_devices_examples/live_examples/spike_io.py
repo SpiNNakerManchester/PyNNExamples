@@ -78,11 +78,13 @@ pop_backward = Frontend.Population(
 
 # Create injection populations
 injector_forward = Frontend.Population(
-    n_neurons, Frontend.external_devices.SpikeInjector(
-        **cell_params_spike_injector_with_key), label='spike_injector_forward')
+    n_neurons, Frontend.external_devices.SpikeInjector(),
+    label='spike_injector_forward',
+    additional_parameters=cell_params_spike_injector_with_key)
 injector_backward = Frontend.Population(
-    n_neurons, Frontend.external_devices.SpikeInjector(
-        **cell_params_spike_injector), label='spike_injector_backward')
+    n_neurons, Frontend.external_devices.SpikeInjector(),
+    label='spike_injector_backward',
+    additional_parameters=cell_params_spike_injector)
 
 # Create a connection from the injector into the populations
 Frontend.Projection(
@@ -124,9 +126,9 @@ print_condition = Condition()
 
 # Create an initialisation method
 def init_pop(label, n_neurons, run_time_ms, machine_timestep_ms):
-    print "{} has {} neurons".format(label, n_neurons)
-    print "Simulation will run for {}ms at {}ms timesteps".format(
-        run_time_ms, machine_timestep_ms)
+    print("{} has {} neurons".format(label, n_neurons))
+    print("Simulation will run for {}ms at {}ms timesteps".format(
+        run_time_ms, machine_timestep_ms))
 
 
 # Create a sender of packets for the forward population
@@ -134,7 +136,7 @@ def send_input_forward(label, sender):
     for neuron_id in range(0, 100, 20):
         time.sleep(random.random() + 0.5)
         print_condition.acquire()
-        print "Sending forward spike", neuron_id
+        print("Sending forward spike {}".format(neuron_id))
         print_condition.release()
         sender.send_spike(label, neuron_id, send_full_keys=True)
 
@@ -145,7 +147,7 @@ def send_input_backward(label, sender):
         real_id = 100 - neuron_id - 1
         time.sleep(random.random() + 0.5)
         print_condition.acquire()
-        print "Sending backward spike", real_id
+        print("Sending backward spike {}".format(real_id))
         print_condition.release()
         sender.send_spike(label, real_id)
 
@@ -154,7 +156,8 @@ def send_input_backward(label, sender):
 def receive_spikes(label, time, neuron_ids):
     for neuron_id in neuron_ids:
         print_condition.acquire()
-        print "Received spike at time", time, "from", label, "-", neuron_id
+        print("Received spike at time {} from {} - {}".format(
+            time, label, neuron_id))
         print_condition.release()
 
 
@@ -171,9 +174,9 @@ live_spikes_connection_send.add_init_callback(
     "spike_injector_backward", init_pop)
 
 # Set up callbacks to occur at the start of simulation
-live_spikes_connection_send.add_start_callback(
+live_spikes_connection_send.add_start_resume_callback(
     "spike_injector_forward", send_input_forward)
-live_spikes_connection_send.add_start_callback(
+live_spikes_connection_send.add_start_resume_callback(
     "spike_injector_backward", send_input_backward)
 
 if not using_c_vis:

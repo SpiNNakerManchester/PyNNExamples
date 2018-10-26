@@ -150,7 +150,7 @@ populations[excit].record(['v', 'spikes'])
 p.run(runTime)
 
 final_weights = projections[0].get('weight', 'list', with_address=False)
-print "Final weights: ", final_weights
+print("Final weights: {}".format(final_weights))
 
 # myDelays = projections[0].getDelays()
 # total=0.0

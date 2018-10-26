@@ -30,7 +30,7 @@ April 2013
 """
 try:
     import pyNN.spiNNaker as sim
-except Exception as e:
+except Exception:
     import spynnaker8 as sim
 
 # SpiNNaker setup
