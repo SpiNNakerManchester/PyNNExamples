@@ -23,7 +23,7 @@ from spinnman.processes.get_version_process import GetVersionProcess
 from spinnman.messages.sdp.sdp_flag import SDPFlag
 from spinnman.messages.spinnaker_boot import SystemVariableDefinition
 from spinnman.messages.scp.impl.read_memory import _SCPReadMemoryResponse
-from spinnman.exceptions import SpinnmanTimeoutException
+from spinnman.exceptions import SpinnmanTimeoutException, SpinnmanIOException
 from spinn_utilities.ordered_set import OrderedSet
 from spinnman.messages.scp.enums.scp_result import SCPResult
 from spalloc.states import JobState
@@ -101,7 +101,10 @@ class SCPComms(object):
         self._callback_args[ip_address, self._sequence] =\
             (message, callback, args)
         self._sequence = (self._sequence + 1) % 65536
-        connection.send_scp_request_to(message, x, y, ip_address)
+        try:
+            connection.send_scp_request_to(message, x, y, ip_address)
+        except SpinnmanIOException as e:
+            print("Error sending to", ip_address, e)
 
     def _process_scp(self, connection):
         result, sequence, data, offset, ip_address, _port = \
