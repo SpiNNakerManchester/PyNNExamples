@@ -958,7 +958,8 @@ def repeat_test_spikes_gen(input_spikes,test_neuron_id,onset_times,test_duration
     return psth_spikes
 
 def sub_pop_builder_inter(sim,post_size,post_type,post_params,pre_type,pre_params,pre_name,
-                          post_name,projection_list,sub_pre_pop_size=128.,max_post_per_core=64.,pre_pops=False):
+                          post_name,projection_list,sub_pre_pop_size=128.,max_post_per_core=64.,
+                          pre_pops=False,post_record_list=["spikes"]):
     import numpy as np
     machine_chip_coordinates = [[0,0],[0,1],[1,0],[1,1]]
 
@@ -1011,7 +1012,7 @@ def sub_pop_builder_inter(sim,post_size,post_type,post_params,pre_type,pre_param
                                         # constraints=[ChipAndCoreConstraint(machine_chip_coordinates[chip_index][0],
                                                                            # machine_chip_coordinates[chip_index][1])]
                                         ))
-        post_pops[i].record(["spikes"])
+        post_pops[i].record(post_record_list)
         remaining_post_neurons -= pop_size
         sub_lists.append([(pre,post,weight,delay) for (pre,post,weight,delay) in projection_list if
                     post >= post_neuron and post < (post_neuron + post_offset)])
@@ -1084,11 +1085,28 @@ def sub_pop_projection_builder(pre_pops,post_pops,connection_list,sim,receptor_t
                                                      synapse_type=sim.StaticSynapse()),receptor_type=receptor_type)
     return pre_post_projs
 
-def get_sub_pop_spikes(target_pops):
-    output_spikes=[]
-    for pop in target_pops:
-        data = pop.get_data(["spikes"])
-        spikes = data.segments[0].spiketrains
-        for neuron in spikes:
-            output_spikes.append(neuron)
+
+
+def get_sub_pop_spikes(pops,posts_from_pop_index_dict=None):
+    import numpy as np
+    if posts_from_pop_index_dict is None:
+        output_spikes = []
+        for pop in pops:
+            data = pop.get_data(["spikes"])
+            spikes = data.segments[0].spiketrains
+            for neuron in spikes:
+                output_spikes.append(neuron)
+    else:
+        total_pop_size = 0
+        for pop in pops:
+            total_pop_size+=pop.size
+        output_spikes=[[] for _ in range(int(total_pop_size))]
+        # output_spikes=np.array()
+        for i,pop in enumerate(pops):
+            data = pop.get_data(["spikes"])
+            spikes = data.segments[0].spiketrains
+            neuron_indices = posts_from_pop_index_dict[str(i)]
+            for j,neuron in enumerate(spikes):
+                output_spikes[neuron_indices[j]] = neuron
     return output_spikes
+
