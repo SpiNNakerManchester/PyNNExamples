@@ -361,12 +361,12 @@ class ReadBoardProcess(AbstractMultiConnectionProcess):
         if self._load:
             index = 0
             while index < len(self._data):
-                timestamp, (x, y, n_cores) = self._data[index]
+                timestamp, (b_x, b_y, n_cores) = self._data[index]
                 index += 1
                 sleep_time = timestamp - (time.time() - self._start_time)
                 if sleep_time > 0:
                     time.sleep(sleep_time)
-                self._process_chip_info(x, y, n_cores)
+                self._process_chip_info(b_x, b_y, n_cores)
             return
 
         # Get the set of chips to read
