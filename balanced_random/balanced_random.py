@@ -12,12 +12,12 @@ weight_exc = 0.1
 weight_inh = -5.0 * weight_exc
 weight_input = 0.001
 
-pop_input = p.Population(100, p.SpikeSourcePoisson(rate=0), label="Input")
+pop_input = p.Population(100, p.SpikeSourcePoisson(rate=0.0), label="Input")
 
-pop_exc = p.Population(
-    n_exc, p.IF_curr_exp(spikes_per_second=100), label="Excitatory")
-pop_inh = p.Population(
-    n_inh, p.IF_curr_exp(spikes_per_second=100), label="Inhibitory")
+pop_exc = p.Population(n_exc, p.IF_curr_exp, label="Excitatory",
+                       additional_parameters={"spikes_per_second": 100})
+pop_inh = p.Population(n_inh, p.IF_curr_exp, label="Inhibitory",
+                       additional_parameters={"spikes_per_second": 100})
 stim_exc = p.Population(
     n_exc, p.SpikeSourcePoisson(rate=1000.0), label="Stim_Exc")
 stim_inh = p.Population(
@@ -65,13 +65,13 @@ pop_exc.record("spikes")
 
 p.run(1000)
 
-pop_input.set(rate=50)
+pop_input.set(rate=50.0)
 p.run(1000)
 
-pop_input.set(rate=10)
+pop_input.set(rate=10.0)
 p.run(1000)
 
-pop_input.set(rate=20)
+pop_input.set(rate=20.0)
 p.run(1000)
 
 data = pop_exc.get_data("spikes")

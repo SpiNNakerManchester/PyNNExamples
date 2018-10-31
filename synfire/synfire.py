@@ -61,8 +61,8 @@ if __name__ == '__main__':
             offset += n_neurons
         pylab.show()
     except Exception as ex:
-        print ex
-        print spikes
+        print(ex)
+        print(spikes)
 
     # Way to plot the spikes without neo converter but without the colours
     # try:
@@ -88,7 +88,7 @@ if __name__ == '__main__':
     #         annotations="Simulated with {}".format(sim.name()))
     #     plt.show()
     # except Exception as ex:
-    #     print ex
+    #     print(ex)
     #     for neo in neos:
-    #         print neo.segments[0].spiketrains
-    #         print "===="
+    #         print(neo.segments[0].spiketrains)
+    #         print("====")
