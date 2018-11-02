@@ -1085,7 +1085,362 @@ def sub_pop_projection_builder(pre_pops,post_pops,connection_list,sim,receptor_t
                                                      synapse_type=sim.StaticSynapse()),receptor_type=receptor_type)
     return pre_post_projs
 
+def pre_group_generator(input_size,target_pop_size,source_target_list,max_pop_size):
+    # go through connectivity list and separate post neurons into sub populations based on common pre neurons
+    # build 2D matrix of pre post connectivity
+    import numpy as np
+    connectivity_matrix = np.zeros((int(input_size), int(target_pop_size)),dtype=bool)
+    # weight_matrix = np.zeros((int(input_size), int(target_pop_size)))
+    # delay_matrix = np.zeros((int(input_size), int(target_pop_size)))
+    weight_matrix = [[[]for __ in range(target_pop_size)]for _ in range(input_size)]
+    delay_matrix = [[[]for __ in range(target_pop_size)]for _ in range(input_size)]
 
+    for (pre, post, w, d) in source_target_list:
+        if w > 0.:
+            connectivity_matrix[int(pre)][int(post)] = 1
+            # weight_matrix[int(pre)][int(post)] = w
+            # delay_matrix[int(pre)][int(post)] = d
+            weight_matrix[int(pre)][int(post)].append(w)
+            delay_matrix[int(pre)][int(post)].append(d)
+    # group indices of rows of the connectivity matrix that share a percentage of post neurons
+    pre_groups = []
+    pre_groups_index = 0
+    #scramble order of choices for pre neuron to process
+    pre_neurons = np.random.choice(input_size,input_size,replace=False)
+    # for pre_neuron in range(int(input_size)):
+    for pre_neuron in pre_neurons:
+        pre_exists = False
+        for group in pre_groups:
+            if pre_neuron in group:
+                pre_exists = True
+                break
+        #pre_neuron doesn't already exist in a pre_group
+        if pre_exists is False:
+            post_connections = connectivity_matrix[pre_neuron]
+            if post_connections.max()==True:
+                pre_groups.append([pre_neuron])
+                similarity_matrix = np.sum(connectivity_matrix * post_connections,axis=1)
+                #remove matching entry
+                similarity_matrix[pre_neuron] = 0
+                # group_ids = np.nonzero(similarity_matrix >= similarity_matrix.max() * 0.01)
+                #group together pre neurons if the share any post neurons
+                group_ids = np.nonzero(similarity_matrix)[0]
+                for pre_index in group_ids:
+                    # check pre index doesn't already feature in a previous group
+                    pre_exists = False
+                    for group in pre_groups:
+                        if pre_index in group:
+                            pre_exists = True
+                            break
+                    if pre_exists is False:
+                        pre_groups[pre_groups_index].append(pre_index)
+                pre_groups_index += 1
+    # attempt to resort any pre_groups that are too big or small
+    for i, group in enumerate(pre_groups):
+        if len(group)>max_pop_size:
+            split_indices = np.arange(0,len(group),int(max_pop_size))
+            for j,fr in enumerate(split_indices):
+                if fr == 0:
+                    pre_groups[i]=group[:split_indices[j+1]]
+                elif (fr + 1000) > len(group):#last split
+                    pre_groups.append(group[split_indices[j]:])
+                else:
+                    pre_groups.append(group[split_indices[j]:split_indices[j+1]])
+
+        elif len(group) == 1:
+            pre_neuron = group[0]
+            post_connections = connectivity_matrix[pre_neuron]
+            similarity_matrix = np.sum(connectivity_matrix * post_connections,axis=1)
+            #remove matching entry
+            similarity_matrix[pre_neuron] = 0
+            max_index = np.argmax(similarity_matrix)
+            for j, other_group in enumerate(pre_groups):
+                if max_index in other_group:
+                    pre_groups[j].append(pre_neuron)
+                    break
+            del pre_groups[i]
+
+    # pre_id_check = []
+    for i,group in enumerate(pre_groups):
+        group.sort()
+        # for id in group:
+            # pre_id_check.append(id)
+        pre_groups[i]=np.asarray(group)
+    # pre_id_check.sort()
+    # if pre_id_check[-1]!=input_size-1:
+    #     raise Exception(ArithmeticError("missing pre neurons in subgroups"))
+    return pre_groups,connectivity_matrix,np.asarray(weight_matrix),np.asarray(delay_matrix)
+
+def post_group_generator(pre_groups,connectivity_matrix,max_pop_size):
+    import numpy as np
+    post_groups = []
+    mod_pre_groups = []
+    mod_pre_group_index=0
+    # create post pops
+    cum_pre_indices=np.asarray([],dtype=int)
+    for i, pre_indices in enumerate(pre_groups):
+        # build post groups
+        # posts=[]
+        # posts= np.nonzero(np.sum(connectivity_matrix[pre_indices],axis=0))[0]
+        cum_pre_indices = np.append(cum_pre_indices,pre_indices)
+        post_connections = np.sum(connectivity_matrix[pre_indices], axis=0, dtype=bool)
+        # cross_over_posts = post_connections* np.sum(np.delete(connectivity_matrix, cum_pre_indices,axis=0),axis=0, dtype=bool)
+        # if len(cum_pre_indices)>0:
+        #     cross_over_posts = post_connections * np.sum(connectivity_matrix[cum_pre_indices],axis=0, dtype=bool)
+        # else:
+        #     # cross_over_posts = np.zeros(len(post_connections),dtype=bool)
+        cross_over_posts = post_connections * np.sum(np.delete(connectivity_matrix,cum_pre_indices,axis=0), axis=0, dtype=bool)
+        posts = np.nonzero(post_connections ^ cross_over_posts)[0]
+
+        if len(posts)>0:
+            #calculate how many total pre neurons this group will connect to
+            max_n_incoming_spikes = 1000
+            n_incoming_spikes = np.count_nonzero(connectivity_matrix[:,np.nonzero(post_connections)[0]])
+            if n_incoming_spikes>max_n_incoming_spikes:
+                #divide posts into sub_sub_groups!
+                group_size = np.nonzero(post_connections)[0].size/(n_incoming_spikes/max_n_incoming_spikes)
+            else:
+                group_size = max_pop_size
+
+            for posts_idx in np.arange(0,len(posts),int(group_size)):
+                if posts_idx + group_size > len(posts):
+                    smaller_posts = posts[posts_idx:]
+                else:
+                    smaller_posts = posts[posts_idx:posts_idx+int(group_size)]
+
+                mod_pre_ids = np.unique(np.nonzero(connectivity_matrix[:,smaller_posts])[0])
+                mod_pre_groups.append([])
+                for mod_id in mod_pre_ids:
+                    pre_exists = False
+                    for group in mod_pre_groups:
+                        if mod_id in group:
+                            pre_exists = True
+                            break
+                    # pre_neuron doesn't already exist in a pre_group
+                    if pre_exists is False:
+                        mod_pre_groups[mod_pre_group_index].append(mod_id)
+                mod_pre_group_index+=1
+                post_groups.append(smaller_posts)
+
+    post_groups = np.asarray([group for group in post_groups if group.size > 0])
+    mod_pre_groups = np.asarray([group for group in mod_pre_groups if len(group) > 0])
+    return post_groups,mod_pre_groups
+
+def check_incoming_activity(post_neurons,pre_neurons_group,connectivity_matrix,max_n_incoming_spikes):
+    import numpy as np
+    #create lists of all the pre_neurons that will be transmitting a spike to the post neuron core
+    total_incoming_neurons = []
+    n_incoming_spikes = 0
+    for pre_neurons in pre_neurons_group:
+        pre_filter = connectivity_matrix[pre_neurons]
+        # n_incoming_spikes += np.sum(pre_filter[:, post_neurons])
+        if np.count_nonzero(pre_filter[:, post_neurons]):
+            n_incoming_spikes += len(pre_neurons)
+    if n_incoming_spikes<max_n_incoming_spikes:
+        return True
+    else:
+        return False
+
+def sub_group_generator(pre_size,post_size,projection_list,max_sub_pre_pop_size,max_incoming_spikes=2000):
+    import numpy as np
+
+    connectivity_matrix = np.zeros((int(pre_size), int(post_size)))#,dtype=bool)
+    # weight_matrix = np.zeros((int(input_size), int(target_pop_size)))
+    # delay_matrix = np.zeros((int(input_size), int(target_pop_size)))
+    weight_matrix = [[[]for __ in range(post_size)]for _ in range(pre_size)]
+    delay_matrix = [[[]for __ in range(post_size)]for _ in range(pre_size)]
+
+    for (pre, post, w, d) in projection_list:
+        if w > 0.:
+            connectivity_matrix[int(pre)][int(post)] += 1
+            # weight_matrix[int(pre)][int(post)] = w
+            # delay_matrix[int(pre)][int(post)] = d
+            weight_matrix[int(pre)][int(post)].append(w)
+            delay_matrix[int(pre)][int(post)].append(d)
+
+    pre_groups=[]
+    post_groups=[]
+    post_group_index = 0
+    pre_group_index = 0
+    post_neurons = np.random.choice(post_size,post_size,replace=False).tolist()
+    filtered_connectivity_matrix = np.copy(connectivity_matrix)
+
+    while len(post_neurons)>0:
+        post = post_neurons.pop(0)
+        #find associated pres (that aren't already in a pre group)
+        pres = np.nonzero(filtered_connectivity_matrix[:,post])[0]
+        #if there are no exclusive pre neurons then add this post to the group with the most shared pre connections?
+        if len(pres)==0:
+            pre_connections = np.array(connectivity_matrix[:,post],dtype=bool)
+            n_shared_pre_connections=[]
+            for i,post_group in enumerate(post_groups):
+                n_shared_pre_connections.append([np.count_nonzero(np.bitwise_and(pre_connections,
+                                                                         np.sum(connectivity_matrix[:,post_group], axis=1,dtype=bool))),i])
+            n_shared_pre_connections.sort(reverse=True)
+            dummy_post_groups = map(list,post_groups)
+            for n_connections,candidate_group_index in n_shared_pre_connections:
+                dummy_post_groups[candidate_group_index].append(post)
+                if check_incoming_activity(dummy_post_groups[candidate_group_index], pre_groups,
+                                           connectivity_matrix, max_n_incoming_spikes=max_incoming_spikes):
+                    post_groups[candidate_group_index].append(post)
+                    break
+            else:
+                #no suitable home in other groups so will have to create a new one
+                post_groups.append([post])
+                post_group_index+=1
+        else:
+            post_groups.append([post])
+            pre_groups.append(pres.tolist())
+            filtered_connectivity_matrix[pre_groups[pre_group_index]] = 0
+            # find post neuron that shares the most pres with the initial post neuron in the current group
+            potential_post_connections = np.sum(connectivity_matrix[pre_groups[pre_group_index]], axis=0)
+            #find max number of post connections (this will probably be the chosen post neurons connections)
+            max_n_post_connections = potential_post_connections.max()
+            while 1:
+                    # remove existing post group matches
+                    potential_post_connections[post_groups[post_group_index]] = 0
+                    #if no matches then break
+                    if potential_post_connections.max()==0:
+                    # if potential_post_connections.max()<=max_n_post_connections*0.5:
+                        post_group_index += 1
+                        pre_group_index += 1
+                        break
+                    else:
+                        max_index = np.argmax(potential_post_connections)
+                        # find associated pres that aren't already in the pre list
+                        pres = np.nonzero(filtered_connectivity_matrix[:, max_index])[0]
+                        if 0:#len(pres)+len(pre_groups[pre_group_index])>max_sub_pre_pop_size:
+                            post_group_index += 1
+                            pre_group_index += 1
+                            break
+                        dummy_pre_groups=map(list,pre_groups)
+                        for pre in pres:
+                            dummy_pre_groups[pre_group_index].append(pre)
+                        if check_incoming_activity(post_groups[post_group_index], dummy_pre_groups,
+                                                   connectivity_matrix, max_n_incoming_spikes=max_incoming_spikes):
+                            for pre in pres:
+                                pre_groups[pre_group_index].append(pre)
+                            filtered_connectivity_matrix[pre_groups[pre_group_index]] = 0
+                            post_groups[post_group_index].append(max_index)
+                            #remove from post list
+                            try:
+                                post_neurons.pop(post_neurons.index(max_index))
+                            except ValueError:
+                                print("List does not contain value")
+                        else:
+                            post_group_index+=1
+                            pre_group_index+=1
+                            break
+    post_groups = np.asarray([np.asarray(group) for group in post_groups if len(group) > 0])
+    pre_groups = np.asarray([np.asarray(group) for group in pre_groups if len(group) > 0])
+
+    return pre_groups,post_groups,connectivity_matrix,np.asarray(weight_matrix),np.asarray(delay_matrix)
+
+
+def sub_pop_builder_auto(sim,post_size,post_type,post_params,pre_type,pre_params,pre_name,
+                          post_name,projection_list,max_sub_pre_pop_size=255.,max_post_per_core=255.,
+                          pre_pops=False,post_record_list=["spikes"]):
+    import numpy as np
+    if not isinstance(pre_type,str):
+        raise Exception("non spike source array pre pops currently unsupported")
+        #TODO: allow for non SSA pre pops to be passed in e.g. SpiNNakEar outputs
+    else:
+        input_spikes = pre_params
+    n_sub_pops = int(np.ceil(post_size / max_post_per_core))
+
+    post_pops =[]
+    post_pop_dict={}
+    posts_from_pop_index_dict={}
+    post_pop_index=0
+    post_pop_incoming_spike_counts = []
+    pre_pop_size = int(len(input_spikes))
+    pre_post_projs =[]
+    # sub_lists=[]
+    pres = []
+    post_offset = post_size / n_sub_pops
+    remaining_post_neurons = post_size
+    max_pre_index_per_projection=[]
+    chip_index = 0
+    pre_neuron = 0
+
+    if pre_pops is False:
+        pre_pops =[]
+    else:#setup empty pre_iterations so we don't make new pre pops and calculate the pres list
+        pre_iterations = np.asarray([])
+        pres=[]
+        for pop in pre_pops:
+            pres.append(range(pre_neuron, int(pre_neuron + pop.size)))
+            pre_neuron += pop.size
+    import time
+    # t = time.time()
+    # pre_groups,connectivity_matrix,weight_matrix,delay_matrix = pre_group_generator(pre_pop_size, post_size,
+    #                                                                                 projection_list,max_sub_pre_pop_size)
+    # elapsed_pre_gen_time = time.time() - t
+    t = time.time()
+    # post_groups,pre_groups = post_group_generator(pre_groups,connectivity_matrix,max_post_per_core)
+    pre_groups,post_groups,connectivity_matrix,weight_matrix,delay_matrix = sub_group_generator(pre_pop_size, post_size,
+                                                                                    projection_list,max_sub_pre_pop_size)
+    elapsed_calc_time = time.time() - t
+
+    t = time.time()
+    pre_pop_index=0
+    for pre_indices in pre_groups:
+        pre_filter = weight_matrix[pre_indices]
+        pre_filter_connections = connectivity_matrix[pre_indices]
+        #only create pre pop and its associated projections if it actually has nonzero connections to any post neurons
+        if pre_filter_connections.max()>0:
+            # create pre pop
+            pop_size = len(pre_indices)
+            sub_spikes = np.asarray(input_spikes)[pre_indices]
+            sub_spikes = sub_spikes.tolist()
+            pre_pops.append(
+                sim.Population(pop_size, sim.SpikeSourceArray(spike_times=sub_spikes),
+                               label=pre_name + "_sub_pop_{}".format(pre_pop_index),
+                               # constraints=[ChipAndCoreConstraint(machine_chip_coordinates[chip_index][0],
+                               #                                    machine_chip_coordinates[chip_index][1])]
+                               ))
+
+            # find connected post groups
+            connected_post_group_indices = []
+            for posts in post_groups:
+                pre_post_filter = pre_filter[:, posts]
+                if np.count_nonzero(pre_post_filter)>0:
+                    pop_size=len(posts)
+                    #if post pop not previously created
+                    if str(posts) not in post_pop_dict:
+                        post_pops.append(sim.Population(pop_size, post_type, post_params,
+                                                        label=post_name + "_sub_pop_{}".format(post_pop_index),
+                                                        # constraints=[ChipAndCoreConstraint(machine_chip_coordinates[chip_index][0],
+                                                                                           # machine_chip_coordinates[chip_index][1])]
+                                                        ))
+                        post_pops[post_pop_index].record(post_record_list)
+                        post_pop_dict[str(posts)] = post_pop_index
+                        posts_from_pop_index_dict[str(post_pop_index)] = posts
+                        post_pop_index+=1
+                        post_pop_incoming_spike_counts.append(0)
+
+                    sub_lists=[]
+                    # pre_post_filter = pre_filter[:, posts]
+                    delay_filter = delay_matrix[pre_indices]
+                    pre_post_delay_filter = delay_filter[:,posts]
+                    for pre_index,weights in enumerate(pre_post_filter):
+                        if np.count_nonzero(weights)>0:
+                            post_indices = np.nonzero(weights)[0]
+                            for post_index in post_indices:
+                                m_weights=weights[post_index]
+                                for i,weight in enumerate(m_weights):
+                                    sub_lists.append((pre_index,post_index,weight,pre_post_delay_filter[pre_index][post_index][i]))
+
+                    pre_post_projs.append(sim.Projection(pre_pops[pre_pop_index], post_pops[post_pop_dict[str(posts)]], sim.FromListConnector(sub_lists),
+                                                         synapse_type=sim.StaticSynapse()))
+                    post_pop_incoming_spike_counts[post_pop_dict[str(posts)]]+=pre_pops[pre_pop_index].size
+            pre_pop_index+=1
+        chip_index+=1
+    elapsed_pop_gen_projection_time = time.time() - t
+    print "sub pop building complete, n_sub_pre_pops={}, n_sub_post_pops={}".format(len(pre_pops),len(post_pops))
+    print "sub pop build times: sub_pop_calc={}, sub_pop_gen_project={} ".format(elapsed_calc_time,elapsed_pop_gen_projection_time)
+    print "post pop incoming spike counts: {}".format(post_pop_incoming_spike_counts)
+    return pre_pops,post_pops,pre_post_projs,max_pre_index_per_projection,posts_from_pop_index_dict
 
 def get_sub_pop_spikes(pops,posts_from_pop_index_dict=None):
     import numpy as np
