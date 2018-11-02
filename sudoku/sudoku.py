@@ -11,6 +11,7 @@ import subprocess
 import os
 import sys
 import traceback
+from utils import puzzles, get_rates
 
 run_time = 20000                        # run time in milliseconds
 neurons_per_digit = 5                   # number of neurons per digit
@@ -56,7 +57,7 @@ def activate_visualiser(old_vis):
         neur_per_num_opt = "--neurons_per_number"
         ms_per_bin_opt = "--ms_per_bin"
     try:
-        subprocess.Popen(
+        return subprocess.Popen(
             args=vis_exe + [neur_per_num_opt, str(neurons_per_digit),
                             ms_per_bin_opt, str(ms_per_bin)],
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1)
@@ -73,12 +74,12 @@ def activate_visualiser(old_vis):
             raise
 
 
-activate_visualiser(old_vis=("OLD_VIS" in os.environ))
+vis_process = activate_visualiser(old_vis=("OLD_VIS" in os.environ))
 
 p.setup(timestep=1.0)
 print("Creating Sudoku Network...")
 n_cell = int(90 * fact)   # total number of neurons in a cell
-n_stim = 30               # number of neurons in each stimulation source
+n_stim = n_cell           # number of neurons in each stimulation source
 n_N = n_cell // 9         # number of neurons per value in cell
 
 # total number of neurons
@@ -87,103 +88,16 @@ n_stim_total = n_stim * 9 * 9
 
 # global distributions & parameters
 weight_cell = 0.2
-weight_stim = 1
+weight_stim = 1.8
 dur_nois = RandomDistribution("uniform", [30000.0, 30001.0])
-weight_nois = 1.4
+weight_nois = 1.8
 delay = 2.0
-puzzle = 6
+puzzle = 5
+
 
 # initialise non-zeros
 # NB use as init[8-y][x] -> cell[x][y]
-
-if puzzle == 1:
-    # Diabolical problem:
-    init = [[0, 0, 1,  0, 0, 8,  0, 7, 3],
-            [0, 0, 5,  6, 0, 0,  0, 0, 1],
-            [7, 0, 0,  0, 0, 1,  0, 0, 0],
-
-            [0, 9, 0,  8, 1, 0,  0, 0, 0],
-            [5, 3, 0,  0, 0, 0,  0, 4, 6],
-            [0, 0, 0,  0, 6, 5,  0, 3, 0],
-
-            [0, 0, 0,  1, 0, 0,  0, 0, 4],
-            [8, 0, 0,  0, 0, 9,  3, 0, 0],
-            [9, 4, 0,  5, 0, 0,  7, 0, 0]]
-elif puzzle == 2:
-    init = [[2, 0, 0,  0, 0, 6,  0, 3, 0],
-            [4, 8, 0,  0, 1, 9,  0, 0, 0],
-            [0, 0, 7,  0, 2, 0,  9, 0, 0],
-
-            [0, 0, 0,  3, 0, 0,  0, 9, 0],
-            [7, 0, 8,  0, 0, 0,  1, 0, 5],
-            [0, 4, 0,  0, 0, 7,  0, 0, 0],
-
-            [0, 0, 4,  0, 9, 0,  6, 0, 0],
-            [0, 0, 0,  6, 4, 0,  0, 1, 9],
-            [0, 5, 0,  1, 0, 0,  0, 0, 8]]
-elif puzzle == 3:
-    init = [[0, 0, 3,  2, 0, 0,  0, 7, 0],
-            [0, 0, 5,  0, 0, 0,  3, 0, 0],
-            [0, 0, 8,  9, 7, 0,  0, 5, 0],
-
-            [0, 0, 0,  8, 9, 0,  0, 0, 0],
-            [0, 5, 0,  0, 0, 0,  0, 2, 0],
-            [0, 0, 0,  0, 6, 1,  0, 0, 0],
-
-            [0, 1, 0,  0, 2, 5,  6, 0, 0],
-            [0, 0, 4,  0, 0, 0,  8, 0, 0],
-            [0, 9, 0,  0, 0, 7,  5, 0, 0]]
-elif puzzle == 4:
-    init = [[0, 1, 0,  0, 0, 0,  0, 0, 2],
-            [8, 7, 0,  0, 0, 0,  5, 0, 4],
-            [5, 0, 2,  0, 0, 0,  0, 9, 0],
-
-            [0, 5, 0,  4, 0, 9,  0, 0, 1],
-            [0, 0, 0,  7, 3, 2,  0, 0, 0],
-            [9, 0, 0,  5, 0, 1,  0, 4, 0],
-
-            [0, 2, 0,  0, 0, 0,  4, 0, 8],
-            [4, 0, 6,  0, 0, 0,  0, 1, 3],
-            [1, 0, 0,  0, 0, 0,  0, 2, 0]]
-elif puzzle == 5:
-    init = [[8, 9, 0,  2, 0, 0,  0, 7, 0],
-            [0, 0, 0,  0, 8, 0,  0, 0, 0],
-            [0, 4, 1,  0, 3, 0,  5, 0, 0],
-
-            [2, 5, 8,  0, 0, 0,  0, 0, 6],
-            [0, 0, 0,  0, 0, 0,  0, 0, 0],
-            [6, 0, 0,  0, 0, 0,  1, 4, 7],
-
-            [0, 0, 7,  0, 1, 0,  4, 3, 0],
-            [0, 0, 0,  0, 2, 0,  0, 0, 0],
-            [0, 2, 0,  0, 0, 7,  0, 5, 1]]
-elif puzzle == 6:
-    # "World's hardest sudoku":
-    # http://www.telegraph.co.uk/news/science/science-news/9359579/\
-    # Worlds-hardest-sudoku-can-you-crack-it.html
-    init = [[8, 0, 0,  0, 0, 0,  0, 0, 0],
-            [0, 0, 3,  6, 0, 0,  0, 0, 0],
-            [0, 7, 0,  0, 9, 0,  2, 0, 0],
-
-            [0, 5, 0,  0, 0, 7,  0, 0, 0],
-            [0, 0, 0,  0, 4, 5,  7, 0, 0],
-            [0, 0, 0,  1, 0, 0,  0, 3, 0],
-
-            [0, 0, 1,  0, 0, 0,  0, 6, 8],
-            [0, 0, 8,  5, 0, 0,  0, 1, 0],
-            [0, 9, 0,  0, 0, 0,  4, 0, 0]]
-else:
-    init = [[1, 0, 0,  4, 0, 0,  0, 0, 0],
-            [7, 0, 0,  5, 0, 0,  6, 0, 3],
-            [0, 0, 0,  0, 3, 0,  4, 2, 0],
-
-            [0, 0, 9,  0, 0, 0,  0, 3, 5],
-            [0, 0, 0,  3, 0, 5,  0, 0, 0],
-            [6, 3, 0,  0, 0, 0,  1, 0, 0],
-
-            [0, 2, 6,  0, 5, 0,  0, 0, 0],
-            [9, 0, 4,  0, 0, 6,  0, 0, 7],
-            [0, 0, 0,  0, 0, 8,  0, 0, 2]]
+init = puzzles[puzzle]
 
 # Dream problem - no input!
 # init = [[0 for x in range(9)] for y in range(9)]
@@ -209,19 +123,26 @@ cell_params_lif = {
 print("Creating Populations...")
 cells = p.Population(n_total, p.IF_curr_exp, cell_params_lif, label="Cells",
                      additional_parameters={"spikes_per_second": 200})
-cells.record("spikes")
+# cells.record("spikes")
 ext.activate_live_output_for(cells, tag=1, port=17897)
 
 #
 # add a noise source to each cell
 #
 print("Creating Noise Sources...")
+default_rate = 10.0
+max_rate = 100.0
+rates = get_rates(init, n_total, n_cell, n_N, default_rate, max_rate)
 noise = p.Population(
     n_total, p.SpikeSourcePoisson,
-    {"rate": 20.0},
+    {"rate": rates},
     label="Noise")
+
 p.Projection(noise, cells, p.OneToOneConnector(),
              synapse_type=p.StaticSynapse(weight=weight_nois))
+
+p.external_devices.add_poisson_live_rate_control(
+    noise, database_notify_port_num=19990)
 
 
 #
@@ -276,39 +197,14 @@ for x in range(9):
 conn_intC = p.FromListConnector(connections)
 p.Projection(cells, cells, conn_intC, receptor_type="inhibitory")
 
-#
-# set up & connect the initial (stimulation) conditions
-#
-print("Fixing initial numbers...")
-s = 0
-connections_stim = []
-for x in range(9):
-    for y in range(9):
-        if init[8 - y][x] != 0:
-            base_stim = ((y * 9) + x) * n_stim
-            base = ((y * 9) + x) * n_cell
-            for i in range(n_stim):
-
-                # one n_N square on diagonal
-                for j in range(
-                        n_N * (init[8 - y][x] - 1), n_N * init[8 - y][x]):
-                    connections_stim.append(
-                        (i + base_stim, j + base, weight_stim, delay))
-
-            s += 1
-
-if len(connections_stim) > 0:
-    stim = p.Population(
-        n_stim_total, p.SpikeSourcePoisson,
-        {"rate": 10.0}, label="Stim")
-    conn_stim = p.FromListConnector(connections_stim)
-    p.Projection(stim, cells, conn_stim, receptor_type="excitatory")
-#
 # initialise the network, run, and get results
 cells.initialize(v=RandomDistribution("uniform", [-65.0, -55.0]))
 
-running = True
-p.run(run_time)
+set_window = subprocess.Popen((sys.executable, "-m", "set_numbers",
+                               str(n_total), str(n_cell), str(n_N),
+                               str(default_rate), str(max_rate), str(puzzle)))
+
+p.external_devices.run_forever()
 
 # spikes = cells.getSpikes()
 # f, axarr = pylab.subplots(9, 9)
@@ -325,6 +221,9 @@ p.run(run_time)
 #         # axarr[8 - y][x].axis('off')
 # pylab.show()
 # pylab.savefig("sudoku.png")
+
+vis_process.wait()
+set_window.wait()
 
 p.end()
 ended = True
