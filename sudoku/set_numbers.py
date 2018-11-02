@@ -52,6 +52,9 @@ class GUI(object):
                 frame, text="Puzzle {}".format(i + 1), width=10,
                 command=functools.partial(self.set_puzzle, i))
             button.grid(row=i, column=0, pady=5)
+        button = tk.Button(frame, text="Dream", width=10,
+                           command=self.set_dream)
+        button.grid(row=i + 1, column=0, pady=5)
         frame.grid(row=0, column=11, rowspan=11, padx=5)
 
         def_rate_frame = tk.Frame(self._root)
@@ -96,20 +99,31 @@ class GUI(object):
 
     def cycle_puzzles(self):
         self._after_id = self._root.after(30000, self.cycle_puzzles)
+        print "Cycling after 30 seconds"
         self._puzzle = (self._puzzle + 1) % len(puzzles)
         print "Updating puzzle to", self._puzzle
-        self.set_puzzle(self._puzzle)
-        self.set_values(automatic=True)
+        self.set_puzzle(self._puzzle, automatic=True)
 
-    def set_puzzle(self, puzzle):
+    def set_dream(self):
+        for x in range(9):
+            for y in range(9):
+                self._numbers_txt[x][y].set(0)
+        self.set_values()
+
+    def set_puzzle(self, puzzle, automatic=False):
         self._puzzle = puzzle
         for x in range(9):
             for y in range(9):
                 self._numbers_txt[x][y].set(puzzles[puzzle][x][y])
+        self.set_values(automatic)
 
     def set_values(self, automatic=False):
-        if not automatic and self._after_id is not None:
-            self._root.after_cancel(self._after_id)
+        if not automatic:
+            if self._after_id is not None:
+                print "Cancelling"
+                self._root.after_cancel(self._after_id)
+            self._after_id = self._root.after(120000, self.cycle_puzzles)
+            print "Setting timeout to 120 seconds"
         new_values = [[0 for _ in range(9)] for _ in range(9)]
         for x in range(9):
             for y in range(9):

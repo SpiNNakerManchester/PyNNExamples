@@ -130,7 +130,7 @@ ext.activate_live_output_for(cells, tag=1, port=17897)
 # add a noise source to each cell
 #
 print("Creating Noise Sources...")
-default_rate = 10.0
+default_rate = 35.0
 max_rate = 100.0
 rates = get_rates(init, n_total, n_cell, n_N, default_rate, max_rate)
 noise = p.Population(
