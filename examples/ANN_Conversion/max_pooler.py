@@ -38,7 +38,7 @@ def plot_spiketrains(segment):
         plt.ylabel(segment.name)
         plt.setp(plt.gca().get_xticklabels(), visible=False)
 
-input_parameters = [100, 100, 200, 100]
+input_parameters = [20, 20, 40, 20]
 number_inputs = len(input_parameters)
 
 inputs = []
@@ -58,14 +58,30 @@ forward_inh_pop = sim.Population(number_inputs, sim.IF_curr_exp, label="forward_
 #connecting inputs to filter layer
 for i in range(number_inputs):
     input_connection = [(0, i, 5, 2)]
-    input_forward_inh_connection = [(0, i, 5, 1)]
     input_proj = sim.Projection(inputs[i], filter_layer, sim.FromListConnector(input_connection))
+    input_forward_inh_connection = [(0, i, 5, 1)]
     input_forward_inh_proj = sim.Projection(inputs[i], forward_inh_pop, sim.FromListConnector(input_forward_inh_connection))
-    forward_inh_connections = [(i, j, 5, 1) for j in range(number_inputs) if i!=j]
-    forward_inh_proj = sim.Projection(forward_inh_pop, filter_layer, sim.FromListConnector(forward_inh_connections), receptor_type='inhibitory')
+
+#feedforward inhibition
+forward_filter_inh_connections = [(i, j, 5, 1) for i in range(number_inputs) for j in range(number_inputs) if i!=j]
+forward_filter_inh_proj = sim.Projection(forward_inh_pop, filter_layer, sim.FromListConnector(forward_filter_inh_connections), receptor_type='inhibitory')
+
+#feedback inhibition    
+back_inh_proj = sim.Projection(filter_layer, forward_inh_pop, sim.OneToOneConnector(), sim.StaticSynapse(weight=10, delay=1))
+
+
+#lateral inhibition
+lat_inh_connection = [(i, j, 5, 1) for i in range(number_inputs) for j in range(number_inputs) if i!=j]
+lat_inh_proj = sim.Projection(forward_inh_pop, forward_inh_pop, sim.FromListConnector(lat_inh_connection), receptor_type='inhibitory')
+
+
 
 # output neuron
 OR_neuron = sim.Population(1, sim.IF_curr_exp, label="OR_neuron")
+
+#recurrent_connection = [(i,i,10,1) for i in range(number_inputs)]
+#recurrent_proj = sim.Projection(filter_layer, filter_layer, sim.FromListConnector(recurrent_connection))
+
 
 #filter_reccurrent_proj = sim.Projection(filter_layer, filter_layer, sim.OneToOneConnector(), sim.StaticSynapse(weight=10, delay=10))
 filter_proj = sim.Projection(filter_layer, OR_neuron, sim.AllToAllConnector(), sim.StaticSynapse(weight=5, delay=1))
