@@ -150,7 +150,7 @@ for i in range(len(i_add_post)):
 stdp_model = sim.STDPMechanism(
     timing_dependence=sim.SpikePairRule(
         tau_plus=20., tau_minus=20.0, A_plus=0.02, A_minus=0.02),
-    weight_dependence=sim.AdditiveWeightDependence(w_min=0, w_max=0.01))
+    weight_dependence=sim.AdditiveWeightDependence(w_min=0, w_max=0.9))
 
 plastic_projection = sim.Projection(
     pre_pop, post_pop, sim.FixedProbabilityConnector(p_connect=0.5),
@@ -178,7 +178,7 @@ Figure(
           yticks=True, markersize=0.2, xlim=(0, sim_time)),
     Panel(post_spikes.segments[0].spiketrains,
           yticks=True, markersize=0.2, xlim=(0, sim_time)),
-    title="stdp example cond",
+    title="stdp example curr",
     annotations="Simulated with {}".format(sim.name()))
 plt.show()
 
