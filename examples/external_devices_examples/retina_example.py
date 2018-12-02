@@ -4,7 +4,7 @@ intermediate population
 """
 try:
     import pyNN.spiNNaker as p
-except Exception as e:
+except Exception:
     import spynnaker8 as p
 
 connected_chip_details = {
