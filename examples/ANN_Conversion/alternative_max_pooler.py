@@ -44,69 +44,78 @@ def plot_spiketrains(segment):
         plt.ylabel(segment.name)
         plt.setp(plt.gca().get_xticklabels(), visible=False)
 
-def main():        
-    input_parameters = [15, 100, 15, 15]
+    
+def make_input(input_parameters, neuron=sim.IF_cond_exp(), passthrough_weight=0.071, delay = 1):
     number_inputs = len(input_parameters)
-    
-    
-    # At 4 it works well
-    standard_weight = 0.075
-    strong_weight = 0.14
-    normalised_weight = standard_weight/number_inputs
-    strong_normalised_weight = strong_weight/number_inputs
-    
-    delay = 1
-    
-    simtime = 1000
-    
-    responsive_neuron = sim.IF_cond_exp()#tau_syn_E=0.2, tau_syn_I=0.2)
-    
-    
     inputs = []
-    
-    
-    
-    sim.setup()
-    
-    # setting up inputs
+    #setting up input populations
     for i in range(number_inputs):
         inputs.append(sim.Population(1, sim.SpikeSourcePoisson(rate=input_parameters[i], ), label=("input_"+str(i))))
         inputs[i].record(["spikes"])
     
-    # setting up filter layer (repeats inputs with some inhibition)
-    filter_layer = sim.Population(number_inputs, responsive_neuron, label="filter_layer")
-    forward_inh_pop = sim.Population(number_inputs, responsive_neuron, label="forward_inh_pop")
+    filter_layer = sim.Population(number_inputs, neuron, label="filter_layer")
+    
     #connecting inputs to filter layer
     for i in range(number_inputs):
-        input_connection = [(0, i, standard_weight, delay)]
+        input_connection = [(0, i, passthrough_weight, delay)]
         input_proj = sim.Projection(inputs[i], filter_layer, sim.FromListConnector(input_connection))
-        #feedforward inhibition
-        input_forward_inh_connection = [(0, i, normalised_weight, delay)]
-        #input_forward_inh_proj = sim.Projection(inputs[i], forward_inh_pop, sim.FromListConnector(input_forward_inh_connection))
     
-    #feedback inhibition    
-    back_inh_proj = sim.Projection(filter_layer, forward_inh_pop, sim.OneToOneConnector(), sim.StaticSynapse(weight=standard_weight, delay=delay))
-    
-    #inhibition connection
-    inh_connections = [(i, j, strong_weight, 1) for i in range(number_inputs) for j in range(number_inputs) if i!=j]
-    inh_filter_proj = sim.Projection(forward_inh_pop, filter_layer, sim.FromListConnector(inh_connections), receptor_type='inhibitory')
-    
+    return filter_layer, inputs
+
+def make_output(input_layer, neuron=sim.IF_cond_exp()):
     # output neuron
-    OR_neuron = sim.Population(1, responsive_neuron, label="OR_neuron")
+    OR_neuron = sim.Population(1, neuron, label="OR_neuron")
     
-    #filter_reccurrent_proj = sim.Projection(filter_layer, filter_layer, sim.OneToOneConnector(), sim.StaticSynapse(weight=normalised_weight, delay=delay))
-    filter_proj = sim.Projection(filter_layer, OR_neuron, sim.AllToAllConnector(), sim.StaticSynapse(weight=standard_weight, delay=delay))
+    return OR_neuron
+
+def create_layers(input_layer, output_layer, neuron = sim.IF_cond_exp(), passthrough_weight = 0.071, delay = 1):
+    number_inputs = input_layer.size
+    #connecting input to output
+    #modify for multiple outputs
+    filter_proj = sim.Projection(input_layer, output_layer, sim.AllToAllConnector(), sim.StaticSynapse(weight=passthrough_weight, delay=delay*2))
+    inh_pop = sim.Population(number_inputs, neuron, label="inh_pop")
     
-    OR_neuron.record(["spikes"])
-    filter_layer.record(["spikes"])
+    #forward inhibitory connections
+    inh_connections = [(i, j, passthrough_weight, delay) for j in range(number_inputs) for i in range(number_inputs) if i != j]
+    input_inh_proj = sim.Projection(input_layer, inh_pop, sim.FromListConnector(inh_connections), sim.StaticSynapse())
+    inh_output_proj = sim.Projection(inh_pop, output_layer, sim.OneToOneConnector(), sim.StaticSynapse(weight=passthrough_weight/number_inputs, delay=delay), receptor_type = "inhibitory")
+        
     
-    sim.run(simtime)
+    new_layers = [inh_pop]
+    new_connections = [filter_proj, input_inh_proj, inh_output_proj]
     
-    #getting data
-    data = OR_neuron.get_data(variables=["spikes"])
+    return new_layers, new_connections
+    
+def get_output_data(data, inputs, filter_layer):
+    number_inputs = len(inputs)
+    #setting up data record
+    
     for i in range(number_inputs):
         data.segments[0].spiketrains.extend(inputs[i].get_data(variables=["spikes"]).segments[0].spiketrains)    
+    
     data.segments[0].spiketrains.extend(filter_layer.get_data(variables=["spikes"]).segments[0].spiketrains)
+
+    return
+
+def main():        
+    layers = []
+    simtime = 10000
+       
+    sim.setup()
+    input, inputs = make_input([15, 100, 15, 15])
+    output = make_output(input)
+    layers.append(input)
+    layers.append(output)
+    
+    new_layers, new_connections = create_layers(input, output)
+    
+    output.record(["spikes"])
+    input.record(["spikes"])
+    
+    sim.run(simtime)
+
+    data = output.get_data(variables=["spikes"])
+    get_output_data(data, inputs, input)
     
     sim.end()
     
