@@ -6,20 +6,22 @@ from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 
 p.setup(1)
-runtime=100000
+runtime=100
 
 spike_times=[10, 15]
 pop_input = p.Population(1, p.SpikeSourceArray,
                         {'spike_times': spike_times}, label="input")
+
 neuron_params = {
     'tau_m': 20.0,
     'cm': 20, # Updated to suit tau_m of 20 and make membrane resistance 1
     'v_rest': 0.0,
-#     "i_offset": 200, # dc current
-    'thresh_B': 10.0,
-    'thresh_b_0': 10,
-    'thresh_tau_a': 200,
-    'thresh_beta': 10,
+    'v': 0,
+    "i_offset": 0, # dc current
+    'B': 10.0,
+    'small_b_0': 10,
+    'tau_a': 200,
+    'beta': 10,
     'tau_refrac':3
     }
 
@@ -61,7 +63,7 @@ Figure(
 )
 
 
-n=1
+n=0
 
 for i in hidden_data.segments[0].spiketrains[0]:
     print i.magnitude

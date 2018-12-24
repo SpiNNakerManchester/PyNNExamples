@@ -14,11 +14,12 @@ neuron_params = {
     'cm': 20, # Updated to suit tau_m of 20 and make membrane resistance 1
     'v_rest': 0.0,
     "i_offset": 200, # dc current
-    'thresh_B': 10.0,
-    'thresh_b_0': 10,
-    'thresh_tau_a': 200,
-    'thresh_beta': 10,
-    'tau_refrac':3
+    'B': 10.0,
+    'small_b_0': 10,
+    'tau_a': 200,
+    'beta': 10,
+    'tau_refrac': 3,
+    'v': 0
     }
 
 pop_exc = p.Population(1,
