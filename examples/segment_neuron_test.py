@@ -77,8 +77,15 @@ inh_params = {'cm': 0.25,  # nF
                'v_rest': -65.0,
                'v_thresh': -55.4
                }
-
-w2s_target = 4.5#0.12#0.05#2.5#5.
+bushy_params_cond = {#'cm': 5.,#57.,  # nF Only 200 cells in mouse CN
+               #'tau_m': 0.5,#10.0,#2.,#3.,#
+               'tau_syn_E': 2.,#2.5,#
+               #'e_rev_E': -25.,#-10.,#-35.,#-55.1,#
+               'v_reset': -60.,#-70.0,
+               'v_rest': -60.,
+               'v_thresh': -40.
+               }
+w2s_target = 0.3#0.12#0.05#2.5#5.
 n_connections = 16
 initial_weight = w2s_target/n_connections
 connection_weight = w2s_target#initial_weight*2.#/2.
@@ -87,8 +94,8 @@ inh_weight = initial_weight#(n_connections-number_of_inputs)*(initial_weight)#*2
 
 input_spikes =[]
 inh_spikes = []
-isi = 100.
-n_repeats = 500
+isi = 50.
+n_repeats = 10
 
 for neuron in range(number_of_inputs):
     input_spikes.append([i*isi for i in range(n_repeats) if i<5 or i>10])
@@ -103,11 +110,11 @@ sim.setup(timestep=1.0, min_delay=1.0, max_delay=51.0)
 # Populations
 #================================================================================================
 input_pop = sim.Population(number_of_inputs,sim.SpikeSourceArray(spike_times=input_spikes))
-inh_pop = sim.Population(1,sim.SpikeSourceArray(spike_times=inh_spikes))
+# inh_pop = sim.Population(1,sim.SpikeSourceArray(spike_times=inh_spikes))
 # cd_pop = sim.Population(1,sim.IF_curr_exp,target_cell_params)#,label="fixed_weight_scale")
 # cd_pop = sim.Population(1,sim.IF_cond_exp,inh_cond_params,label="fixed_weight_scale_cond")
 # cd_pop = sim.Population(1,sim.IF_curr_exp,ex_params,label="fixed_weight_scale")
-cd_pop = sim.Population(1,sim.IF_curr_exp,inh_params,label="fixed_weight_scale")
+cd_pop = sim.Population(1,sim.IF_cond_exp,bushy_params_cond,label="bushy")
 # inh_pop =
 
 cd_pop.record(["spikes","v"])

@@ -8,7 +8,9 @@ from matplotlib.ticker import FormatStrFormatter
 def generate_signal(signal_type="tone",fs=22050.,dBSPL=40.,
                     freq=3000.,duration=0.5,ramp_duration=0.003,
                     silence_duration=0.05,modulation_freq=0.,
-                    modulation_depth=1.,plt=None,file_name=None, silence=True,title='',ascending=True,channel=0):
+                    modulation_depth=1.,plt=None,file_name=None,
+                    silence=True,title='',ascending=True,channel=0,
+                    n_repeats = 1):
     T = 1./fs
     amp = 1. * 28e-6 * 10. ** (dBSPL / 20.)
     num_samples = numpy.ceil(fs * duration)
@@ -200,7 +202,8 @@ def spike_raster_plot(spikes,plt,duration,ylim,scale_factor=0.001,title=None):
         plt.xlabel("time (s)")
 
 def spike_raster_plot_8(spikes,plt,duration,ylim,scale_factor=0.001,title=None,filepath=None,xlim=None,
-                        onset_times=None,pattern_duration=None):
+                        onset_times=None,pattern_duration=None,markersize=3,marker_colour='black',alpha=1.,subplots=None,
+                        legend_strings=None):
     if len(spikes) > 0:
         neuron_index = 1
         spike_ids = []
@@ -214,14 +217,22 @@ def spike_raster_plot_8(spikes,plt,duration,ylim,scale_factor=0.001,title=None,f
         scaled_times = [spike_time * scale_factor for spike_time in spike_times]
 
         ##plot results
-        plt.figure(title)
-        plt.plot(scaled_times, spike_ids, '.', markersize=3,
-                 markerfacecolor='black', markeredgecolor='none',
-                 markeredgewidth=0)
+        if subplots is None:
+            plt.figure(title)
+            plt.xlabel("time (s)")
+        else:
+            ax = plt.subplot(subplots[0], subplots[1], subplots[2])
+            ax.set_title(title)
+            if subplots[2]==subplots[0]:
+                plt.xlabel("time (s)")
+            else:
+                ax.set_xticklabels([])
+        plt.plot(scaled_times, spike_ids, '.', markersize=markersize,
+                 markerfacecolor=marker_colour, markeredgecolor='none',
+                 markeredgewidth=0,alpha=alpha)
         plt.ylim(0, ylim)
         plt.xlim(0, duration)
         plt.ylabel("neuron ID")
-        plt.xlabel("time (s)")
 
         if onset_times is not None:
             #plot block of translucent colour per pattern
@@ -240,8 +251,12 @@ def spike_raster_plot_8(spikes,plt,duration,ylim,scale_factor=0.001,title=None,f
                         ncol=len(onset_times), mode="expand", borderaxespad=0.)
         if xlim is not None:
             plt.xlim(xlim)
+        if legend_strings is not None and (subplots is None or subplots[2]==1):
+            plt.legend(legend_strings,bbox_to_anchor=(0.1, 1.25), loc='upper center',
+                        ncol=len(legend_strings),markerscale=10.)
         if filepath is not None:
-            plt.savefig(filepath + '/{}.pdf'.format(title))#switched to pdf as using transparent images
+            if subplots is None or subplots[2]==subplots[0]:
+                plt.savefig(filepath + '/{}.pdf'.format(title))#switched to pdf as using transparent images
 
 
 def multi_spike_raster_plot(spikes_list,plt,duration,ylim,scale_factor=0.001,marker_size=3,dopamine_spikes=[],title=''):
@@ -636,6 +651,12 @@ def spike_train_join(spike_trains,num_neurons):
 
     return [spike_train_output,max_time]
 
+def find_nearest(array, value):
+    import numpy as np
+    array = np.asarray(array)
+    idx = (np.abs(array - value)).argmin()
+    return array[idx]
+
 #assumes ID is actually a position in 2D space i.e. the max post and pre IDs are the same regardless of how many neurons are in each pop
 def spatial_normal_dist_connection_builder(spatial_range,n_pre,n_post,RandomDistribution,
                                    conn_num,dist,sigma,conn_weight=None,delay=1.,p_connect=1.0,
@@ -645,22 +666,22 @@ def spatial_normal_dist_connection_builder(spatial_range,n_pre,n_post,RandomDist
         posts = xrange(n_post)
 
     conn_list = []
-    post_scale = float(spatial_range)/n_post
-    pre_scale = float(spatial_range)/n_pre
+    # post_scale = float(spatial_range)/n_post
+    scaled_pres = np.linspace(0,spatial_range-1,n_pre,dtype=int)
+    scaled_posts = np.linspace(0,spatial_range-1,n_post,dtype=int)
 
-    for post in posts:
-        scaled_post = int(post*post_scale)
+    for scaled_post in scaled_posts:
+        # scaled_post = int(post*post_scale)
         mu = int(dist / 2) + scaled_post * dist
-        # mu = dist / 2. + post * dist
-        pre_dist = RandomDistribution('normal_clipped',[mu,sigma,0,n_pre*pre_scale -1])
+        pre_dist = RandomDistribution('normal_clipped',[mu,sigma,0,spatial_range-1])
         if isinstance(conn_num,float) or isinstance(conn_num,int):
             number_of_connections = conn_num
         else:
             number_of_connections = conn_num.next(n=1)
         pre_idxs = pre_dist.next(n=int(number_of_connections))
+        nearest_pre_idxs = [find_nearest(scaled_pres,int(rand_val)) for rand_val in pre_idxs]
         pre_check = []
-        for pre in pre_idxs:
-            scaled_pre = int(pre)#int(np.round(pre / pre_scale))
+        for scaled_pre in nearest_pre_idxs:
             # if scaled_pre >= 0 and scaled_pre < pre_size:
             if scaled_pre not in pre_check and np.random.rand() <= p_connect:
                 if conn_weight is None:
