@@ -714,11 +714,11 @@ def normal_dist_connection_builder(pre_size,post_size,RandomDistribution,
 
     conn_list = []
     if pre_size > post_size:
-        post_scale = float(pre_size)/post_size
+        post_scale = float(pre_size-1)/(post_size-1)
         pre_scale = 1.
     else:
         post_scale = 1.
-        pre_scale = float(post_size)/pre_size
+        pre_scale = float(post_size-1)/(pre_size-1)
 
     for post in posts:
         scaled_post = int(post*post_scale)
