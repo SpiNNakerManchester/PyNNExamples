@@ -10,7 +10,7 @@ def generate_signal(signal_type="tone",fs=22050.,dBSPL=40.,
                     silence_duration=0.05,modulation_freq=0.,
                     modulation_depth=1.,plt=None,file_name=None,
                     silence=True,title='',ascending=True,channel=0,
-                    n_repeats = 1):
+                    max_val=None):
     T = 1./fs
     amp = 1. * 28e-6 * 10. ** (dBSPL / 20.)
     num_samples = numpy.ceil(fs * duration)
@@ -41,29 +41,23 @@ def generate_signal(signal_type="tone",fs=22050.,dBSPL=40.,
 	if not ascending:
 	    signal = signal[::-1]
     elif signal_type == "file":
-        #silence = False
         if file_name:
             [fs_f,signal] = wavfile.read(file_name)
             if len(signal.shape)>1:#stereo
                 signal = signal[:, channel]
-            fs_f=numpy.float32(fs_f)
+            fs_f=numpy.float64(fs_f)
             if fs_f != fs:
-                secs = len(signal)/fs_f
-                num_resamples = secs * fs
-                # signal = scipy.signal.resample(signal,int(num_resamples))
-                # signal = scipy.signal.resample_poly(signal,int(num_resamples),len(signal))
                 signal = resample(signal,fs,fs_f)
-
-            signal = numpy.float32(signal)
-            max_val=numpy.max(numpy.abs(signal))
+            signal = numpy.float64(signal)
+            if max_val is None:
+                max_val=numpy.max(numpy.abs(signal))
             for i in range(len(signal)):
-                # if signal[i] == max_val:
-                #     print
                 signal[i]/=max_val
                 signal[i]*=-amp #set loudness
         else:
             raise Exception("must include valid wav filename")
-
+    elif signal_type == 'noise':
+        signal = [(2*(numpy.random.rand()-0.5))*-amp for _ in range(int(num_samples))]
     else:
         print "invalid signal type!"
         signal = []
@@ -1554,4 +1548,3 @@ def get_sub_pop_spikes(pops,posts_from_pop_index_dict=None):
             for j,neuron in enumerate(spikes):
                 output_spikes[neuron_indices[j]] = neuron
     return output_spikes
-
