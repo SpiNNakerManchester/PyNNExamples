@@ -17,9 +17,14 @@ def generate_signal(signal_type="tone",fs=22050.,dBSPL=40.,
     # inverted amp on input gives rarefaction effect for positive pressure (?!))
     if signal_type == "tone":
         map_bs_cos_shift = numpy.pi/2
-        signal = [-amp*(numpy.sin(2*numpy.pi*freq*T*i+map_bs_cos_shift) *
-                  (0.5*(1.+modulation_depth*numpy.cos(2*numpy.pi*modulation_freq*T*i))))#modulation
-                  for i in range(int(num_samples))]
+
+        if modulation_freq > 0:
+            signal = [-amp*(numpy.sin(2*numpy.pi*freq*T*i+map_bs_cos_shift))*
+                      (0.5*(1.+modulation_depth*numpy.cos(2*numpy.pi*modulation_freq*T*i)))
+                      for i in range(int(num_samples))]
+        else:
+            signal = [-amp * (numpy.sin(2 * numpy.pi * freq * T * i + map_bs_cos_shift))
+                      for i in range(int(num_samples))]
         #map_bs_remove 1st sample!?
         signal=signal[1:]
 
@@ -57,8 +62,11 @@ def generate_signal(signal_type="tone",fs=22050.,dBSPL=40.,
         else:
             raise Exception("must include valid wav filename")
     elif signal_type == 'noise':
-        signal = [(2*(numpy.random.rand()-0.5))*-amp *
+        if modulation_freq>0:
+            signal = [(2*(numpy.random.rand()-0.5))*-amp *
                   (0.5*(1.+modulation_depth*numpy.cos(2*numpy.pi*modulation_freq*T*i))) for i in range(int(num_samples))]
+        else:
+            signal = [(2*(numpy.random.rand()-0.5))*-amp for i in range(int(num_samples))]
     else:
         print "invalid signal type!"
         signal = []
