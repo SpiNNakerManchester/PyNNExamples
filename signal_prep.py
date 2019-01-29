@@ -57,7 +57,8 @@ def generate_signal(signal_type="tone",fs=22050.,dBSPL=40.,
         else:
             raise Exception("must include valid wav filename")
     elif signal_type == 'noise':
-        signal = [(2*(numpy.random.rand()-0.5))*-amp for _ in range(int(num_samples))]
+        signal = [(2*(numpy.random.rand()-0.5))*-amp *
+                  (modulation_depth*0.5*(1+numpy.cos(2*numpy.pi*modulation_freq*T*i))) for i in range(int(num_samples))]
     else:
         print "invalid signal type!"
         signal = []
