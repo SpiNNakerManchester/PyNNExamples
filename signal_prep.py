@@ -164,10 +164,15 @@ def generate_psth(target_neuron_ids,spike_trains,bin_width,
     return output
 
 def psth_plot(plt,target_neuron_ids,spike_trains,bin_width,
-                  duration,scale_factor=0.001,title='PSTH'):
+                  duration,scale_factor=0.001,title='PSTH',subplots=None):
     PSTH = generate_psth(target_neuron_ids, spike_trains, bin_width=bin_width,
                             duration=duration, scale_factor=scale_factor)
     x = numpy.linspace(0, duration, len(PSTH))
+    if subplots is None:
+        plt.figure(title)
+    else:
+        ax=plt.subplot(subplots[0],subplots[1],subplots[2])
+        ax.set_title(title)
     plt.figure(title)
     plt.plot(x,PSTH)
     plt.ylabel("firing rate (sp/s)")
