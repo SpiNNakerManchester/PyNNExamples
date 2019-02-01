@@ -173,17 +173,20 @@ def psth_plot(plt,target_neuron_ids,spike_trains,bin_width,
     else:
         ax=plt.subplot(subplots[0],subplots[1],subplots[2])
         ax.set_title(title)
-    plt.figure(title)
     plt.plot(x,PSTH)
     plt.ylabel("firing rate (sp/s)")
     plt.xlabel("time (s)")
 
 def psth_plot_8(plt, target_neuron_ids, spike_trains, bin_width,
-              duration,title='PSTH',filepath=None):
+              duration,title='PSTH',filepath=None,subplots=None):
     PSTH = generate_psth_8(target_neuron_ids, spike_trains, bin_width=bin_width,
                          duration=duration)
     x = numpy.linspace(0, duration, len(PSTH))
-    plt.figure(title)
+    if subplots is None:
+        plt.figure(title)
+    else:
+        ax=plt.subplot(subplots[0],subplots[1],subplots[2])
+        ax.set_title(title)
     plt.plot(x, PSTH)
     max_rate = max(PSTH)
     plt.ylim((0,max_rate+1))
