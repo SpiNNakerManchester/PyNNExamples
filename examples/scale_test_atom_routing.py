@@ -1,11 +1,15 @@
 import spynnaker8 as sim
 import numpy as np
 import pylab as plt
+import sys
+sys.path.append("../") 
 from signal_prep import spike_raster_plot_8,get_sub_pop_spikes,sub_pop_builder_auto,normal_dist_connection_builder,spatial_normal_dist_connection_builder
 from pyNN.random import NumpyRNG, RandomDistribution
 import os
 import subprocess
 from pacman.model.constraints.placer_constraints import ChipAndCoreConstraint
+import time as local_time
+
 #================================================================================================
 # Simulation parameters
 #================================================================================================
@@ -33,6 +37,8 @@ inh_inh_list=connection_list_file['inh_inh_list']
 inh_target_list=connection_list_file['inh_target_list']
 
 timestep = 1.
+
+time_start = local_time.time()
 sim.setup(timestep=timestep)
 sim.set_number_of_neurons_per_core(sim.SpikeSourceArray,n_per_core)
 sim.set_number_of_neurons_per_core(sim.IF_cond_exp,n_per_core)
@@ -61,6 +67,8 @@ target_data = target_pop.get_data(['spikes'])
 output_spikes = target_data.segments[0].spiketrains
 
 sim.end()
+
+print "simulation of {}s complete in {}s".format(duration/1000.,local_time.time()-time_start)
 
 spike_raster_plot_8(output_spikes,plt,duration/1000.,pop_size+1,0.001,title="output pop activity")
 
