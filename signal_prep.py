@@ -67,6 +67,9 @@ def generate_signal(signal_type="tone",fs=22050.,dBSPL=40.,
                   (0.5*(1.+modulation_depth*numpy.cos(2*numpy.pi*modulation_freq*T*i))) for i in range(int(num_samples))]
         else:
             signal = [(2*(numpy.random.rand()-0.5))*-amp for i in range(int(num_samples))]
+    elif signal_type == 'click':
+        signal = [((0.01*(numpy.random.rand()-0.5))*amp)+amp for i in range(int(num_samples))]
+        ramp_duration=0
     else:
         print "invalid signal type!"
         signal = []
