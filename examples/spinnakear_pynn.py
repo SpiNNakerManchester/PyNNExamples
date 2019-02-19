@@ -23,7 +23,7 @@ w2s_b = 0.3#
 # Simulation parameters
 #================================================================================================
 moc_spikes = [[10.,15.,20.,100.,105.],[24.,95.,102.],[5.,35.,80.]]#,102,104]]
-Fs = 100000.#22050.#
+Fs = 22050.#100000.#
 dBSPL=60
 wav_directory = '/home/rjames/SpiNNaker_devel/OME_SpiNN/'
 
@@ -38,7 +38,7 @@ click = generate_signal(signal_type='click',fs=Fs,dBSPL=dBSPL,duration=0.0002,pl
 
 # binaural_audio = np.asarray([np.tile(tone_1,5),np.tile(tone_1,4)])
 # binaural_audio = np.asarray([np.tile(tone_1,5)])
-binaural_audio = np.asarray([click,click])#tone_stereo
+binaural_audio = np.asarray([click,click])#tone_stereo#
 
 duration = (binaural_audio[0].size/Fs)*1000.#max(input_spikes[0])
 
@@ -48,16 +48,16 @@ plt.plot(x,binaural_audio[0])
 #================================================================================================
 # SpiNNaker setup
 #================================================================================================
-sim.setup(timestep=0.1)
+sim.setup(timestep=1.)
 # sim.set_number_of_neurons_per_core(sim.IF_cond_exp,64)
 # sim.set_number_of_neurons_per_core(sim.SpikeSourceArray,128)
 
 #================================================================================================
 # Populations
 #================================================================================================
-an_pop_size = 600
+an_pop_size = 3000
 spinnakear_pop_left = sim.Population(an_pop_size,SpiNNakEar(audio_input=binaural_audio[0],fs=Fs,n_channels=an_pop_size/10,ear_index=0),label="spinnakear_pop_left")
-spinnakear_pop_left.record(['spikes'])
+# spinnakear_pop_left.record(['spikes'])
 spinnakear_pop_right = sim.Population(an_pop_size,SpiNNakEar(audio_input=binaural_audio[1],fs=Fs,n_channels=an_pop_size/10,ear_index=1),label="spinnakear_pop_right")
 moc_pop = sim.Population(3,sim.SpikeSourceArray(spike_times=moc_spikes),label="moc_pop")
 an_pop_left = sim.Population(an_pop_size,sim.IF_cond_exp,bushy_params_cond,label="an_pop_left_fixed_weight_scale_cond")
