@@ -22,8 +22,11 @@ w2s_b = 0.3#
 #================================================================================================
 # Simulation parameters
 #================================================================================================
+# moc_spikes = [[10.],[],[]]#,102,104]]
 moc_spikes = [[10.,15.,20.,100.,105.],[24.,95.,102.],[5.,35.,80.]]#,102,104]]
-Fs = 100000.#22050.#
+# for _ in range(3):
+#     moc_spikes.append([t for t in range(0,150,3)])
+Fs = 22050.#100000.#
 dBSPL=60
 wav_directory = '../../OME_SpiNN/'
 
@@ -38,7 +41,7 @@ click = generate_signal(signal_type='click',fs=Fs,dBSPL=dBSPL,duration=0.0002,pl
 
 # binaural_audio = np.asarray([np.tile(tone_1,5),np.tile(tone_1,4)])
 # binaural_audio = np.asarray([np.tile(tone_1,5)])
-binaural_audio = np.asarray([click,click])#tone_stereo#
+binaural_audio = tone_stereo#np.asarray([click,click])#
 
 duration = (binaural_audio[0].size/Fs)*1000.#max(input_spikes[0])
 
@@ -55,30 +58,38 @@ sim.setup(timestep=1.)
 #================================================================================================
 # Populations
 #================================================================================================
-an_pop_size = 1000
+an_pop_size = 100
 spinnakear_pop_left = sim.Population(an_pop_size,SpiNNakEar(audio_input=binaural_audio[0],fs=Fs,n_channels=an_pop_size/10,ear_index=0),label="spinnakear_pop_left")
-spinnakear_pop_left.record(['spikes'])
-spinnakear_pop_right = sim.Population(an_pop_size,SpiNNakEar(audio_input=binaural_audio[1],fs=Fs,n_channels=an_pop_size/10,ear_index=1),label="spinnakear_pop_right")
-spinnakear_pop_right.record(['spikes'])
+# spinnakear_pop_left.record(['spikes'])
+spinnakear_pop_left.record(['spikes','moc'])
+# spinnakear_pop_right = sim.Population(an_pop_size,SpiNNakEar(audio_input=binaural_audio[1],fs=Fs,n_channels=an_pop_size/10,ear_index=1),label="spinnakear_pop_right")
+# spinnakear_pop_right.record(['spikes'])
 moc_pop = sim.Population(3,sim.SpikeSourceArray(spike_times=moc_spikes),label="moc_pop")
+moc_pop_2 = sim.Population(3,sim.SpikeSourceArray(spike_times=moc_spikes),label="moc_pop_2")
 
 #================================================================================================
 # Projections
 #================================================================================================
-moc_ohc_connectons = [(0,0),(1,0),(1,1),(2,1)]
+moc_ohc_connectons = [(0,0),(1,2),(1,1),(2,1)]
+moc_ohc_connectons_2 = [(0,0),(1,0),(1,1),(2,0)]
 moc_projection = sim.Projection(moc_pop,spinnakear_pop_left,sim.FromListConnector(moc_ohc_connectons),synapse_type=sim.StaticSynapse(weight=1.))
+moc_projection = sim.Projection(moc_pop_2,spinnakear_pop_left,sim.FromListConnector(moc_ohc_connectons_2),synapse_type=sim.StaticSynapse(weight=1.))
 
 sim.run(duration)
 
-ear_spikes_left = spinnakear_pop_left.get_data(['spikes'])[0]
-ear_spikes_right = spinnakear_pop_right.get_data(['spikes'])[0]
+ear_left_data = spinnakear_pop_left.get_data()
+ear_spikes_left = ear_left_data['spikes']
+ear_moc_left = ear_left_data['moc']
 
 sim.end()
 
 spike_raster_plot_8(ear_spikes_left, plt, duration / 1000., an_pop_size + 1, 0.001, title="ear pop activity left")
-spike_raster_plot_8(ear_spikes_right, plt, duration / 1000., an_pop_size + 1, 0.001, title="ear pop activity right")
-
+# spike_raster_plot_8(ear_spikes_right, plt, duration / 1000., an_pop_size + 1, 0.001, title="ear pop activity right")
 # spike_raster_plot_8(output_spikes_left, plt, duration / 1000., an_pop_size + 1, 0.001, title="output pop activity left")
 # spike_raster_plot_8(output_spikes_right, plt, duration / 1000., an_pop_size + 1, 0.001, title="output pop activity right")
-
+plt.figure("MOC")
+for moc_signal in ear_moc_left:
+    x = np.linspace(0,duration,len(moc_signal))
+    plt.plot(x,moc_signal)
+plt.xlabel("time (ms)")
 plt.show()
