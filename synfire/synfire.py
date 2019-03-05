@@ -56,7 +56,7 @@ try:
         plt.plot(
             [i[1] for i in pop_spikes],
             [i[0] + offset for i in pop_spikes], "."
-    )
+        )
         offset += n_neurons
     plt.show()
 except Exception as ex:
