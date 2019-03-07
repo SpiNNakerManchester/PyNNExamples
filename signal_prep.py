@@ -737,18 +737,23 @@ def normal_dist_connection_builder(pre_size,post_size,RandomDistribution,
     for post in posts:
         scaled_post = int(post*post_scale)
         mu = int(dist / 2) + scaled_post * dist
-        # mu = dist / 2. + post * dist
         pre_dist = RandomDistribution('normal_clipped',[mu,sigma,0,pre_size*pre_scale -1])
         if isinstance(conn_num,float) or isinstance(conn_num,int):
             number_of_connections = conn_num
         else:
             number_of_connections = conn_num.next(n=1)
         pre_idxs = pre_dist.next(n=int(number_of_connections))
-        pre_check = []
+        if multapses is False:
+            pre_idxs = np.unique(np.array(pre_idxs,dtype=int))
+            loop_count=0
+            while len(pre_idxs)<int(number_of_connections) and loop_count<2:
+                connections_to_make = int(number_of_connections) - len(pre_idxs)
+                pre_idxs = np.unique(np.append(pre_idxs,np.array(pre_dist.next(n=1000),dtype=int)))
+                loop_count+=1
+
         for pre in pre_idxs:
             scaled_pre = int(np.round(pre / pre_scale))
-            # if scaled_pre >= 0 and scaled_pre < pre_size:
-            if scaled_pre not in pre_check and np.random.rand() <= p_connect:
+            if np.random.rand() <= p_connect:
                 if conn_weight is None:
                     conn_list.append((scaled_pre, post))
                 else:
@@ -769,9 +774,6 @@ def normal_dist_connection_builder(pre_size,post_size,RandomDistribution,
                         conn_delay = delay
 
                     conn_list.append((scaled_pre, post, weight, conn_delay))
-            if multapses is False:
-                pre_check.append(scaled_pre)
-
     return conn_list
 #find stimulus onset times from audio signal
 def audio_stimulus_onset_detector(audio_signal,Fs,num_classes):
