@@ -1570,3 +1570,14 @@ def get_sub_pop_spikes(pops,posts_from_pop_index_dict=None):
             for j,neuron in enumerate(spikes):
                 output_spikes[neuron_indices[j]] = neuron
     return output_spikes
+
+def fixed_p_connection_builder(pre_size, post_size,p_connect):
+    conn_list = []
+    import numpy as np
+    for post in range(int(post_size)):
+        for pre in range(int(pre_size)):
+            if np.random.rand()<p_connect:
+                conn_list.append((pre,post))
+
+    return conn_list
+
