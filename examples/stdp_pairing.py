@@ -1,6 +1,4 @@
 import spynnaker8 as sim
-from spynnaker8.utilities import neo_convertor
-from p8_integration_tests.base_test_case import BaseTestCase
 
 # SpiNNaker setup
 sim.setup(timestep=1.0, min_delay=1.0, max_delay=10.0)
