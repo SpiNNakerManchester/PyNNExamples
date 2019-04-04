@@ -1,6 +1,6 @@
 import spynnaker8 as p
 from pyNN.random import RandomDistribution
-import pylab
+import matplotlib.pyplot as pylab
 import numpy
 from pyNN.utility.plotting import Figure, Panel
 
