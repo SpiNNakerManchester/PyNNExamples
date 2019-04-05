@@ -10,6 +10,7 @@ import math
 import numpy
 import pylab
 import spynnaker8 as sim
+from six import iteritems, iterkeys, itervalues
 
 # Timestep (ms)
 # **NOTE** the 2.5Khz input frequency is not going to work particularily well
@@ -73,7 +74,7 @@ mean_isis = {t: numpy.average(i)
 isi_cv = {t: math.sqrt(
     numpy.sum(numpy.power(time_binned_isis[t] - mean_isi, 2)) /
     float(len(time_binned_isis[t]))) / mean_isi
-    for (t, mean_isi) in mean_isis.iteritems()}
+    for (t, mean_isi) in iteritems(mean_isis)}
 
 # Take average CA2 level across all neurons
 # average_ca2 = numpy.average(numpy.reshape(ca2[:,2], (N, int(T / dt))),
@@ -82,15 +83,15 @@ isi_cv = {t: math.sqrt(
 # Plot
 fig, axes = pylab.subplots(2, sharex=True)
 
-axes[0].scatter(list(mean_isis.iterkeys()),
-                [1000.0 / i for i in mean_isis.itervalues()], s=2)
+axes[0].scatter(list(iterkeys(mean_isis)),
+                [1000.0 / i for i in itervalues(mean_isis)], s=2)
 axes[0].set_ylabel("Firing rate/Hz")
 
 # axes[1].scatter(numpy.arange(0.0, T, dt), average_ca2, s=2)
 # axes[1].set_ylabel("CA2/mA")
 # axes[1].set_ylim((0.0, numpy.amax(average_ca2) * 1.25))
 
-axes[1].scatter(list(isi_cv.iterkeys()), list(isi_cv.itervalues()), s=2)
+axes[1].scatter(list(iterkeys(isi_cv)), list(itervalues(isi_cv)), s=2)
 axes[1].set_ylabel("Coefficient of ISI variance")
 
 axes[1].set_xlim((0.0, T))
