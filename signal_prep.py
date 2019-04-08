@@ -187,14 +187,16 @@ def psth_plot_8(plt, target_neuron_ids, spike_trains, bin_width,
     x = numpy.linspace(0, duration, len(PSTH))
     if subplots is None:
         plt.figure(title)
+        plt.xlabel("time (s)")
     else:
         ax=plt.subplot(subplots[0],subplots[1],subplots[2])
         ax.set_title(title)
+        if subplots[2]==subplots[0]:
+            plt.xlabel("time (s)")
     plt.plot(x, PSTH)
     max_rate = max(PSTH)
     plt.ylim((0,max_rate+1))
     plt.ylabel("firing rate (sp/s)")
-    plt.xlabel("time (s)")
     if filepath is not None:
         plt.savefig(filepath + '/{}.eps'.format(title))
     return PSTH
@@ -671,69 +673,27 @@ def find_nearest(array, value):
     idx = (np.abs(array - value)).argmin()
     return array[idx]
 
-#assumes ID is actually a position in 2D space i.e. the max post and pre IDs are the same regardless of how many neurons are in each pop
-def spatial_normal_dist_connection_builder(spatial_range,n_pre,n_post,RandomDistribution,
-                                   conn_num,dist,sigma,conn_weight=None,delay=1.,p_connect=1.0,
-                                   delay_scale=None,posts=None,multapses=True):
-    import numpy as np
-    if posts is None:
-        posts = xrange(n_post)
-
-    conn_list = []
-    # post_scale = float(spatial_range)/n_post
-    scaled_pres = np.linspace(0,spatial_range-1,n_pre,dtype=int)
-    scaled_posts = np.linspace(0,spatial_range-1,n_post,dtype=int)
-
-    for scaled_post in scaled_posts:
-        # scaled_post = int(post*post_scale)
-        mu = int(dist / 2) + scaled_post * dist
-        pre_dist = RandomDistribution('normal_clipped',[mu,sigma,0,spatial_range-1])
-        if isinstance(conn_num,float) or isinstance(conn_num,int):
-            number_of_connections = conn_num
-        else:
-            number_of_connections = conn_num.next(n=1)
-        pre_idxs = pre_dist.next(n=int(number_of_connections))
-        nearest_pre_idxs = [find_nearest(scaled_pres,int(rand_val)) for rand_val in pre_idxs]
-        pre_check = []
-        for scaled_pre in nearest_pre_idxs:
-            # if scaled_pre >= 0 and scaled_pre < pre_size:
-            if scaled_pre not in pre_check and np.random.rand() <= p_connect:
-                if conn_weight is None:
-                    conn_list.append((scaled_pre, scaled_post))
-                else:
-                    if type(conn_weight) == float:
-                        weight = conn_weight
-                    else:  # assumes rand dist
-                        weight = conn_weight.next(n=1)
-                    if type(delay) != float:
-                        if delay_scale is not None:
-                            conn_delay = int(delay.next(n=1)) * delay_scale
-                        else:
-                            conn_delay = delay.next(n=1)
-                    else:
-                        conn_delay = delay
-
-                    conn_list.append((scaled_pre, scaled_post, weight, conn_delay))
-            if multapses is False:
-                pre_check.append(scaled_pre)
-
-    return conn_list
-
 def normal_dist_connection_builder(pre_size,post_size,RandomDistribution,
                                    conn_num,dist,sigma,conn_weight=None,delay=1.,p_connect=1.0,
-                                   delay_scale=None,dist_weight=None,posts=None,multapses=True):
+                                   delay_scale=None,dist_weight=None,posts=None,multapses=True,normalised_space=None,get_max_dist=False):
     import numpy as np
     if posts is None:
         posts = xrange(post_size)
 
     conn_list = []
-    if pre_size > post_size:
-        post_scale = float(pre_size-1)/(post_size-1)
-        pre_scale = 1.
+    if normalised_space is None:
+        if pre_size > post_size:
+            post_scale = float(pre_size-1)/(post_size-1)
+            pre_scale = 1.
+        else:
+            post_scale = 1.
+            pre_scale = float(post_size-1)/(pre_size-1)
     else:
-        post_scale = 1.
-        pre_scale = float(post_size-1)/(pre_size-1)
+        post_scale = float(normalised_space-1)/(post_size-1)
+        pre_scale = float(normalised_space-1)/(pre_size-1)
 
+    if get_max_dist is True:
+        max_dist = 0
     for post in posts:
         scaled_post = int(post*post_scale)
         mu = int(dist / 2) + scaled_post * dist
@@ -747,12 +707,14 @@ def normal_dist_connection_builder(pre_size,post_size,RandomDistribution,
             pre_idxs = np.unique(np.array(pre_idxs,dtype=int))
             loop_count=0
             while len(pre_idxs)<int(number_of_connections) and loop_count<2:
-                connections_to_make = int(number_of_connections) - len(pre_idxs)
                 pre_idxs = np.unique(np.append(pre_idxs,np.array(pre_dist.next(n=1000),dtype=int)))
                 loop_count+=1
 
         for pre in pre_idxs:
             scaled_pre = int(np.round(pre / pre_scale))
+            if get_max_dist is True:
+                if abs(scaled_pre-mu)>max_dist:
+                    max_dist = abs(scaled_pre-mu)
             if np.random.rand() <= p_connect:
                 if conn_weight is None:
                     conn_list.append((scaled_pre, post))
@@ -774,7 +736,10 @@ def normal_dist_connection_builder(pre_size,post_size,RandomDistribution,
                         conn_delay = delay
 
                     conn_list.append((scaled_pre, post, weight, conn_delay))
-    return conn_list
+    if get_max_dist is True:
+        return conn_list,max_dist
+    else:
+        return conn_list
 #find stimulus onset times from audio signal
 def audio_stimulus_onset_detector(audio_signal,Fs,num_classes):
     import numpy as np
