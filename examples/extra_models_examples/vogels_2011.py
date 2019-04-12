@@ -1,6 +1,6 @@
 import spynnaker8 as sim
 import numpy
-import pylab
+import matplotlib.pyplot as pylab
 from spynnaker8.utilities import neo_convertor
 
 # -------------------------------------------------------------------

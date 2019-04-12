@@ -1,6 +1,7 @@
 """
 Simple Associative Memory
 """
+from __future__ import division
 import spynnaker8 as p
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
@@ -71,9 +72,9 @@ p_from_inhib_connect = 1.0
 
 spikes0 = list()
 teachingSpikes = list()
-for i in range(runTime/40):
+for i in range(runTime//40):
     spikes0.append(i*40)
-for i in range(runTime/80):
+for i in range(runTime//80):
     teachingSpikes.append(i*40+5+120)
 
 # spikes0 = [0, 40, 80, 120, 160, 200, 240, 280, 320, 360, 400, 440, 480, 520,
