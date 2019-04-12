@@ -1,6 +1,7 @@
 """
 Synfire chain example
 """
+import matplotlib.pyplot as plt
 import spynnaker8 as sim
 from spynnaker8.utilities import neo_convertor
 
@@ -45,24 +46,22 @@ spikes = map(neo_convertor.convert_spikes, neos)
 sim.end()
 
 
-if __name__ == '__main__':
-    try:
-        import pylab
-        pylab.figure()
-        pylab.xlabel('Time (ms)')
-        pylab.ylabel('Neuron')
-        pylab.title('Spikes Sent By Chain')
-        offset = 0
-        for pop_spikes in spikes:
-            pylab.plot(
-                [i[1] for i in pop_spikes],
-                [i[0] + offset for i in pop_spikes], "."
-            )
-            offset += n_neurons
-        pylab.show()
-    except Exception as ex:
-        print(ex)
-        print(spikes)
+try:
+    plt.figure()
+    plt.xlabel('Time (ms)')
+    plt.ylabel('Neuron')
+    plt.title('Spikes Sent By Chain')
+    offset = 0
+    for pop_spikes in spikes:
+        plt.plot(
+            [i[1] for i in pop_spikes],
+            [i[0] + offset for i in pop_spikes], "."
+        )
+        offset += n_neurons
+    plt.show()
+except Exception as ex:
+    print(spikes)
+    raise ex
 
     # Way to plot the spikes without neo converter but without the colours
     # try:
