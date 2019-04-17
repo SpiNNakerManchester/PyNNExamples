@@ -702,19 +702,20 @@ def normal_dist_connection_builder(pre_size,post_size,RandomDistribution,
             number_of_connections = conn_num
         else:
             number_of_connections = conn_num.next(n=1)
-        pre_idxs = pre_dist.next(n=int(number_of_connections))
+        pre_idxs = pre_dist.next(n=int(number_of_connections+0.5))
         if multapses is False:
-            pre_idxs = np.unique(np.array(pre_idxs,dtype=int))
+            samples = np.unique(np.array(pre_idxs,dtype=int))
             loop_count=0
-            while len(pre_idxs)<int(number_of_connections) and loop_count<2:
-                pre_idxs = np.unique(np.append(pre_idxs,np.array(pre_dist.next(n=1000),dtype=int)))
+            while len(samples)<int(number_of_connections) and loop_count<2:
+                samples = np.unique(np.append(samples,np.array(pre_dist.next(n=1000),dtype=int)))
                 loop_count+=1
+            pre_idxs = np.random.choice(samples,int(number_of_connections),replace=False)
 
         for pre in pre_idxs:
             scaled_pre = int(np.round(pre / pre_scale))
             if get_max_dist is True:
-                if abs(scaled_pre-mu)>max_dist:
-                    max_dist = abs(scaled_pre-mu)
+                if abs(pre-mu)>max_dist:
+                    max_dist = abs(pre-mu)
             if np.random.rand() <= p_connect:
                 if conn_weight is None:
                     conn_list.append((scaled_pre, post))
