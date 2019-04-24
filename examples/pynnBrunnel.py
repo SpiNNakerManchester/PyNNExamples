@@ -1,7 +1,7 @@
 import spynnaker8 as pynn
 
 import numpy as np
-import pylab as plt
+import matplotlib.pyplot as plt
 from pyNN.random import NumpyRNG, RandomDistribution
 from pyNN.utility.plotting import Figure, Panel
 
