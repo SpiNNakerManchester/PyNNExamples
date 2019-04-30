@@ -217,7 +217,7 @@ def spike_raster_plot(spikes,plt,duration,ylim,scale_factor=0.001,title=None):
         plt.ylabel("neuron ID")
         plt.xlabel("time (s)")
 
-def spike_raster_plot_8(spikes,plt,duration,ylim,scale_factor=0.001,title=None,filepath=None,xlim=None,
+def spike_raster_plot_8(spikes,plt,duration,ylim,scale_factor=0.001,title=None,filepath=None,file_format='pdf',file_name='',xlim=None,
                         onset_times=None,pattern_duration=None,markersize=3,marker_colour='black',alpha=1.,subplots=None,
                         legend_strings=None):
     if len(spikes) > 0:
@@ -272,7 +272,7 @@ def spike_raster_plot_8(spikes,plt,duration,ylim,scale_factor=0.001,title=None,f
                         ncol=len(legend_strings),markerscale=10.)
         if filepath is not None:
             if subplots is None or subplots[2]==subplots[0]:
-                plt.savefig(filepath + '/{}.pdf'.format(title))#switched to pdf as using transparent images
+                plt.savefig(filepath + '/' + file_name + '{}.'.format(title) + file_format)
 
 
 def multi_spike_raster_plot(spikes_list,plt,duration,ylim,scale_factor=0.001,marker_size=3,dopamine_spikes=[],title=''):
