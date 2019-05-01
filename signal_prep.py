@@ -181,7 +181,7 @@ def psth_plot(plt,target_neuron_ids,spike_trains,bin_width,
     plt.xlabel("time (s)")
 
 def psth_plot_8(plt, target_neuron_ids, spike_trains, bin_width,
-              duration,title='PSTH',filepath=None,subplots=None):
+              duration,title='PSTH',filepath=None,subplots=None,file_format='pdf',file_name=''):
     PSTH = generate_psth_8(target_neuron_ids, spike_trains, bin_width=bin_width,
                          duration=duration)
     x = numpy.linspace(0, duration, len(PSTH))
@@ -198,7 +198,8 @@ def psth_plot_8(plt, target_neuron_ids, spike_trains, bin_width,
     plt.ylim((0,max_rate+1))
     plt.ylabel("firing rate (sp/s)")
     if filepath is not None:
-        plt.savefig(filepath + '/{}.eps'.format(title))
+        if subplots is None or subplots[2] == subplots[0]:
+            plt.savefig(filepath + '/' + file_name + '{}.'.format(title) + file_format)
     return PSTH
 def spike_raster_plot(spikes,plt,duration,ylim,scale_factor=0.001,title=None):
     if len(spikes) > 0:
