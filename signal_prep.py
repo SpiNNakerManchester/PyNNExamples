@@ -181,7 +181,7 @@ def psth_plot(plt,target_neuron_ids,spike_trains,bin_width,
     plt.xlabel("time (s)")
 
 def psth_plot_8(plt, target_neuron_ids, spike_trains, bin_width,
-              duration,title='PSTH',filepath=None,subplots=None,file_format='pdf',file_name=''):
+              duration,title='PSTH',filepath=None,subplots=None,file_format='pdf',file_name='',ylim=None):
     PSTH = generate_psth_8(target_neuron_ids, spike_trains, bin_width=bin_width,
                          duration=duration)
     x = numpy.linspace(0, duration, len(PSTH))
@@ -194,8 +194,11 @@ def psth_plot_8(plt, target_neuron_ids, spike_trains, bin_width,
         if subplots[2]==subplots[0]:
             plt.xlabel("time (s)")
     plt.plot(x, PSTH)
-    max_rate = max(PSTH)
-    plt.ylim((0,max_rate+1))
+    if ylim is None:
+        max_rate = max(PSTH)
+        plt.ylim((0,max_rate+1))
+    else:
+        plt.ylim((0,ylim))
     plt.ylabel("firing rate (sp/s)")
     if filepath is not None:
         if subplots is None or subplots[2] == subplots[0]:
@@ -221,16 +224,15 @@ def spike_raster_plot(spikes,plt,duration,ylim,scale_factor=0.001,title=None):
 def spike_raster_plot_8(spikes,plt,duration,ylim,scale_factor=0.001,title=None,filepath=None,file_format='pdf',file_name='',xlim=None,
                         onset_times=None,pattern_duration=None,markersize=3,marker_colour='black',alpha=1.,subplots=None,
                         legend_strings=None):
+    import numpy as np
     if len(spikes) > 0:
-        neuron_index = 1
         spike_ids = []
         spike_times = []
 
-        for times in spikes:
+        for neuron_index,times in enumerate(spikes):
             for time in times:
-                spike_ids.append(neuron_index)
+                spike_ids.append(neuron_index+1)
                 spike_times.append(time)
-            neuron_index+=1
         scaled_times = [spike_time * scale_factor for spike_time in spike_times]
 
         ##plot results
@@ -239,7 +241,8 @@ def spike_raster_plot_8(spikes,plt,duration,ylim,scale_factor=0.001,title=None,f
             plt.xlabel("time (s)")
         else:
             ax = plt.subplot(subplots[0], subplots[1], subplots[2])
-            ax.set_title(title)
+            if title is not None:
+                ax.set_title(title)
             if subplots[2]==subplots[0]:
                 plt.xlabel("time (s)")
             else:
@@ -994,7 +997,7 @@ def sparsity_measure(onset_times,output_spikes,onset_window=5.,from_time=0):
                 sparsity_matrix[id].append(av)
     return sparsity_matrix
 
-def repeat_test_spikes_gen(input_spikes,test_neuron_id,onset_times,test_duration):
+def repeat_test_spikes_gen(input_spikes,test_neuron_id,onset_times,test_duration_ms,pre_ms=20.):
     # go through all spikes from onset time -10ms to onset time + 60ms and add this value - the corresponding onset time offset to a new row in a matrix of responses
     # the pre-existing psth function can then be used to plot the output of these collective responses
     import numpy as np
@@ -1003,9 +1006,9 @@ def repeat_test_spikes_gen(input_spikes,test_neuron_id,onset_times,test_duration
     for i, stimulus in enumerate(onset_times):
         psth_spikes.append([])
         for onset_time in stimulus:
-            a = spikes[spikes > onset_time - 10.]
-            b = a[a <= onset_time + test_duration]
-            c = np.asarray([x.item()- onset_time for x in b])
+            a = spikes[spikes > (onset_time - pre_ms)]
+            b = a[a <= onset_time + test_duration_ms]
+            c = np.asarray([x.item()- (onset_time - pre_ms) for x in b])
             psth_spikes[i].append(c)
     return psth_spikes
 
