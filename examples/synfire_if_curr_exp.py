@@ -56,7 +56,7 @@ gsyn_exc = populations[0].get_data('gsyn_exc')
 gsyn_inh = populations[0].get_data('gsyn_inh')
 spikes = populations[0].get_data('spikes')
 
-mem_v = v.segments[0].filter(name='v')
+
 Figure(
     # raster plot of the presynaptic neuron spike times
     Panel(spikes.segments[0].spiketrains,
@@ -69,6 +69,7 @@ Figure(
           ylabel="gsyn excitatory (mV)",
           data_labels=[populations[0].label], yticks=True, xlim=(0, runtime)),
     Panel(gsyn_inh.segments[0].filter(name='gsyn_inh')[0],
+          xlabel="Time (ms)", xticks=True,
           ylabel="gsyn inhibitory (mV)",
           data_labels=[populations[0].label], yticks=True, xlim=(0, runtime)),
     title="Simple synfire chain example",

@@ -3,7 +3,7 @@ import numpy as np
 import pylab as plt
 import sys
 sys.path.append("../") 
-from signal_prep import spike_raster_plot_8,get_sub_pop_spikes,sub_pop_builder_auto,normal_dist_connection_builder,spatial_normal_dist_connection_builder
+from signal_prep import spike_raster_plot_8,get_sub_pop_spikes,sub_pop_builder_auto,normal_dist_connection_builder
 from pyNN.random import NumpyRNG, RandomDistribution
 import os
 import subprocess
