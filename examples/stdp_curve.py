@@ -1,9 +1,8 @@
 import matplotlib.pyplot as pylab
+import math
 try:
     import pyNN.spiNNaker as sim
 except Exception:
-import pylab
-import math
     import spynnaker8 as sim
 
 # ------------------------------------------------------------------
