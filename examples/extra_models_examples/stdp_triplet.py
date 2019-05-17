@@ -1,4 +1,4 @@
-import pylab
+import matplotlib.pyplot as pylab
 
 import spynnaker8 as sim
 

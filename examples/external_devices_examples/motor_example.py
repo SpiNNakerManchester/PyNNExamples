@@ -5,7 +5,7 @@ going forward
 
 try:
     import pyNN.spiNNaker as p
-except Exception as e:
+except Exception:
     import spynnaker8 as p
 
 # set up the tools

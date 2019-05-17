@@ -14,7 +14,6 @@ September 2006
 $Id$
 """
 
-import pylab
 import spynnaker8 as sim
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
@@ -101,4 +100,3 @@ Figure(
 plt.show()
 
 sim.end()
-pylab.show()
