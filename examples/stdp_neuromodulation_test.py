@@ -1,16 +1,18 @@
 """
 Simple test for neuromodulated STDP.
 Two pre-synaptic spikes are added, at times 1500 and 2400ms.
-Post-synaptic neuron is stimulated to fire at time 1503ms. Dendritic delay is
-1ms so post-synaptic time is at 1504ms when processed in STDP.
-Dopamine neuron spikes at 1600+1ms (Also added dendritic delay).
+Post-synaptic neuron is stimulated at 1502 and fires at time 1503ms.
+Dendritic delay is 1ms so post-synaptic time is at 1504ms when processed in
+STDP. Dopamine neuron spikes at 1600+1ms (Also added dendritic delay).
 Calculating weight change in this scenario, according to equations in the
-Izhikevich 2007 paper*, gives us the weight change of 10.305624...
+Izhikevich 2007 paper*, gives us the weight change of 10.0552710...
 *https://www.ncbi.nlm.nih.gov/pubmed/17220510
 Simulation from SpiNNaker gives us the weight change of 10.0087890625.
 Some inaccuracy occurs due to precision loss in s5.11 fixed point format
-used in STDP calculations and exp LUTs. Thus the error is smaller for smaller
-timing constants.
+used in STDP traces and exp LUTs. Also, due to long timing constants, exp
+LUTs are discretized further by TAU_C_SHIFT and TAU_D_SHIFT to be able to
+fit them into memory, adding another level of inaccuracy. Finally, some more
+accuracy may be lost due to weight scaling.
 """
 
 try:
