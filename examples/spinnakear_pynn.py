@@ -3,7 +3,7 @@ import numpy as np
 
 import spynnaker8 as sim
 from signal_prep import *
-from spinnak_ear.spinnakear import SpiNNakEar
+from spinnak_ear.spinnakear import SpiNNakEar,spinnakear_size_calculator
 from pacman.model.constraints.partitioner_constraints.max_vertex_atoms_constraint import MaxVertexAtomsConstraint
 from elephant.statistics import isi,cv
 
@@ -60,7 +60,7 @@ sim.setup(timestep=1.)
 #================================================================================================
 # Populations
 #================================================================================================
-an_pop_size = 1000
+an_pop_size = spinnakear_size_calculator(scale=0.03)
 spinnakear_pop_left = sim.Population(an_pop_size,SpiNNakEar(audio_input=binaural_audio[0],fs=Fs,n_channels=an_pop_size/10,ear_index=0),label="spinnakear_pop_left")
 spinnakear_pop_left.record(['spikes','moc'])
 spinnakear_pop_right = sim.Population(an_pop_size,SpiNNakEar(audio_input=binaural_audio[1],fs=Fs,n_channels=an_pop_size/10,ear_index=0),label="spinnakear_pop_right")
