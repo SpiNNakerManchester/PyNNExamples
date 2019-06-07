@@ -3,7 +3,7 @@ import numpy as np
 
 import spynnaker8 as sim
 from signal_prep import *
-from spinnak_ear.spinnakear import SpiNNakEar
+from spinnak_ear.spinnaker_ear_model import SpiNNakEar
 from pacman.model.constraints.partitioner_constraints.max_vertex_atoms_constraint import MaxVertexAtomsConstraint
 from elephant.statistics import isi,cv
 
