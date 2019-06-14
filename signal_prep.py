@@ -68,8 +68,7 @@ def generate_signal(signal_type="tone",fs=22050.,dBSPL=40.,
         else:
             signal = [(2*(numpy.random.rand()-0.5))*-amp for i in range(int(num_samples))]
     elif signal_type == 'click':
-        signal = [((0.01*(numpy.random.rand()-0.5))*amp)+amp for i in range(int(num_samples))]
-        ramp_duration=0
+        signal = [((0.01*(numpy.random.rand()-0.5))*-amp)-amp for i in range(int(num_samples))]
     else:
         print "invalid signal type!"
         signal = []
@@ -278,6 +277,29 @@ def spike_raster_plot_8(spikes,plt,duration,ylim,scale_factor=0.001,title=None,f
             if subplots is None or subplots[2]==subplots[0]:
                 plt.savefig(filepath + '/' + file_name + '{}.'.format(title) + file_format)
 
+def abr_spikes(neuron_times,duration_ms):
+    import numpy as np
+    abr = np.zeros(int((duration_ms) / 0.1))
+    x = np.arange(0, (duration_ms), 0.1)
+    flat_spikes = []
+    for neuron in neuron_times:
+        for time in neuron:
+            flat_spikes.append(time.item())
+    flat_spikes = np.asarray(flat_spikes)
+    unique_times = np.unique(flat_spikes)
+    for time in unique_times:
+        closest_index = int((np.abs(x - time)).argmin())
+        abr[closest_index] += len(np.where(flat_spikes == time)[0])
+    return abr,x
+
+def abr_mem_v(v,duration_ms,ref_v=-100.):
+    import numpy as np
+    import quantities as pq
+    v = v[0]
+    x = np.linspace(0, (duration_ms), len(v))
+    reference_voltage = ref_v * pq.mV
+    abr = np.sum(v-reference_voltage,axis=1)
+    return abr,x
 
 def multi_spike_raster_plot(spikes_list,plt,duration,ylim,scale_factor=0.001,marker_size=3,dopamine_spikes=[],title=''):
     plt.figure(title)
@@ -517,7 +539,7 @@ def cell_voltage_plot_8(v, plt, duration_ms, time_step_ms,scale_factor=0.001, id
             title = title + str(id + 1)
     else:
         mem_v = membrane_voltage
-        title = title + "{} neurons".format(membrane_voltage.shape[1])
+        # title = title + "{} neurons".format(membrane_voltage.shape[1])
     if subplots is None:
         plt.figure(title)
     else:
@@ -528,6 +550,9 @@ def cell_voltage_plot_8(v, plt, duration_ms, time_step_ms,scale_factor=0.001, id
     if subplots is None:
         plt.xlabel('time (s)')
         plt.ylabel('membrane voltage (mV)')
+    else:
+        if subplots[2] == subplots[0]:
+            plt.xlabel("time (s)")
     if filepath is not None:
         plt.savefig(filepath + '/' + title + '_memV.eps')
 
@@ -1551,3 +1576,29 @@ def fixed_p_connection_builder(pre_size, post_size,p_connect):
 
     return conn_list
 
+#assumes binaural data format
+def split_population_data_combine(split_data,variable_list):
+    import numpy as np
+    spikes_combined = []
+    mem_v_combined = []
+
+    variable_dict = {
+        'spikes': spikes_combined,
+        'v': mem_v_combined
+    }
+    for stack in split_data:
+        import quantities as nq
+        if 'spikes' in variable_list:
+            split_spikes = [split.segments[0].spiketrains for split in stack]
+            spikes_combined.append([val for tup in zip(*split_spikes) for val in tup])
+
+        if 'v' in variable_list:
+            mem_v_split = [split.segments[0].filter(name='v')[0] for split in stack]
+            sum_width = sum([v.shape[-1] for v in mem_v_split])
+            step = len(mem_v_split)
+            mem_v = np.empty((len(mem_v_split[0]), sum_width))*nq.mV
+            for i, v in enumerate(mem_v_split):
+                mem_v[:, i::step] = v
+            mem_v_combined.append([mem_v])#wrapped in a list to look like a usual mem_v `analog signal'
+
+    return [variable_dict[var] for var in variable_list]
