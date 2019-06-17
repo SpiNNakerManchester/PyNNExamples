@@ -78,7 +78,7 @@ def start_callback(label, connection):
 
 
 print(pop_input.label)
-poisson_control.add_start_callback(pop_input.label, start_callback)
+poisson_control.add_start_resume_callback(pop_input.label, start_callback)
 
 p.run(5000)
 
