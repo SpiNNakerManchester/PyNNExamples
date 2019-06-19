@@ -30,7 +30,8 @@ def generate_signal(signal_type="tone",fs=22050.,dBSPL=40.,
 
     elif signal_type == "sweep_tone":
         if len(freq)<2:
-            print "enter low and high frequency sweep values as freq=[low,high]"
+            print("enter low and high frequency sweep values as freq=[low,"
+                  "high]")
         phi = 0
         f = freq[0]
         delta = 2. * numpy.pi * f * T
@@ -43,8 +44,8 @@ def generate_signal(signal_type="tone",fs=22050.,dBSPL=40.,
             f = f * f_delta
             # f = f + f_delta
             delta = 2. * numpy.pi * f * T
-	if not ascending:
-	    signal = signal[::-1]
+    if not ascending:
+        signal = signal[::-1]
     elif signal_type == "file":
         if file_name:
             [fs_f,signal] = wavfile.read(file_name)
@@ -71,7 +72,7 @@ def generate_signal(signal_type="tone",fs=22050.,dBSPL=40.,
         signal = [((0.01*(numpy.random.rand()-0.5))*amp)+amp for i in range(int(num_samples))]
         ramp_duration=0
     else:
-        print "invalid signal type!"
+        print("invalid signal type!")
         signal = []
 
     # add ramps
@@ -879,7 +880,7 @@ def selective_neuron_search(pattern_spikes,spike_train,time_window,final_pattern
     counts,selective_neuron_ids,significant_spike_count = neuron_correlation(final_spike_train,time_window,
                                                                              stimulus_times,max_id,significant_spike_count=significant_spike_count)
 
-    print "significant spike count: {}".format(significant_spike_count)
+    print("significant spike count: {}".format(significant_spike_count))
     max_count = counts.max()
     plt.figure(figsize=(20,10))
     title = "{}ms post-stimulus spike count for target layer".format(time_window)
@@ -894,7 +895,7 @@ def selective_neuron_search(pattern_spikes,spike_train,time_window,final_pattern
     plt.ylim((0,max_count+1))
 
     for i in range(len(selective_neuron_ids)):
-        print selective_neuron_ids[i]
+        print(selective_neuron_ids[i])
 
     if filepath is not None:
         plt.savefig(filepath+"/{}.eps".format(title))
@@ -918,7 +919,7 @@ def connection_hist_plot(varying_weights,pre_size,post_size,plt,title='',filepat
     for (source,target,weight) in final_connections:
         if source is not None and weight>weight_min:
             if source in incoming_connections[int(target)]:
-                print "multapse detected!"
+                print("multapse detected!")
             incoming_connections[int(target)].append(source)
             source_list.append(source)
             target_list.append(target)
@@ -943,7 +944,7 @@ def connection_surface_plot(varying_weights,pre_size,post_size,plt,title='',file
         surface = np.zeros((pre_size,post_size))
         for (source,target,weight) in final_connections:
             if source in incoming_connections[int(target)]:
-                print "multapse detected!"
+                print("multapse detected!")
             incoming_connections[int(target)].append(source)
             surface[source][target] += weight
 
@@ -1513,9 +1514,13 @@ def sub_pop_builder_auto(sim,post_size,post_type,post_params,pre_type,pre_params
             pre_pop_index+=1
         chip_index+=1
     elapsed_pop_gen_projection_time = time.time() - t
-    print "sub pop building complete, n_sub_pre_pops={}, n_sub_post_pops={}".format(len(pre_pops),len(post_pops))
-    print "sub pop build times: sub_pop_calc={}, sub_pop_gen_project={} ".format(elapsed_calc_time,elapsed_pop_gen_projection_time)
-    print "post pop incoming spike counts: {}".format(post_pop_incoming_spike_counts)
+    print("sub pop building complete, n_sub_pre_pops={},"
+          " n_sub_post_pops={}".format(len(pre_pops),len(post_pops)))
+    print("sub pop build times: sub_pop_calc={}, "
+          "sub_pop_gen_project={}".format(
+        elapsed_calc_time,elapsed_pop_gen_projection_time))
+    print("post pop incoming spike counts: {}".format(
+        post_pop_incoming_spike_counts))
     return pre_pops,post_pops,pre_post_projs,max_pre_index_per_projection,posts_from_pop_index_dict
 
 def get_sub_pop_spikes(pops,posts_from_pop_index_dict=None):
