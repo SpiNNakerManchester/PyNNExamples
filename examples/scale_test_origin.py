@@ -36,7 +36,7 @@ input_spikes =[]
 spatial_dist = True
 isi = 50
 n_pres = int(duration/isi)
-n_input = 1000.
+n_input = 10000.
 n_per_core = 255#128
 input_size = n_per_core*np.ceil(n_input/n_per_core)#len(input_spikes)#
 # n_total = 2 * input_size
@@ -50,10 +50,10 @@ source_firing_rate = 50. #Hz
 isi_ms = 1000./source_firing_rate
 n_repeats = int((duration/1000.)*source_firing_rate)
 
-# for _ in range(int(input_size)):
-#     input_spikes.append([isi_ms*i + (np.random.rand())*(isi_ms/2.) for i in range(n_repeats)])
+for _ in range(int(input_size)):
+    input_spikes.append([isi_ms*i + (np.random.rand())*(isi_ms/2.) for i in range(n_repeats)])
 # np.save('./input_spikes.npy',input_spikes)
-input_spikes=np.load('./input_spikes.npy').tolist()
+# input_spikes=np.load('./input_spikes.npy').tolist()
 
 spike_raster_plot_8(input_spikes,plt,duration/1000.,ylim=input_size+1,title="input_activity")
 

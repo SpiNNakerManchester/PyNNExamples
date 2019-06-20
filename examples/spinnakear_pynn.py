@@ -69,7 +69,11 @@ moc_pop = sim.Population(
 moc_pop_2 = sim.Population(
     3, sim.SpikeSourceArray(spike_times=moc_spikes_2), label="moc_pop_2")
 
-# ==========================================================================
+target_pop = sim.Population(an_pop_size, sim.IF_cond_exp, {},
+                            label="target_fixed_weight_scale_cond")
+target_pop.record(['spikes'])
+
+#================================================================================================
 # Projections
 # ==========================================================================
 moc_ohc_connections = [(0, 0), (1, 1), (2, 2)]
@@ -82,6 +86,14 @@ moc_projection2 = sim.Projection(
     sim.FromListConnector(moc_ohc_connections_2),
     synapse_type=sim.StaticSynapse(weight=1.))
 
+one_to_one_list = [(i,i) for i in range(an_pop_size)]
+target_projection_left = sim.Projection(
+    spinnakear_pop_left, target_pop, sim.FromListConnector(one_to_one_list),
+    synapse_type=sim.StaticSynapse(weight=0.05))
+target_projection_right = sim.Projection(
+    spinnakear_pop_right, target_pop, sim.FromListConnector(one_to_one_list),
+    synapse_type=sim.StaticSynapse(weight=0.05))
+
 sim.run(duration)
 
 ear_left_data = spinnakear_pop_left.get_data()
@@ -91,6 +103,10 @@ ear_moc_left = ear_left_data['moc']
 ear_right_data = spinnakear_pop_right.get_data()
 ear_spikes_right = ear_right_data['spikes']
 ear_moc_right = ear_right_data['moc']
+
+target_data = target_pop.get_data(['spikes'])
+target_spikes = target_data.segments[0].spiketrains
+
 sim.end()
 
 spike_raster_plot_8(
@@ -99,6 +115,10 @@ spike_raster_plot_8(
 spike_raster_plot_8(
     ear_spikes_right, plt, duration / 1000., an_pop_size + 1, 0.001,
     title="ear pop activity right")
+spike_raster_plot_8(
+    target_spikes, plt, duration / 1000., an_pop_size + 1, 0.001,
+    title="target pop activity")
+
 
 legend_string = [str(i) for i in range(int(an_pop_size / 10))]
 plt.figure("MOC left")
