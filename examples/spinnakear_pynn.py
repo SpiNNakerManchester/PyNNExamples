@@ -36,16 +36,16 @@ tone_r = generate_signal(
 tone_stereo = np.asarray([tone, tone_r])
 click = generate_signal(
     signal_type='click', fs=Fs, dBSPL=dBSPL, duration=0.0002, plt=None,
-    silence=True, silence_duration=0.075)
+    silence=True, silence_duration=0.075, ramp_duration=0.0002)
 
 binaural_audio = tone_stereo
 
-duration = (binaural_audio[0].size/Fs)*1000.
+duration = (binaural_audio[0].size / Fs) * 1000.
 
 # ===========================================================================
 # SpiNNaker setup
 # ===========================================================================
-sim.setup(timestep=1.)
+sim.setup(timestep=1., time_scale_factor=3)
 
 # ===========================================================================
 # Populations
@@ -73,7 +73,7 @@ target_pop = sim.Population(an_pop_size, sim.IF_cond_exp, {},
                             label="target_fixed_weight_scale_cond")
 target_pop.record(['spikes'])
 
-#================================================================================================
+# ==========================================================================
 # Projections
 # ==========================================================================
 moc_ohc_connections = [(0, 0), (1, 1), (2, 2)]

@@ -25,8 +25,8 @@ def generate_signal(signal_type="tone",fs=22050.,dBSPL=40.,
         else:
             signal = [-amp * (numpy.sin(2 * numpy.pi * freq * T * i + map_bs_cos_shift))
                       for i in range(int(num_samples))]
-        #map_bs_remove 1st sample!?
-        signal=signal[1:]
+        # map_bs_remove 1st sample!?
+        signal = signal[1:]
 
     elif signal_type == "sweep_tone":
         if len(freq)<2:
@@ -44,11 +44,11 @@ def generate_signal(signal_type="tone",fs=22050.,dBSPL=40.,
             f = f * f_delta
             # f = f + f_delta
             delta = 2. * numpy.pi * f * T
-    if not ascending:
-        signal = signal[::-1]
+        if not ascending:
+            signal = signal[::-1]
     elif signal_type == "file":
         if file_name:
-            [fs_f,signal] = wavfile.read(file_name)
+            [fs_f, signal] = wavfile.read(file_name)
             if len(signal.shape)>1:#stereo
                 signal = signal[:, channel]
             fs_f=numpy.float64(fs_f)
@@ -86,6 +86,7 @@ def generate_signal(signal_type="tone",fs=22050.,dBSPL=40.,
         signal[i] *= ramp
         # off ramp
         signal[-i] *= ramp
+
     if silence:
         # add silence
         num_silence_samples = int(numpy.ceil(fs*silence_duration))
