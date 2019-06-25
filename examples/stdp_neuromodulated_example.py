@@ -111,7 +111,7 @@ def plot_spikes(spikes, title):
         pylab.ylabel('spikes')
         pylab.title(title)
     else:
-        print "No spikes received"
+        print("No spikes received")
 
 
 post_spikes = []
@@ -130,6 +130,6 @@ pylab.show()
 
 print("Weights(Initial %s)" % plastic_weights)
 for x in weights:
-    print x
+    print(x)
 
 sim.end()
