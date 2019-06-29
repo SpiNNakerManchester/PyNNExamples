@@ -12,18 +12,17 @@ def generate_signal(signal_type="tone",fs=22050.,dBSPL=40.,
                     silence=True,title='',ascending=True,channel=0,
                     max_val=None):
     T = 1./fs
-    amp = 1. * 28e-6 * 10. ** (dBSPL / 20.)
     num_samples = numpy.ceil(fs * duration)
     # inverted amp on input gives rarefaction effect for positive pressure (?!))
     if signal_type == "tone":
         map_bs_cos_shift = numpy.pi/2
 
         if modulation_freq > 0:
-            signal = [-amp*(numpy.sin(2*numpy.pi*freq*T*i+map_bs_cos_shift))*
+            signal = [(numpy.sin(2*numpy.pi*freq*T*i+map_bs_cos_shift))*
                       (0.5*(1.+modulation_depth*numpy.cos(2*numpy.pi*modulation_freq*T*i)))
                       for i in range(int(num_samples))]
         else:
-            signal = [-amp * (numpy.sin(2 * numpy.pi * freq * T * i + map_bs_cos_shift))
+            signal = [(numpy.sin(2 * numpy.pi * freq * T * i + map_bs_cos_shift))
                       for i in range(int(num_samples))]
         #map_bs_remove 1st sample!?
         signal=signal[1:]
@@ -38,7 +37,7 @@ def generate_signal(signal_type="tone",fs=22050.,dBSPL=40.,
         f_delta = numpy.power((freq[1] / freq[0]),1./num_samples)# 1.0002534220677803#(freq[1] / freq[0]) /num_samples
         signal = []
         for i in range(int(num_samples)):
-            signal.append(-amp * numpy.sin(phi))
+            signal.append(numpy.sin(phi))
             phi = phi + delta
             f = f * f_delta
             # f = f + f_delta
@@ -53,25 +52,36 @@ def generate_signal(signal_type="tone",fs=22050.,dBSPL=40.,
             fs_f=numpy.float64(fs_f)
             if fs_f != fs:
                 signal = resample(signal,fs,fs_f)
-            signal = numpy.float64(signal)
-            if max_val is None:
-                max_val=numpy.max(numpy.abs(signal))
-            for i in range(len(signal)):
-                signal[i]/=max_val
-                signal[i]*=-amp #set loudness
+            # signal = numpy.float64(signal)
+            # if max_val is None:
+            #     max_val=numpy.max(numpy.abs(signal))
+            #     # max_val=numpy.mean(signal**2)**0.5
+            # for i in range(len(signal)):
+            #     signal[i]/=max_val
+            #     # amp/=max_val
+            #     signal[i]*=-amp #set loudness
         else:
             raise Exception("must include valid wav filename")
     elif signal_type == 'noise':
         if modulation_freq>0:
-            signal = [(2*(numpy.random.rand()-0.5))*-amp *
+            signal = [(2*(numpy.random.rand()-0.5))*
                   (0.5*(1.+modulation_depth*numpy.cos(2*numpy.pi*modulation_freq*T*i))) for i in range(int(num_samples))]
         else:
-            signal = [(2*(numpy.random.rand()-0.5))*-amp for i in range(int(num_samples))]
+            signal = [(2*(numpy.random.rand()-0.5)) for i in range(int(num_samples))]
     elif signal_type == 'click':
-        signal = [((0.01*(numpy.random.rand()-0.5))*-amp)-amp for i in range(int(num_samples))]
+        # signal = [((0.01*(numpy.random.rand()-0.5))*-amp)-amp for i in range(int(num_samples))]
+        signal = [1. for i in range(int(num_samples))]
     else:
         print "invalid signal type!"
         signal = []
+    #amplitude conversion
+    signal = numpy.float64(signal)
+    target_rms = 1. * 28e-6 * 10. ** (dBSPL / 20.)
+    if max_val is None:
+        # max_val = numpy.max(numpy.abs(signal))
+        max_val=numpy.mean(signal**2)**0.5
+    amp = target_rms/max_val
+    signal *= -amp  # set loudness
 
     # add ramps
     num_ramp_samples = numpy.round(fs * ramp_duration)
@@ -295,10 +305,10 @@ def abr_spikes(neuron_times,duration_ms):
 def abr_mem_v(v,duration_ms,ref_v=-100.):
     import numpy as np
     import quantities as pq
-    v = v[0]
+    v = np.asarray(v[0])
     x = np.linspace(0, (duration_ms), len(v))
-    reference_voltage = ref_v * pq.mV
-    abr = np.sum(v-reference_voltage,axis=1)
+    # reference_voltage = ref_v * pq.mV
+    abr = np.sum(v-ref_v,axis=1)
     return abr,x
 
 def multi_spike_raster_plot(spikes_list,plt,duration,ylim,scale_factor=0.001,marker_size=3,dopamine_spikes=[],title=''):
@@ -1601,4 +1611,4 @@ def split_population_data_combine(split_data,variable_list):
                 mem_v[:, i::step] = v
             mem_v_combined.append([mem_v])#wrapped in a list to look like a usual mem_v `analog signal'
 
-    return [variable_dict[var] for var in variable_list]
+    return variable_dict
