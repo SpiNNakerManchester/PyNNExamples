@@ -51,17 +51,17 @@ sim.setup(timestep=1., time_scale_factor=3)
 # Populations
 # ===========================================================================
 an_pop_size = SpiNNakEar.spinnakear_size_calculator(scale=0.03)
+left_ear = SpiNNakEar(
+    audio_input=binaural_audio[0], fs=Fs, n_channels=an_pop_size/10,
+    ear_index=0)
 spinnakear_pop_left = sim.Population(
-    an_pop_size, SpiNNakEar(
-        audio_input=binaural_audio[0], fs=Fs,
-        n_channels=an_pop_size/10, ear_index=0),
-    label="spinnakear_pop_left")
+    an_pop_size, left_ear, label="spinnakear_pop_left")
 spinnakear_pop_left.record(['spikes', 'moc'])
-spinnakear_pop_right = sim.Population(
-    an_pop_size, SpiNNakEar(
+right_ear = SpiNNakEar(
         audio_input=binaural_audio[1], fs=Fs,  n_channels=an_pop_size/10,
-        ear_index=0),
-    label="spinnakear_pop_right")
+        ear_index=0)
+spinnakear_pop_right = sim.Population(
+    an_pop_size, right_ear, label="spinnakear_pop_right")
 spinnakear_pop_right.record(['spikes', 'moc'])
 
 moc_pop = sim.Population(
@@ -69,7 +69,11 @@ moc_pop = sim.Population(
 moc_pop_2 = sim.Population(
     3, sim.SpikeSourceArray(spike_times=moc_spikes_2), label="moc_pop_2")
 
-target_pop = sim.Population(an_pop_size, sim.IF_cond_exp, {},
+target_pop_size = right_ear.outgoing_neurons
+if left_ear.outgoing_neurons != target_pop_size:
+    raise Exception("different sizes")
+
+target_pop = sim.Population(target_pop_size, sim.IF_cond_exp, {},
                             label="target_fixed_weight_scale_cond")
 target_pop.record(['spikes'])
 
@@ -86,7 +90,7 @@ moc_projection2 = sim.Projection(
     sim.FromListConnector(moc_ohc_connections_2),
     synapse_type=sim.StaticSynapse(weight=1.))
 
-one_to_one_list = [(i,i) for i in range(an_pop_size)]
+one_to_one_list = [(i, i) for i in range(target_pop_size)]
 target_projection_left = sim.Projection(
     spinnakear_pop_left, target_pop, sim.FromListConnector(one_to_one_list),
     synapse_type=sim.StaticSynapse(weight=0.05))
@@ -116,7 +120,7 @@ spike_raster_plot_8(
     ear_spikes_right, plt, duration / 1000., an_pop_size + 1, 0.001,
     title="ear pop activity right")
 spike_raster_plot_8(
-    target_spikes, plt, duration / 1000., an_pop_size + 1, 0.001,
+    target_spikes, plt, duration / 1000., target_pop_size + 1, 0.001,
     title="target pop activity")
 
 
