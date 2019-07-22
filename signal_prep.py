@@ -52,14 +52,6 @@ def generate_signal(signal_type="tone",fs=22050.,dBSPL=40.,
             fs_f=numpy.float64(fs_f)
             if fs_f != fs:
                 signal = resample(signal,fs,fs_f)
-            # signal = numpy.float64(signal)
-            # if max_val is None:
-            #     max_val=numpy.max(numpy.abs(signal))
-            #     # max_val=numpy.mean(signal**2)**0.5
-            # for i in range(len(signal)):
-            #     signal[i]/=max_val
-            #     # amp/=max_val
-            #     signal[i]*=-amp #set loudness
         else:
             raise Exception("must include valid wav filename")
     elif signal_type == 'noise':
@@ -232,7 +224,7 @@ def spike_raster_plot(spikes,plt,duration,ylim,scale_factor=0.001,title=None):
 
 def spike_raster_plot_8(spikes,plt,duration,ylim,scale_factor=0.001,title=None,filepath=None,file_format='pdf',file_name='',xlim=None,
                         onset_times=None,pattern_duration=None,markersize=3,marker_colour='black',alpha=1.,subplots=None,
-                        legend_strings=None):
+                        legend_strings=None,ylims=None):
     import numpy as np
     if len(spikes) > 0:
         spike_ids = []
@@ -259,7 +251,10 @@ def spike_raster_plot_8(spikes,plt,duration,ylim,scale_factor=0.001,title=None,f
         plt.plot(scaled_times, spike_ids, '.', markersize=markersize,
                  markerfacecolor=marker_colour, markeredgecolor='none',
                  markeredgewidth=0,alpha=alpha)
-        plt.ylim(0, ylim)
+        if ylims == None:
+            plt.ylim(0, ylim)
+        else:
+            plt.ylim(ylims)
         plt.xlim(0, duration)
         plt.ylabel("neuron ID")
 
