@@ -63,7 +63,7 @@ Figure(
 )
 
 
-n=0
+n=1
 
 for i in hidden_data.segments[0].spiketrains[0]:
     print i.magnitude

@@ -116,14 +116,16 @@ pop_input = p.Population(100, p.SpikeSourceArray,
 
 # create hidden neurons
 hidden_neuron_params = {
+    'v_rest': 0.0,
+    'v': 0,
     'tau_m': 20.0,
     'cm': 20, # Updated to suit tau_m of 20 and make membrane resistance 1
     'v_rest': 0.0,
-#     "i_offset": 200, # dc current
-    'thresh_B': 10.0,
-    'thresh_b_0': 10,
-    'thresh_tau_a': 1200,
-    'thresh_beta': 1.7,
+    'B': 10.0,
+    'small_b_0': 10,
+    'i_offset': 0,
+    'tau_a': 1200,
+    'beta': 1.7,
     'tau_refrac':3
     }
 
@@ -428,7 +430,7 @@ Figure(
 )
 
 
-n=1
+
 for n in [0,1]:
 
     for i in hidden_data.segments[0].spiketrains[0]:
