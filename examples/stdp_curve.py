@@ -14,7 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import matplotlib.pyplot as pylab
-import math
 try:
     import pyNN.spiNNaker as sim
 except Exception:
@@ -25,35 +24,16 @@ except Exception:
 # To reproduce the eponymous STDP curve first
 # Plotted by Bi and Poo (1998)
 # ------------------------------------------------------------------
-def stdp_param_check(alpha_plus,alpha_minus,w_max,tau_minus,tau_plus):
 
-    min_w_delta = w_max/2.**16
-    max_tau_plus_delta = -math.log((min_w_delta/alpha_plus))*tau_plus
-    max_tau_minus_delta = -math.log((min_w_delta/alpha_minus))*tau_minus
-
-    return max_tau_plus_delta,max_tau_minus_delta,min_w_delta
 # ------------------------------------------------------------------
 # Common parameters
 # ------------------------------------------------------------------
-n = 16
 time_between_pairs = 1000
 num_pairs = 60
-max_w = 1.0/n
-start_w = 0.5/n
+start_w = 0.5
 delta_t = [-100, -60, -40, -30, -20, -10, -1, 1, 10, 20, 30, 40, 60, 100]
 start_time = 200
 mad = True
-
-w2s =2.
-w_max = 1.
-start_w = 0.5
-tau_plus=16.7
-tau_minus=33.7
-a_plus = 0.005
-a_minus = 0.005
-
-max_tau_plus_delta,max_tau_minus_delta,min_w_delta = stdp_param_check(a_plus,a_minus,w_max,tau_minus,tau_plus)
-
 
 # Population parameters
 model = sim.IF_curr_exp
@@ -113,41 +93,39 @@ for t in delta_t:
     post_stim = sim.Population(
         1, sim.SpikeSourceArray(spike_times=[post_times]))
 
-    weight = 2.0
+    weight = 2
 
     # Connections between spike sources and neuron populations
     ee_connector = sim.OneToOneConnector()
     sim.Projection(
         pre_stim, pre_pop, ee_connector, receptor_type='excitatory',
-        synapse_type=sim.StaticSynapse(weight=w2s))
+        synapse_type=sim.StaticSynapse(weight=weight))
     sim.Projection(
         post_stim, post_pop, ee_connector, receptor_type='excitatory',
-        synapse_type=sim.StaticSynapse(weight=w2s))
+        synapse_type=sim.StaticSynapse(weight=weight))
 
     # Plastic Connection between pre_pop and post_pop
     stdp_model = sim.STDPMechanism(
         timing_dependence=sim.SpikePairRule(
-        #timing_dependence=sim.extra_models.SpikeNearestPairRule(
-            tau_plus=tau_plus, tau_minus=tau_minus, A_plus=a_plus, A_minus=a_minus),
+            tau_plus=16.7, tau_minus=33.7, A_plus=0.005, A_minus=0.005),
         weight_dependence=sim.AdditiveWeightDependence(
-            w_min=0.0, w_max=w_max), weight=start_w)
+            w_min=0.0, w_max=1), weight=start_w)
 
     projections.append(sim.Projection(
         pre_pop, post_pop, sim.OneToOneConnector(),
         synapse_type=stdp_model))
 
 print("Simulating for %us" % (sim_time / 1000))
-post_pop.record("spikes")
+
 # Run simulation
 sim.run(sim_time)
 
-post_pop_spikes = post_pop.get_data("spikes")
 # Get weight from each projection
 end_w = [p.get('weight', 'list', with_address=False)[0] for p in projections]
 
 # End simulation on SpiNNaker
 sim.end()
-pp_spikes = post_pop_spikes.segments[0].spiketrains
+
 # -------------------------------------------------------------------
 # Plot curve
 # -------------------------------------------------------------------
@@ -162,9 +140,5 @@ axis.set_ylabel(r"$(\frac{\Delta w_{ij}}{w_{ij}})$",
 axis.plot(delta_t, delta_w)
 axis.axhline(color="grey", linestyle="--")
 axis.axvline(color="grey", linestyle="--")
-
-print "----------Weight scaling + STDP parameters----------"
-print "max_tau_plus:{}".format(max_tau_plus_delta), "max_tau_minus:{}".format(max_tau_minus_delta),\
-    "min_w_delta:{}".format(min_w_delta)
 
 pylab.show()

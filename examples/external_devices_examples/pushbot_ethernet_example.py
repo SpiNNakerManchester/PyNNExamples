@@ -53,8 +53,8 @@ pushbot = p.external_devices.EthernetControlPopulation(
     len(devices), p.external_devices.PushBotLifEthernet(
         protocol=pushbot_protocol,
         devices=devices,
-        pushbot_ip_address="10.10.30.1",
-        pushbot_port=3000,
+        pushbot_ip_address="10.162.177.57",
+        # "pushbot_ip_address": "127.0.0.1",
         tau_syn_E=500.0),
     label="PushBot"
 )
@@ -77,8 +77,7 @@ pushbot_retina = p.external_devices.EthernetSensorPopulation(
     p.external_devices.PushBotEthernetRetinaDevice(
         protocol=pushbot_protocol,
         resolution=retina_resolution,
-        pushbot_ip_address="10.10.30.1",
-        pushbot_port=3000
+        pushbot_ip_address="10.162.177.57"
     ))
 
 viewer = p.external_devices.PushBotRetinaViewer(

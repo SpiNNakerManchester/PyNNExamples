@@ -71,7 +71,6 @@ gsyn_exc = populations[0].get_data('gsyn_exc')
 gsyn_inh = populations[0].get_data('gsyn_inh')
 spikes = populations[0].get_data('spikes')
 
-
 Figure(
     # raster plot of the presynaptic neuron spike times
     Panel(spikes.segments[0].spiketrains,
