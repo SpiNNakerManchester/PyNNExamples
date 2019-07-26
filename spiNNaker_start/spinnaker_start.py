@@ -321,7 +321,7 @@ class ReadBoardProcess(AbstractMultiConnectionProcess):
             core_counter, save, load):
         # pylint: disable=too-many-arguments
         super(ReadBoardProcess, self).__init__(
-            connection_selector, n_retries=10, timeout=1.0, n_channels=1,
+            connection_selector, n_retries=10, timeout=5.0, n_channels=1,
             intermediate_channel_waits=0)
         self._eth_x = eth_x
         self._eth_y = eth_y
