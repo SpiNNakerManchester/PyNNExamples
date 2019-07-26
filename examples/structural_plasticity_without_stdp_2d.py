@@ -126,7 +126,7 @@ i_noise_pre = sim.Population(
 i_noise_post = sim.Population(
     pop_size,
     sim.SpikeSourcePoisson, {'rate': e_rate, 'start': 0, 'duration': sim_time},
-    label="expoisson")
+    label="inpoisson")
 
 # +---------------------------------------------------------------------------+
 # | Creation of connections                                                   |
@@ -158,16 +158,29 @@ for i in range(len(i_add_post)):
         synapse_type=sim.StaticSynapse(weight=jee * 0.05))
 
 # Structurally plastic connection between pre_pop and post_pop
-structure_model_without_stdp = sim.StructuralMechanismStatic(
-    weight=.2,  # Use this weights when creating a new synapse
-    s_max=32,  # Maximum allowed fan-in per target-layer neuron
+partner_selection_last_neuron = sim.LastNeuronSelection()
+formation_distance = sim.DistanceDependentFormation(
     grid=[np.sqrt(pop_size), np.sqrt(pop_size)],  # spatial org of neurons
-    # grid=[pop_size, 1], # 1d spatial org of neurons, uncomment this if wanted
-    random_partner=True,  # Choose a partner neuron for formation at random,
-    # as opposed to selecting one of the last neurons to have spiked
-    f_rew=10 ** 4,  # Hz
-    sigma_form_forward=.5,  # spread of feed-forward connections
-    delay=10  # Use this delay when creating a new synapse
+    sigma_form_forward=.5  # spread of feed-forward connections
+)
+elimination_weight = sim.RandomByWeightElimination(
+    mid_weight=.2  # Use same weight as initial weight for static connections
+)
+structure_model_without_stdp = sim.StructuralMechanismStatic(
+    # Partner selection, formation and elimination rules from above
+    partner_selection_last_neuron, formation_distance, elimination_weight,
+    # Use this weight when creating a new synapse
+    initial_weight=.2,
+    # Use this weight for synapses at start of simulation
+    weight=.2,
+    # Use this delay when creating a new synapse
+    initial_delay=10,
+    # Use this weight for synapses at the start of simulation
+    delay=10,
+    # Maximum allowed fan-in per target-layer neuron
+    s_max=32,
+    # Frequency of rewiring in Hz
+    f_rew=10 ** 4
 )
 
 plastic_projection = sim.Projection(

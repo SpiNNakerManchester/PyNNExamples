@@ -158,22 +158,34 @@ for i in range(len(i_add_post)):
         synapse_type=sim.StaticSynapse(weight=jee * 0.05))
 
 # Structurally plastic connection between pre_pop and post_pop
-stdp_model = sim.STDPMechanism(
+# Structurally plastic connection between pre_pop and post_pop
+partner_selection_last_neuron = sim.LastNeuronSelection()
+formation_distance = sim.DistanceDependentFormation(
+    grid=[np.sqrt(pop_size), np.sqrt(pop_size)],  # spatial org of neurons
+    sigma_form_forward=.5  # spread of feed-forward connections
+)
+elimination_weight = sim.RandomByWeightElimination(
+    mid_weight=0.5  # Use same weight as initial weight for static connections
+)
+structure_model_with_stdp = sim.StructuralMechanismSTDP(
+    # Partner selection, formation and elimination rules from above
+    partner_selection_last_neuron, formation_distance, elimination_weight,
+    # Use this weight when creating a new synapse
+    initial_weight=0,
+    # Use this weight for synapses at start of simulation
+    weight=0,
+    # Use this delay when creating a new synapse
+    initial_delay=10,
+    # Use this weight for synapses at the start of simulation
+    delay=10,
+    # Maximum allowed fan-in per target-layer neuron
+    s_max=32,
+    # Frequency of rewiring in Hz
+    f_rew=10 ** 4,
+    # STDP rules
     timing_dependence=sim.SpikePairRule(
         tau_plus=20., tau_minus=20.0, A_plus=0.02, A_minus=0.02),
-    weight_dependence=sim.AdditiveWeightDependence(w_min=0, w_max=1.))
-
-structure_model_with_stdp = sim.StructuralMechanismSTDP(
-    stdp_model=stdp_model,
-    weight=0,  # Use this weights when creating a new synapse
-    s_max=32,  # Maximum allowed fan-in per target-layer neuron
-    grid=[np.sqrt(pop_size), np.sqrt(pop_size)],  # 2d spatial org of neurons
-    # grid=[pop_size, 1], # 1d spatial org of neurons, uncomment this if wanted
-    random_partner=True,  # Choose a partner neuron for formation at random,
-    # as opposed to selecting one of the last neurons to have spiked
-    f_rew=10 ** 4,  # Hz
-    sigma_form_forward=1.,  # spread of feed-forward connections
-    delay=10  # Use this delay when creating a new synapse
+    weight_dependence=sim.AdditiveWeightDependence(w_min=0, w_max=1.)
 )
 
 plastic_projection = sim.Projection(
