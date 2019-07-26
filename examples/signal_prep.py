@@ -16,41 +16,43 @@ def spike_raster_plot_8(
                 spike_ids.append(neuron_index)
                 spike_times.append(time)
             neuron_index += 1
-        scaled_times = [spike_time * scale_factor for spike_time in spike_times]
+        scaled_times = [
+            spike_time * scale_factor for spike_time in spike_times]
 
-        ##plot results
+        # plot results
         if subplots is None:
             plt.figure(title)
             plt.xlabel("time (s)")
         else:
             ax = plt.subplot(subplots[0], subplots[1], subplots[2])
             ax.set_title(title)
-            if subplots[2]==subplots[0]:
+            if subplots[2] == subplots[0]:
                 plt.xlabel("time (s)")
             else:
                 ax.set_xticklabels([])
         plt.plot(scaled_times, spike_ids, '.', markersize=markersize,
                  markerfacecolor=marker_colour, markeredgecolor='none',
-                 markeredgewidth=0,alpha=alpha)
+                 markeredgewidth=0, alpha=alpha)
         plt.ylim(0, ylim)
         plt.xlim(0, duration)
         plt.ylabel("neuron ID")
 
         if onset_times is not None:
-            #plot block of translucent colour per pattern
+            # plot block of translucent colour per pattern
             ax = plt.gca()
-            pattern_legend=[]
-            legend_labels=[]
-            colours = ['b', 'g', 'r', 'c', 'm', 'y', 'k','w']
+            pattern_legend = []
+            legend_labels = []
+            colours = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'w']
             # labels = ['A','B','C',]
-            for i,pattern in enumerate(onset_times):
+            for i, pattern in enumerate(onset_times):
                 pattern_legend.append(
-                    plt.Line2D([0], [0], color=colours[i%8], lw=4, alpha=0.2))
+                    plt.Line2D(
+                        [0], [0], color=colours[i % 8], lw=4, alpha=0.2))
                 legend_labels.append("s{}".format(i+1))
                 for onset in pattern:
                     x_block = (onset, onset + scale_factor * pattern_duration)
                     ax.fill_between(
-                        x_block, ylim, alpha=0.2, facecolor=colours[i%8],
+                        x_block, ylim, alpha=0.2, facecolor=colours[i % 8],
                         lw=0.5)
             plt.legend(
                 pattern_legend, legend_labels,
@@ -62,10 +64,9 @@ def spike_raster_plot_8(
                 subplots is None or subplots[2] == 1):
             plt.legend(
                 legend_strings, bbox_to_anchor=(0.1, 1.25), loc='upper center',
-                ncol=len(legend_strings),markerscale=10.)
+                ncol=len(legend_strings), markerscale=10.)
         if filepath is not None:
-            if subplots is None or subplots[2]==subplots[0]:
+            if subplots is None or subplots[2] == subplots[0]:
                 plt.savefig(
                     filepath + '/' +
                     file_name + '{}.'.format(title) + file_format)
-

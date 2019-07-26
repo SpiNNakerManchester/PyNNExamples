@@ -1,14 +1,17 @@
-import spynnaker8 as sim
+import sys
+
 import numpy as np
 import pylab as plt
-import sys
-sys.path.append("../") 
-from signal_prep import spike_raster_plot_8
+
+import spynnaker8 as sim
+from examples.signal_prep import spike_raster_plot_8
 import time as local_time
 
-#============================================================================
+sys.path.append("../")
+
+# ============================================================================
 # Simulation parameters
-#============================================================================
+# ============================================================================
 
 duration = 1000.
 n_input = 10000.
@@ -18,10 +21,11 @@ input_size = n_per_core * np.ceil(n_input / n_per_core)
 target_pop_size = n_per_core * np.ceil((n_input * 2. / 3) / n_per_core)
 inh_pop_size = n_per_core * np.ceil((n_input * 1. / 3) / n_per_core)
 
-input_spikes=np.load('./input_spikes.npy').tolist()
+input_spikes = np.load('./input_spikes.npy').tolist()
 
-spike_raster_plot_8(input_spikes, plt,duration / 1000.0, ylim=input_size + 1,
-                    title="input_activity")
+spike_raster_plot_8(
+    input_spikes, plt, duration / 1000.0, ylim=input_size + 1,
+    title="input_activity")
 
 list_file_name = './conn_list_{}input_scaled_id.npz'.format(input_size)
 
@@ -73,7 +77,7 @@ inh_target_proj = sim.Projection(
     synapse_type=sim.StaticSynapse(), receptor_type='inhibitory')
 
 max_period = 5000.
-num_recordings =int((duration / max_period) + 1)
+num_recordings = int((duration / max_period) + 1)
 
 for i in range(num_recordings):
     sim.run(duration / num_recordings)
@@ -95,6 +99,6 @@ non_zero_spikes = [
     train for train in output_spikes if len(train) > 0]
 print(
     "non zero output spikes length:{} target n_neurons:{}".format(
-        len(non_zero_spikes),target_pop_size))
+        len(non_zero_spikes), target_pop_size))
 
 plt.show()
