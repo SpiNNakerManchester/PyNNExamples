@@ -4,10 +4,9 @@ import numpy as np
 import pylab as plt
 
 import spynnaker8 as sim
+
 import time as local_time
-
-sys.path.append("../")
-
+import os
 
 def spike_raster_plot_8(
         spikes, plt, duration, ylim, scale_factor=0.001, title=None,
@@ -89,19 +88,22 @@ duration = 1000.
 n_input = 10000.
 n_per_core = 255
 
+location = os.path.realpath(
+    os.path.join(os.getcwd(), os.path.dirname(__file__)))
+
 input_size = n_per_core * np.ceil(n_input / n_per_core)
 target_pop_size = n_per_core * np.ceil((n_input * 2. / 3) / n_per_core)
 inh_pop_size = n_per_core * np.ceil((n_input * 1. / 3) / n_per_core)
 
-input_spikes = np.load('./input_spikes.npy').tolist()
+input_spikes = np.load(os.path.join(location, 'input_spikes.npy')).tolist()
 
 spike_raster_plot_8(
     input_spikes, plt, duration / 1000.0, ylim=input_size + 1,
     title="input_activity")
 
-list_file_name = './conn_list_{}input_scaled_id.npz'.format(input_size)
+list_file_name = 'conn_list_{}input_scaled_id.npz'.format(input_size)
 
-connection_list_file = np.load(list_file_name)
+connection_list_file = np.load(os.path.join(location, list_file_name))
 source_target_list = connection_list_file['source_target_list']
 source_inh_list = connection_list_file['source_inh_list']
 target_target_list = connection_list_file['target_target_list']
