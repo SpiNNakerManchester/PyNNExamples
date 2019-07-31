@@ -40,7 +40,9 @@ click = generate_signal(
 
 binaural_audio = tone_stereo
 
-duration = (binaural_audio[0].size / Fs) * 1000.
+duration = 200.0
+# what the duration was, but needs to adjust for lowest common time step
+# duration = (binaural_audio[0].size / Fs) * 1000.
 
 # ===========================================================================
 # SpiNNaker setup
