@@ -53,6 +53,7 @@ sim.setup(timestep=1., time_scale_factor=3)
 # Populations
 # ===========================================================================
 an_pop_size = SpiNNakEar.spinnakear_size_calculator(scale=0.03)
+#an_pop_size = SpiNNakEar.spinnakear_size_calculator(scale=1)
 left_ear = SpiNNakEar(
     audio_input=binaural_audio[0], fs=Fs, n_channels=an_pop_size/10,
     ear_index=0)
