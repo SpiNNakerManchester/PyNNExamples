@@ -112,7 +112,7 @@ Figure(
     Panel(exp_data.segments[0].filter(name='gsyn_inh')[0],
           ylabel="gsyn inhibitory (mV)",
           data_labels=[exp_cell.label], yticks=True, xlim=(0, runtime)),
-    title="Simple synfire chain example",
+    title="IF_cond_exp_stoc example",
     annotations="Simulated with {}".format(sim.name())
 )
 plt.show()

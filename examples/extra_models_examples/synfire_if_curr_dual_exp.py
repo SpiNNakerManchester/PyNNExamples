@@ -84,7 +84,7 @@ Figure(
     Panel(data.segments[0].filter(name='gsyn_inh')[0],
           ylabel="gsyn inhibitory (mV)",
           data_labels=[populations[0].label], yticks=True, xlim=(0, runtime)),
-    title="Simple synfire chain example",
+    title="Synfire chain example  with dual exponential synapse",
     annotations="Simulated with {}".format(p.name())
 )
 plt.show()
