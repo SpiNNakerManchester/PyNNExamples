@@ -164,7 +164,7 @@ formation_distance = sim.DistanceDependentFormation(
     sigma_form_forward=.5  # spread of feed-forward connections
 )
 elimination_weight = sim.RandomByWeightElimination(
-    mid_weight=.2  # Use same weight as initial weight for static connections
+    threshold=.2  # Use same weight as initial weight for static connections
 )
 structure_model_without_stdp = sim.StructuralMechanismStatic(
     # Partner selection, formation and elimination rules from above
