@@ -190,9 +190,9 @@ post_spikes = post_pop.get_data('spikes')
 Figure(
     # raster plot of the presynaptic neuron spike times
     Panel(pre_spikes.segments[0].spiketrains,
-          yticks=True, markersize=0.2, xlim=(0, simtime)),
+          yticks=True, markersize=0.5, xlim=(0, simtime)),
     Panel(post_spikes.segments[0].spiketrains,
-          yticks=True, markersize=0.2, xlim=(0, simtime)),
+          yticks=True, markersize=0.5, xlim=(0, simtime)),
     title="stdp example curr",
     annotations="Simulated with {}".format(sim.name()))
 plt.show()
