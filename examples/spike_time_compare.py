@@ -13,8 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# A simple script that compares the spikes from two inputs to dettermine is
-# one soiked just before or after another.
+# A simple script that compares the spikes from two inputs to determine if
+# one spiked just before or after the other.
 
 import spynnaker8 as sim
 import pyNN.utility.plotting as plot
@@ -29,7 +29,7 @@ sim.setup(timestep=1.0)
 pop_1 = sim.Population(11, sim.IF_curr_exp(
     tau_syn_E=1, tau_refrac=0,  tau_m=1), label="pop_1")
 
-# Two population that spike at slighlty different times
+# Two population that spike at slightly different times
 input_1 = sim.Population(
     1, sim.SpikeSourceArray(spike_times=[1, 21, 42, 61, 84]), label="input")
 input_2 = sim.Population(
