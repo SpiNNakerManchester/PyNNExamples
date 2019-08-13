@@ -12,7 +12,7 @@ def generate_signal(signal_type="tone",fs=22050.,dBSPL=40.,
                     silence=True,title='',ascending=True,channel=0,
                     max_val=None):
     T = 1./fs
-    num_samples = numpy.ceil(fs * duration)
+    num_samples = int(fs * duration)
     # inverted amp on input gives rarefaction effect for positive pressure (?!))
     if signal_type == "tone":
         map_bs_cos_shift = numpy.pi/2
@@ -24,8 +24,7 @@ def generate_signal(signal_type="tone",fs=22050.,dBSPL=40.,
         else:
             signal = [(numpy.sin(2 * numpy.pi * freq * T * i + map_bs_cos_shift))
                       for i in range(int(num_samples))]
-        #map_bs_remove 1st sample!?
-        signal=signal[1:]
+
 
     elif signal_type == "sweep_tone":
         if len(freq)<2:
@@ -60,12 +59,17 @@ def generate_signal(signal_type="tone",fs=22050.,dBSPL=40.,
                   (0.5*(1.+modulation_depth*numpy.cos(2*numpy.pi*modulation_freq*T*i))) for i in range(int(num_samples))]
         else:
             signal = [(2*(numpy.random.rand()-0.5)) for i in range(int(num_samples))]
+    elif signal_type == 'pink_noise':
+        import colorednoise as cn
+        signal = cn.powerlaw_psd_gaussian(1, int(num_samples))
     elif signal_type == 'click':
         # signal = [((0.01*(numpy.random.rand()-0.5))*-amp)-amp for i in range(int(num_samples))]
         signal = [1. for i in range(int(num_samples))]
     else:
         print "invalid signal type!"
         signal = []
+    # map_bs_remove 1st sample!?
+    # signal = signal[1:]
     #amplitude conversion
     signal = numpy.float64(signal)
     target_rms = 1. * 28e-6 * 10. ** (dBSPL / 20.)
@@ -140,6 +144,7 @@ def generate_psth_8(target_neuron_ids,spike_trains,bin_width,
     # mean = sum/psth_row_index
     # output = [count * 1./bin_width for count in mean]
     output = np.mean(hist,axis=0) * 1./bin_width
+    # output = np.sum(hist,axis=0)
     return output
 
 def generate_psth(target_neuron_ids,spike_trains,bin_width,
@@ -189,18 +194,32 @@ def psth_plot_8(plt, target_neuron_ids, spike_trains, bin_width,
     if subplots is None:
         plt.figure(title)
         plt.xlabel("time (s)")
+        plt.ylabel("firing rate (sp/s)")
+        plt.plot(x, PSTH)
+        # plt.bar(x, PSTH)
     else:
+        if subplots[2] ==1:
+            plt.gcf().text(0.04, 0.5, 'firing rate (sp/s)', va='center', rotation='vertical')
         ax=plt.subplot(subplots[0],subplots[1],subplots[2])
-        ax.set_title(title)
+        ax.plot(x,PSTH)
+        if ylim is not None:
+            ax.set_ylim((0,ylim))
+        ax2 = ax.twinx()
+        ax2.set_ylabel(title)
+        ax2.set_yticks([])
+        # ax.set_title(title)
         if subplots[2]==subplots[0]:
-            plt.xlabel("time (s)")
-    plt.plot(x, PSTH)
+            ax.set_xlabel("time (s)")
+        else:
+            ax.set_xticklabels([])
+
+    plt.xlim((0,duration))
+
     if ylim is None:
         max_rate = max(PSTH)
         plt.ylim((0,max_rate+1))
-    else:
-        plt.ylim((0,ylim))
-    plt.ylabel("firing rate (sp/s)")
+    # else:
+    #     plt.ylim((0,ylim))
     if filepath is not None:
         if subplots is None or subplots[2] == subplots[0]:
             plt.savefig(filepath + '/' + file_name + '{}.'.format(title) + file_format)
@@ -240,23 +259,36 @@ def spike_raster_plot_8(spikes,plt,duration,ylim,scale_factor=0.001,title=None,f
         if subplots is None:
             plt.figure(title)
             plt.xlabel("time (s)")
+            plt.plot(scaled_times, spike_ids, '.', markersize=markersize,
+                    markerfacecolor=marker_colour, markeredgecolor='none',
+                    markeredgewidth=0, alpha=alpha)
+            plt.ylabel("neuron ID")
+
         else:
             ax = plt.subplot(subplots[0], subplots[1], subplots[2])
+            if subplots[2]==1:
+                plt.gcf().text(0.04, 0.5, 'repetition', va='center', rotation='vertical')
+                # plt.gcf().text(0.04, 0.5, 'neuron ID', va='center', rotation='vertical')
+
             if title is not None:
-                ax.set_title(title)
+                # ax.set_title(title)
+                ax2 = ax.twinx()
+                ax2.set_ylabel(title)
+                ax2.set_yticks([])
             if subplots[2]==subplots[0]:
-                plt.xlabel("time (s)")
+                ax.set_xlabel("time (s)")
             else:
                 ax.set_xticklabels([])
-        plt.plot(scaled_times, spike_ids, '.', markersize=markersize,
-                 markerfacecolor=marker_colour, markeredgecolor='none',
-                 markeredgewidth=0,alpha=alpha)
+            ax.plot(scaled_times, spike_ids, '.', markersize=markersize,
+                     markerfacecolor=marker_colour, markeredgecolor='none',
+                     markeredgewidth=0,alpha=alpha)
+            # ax.ylabel("neuron ID")
+
         if ylims == None:
             plt.ylim(0, ylim)
         else:
             plt.ylim(ylims)
         plt.xlim(0, duration)
-        plt.ylabel("neuron ID")
 
         if onset_times is not None:
             #plot block of translucent colour per pattern
