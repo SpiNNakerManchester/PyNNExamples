@@ -46,6 +46,7 @@ def generate_signal(signal_type="tone",fs=22050.,dBSPL=40.,
     elif signal_type == "file":
         if file_name:
             [fs_f,signal] = wavfile.read(file_name)
+            signal=numpy.copy(signal)
             if len(signal.shape)>1:#stereo
                 signal = signal[:, channel]
             fs_f=numpy.float64(fs_f)
