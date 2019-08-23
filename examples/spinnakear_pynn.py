@@ -54,15 +54,14 @@ sim.setup(timestep=1., time_scale_factor=3)
 # ===========================================================================
 an_pop_size = SpiNNakEar.spinnakear_size_calculator(scale=0.03)
 #an_pop_size = SpiNNakEar.spinnakear_size_calculator(scale=1)
-left_ear = SpiNNakEar(
-    audio_input=binaural_audio[0], fs=Fs, n_channels=an_pop_size/10,
-    ear_index=0)
+left_ear = SpiNNakEar(audio_input=binaural_audio[0], fs=Fs, ear_index=0)
 spinnakear_pop_left = sim.Population(
     an_pop_size, left_ear, label="spinnakear_pop_left")
-spinnakear_pop_left.record(['spikes', 'moc'])
-right_ear = SpiNNakEar(
-        audio_input=binaural_audio[1], fs=Fs,  n_channels=an_pop_size/10,
-        ear_index=0)
+spinnakear_pop_left.record(['spikes'])
+spinnakear_pop_left.record(
+    'moc',
+    sampling_interval=spinnakear_pop_left._vertex.get_sampling_interval(10))
+right_ear = SpiNNakEar(audio_input=binaural_audio[1], fs=Fs, ear_index=0)
 spinnakear_pop_right = sim.Population(
     an_pop_size, right_ear, label="spinnakear_pop_right")
 spinnakear_pop_right.record(['spikes', 'moc'])
