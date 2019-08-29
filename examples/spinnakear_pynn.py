@@ -41,6 +41,7 @@ click = generate_signal(
 binaural_audio = tone_stereo
 
 duration = 200.0
+scale = 0.03
 # what the duration was, but needs to adjust for lowest common time step
 # duration = (binaural_audio[0].size / Fs) * 1000.
 
@@ -52,18 +53,18 @@ sim.setup(timestep=1., time_scale_factor=10)
 # ===========================================================================
 # Populations
 # ===========================================================================
-an_pop_size = SpiNNakEar.spinnakear_size_calculator(scale=0.03)
-#an_pop_size = SpiNNakEar.spinnakear_size_calculator(scale=1)
-left_ear = SpiNNakEar(audio_input=binaural_audio[0], fs=Fs, ear_index=0)
+left_ear = SpiNNakEar(
+    audio_input=binaural_audio[0], fs=Fs, ear_index=0, scale=scale)
 spinnakear_pop_left = sim.Population(
-    an_pop_size, left_ear, label="spinnakear_pop_left")
+    left_ear.calculate_n_atoms(), left_ear, label="spinnakear_pop_left")
 spinnakear_pop_left.record(['spikes'])
 spinnakear_pop_left.record(
     'moc',
     sampling_interval=spinnakear_pop_left._vertex.get_sampling_interval(10))
-right_ear = SpiNNakEar(audio_input=binaural_audio[1], fs=Fs, ear_index=0)
+right_ear = SpiNNakEar(
+    audio_input=binaural_audio[1], fs=Fs, ear_index=0, scale=scale)
 spinnakear_pop_right = sim.Population(
-    an_pop_size, right_ear, label="spinnakear_pop_right")
+    right_ear.calculate_n_atoms(), right_ear, label="spinnakear_pop_right")
 spinnakear_pop_right.record(['spikes', 'moc'])
 
 moc_pop = sim.Population(
@@ -71,8 +72,8 @@ moc_pop = sim.Population(
 moc_pop_2 = sim.Population(
     3, sim.SpikeSourceArray(spike_times=moc_spikes_2), label="moc_pop_2")
 
-target_pop_size = right_ear.outgoing_neurons
-if left_ear.outgoing_neurons != target_pop_size:
+target_pop_size = spinnakear_pop_right.outgoing_neurons()
+if spinnakear_pop_left.outgoing_neurons() != target_pop_size:
     raise Exception("different sizes")
 
 target_pop = sim.Population(target_pop_size, sim.IF_cond_exp, {},
@@ -115,6 +116,7 @@ target_spikes = target_data.segments[0].spiketrains
 
 sim.end()
 
+an_pop_size = right_ear.calculate_n_atoms()
 spike_raster_plot_8(
     ear_spikes_left, plt, duration / 1000., an_pop_size + 1, 0.001,
     title="ear pop activity left")
