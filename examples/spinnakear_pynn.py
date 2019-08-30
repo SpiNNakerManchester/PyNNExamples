@@ -4,6 +4,7 @@ import numpy as np
 import spynnaker8 as sim
 from signal_prep import *
 from spinnak_ear.spinnak_ear_pynn_model.spinnaker_ear_model import SpiNNakEar
+from spynnaker8.utilities import neo_convertor
 
 # ===========================================================================
 # Neuron parameters
@@ -41,7 +42,8 @@ click = generate_signal(
 binaural_audio = tone_stereo
 
 duration = 200.0
-scale = 0.03
+#scale = 0.03
+scale = 10./30e3
 # what the duration was, but needs to adjust for lowest common time step
 # duration = (binaural_audio[0].size / Fs) * 1000.
 
@@ -58,9 +60,7 @@ left_ear = SpiNNakEar(
 spinnakear_pop_left = sim.Population(
     left_ear.calculate_n_atoms(), left_ear, label="spinnakear_pop_left")
 spinnakear_pop_left.record(['spikes'])
-spinnakear_pop_left.record(
-    'moc',
-    sampling_interval=spinnakear_pop_left._vertex.get_sampling_interval(10))
+spinnakear_pop_left.record('moc', sampling_interval=10)
 right_ear = SpiNNakEar(
     audio_input=binaural_audio[1], fs=Fs, ear_index=0, scale=scale)
 spinnakear_pop_right = sim.Population(
@@ -104,12 +104,13 @@ target_projection_right = sim.Projection(
 sim.run(duration)
 
 ear_left_data = spinnakear_pop_left.get_data()
-ear_spikes_left = ear_left_data['spikes']
-ear_moc_left = ear_left_data['moc']
+ear_spikes_left = ear_left_data.segments[0].spiketrains
+ear_spikes_left = neo_convertor.convert_spiketrains(ear_spikes_left)
+ear_moc_left = ear_left_data.segments[0].filter(name='moc')[0]
 
 ear_right_data = spinnakear_pop_right.get_data()
-ear_spikes_right = ear_right_data['spikes']
-ear_moc_right = ear_right_data['moc']
+ear_spikes_right = ear_right_data.segments[0].spiketrains
+ear_moc_right = ear_right_data.segments[0].filter(name='moc')[0]
 
 target_data = target_pop.get_data(['spikes'])
 target_spikes = target_data.segments[0].spiketrains
