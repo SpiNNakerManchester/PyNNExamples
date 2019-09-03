@@ -267,8 +267,8 @@ def spike_raster_plot_8(spikes,plt,duration,ylim,scale_factor=0.001,title=None,f
 
         else:
             ax = plt.subplot(subplots[0], subplots[1], subplots[2])
-            if subplots[2]==1:
-                plt.gcf().text(0.04, 0.5, 'repetition', va='center', rotation='vertical')
+            # if subplots[2]==1:
+                # plt.gcf().text(0.04, 0.5, 'repetition', va='center', rotation='vertical')
                 # plt.gcf().text(0.04, 0.5, 'neuron ID', va='center', rotation='vertical')
 
             if title is not None:
@@ -283,7 +283,7 @@ def spike_raster_plot_8(spikes,plt,duration,ylim,scale_factor=0.001,title=None,f
             ax.plot(scaled_times, spike_ids, '.', markersize=markersize,
                      markerfacecolor=marker_colour, markeredgecolor='none',
                      markeredgewidth=0,alpha=alpha)
-            # ax.ylabel("neuron ID")
+            ax.set_ylabel("neuron ID")
 
         if ylims == None:
             plt.ylim(0, ylim)
@@ -1640,3 +1640,12 @@ def split_population_data_combine(split_data,variable_list):
             mem_v_combined.append([mem_v])#wrapped in a list to look like a usual mem_v `analog signal'
 
     return variable_dict
+
+def butter_bandpass_filter(data, lowcut, highcut, fs, order=5):
+    from scipy.signal import butter, lfilter
+    nyq = 0.5 * fs
+    low = lowcut / nyq
+    high = highcut / nyq
+    b, a = butter(order, [low, high], btype='band')
+    y = lfilter(b, a, data)
+    return y
