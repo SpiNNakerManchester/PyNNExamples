@@ -42,8 +42,8 @@ def generate_signal(signal_type="tone", fs=22050., dBSPL=40.,
             f = f * f_delta
             # f = f + f_delta
             delta = 2. * numpy.pi * f * T
-    if not ascending:
-        signal = signal[::-1]
+        if not ascending:
+            signal = signal[::-1]
     elif signal_type == "file":
         if file_name:
             [fs_f, signal] = wavfile.read(file_name)
