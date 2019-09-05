@@ -57,12 +57,14 @@ sim.setup(timestep=1.0, time_scale_factor=10)
 # ===========================================================================
 left_ear = SpiNNakEar(
     audio_input=binaural_audio[0], fs=Fs, ear_index=0, scale=scale)
+an_pop_size = left_ear.calculate_n_atoms()
 spinnakear_pop_left = sim.Population(
     left_ear.calculate_n_atoms(), left_ear, label="spinnakear_pop_left")
 spinnakear_pop_left.record(['spikes'])
-spinnakear_pop_left.record('moc', sampling_interval=10)
+spinnakear_pop_left.record(['moc'])
+#spinnakear_pop_left.record('moc', sampling_interval=10)
 right_ear = SpiNNakEar(
-    audio_input=binaural_audio[1], fs=Fs, ear_index=0, scale=scale)
+    audio_input=binaural_audio[1], fs=Fs, ear_index=1, scale=scale)
 spinnakear_pop_right = sim.Population(
     right_ear.calculate_n_atoms(), right_ear, label="spinnakear_pop_right")
 spinnakear_pop_right.record(['spikes', 'moc'])
@@ -117,7 +119,6 @@ target_spikes = target_data.segments[0].spiketrains
 
 sim.end()
 
-an_pop_size = right_ear.calculate_n_atoms()
 spike_raster_plot_8(
     ear_spikes_left, plt, duration / 1000., an_pop_size + 1, 0.001,
     title="ear pop activity left")
