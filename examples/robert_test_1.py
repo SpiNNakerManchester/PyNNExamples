@@ -24,7 +24,6 @@ moc_spikes = [[],[],[]]#[[10.], [20], [30, 31, 32, 33]]
 moc_spikes_2 = [[],[],[]]#[[110.], [120], [130]]
 Fs = 50e3#22e3#100000.#
 dBSPL=50
-wav_directory = '../../OME_SpiNN/'
 freq = 1000
 tone_duration = 0.05#0.2
 silence_duration = 0.01#0.1 #0.075#
@@ -34,19 +33,10 @@ tone = generate_signal(freq=freq,dBSPL=dBSPL,duration=tone_duration,
 tone_r = generate_signal(freq=freq,dBSPL=dBSPL,duration=tone_duration,
                        modulation_freq=0.,fs=Fs,ramp_duration=0.005,plt=None,silence=True,silence_duration=silence_duration)
 tone_stereo = np.asarray([tone,tone_r])
-timit_l = generate_signal(signal_type='file',dBSPL=dBSPL,fs=Fs,ramp_duration=0.0025,silence=True,silence_duration=silence_duration,
-                            file_name=wav_directory+'10788_edit.wav',plt=None,channel=0)
-[_,signal] = wavfile.read(wav_directory+'10788_edit.wav')
-signal = numpy.float64(signal[:,0])
-max_val=numpy.mean(signal**2)**0.5
-timit_r = generate_signal(signal_type='file',dBSPL=dBSPL,fs=Fs,ramp_duration=0.0025,silence=True,silence_duration=silence_duration,
-                            file_name=wav_directory+'10788_edit.wav',plt=None,channel=1,max_val=max_val)
-timit = numpy.asarray([timit_l,timit_r])
 
 sounds_dict = {
                 "tone_{}Hz".format(freq):tone,
                 "tone_{}Hz_stereo".format(freq):tone_stereo,
-                "timit":timit
 }
 
 test_file = "tone_{}Hz_stereo".format(freq)#"timit"#
