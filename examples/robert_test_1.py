@@ -105,18 +105,24 @@ target_projection_right = sim.Projection(
 
 sim.run(duration)
 
-ear_left_data = spinnakear_pop_left.get_data()
+#ear_left_data = spinnakear_pop_left.get_data()
+ear_left_data_prob = spinnakear_pop_left.spinnaker_get_data([
+    "inner_ear_spike_probability"])
+ear_left_data_moc = spinnakear_pop_left.spinnaker_get_data([
+    "moc"])
 #ear_spikes_left = ear_left_data.segments[0].spiketrains
 #ear_spikes_left = neo_convertor.convert_spiketrains(ear_spikes_left)
 #ear_moc_left = ear_left_data.segments[0].filter(name='moc')[0]
 
-ear_right_data = spinnakear_pop_right.get_data()
+#ear_right_data = spinnakear_pop_right.get_data()
+ear_right_data_prob = spinnakear_pop_right.spinnaker_get_data([
+    "inner_ear_spike_probability"])
+ear_right_data_moc = spinnakear_pop_right.spinnaker_get_data([
+    "moc"])
+#ear_right_data = spinnakear_pop_right.spinnaker_get_data()
 #ear_spikes_right = ear_right_data.segments[0].spiketrains
 #ear_moc_right = ear_right_data.segments[0].filter(name='moc')[0]
-
-target_data = target_pop.get_data(['spikes'])
-#target_spikes = target_data.segments[0].spiketrains
-
+print ("aaaaa")
 sim.end()
 '''
 spike_raster_plot_8(
@@ -145,11 +151,17 @@ for moc_signal in ear_moc_right:
 plt.xlabel("time (ms)")
 plt.legend(legend_string)
 plt.show()'''
+
+print ("ereee")
+
 np.savez_compressed('./ear_' + test_file + '_{}an_fibres_{}dB_{}s'.format
                     (an_pop_size,dBSPL,int(duration / 1000.)), 
-                    ear_data=np.asarray([ear_left_data,ear_right_data]), 
+                    ear_data=np.asarray([
+                        ear_left_data_moc, ear_left_data_prob,
+                        ear_right_data_moc, ear_right_data_prob]),
                     Fs=Fs,stimulus=binaural_audio)
 
-sim_data = np.load('./ear_tone_1000Hz_stereo_112.0an_fibres_50dB_0s.npz')
+sim_data = np.load('./ear_tone_1000Hz_stereo_112.0an_fibres_50dB_0s.npz',
+                   allow_pickle=True)
 vrr = sim_data['ear_data']
 
