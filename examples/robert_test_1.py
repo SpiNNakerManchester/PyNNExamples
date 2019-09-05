@@ -150,4 +150,6 @@ np.savez_compressed('./ear_' + test_file + '_{}an_fibres_{}dB_{}s'.format
                     ear_data=np.asarray([ear_left_data,ear_right_data]), 
                     Fs=Fs,stimulus=binaural_audio)
 
+sim_data = np.load('./ear_tone_1000Hz_stereo_112.0an_fibres_50dB_0s.npz')
+vrr = sim_data['ear_data']
 
