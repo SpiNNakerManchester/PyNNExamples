@@ -42,7 +42,8 @@ sounds_dict = {
 test_file = "tone_{}Hz_stereo".format(freq)#"timit"#
 binaural_audio = sounds_dict[test_file]
 # what the duration was, but needs to adjust for lowest common time step
-duration = np.ceil((binaural_audio[0].size/Fs)*1000.)
+#duration = np.ceil((binaural_audio[0].size/Fs)*1000.)
+duration = 72
 
 #scale = 0.03
 scale = 1./30
@@ -61,7 +62,7 @@ left_ear = SpiNNakEar(
 an_pop_size = left_ear.calculate_n_atoms()
 spinnakear_pop_left = sim.Population(
     left_ear.calculate_n_atoms(), left_ear, label="spinnakear_pop_left")
-spinnaker_pop_left.record(["inner_ear_spike_probability", 'moc'])
+spinnakear_pop_left.record(["inner_ear_spike_probability", 'moc'])
 right_ear = SpiNNakEar(
     audio_input=binaural_audio[1], fs=Fs, ear_index=1, scale=scale)
 spinnakear_pop_right = sim.Population(
