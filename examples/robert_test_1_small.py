@@ -46,7 +46,8 @@ binaural_audio = sounds_dict[test_file]
 duration = 72
 
 #scale = 0.03
-scale = 1./30
+#scale = 1./30
+scale = 10./30e3
 an_pop_size = int(scale * 30e3)
 
 # ===========================================================================
@@ -58,13 +59,15 @@ sim.setup(timestep=1.0, time_scale_factor=10)
 # Populations
 # ===========================================================================
 left_ear = SpiNNakEar(
-    audio_input=binaural_audio[0], fs=Fs, ear_index=0, scale=scale)
+    audio_input=binaural_audio[0], fs=Fs, ear_index=0, scale=scale,
+    pole_freqs=[[1000]])
 an_pop_size = left_ear.calculate_n_atoms()
 spinnakear_pop_left = sim.Population(
     left_ear.calculate_n_atoms(), left_ear, label="spinnakear_pop_left")
 spinnakear_pop_left.record(["inner_ear_spike_probability", 'moc'])
 right_ear = SpiNNakEar(
-    audio_input=binaural_audio[1], fs=Fs, ear_index=1, scale=scale)
+    audio_input=binaural_audio[1], fs=Fs, ear_index=1, scale=scale,
+    pole_freqs=[[1000]])
 spinnakear_pop_right = sim.Population(
     right_ear.calculate_n_atoms(), right_ear, label="spinnakear_pop_right")
 spinnakear_pop_right.record(["inner_ear_spike_probability", 'moc'])
