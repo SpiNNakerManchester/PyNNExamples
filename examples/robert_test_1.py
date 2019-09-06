@@ -3,6 +3,7 @@ import numpy as np
 
 import spynnaker8 as sim
 from signal_prep import *
+from spinn_utilities.default_ordered_dict import DefaultOrderedDict
 from spinnak_ear.spinnak_ear_pynn_model.spinnaker_ear_model import SpiNNakEar
 from spynnaker8.utilities import neo_convertor
 
@@ -122,8 +123,7 @@ ear_right_data_moc = spinnakear_pop_right.spinnaker_get_data([
 #ear_right_data = spinnakear_pop_right.spinnaker_get_data()
 #ear_spikes_right = ear_right_data.segments[0].spiketrains
 #ear_moc_right = ear_right_data.segments[0].filter(name='moc')[0]
-print ("aaaaa")
-sim.end()
+
 '''
 spike_raster_plot_8(
     ear_spikes_left, plt, duration / 1000., an_pop_size + 1, 0.001,
@@ -152,16 +152,58 @@ plt.xlabel("time (ms)")
 plt.legend(legend_string)
 plt.show()'''
 
+left_moc_in_robert_format = list()
+left_prob_in_robert_format = list()
+right_moc_in_robert_format = list()
+right_prob_in_robert_format = list()
+
+print("starting sort")
+prob_data = DefaultOrderedDict(list)
+for element in ear_left_data_prob:
+    id = math.floor(element[0] / 8)
+    prob_data[id].append(element[2])
+for time in prob_data:
+    left_prob_in_robert_format.append(prob_data[time])
+
+print("starting sort")
+moc_data = DefaultOrderedDict(list)
+for element in ear_left_data_moc:
+    time = element[0]
+    moc_data[time].append(element[2])
+for time in moc_data:
+    left_moc_in_robert_format.append(moc_data[time])
+
+print("starting sort")
+prob_data = DefaultOrderedDict(list)
+for element in ear_right_data_prob:
+    id = math.floor(element[0] / 8)
+    prob_data[id].append(element[2])
+for time in prob_data:
+    right_prob_in_robert_format.append(prob_data[time])
+
+print("starting sort")
+moc_data = DefaultOrderedDict(list)
+for element in ear_right_data_moc:
+    time = element[0]
+    moc_data[time].append(element[2])
+for time in moc_data:
+    right_moc_in_robert_format.append(moc_data[time])
+
+print("eee")
+
 print ("ereee")
 
 np.savez_compressed('./ear_' + test_file + '_{}an_fibres_{}dB_{}s'.format
                     (an_pop_size,dBSPL,int(duration / 1000.)), 
-                    ear_data=np.asarray([
-                        ear_left_data_moc, ear_left_data_prob,
-                        ear_right_data_moc, ear_right_data_prob]),
+                    ear_data=np.asarray(
+                        [{"moc": left_moc_in_robert_format,
+                          "prob": left_prob_in_robert_format},
+                         {"moc": right_moc_in_robert_format,
+                          "prob": right_prob_in_robert_format}]),
                     Fs=Fs,stimulus=binaural_audio)
 
 sim_data = np.load('./ear_tone_1000Hz_stereo_112.0an_fibres_50dB_0s.npz',
                    allow_pickle=True)
 vrr = sim_data['ear_data']
 
+sim.end()

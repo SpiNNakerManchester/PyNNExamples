@@ -1,8 +1,11 @@
+from collections import defaultdict
+
 import pylab as plt
 import numpy as np
 
 import spynnaker8 as sim
 from signal_prep import *
+from spinn_utilities.default_ordered_dict import DefaultOrderedDict
 from spinnak_ear.spinnak_ear_pynn_model.spinnaker_ear_model import SpiNNakEar
 from spynnaker8.utilities import neo_convertor
 
@@ -111,8 +114,7 @@ sim.run(duration)
 #ear_left_data = spinnakear_pop_left.get_data()
 ear_left_data_prob = spinnakear_pop_left.spinnaker_get_data([
     "inner_ear_spike_probability"])
-ear_left_data_moc = spinnakear_pop_left.spinnaker_get_data([
-    "moc"])
+ear_left_data_moc = spinnakear_pop_left.spinnaker_get_data(["moc"])
 #ear_spikes_left = ear_left_data.segments[0].spiketrains
 #ear_spikes_left = neo_convertor.convert_spiketrains(ear_spikes_left)
 #ear_moc_left = ear_left_data.segments[0].filter(name='moc')[0]
@@ -129,42 +131,58 @@ ear_right_data_moc = spinnakear_pop_right.spinnaker_get_data([
 target_data = target_pop.get_data(['spikes'])
 #target_spikes = target_data.segments[0].spiketrains
 
-sim.end()
-'''
-spike_raster_plot_8(
-    ear_spikes_left, plt, duration / 1000., an_pop_size + 1, 0.001,
-    title="ear pop activity left")
-spike_raster_plot_8(
-    ear_spikes_right, plt, duration / 1000., an_pop_size + 1, 0.001,
-    title="ear pop activity right")
-spike_raster_plot_8(
-    target_spikes, plt, duration / 1000., target_pop_size + 1, 0.001,
-    title="target pop activity") 
+left_moc_in_robert_format = list()
+left_prob_in_robert_format = list()
+right_moc_in_robert_format = list()
+right_prob_in_robert_format = list()
 
+print("starting sort")
+prob_data = DefaultOrderedDict(list)
+for element in ear_left_data_prob:
+    id = math.floor(element[0] / 8)
+    prob_data[id].append(element[2])
+for time in prob_data:
+    left_prob_in_robert_format.append(prob_data[time])
 
-legend_string = [str(i) for i in range(int(an_pop_size / 10))]
-plt.figure("MOC left")
-for moc_signal in ear_moc_left:
-    x = np.linspace(0, duration, len(moc_signal))
-    plt.plot(x, moc_signal)
-plt.xlabel("time (ms)")
-plt.legend(legend_string)
+print("starting sort")
+moc_data = DefaultOrderedDict(list)
+for element in ear_left_data_moc:
+    time = element[0]
+    moc_data[time].append(element[2])
+for time in moc_data:
+    left_moc_in_robert_format.append(moc_data[time])
 
-plt.figure("MOC right")
-for moc_signal in ear_moc_right:
-    x = np.linspace(0, duration, len(moc_signal))
-    plt.plot(x, moc_signal)
-plt.xlabel("time (ms)")
-plt.legend(legend_string)
-plt.show()'''
+print("starting sort")
+prob_data = DefaultOrderedDict(list)
+for element in ear_right_data_prob:
+    id = math.floor(element[0] / 8)
+    prob_data[id].append(element[2])
+for time in prob_data:
+    right_prob_in_robert_format.append(prob_data[time])
+
+print("starting sort")
+moc_data = DefaultOrderedDict(list)
+for element in ear_right_data_moc:
+    time = element[0]
+    moc_data[time].append(element[2])
+for time in moc_data:
+    right_moc_in_robert_format.append(moc_data[time])
+
+print("eee")
+
 np.savez_compressed('./ear_' + test_file + '_{}an_fibres_{}dB_{}s'.format
                     (an_pop_size,dBSPL,int(duration / 1000.)), 
                     ear_data=np.asarray(
-                        [ear_left_data_moc, ear_left_data_prob,
-                         ear_right_data_moc, ear_right_data_prob]),
+                        [{"moc": left_moc_in_robert_format,
+                          "prob": left_prob_in_robert_format},
+                         {"moc": right_moc_in_robert_format,
+                          "prob": right_prob_in_robert_format}]),
                     Fs=Fs,stimulus=binaural_audio)
 
 
 sim_data = np.load('./ear_tone_1000Hz_stereo_112.0an_fibres_50dB_0s.npz',
                    allow_pickle=True)
 vrr = sim_data['ear_data']
+
+
+sim.end()
