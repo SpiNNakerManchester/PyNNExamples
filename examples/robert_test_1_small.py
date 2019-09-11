@@ -32,9 +32,11 @@ tone_duration = 0.05#0.2
 silence_duration = 0.01#0.1 #0.075#
 
 tone = generate_signal(freq=freq,dBSPL=dBSPL,duration=tone_duration,
-                       modulation_freq=0.,fs=Fs,ramp_duration=0.005,plt=None,silence=True,silence_duration=silence_duration)
+                       modulation_freq=0.,fs=Fs,ramp_duration=0.005,plt=None,
+                       silence=False,silence_duration=silence_duration)
 tone_r = generate_signal(freq=freq,dBSPL=dBSPL,duration=tone_duration,
-                       modulation_freq=0.,fs=Fs,ramp_duration=0.005,plt=None,silence=True,silence_duration=silence_duration)
+                       modulation_freq=0.,fs=Fs,ramp_duration=0.005,plt=None,
+                         silence=False,silence_duration=silence_duration)
 tone_stereo = np.asarray([tone,tone_r])
 
 sounds_dict = {
