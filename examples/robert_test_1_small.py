@@ -56,7 +56,7 @@ an_pop_size = int(scale * 30e3)
 # ===========================================================================
 # SpiNNaker setup
 # ===========================================================================
-sim.setup(timestep=1.0, time_scale_factor=10)
+sim.setup(timestep=1.0, time_scale_factor=100)
 
 # ===========================================================================
 # Populations
@@ -112,9 +112,10 @@ target_projection_right = sim.Projection(
 sim.run(duration)
 
 #ear_left_data = spinnakear_pop_left.get_data()
+ear_left_data_moc = spinnakear_pop_left.spinnaker_get_data(["moc"])
 ear_left_data_prob = spinnakear_pop_left.spinnaker_get_data([
     "inner_ear_spike_probability"])
-ear_left_data_moc = spinnakear_pop_left.spinnaker_get_data(["moc"])
+
 #ear_spikes_left = ear_left_data.segments[0].spiketrains
 #ear_spikes_left = neo_convertor.convert_spiketrains(ear_spikes_left)
 #ear_moc_left = ear_left_data.segments[0].filter(name='moc')[0]
@@ -138,9 +139,24 @@ right_prob_in_robert_format = list()
 
 print("starting sort")
 prob_data = DefaultOrderedDict(list)
+samples = len(spinnakear_pop_left._vertex.get_value("audio_input"))
+position = 0
+element_id = 0
+print("len is {}".format(len(ear_left_data_prob)))
 for element in ear_left_data_prob:
-    id = math.floor(element[0] / 8)
-    prob_data[id].append(element[2])
+    print(element[0])
+    offset = math.floor(element[0] / 16)
+    id = (offset * 2) + position
+    position = (position + 1) % 2
+    print (id)
+    if element[1] <= (samples / 8 * 160 / 1000):
+        prob_data[id].append(element[2])
+    else:
+        print("didnt store element {} as element 1 is {} data is {}, and cap "
+              "is {}".format(
+            element_id, element[1], element[2], samples / 8 * 160 / 1000))
+    element_id += 1
+
 for time in prob_data:
     left_prob_in_robert_format.append(prob_data[time])
 
@@ -148,15 +164,18 @@ print("starting sort")
 moc_data = DefaultOrderedDict(list)
 for element in ear_left_data_moc:
     time = element[0]
-    moc_data[time].append(element[2])
+    if element[1] < len(spinnakear_pop_left._vertex.get_value("audio_input")):
+        moc_data[time].append(element[2])
 for time in moc_data:
     left_moc_in_robert_format.append(moc_data[time])
 
 print("starting sort")
 prob_data = DefaultOrderedDict(list)
 for element in ear_right_data_prob:
-    id = math.floor(element[0] / 8)
-    prob_data[id].append(element[2])
+    id = math.floor(
+        element[0] / spinnakear_pop_right._vertex.get_value("seq_size"))
+    if element[1] < len(spinnakear_pop_right._vertex.get_value("audio_input")):
+        prob_data[id].append(element[2])
 for time in prob_data:
     right_prob_in_robert_format.append(prob_data[time])
 
@@ -164,7 +183,8 @@ print("starting sort")
 moc_data = DefaultOrderedDict(list)
 for element in ear_right_data_moc:
     time = element[0]
-    moc_data[time].append(element[2])
+    if element[1] < len(spinnakear_pop_right._vertex.get_value("audio_input")):
+        moc_data[time].append(element[2])
 for time in moc_data:
     right_moc_in_robert_format.append(moc_data[time])
 
