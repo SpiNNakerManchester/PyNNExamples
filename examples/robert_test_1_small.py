@@ -146,17 +146,12 @@ position = 0
 element_id = 0
 print("len is {}".format(len(ear_left_data_prob)))
 for element in ear_left_data_prob:
-    print(element[0])
     offset = math.floor(element[0] / 16)
     id = (offset * 2) + position
     position = (position + 1) % 2
-    print (id)
     if element[1] <= (samples / 8 * 160 / 1000):
-        prob_data[id].append(element[2])
-    else:
-        print("didnt store element {} as element 1 is {} data is {}, and cap "
-              "is {}".format(
-            element_id, element[1], element[2], samples / 8 * 160 / 1000))
+        if not numpy.isnan(element[2]):
+            prob_data[id].append(element[2])
     element_id += 1
 
 for time in prob_data:
