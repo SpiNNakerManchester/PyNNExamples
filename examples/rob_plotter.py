@@ -17,8 +17,8 @@ plt.figure()
 # vrr = sim_data['ear_data'][0]['debug']
 vrr = np.asarray(sim_data['ear_data'][0]['prob'])
 mid_point = 0#len(vrr)/2
-#vrr_chan = vrr[mid_point:mid_point+10]
-vrr_chan = vrr[0]
+vrr_chan = vrr[mid_point:mid_point+10]
+#vrr_chan = vrr[0]
 x = vrr_chan.T
 plt.plot(vrr_chan.T)
 plt.show()

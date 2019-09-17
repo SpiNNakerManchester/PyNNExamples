@@ -143,19 +143,16 @@ print("starting sort")
 prob_data = DefaultOrderedDict(list)
 samples = len(spinnakear_pop_left._vertex.get_value("audio_input"))
 position = 0
-element_id = 0
 print("len is {}".format(len(ear_left_data_prob)))
 for element in ear_left_data_prob:
-    offset = math.floor(element[0] / 16)
-    id = (offset * 2) + position
-    position = (position + 1) % 2
-    if element[1] <= (samples / 8 * 160 / 1000):
-        if not numpy.isnan(element[2]):
-            prob_data[id].append(element[2])
-    element_id += 1
+    if not numpy.isnan(element[2]):
+        prob_data[int(element[0])].append(element[2])
+    else:
+        prob_data[int(element[0])].append(0)
+    position += 1
 
-for time in prob_data:
-    left_prob_in_robert_format.append(prob_data[time])
+for fiber_id in prob_data:
+    left_prob_in_robert_format.append(prob_data[fiber_id])
 
 print("starting sort")
 moc_data = DefaultOrderedDict(list)
@@ -169,12 +166,13 @@ for time in moc_data:
 print("starting sort")
 prob_data = DefaultOrderedDict(list)
 for element in ear_right_data_prob:
-    id = math.floor(
-        element[0] / spinnakear_pop_right._vertex.get_value("seq_size"))
-    if element[1] < len(spinnakear_pop_right._vertex.get_value("audio_input")):
-        prob_data[id].append(element[2])
-for time in prob_data:
-    right_prob_in_robert_format.append(prob_data[time])
+    if not numpy.isnan(element[2]):
+        prob_data[int(element[0])].append(element[2])
+    else:
+        prob_data[int(element[0])].append(0)
+    position += 1
+for fiber_id in prob_data:
+    right_prob_in_robert_format.append(prob_data[fiber_id])
 
 print("starting sort")
 moc_data = DefaultOrderedDict(list)
