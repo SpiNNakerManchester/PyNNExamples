@@ -13,9 +13,19 @@ neuron_params = {
     }
 
 
-neuron = pynn.Population(1, 
-                         pynn.extra_models.EPropAdaptive(**neuron_params), 
+spike_source = pynn.Population(1,
+                               pynn.SpikeSourceArray,
+                               {'spike_times': [10]},
+                               label='Spike Source')
+
+neuron = pynn.Population(1,
+                         pynn.extra_models.EPropAdaptive(**neuron_params),
                          label='eprop_pop')
+
+proj = pynn.Projection(spike_source, neuron,
+                       pynn.OneToOneConnector(weight=0.5, delay=1),
+                       label='exc_proj')
+
 
 neuron.record('all')
 
