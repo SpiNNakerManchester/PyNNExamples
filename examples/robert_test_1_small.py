@@ -1,13 +1,9 @@
-from collections import defaultdict
-
-import pylab as plt
 import numpy as np
 
 import spynnaker8 as sim
 from signal_prep import *
 from spinn_utilities.default_ordered_dict import DefaultOrderedDict
 from spinnak_ear.spinnak_ear_pynn_model.spinnaker_ear_model import SpiNNakEar
-from spynnaker8.utilities import neo_convertor
 
 # ===========================================================================
 # Neuron parameters
@@ -23,8 +19,8 @@ w2s_b = 0.3
 # ============================================================================
 # Simulation parameters
 # ============================================================================
-moc_spikes = [[],[],[]]#[[10.], [20], [30, 31, 32, 33]]
-moc_spikes_2 = [[],[],[]]#[[110.], [120], [130]]
+moc_spikes = [[10.]]
+moc_spikes_2 = [[110.], [120], [130]]
 Fs = 50e3#22e3#100000.#
 dBSPL=50
 freq = 1000
@@ -33,10 +29,10 @@ silence_duration = 0.01#0.1 #0.075#
 
 tone = generate_signal(freq=freq,dBSPL=dBSPL,duration=tone_duration,
                        modulation_freq=0.,fs=Fs,ramp_duration=0.005,plt=None,
-                       silence=False,silence_duration=silence_duration)
+                       silence=True,silence_duration=silence_duration)
 tone_r = generate_signal(freq=freq,dBSPL=dBSPL,duration=tone_duration,
                        modulation_freq=0.,fs=Fs,ramp_duration=0.005,plt=None,
-                         silence=False,silence_duration=silence_duration)
+                         silence=True,silence_duration=silence_duration)
 tone_stereo = np.asarray([tone,tone_r])
 
 sounds_dict = {
@@ -78,9 +74,9 @@ spinnakear_pop_right = sim.Population(
 spinnakear_pop_right.record(["inner_ear_spike_probability", 'moc'])
 
 moc_pop = sim.Population(
-    3, sim.SpikeSourceArray(spike_times=moc_spikes), label="moc_pop")
-moc_pop_2 = sim.Population(
-    3, sim.SpikeSourceArray(spike_times=moc_spikes_2), label="moc_pop_2")
+    1, sim.SpikeSourceArray(spike_times=moc_spikes), label="moc_pop")
+#moc_pop_2 = sim.Population(
+#    3, sim.SpikeSourceArray(spike_times=moc_spikes_2), label="moc_pop_2")
 
 target_pop_size = spinnakear_pop_right.outgoing_neurons()
 if spinnakear_pop_left.outgoing_neurons() != target_pop_size:
@@ -93,17 +89,18 @@ target_pop.record(['spikes'])
 # ==========================================================================
 # Projections
 # ==========================================================================
-moc_ohc_connections = [(0, 0), (1, 1), (2, 2)]
-moc_ohc_connections_2 = [(0, 5), (1, 6), (2, 7)]
+moc_ohc_connections = [(0, 0)]
+moc_ohc_connections_2 = [(0, 5), (0, 6), (0, 7)]
 moc_projection = sim.Projection(
     moc_pop, spinnakear_pop_left, sim.FromListConnector(moc_ohc_connections),
-    synapse_type=sim.StaticSynapse(weight=1.))
+    synapse_type=sim.StaticSynapse(weight=1.0))
 moc_projection2 = sim.Projection(
     moc_pop, spinnakear_pop_right,
     sim.FromListConnector(moc_ohc_connections_2),
-    synapse_type=sim.StaticSynapse(weight=1.))
+    synapse_type=sim.StaticSynapse(weight=1.0))
 
-one_to_one_list = [(i, i) for i in range(target_pop_size)]
+one_to_one_list = [(i, i) for i in range(
+    spinnakear_pop_left.outgoing_neurons())]
 target_projection_left = sim.Projection(
     spinnakear_pop_left, target_pop, sim.FromListConnector(one_to_one_list),
     synapse_type=sim.StaticSynapse(weight=0.05))
@@ -113,26 +110,17 @@ target_projection_right = sim.Projection(
 
 sim.run(duration)
 
-#ear_left_data = spinnakear_pop_left.get_data()
 ear_left_data_moc = spinnakear_pop_left.spinnaker_get_data(["moc"])
 ear_left_data_prob = spinnakear_pop_left.spinnaker_get_data([
     "inner_ear_spike_probability"])
 
-#ear_spikes_left = ear_left_data.segments[0].spiketrains
-#ear_spikes_left = neo_convertor.convert_spiketrains(ear_spikes_left)
-#ear_moc_left = ear_left_data.segments[0].filter(name='moc')[0]
-
-#ear_right_data = spinnakear_pop_right.get_data()
 ear_right_data_prob = spinnakear_pop_right.spinnaker_get_data([
     "inner_ear_spike_probability"])
 ear_right_data_moc = spinnakear_pop_right.spinnaker_get_data([
     "moc"])
-#ear_right_data = spinnakear_pop_right.spinnaker_get_data()
-#ear_spikes_right = ear_right_data.segments[0].spiketrains
-#ear_moc_right = ear_right_data.segments[0].filter(name='moc')[0]
 
 target_data = target_pop.get_data(['spikes'])
-#target_spikes = target_data.segments[0].spiketrains
+target_spikes = target_data.segments[0].spiketrains
 
 left_moc_in_robert_format = list()
 left_prob_in_robert_format = list()
@@ -192,7 +180,7 @@ np.savez_compressed('./ear_' + test_file + '_{}an_fibres_{}dB_{}s'.format
                           "prob": left_prob_in_robert_format},
                          {"moc": right_moc_in_robert_format,
                           "prob": right_prob_in_robert_format}]),
-                    Fs=Fs,stimulus=binaural_audio)
+                    Fs=Fs, stimulus=binaural_audio)
 
 
 sim_data = np.load('./ear_tone_1000Hz_stereo_112.0an_fibres_50dB_0s.npz',
