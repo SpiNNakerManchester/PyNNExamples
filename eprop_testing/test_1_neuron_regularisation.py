@@ -10,11 +10,11 @@ dt = 1
 
 pynn.setup(dt)
 
-n_neurons = 2
+n_neurons = 16
 
 neuron_params = {
     "v": -54,
-    "target_rate": 10*n_neurons
+    "target_rate": 10
     }
 
 
@@ -24,7 +24,10 @@ neuron = pynn.Population(n_neurons,
                          label='eprop_pop')
 
 poisson_src = pynn.Population(n_neurons, 
-                              pynn.SpikeSourcePoisson(rate=[15.0, 5.0]), 
+                              pynn.SpikeSourcePoisson(rate=
+                                                      10
+#                                                       [15.0, 5.0]
+                                                      ), 
                               label='Poisson Src')
 
 proj = pynn.Projection(
