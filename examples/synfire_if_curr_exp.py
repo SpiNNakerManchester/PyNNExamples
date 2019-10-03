@@ -61,7 +61,8 @@ projections.append(p.Projection(
     populations[1], populations[0], p.FromListConnector(injectionConnection),
     p.StaticSynapse(weight=weight_to_spike, delay=1)))
 
-populations[0].record(['v', 'gsyn_exc', 'gsyn_inh', 'spikes'])
+populations[0].record(['v', 'gsyn_exc', 'gsyn_inh', 'spikes'],
+                      sampling_interval=2)
 
 p.run(runtime)
 

@@ -1,5 +1,20 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 # imports of both spynnaker and external device plugin.
-import Tkinter as tk
+import tkinter as tk
 import spynnaker8 as Frontend
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
@@ -112,14 +127,14 @@ class PyNNScript(object):
         if use_spike_injector:
             injector_forward = Frontend.Population(
                 self.n_neurons,
-                Frontend.external_devices.SpikeInjector(
-                    **cell_params_spike_injector_with_key),
-                label='spike_injector_forward')
+                Frontend.external_devices.SpikeInjector(),
+                label='spike_injector_forward',
+                additional_parameters=cell_params_spike_injector_with_key)
             injector_backward = Frontend.Population(
                 self.n_neurons,
-                Frontend.external_devices.SpikeInjector(
-                    **cell_params_spike_injector),
-                label='spike_injector_backward')
+                Frontend.external_devices.SpikeInjector(),
+                label='spike_injector_backward',
+                additional_parameters=cell_params_spike_injector)
         else:
             spike_times = []
             for _ in range(0, self.n_neurons):
@@ -251,7 +266,7 @@ class GUI(object):
                              "spike_injector_backward"])
 
         # Set up callbacks to occur at the start of simulation
-        self._live_spikes_connection.add_start_callback(
+        self._live_spikes_connection.add_start_resume_callback(
             "spike_injector_forward", self.start)
 
         self._root = tk.Tk()

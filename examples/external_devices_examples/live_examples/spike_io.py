@@ -1,3 +1,18 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 # imports of both spynnaker and external device plugin.
 import random
 import spynnaker8 as Frontend
@@ -78,11 +93,13 @@ pop_backward = Frontend.Population(
 
 # Create injection populations
 injector_forward = Frontend.Population(
-    n_neurons, Frontend.external_devices.SpikeInjector(
-        **cell_params_spike_injector_with_key), label='spike_injector_forward')
+    n_neurons, Frontend.external_devices.SpikeInjector(),
+    label='spike_injector_forward',
+    additional_parameters=cell_params_spike_injector_with_key)
 injector_backward = Frontend.Population(
-    n_neurons, Frontend.external_devices.SpikeInjector(
-        **cell_params_spike_injector), label='spike_injector_backward')
+    n_neurons, Frontend.external_devices.SpikeInjector(),
+    label='spike_injector_backward',
+    additional_parameters=cell_params_spike_injector)
 
 # Create a connection from the injector into the populations
 Frontend.Projection(
@@ -172,9 +189,9 @@ live_spikes_connection_send.add_init_callback(
     "spike_injector_backward", init_pop)
 
 # Set up callbacks to occur at the start of simulation
-live_spikes_connection_send.add_start_callback(
+live_spikes_connection_send.add_start_resume_callback(
     "spike_injector_forward", send_input_forward)
-live_spikes_connection_send.add_start_callback(
+live_spikes_connection_send.add_start_resume_callback(
     "spike_injector_backward", send_input_backward)
 
 if not using_c_vis:
