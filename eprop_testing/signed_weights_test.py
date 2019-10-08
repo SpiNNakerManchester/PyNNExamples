@@ -36,6 +36,11 @@ neuron.record('all')
 pynn.run(runtime)
 
 res = neuron.get_data('all')
+weights = proj.get('weight', 'list', with_address=False)
+delays = proj.get('delay', 'list', with_address=False)
+
+for i in range(len(weights)):
+    print(weights[i], delays[i])
 
 Figure(
     Panel(res.segments[0].filter(name='v')[0],
