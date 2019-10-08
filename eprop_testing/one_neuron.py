@@ -23,7 +23,8 @@ neuron = pynn.Population(1,
                          label='eprop_pop')
 
 proj = pynn.Projection(spike_source, neuron,
-                       pynn.OneToOneConnector(weight=0.5, delay=1),
+                       pynn.OneToOneConnector(),
+                       pynn.StaticSynapse(weight=-0.5, delay=1),
                        label='exc_proj')
 
 
