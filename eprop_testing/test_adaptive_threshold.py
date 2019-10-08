@@ -5,7 +5,7 @@ from pyNN.random import NumpyRNG, RandomDistribution
 from pyNN.utility.plotting import Figure, Panel
 
 
-runtime = 100
+runtime = 10000
 pynn.setup(1.0)
 
 neuron_params = {
