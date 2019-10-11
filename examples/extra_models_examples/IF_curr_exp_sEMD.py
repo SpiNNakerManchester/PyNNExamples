@@ -29,32 +29,32 @@ spike_time_facilitation = 4
 spike_time_trigger = 20
 
 # set up simulation
-simulation_timestep = 1 # ms
-simulation_runtime = 100 # ms
+simulation_timestep = 1  # ms
+simulation_runtime = 100  # ms
 p.setup(timestep=simulation_timestep)
 
 # neuron parameters
-cell_params_semd = {'cm'        : 0.25,
-                    'i_offset'  : 0,   # offset current
-                    'tau_m'     : 10,  # membrane potential time constant
-                    'tau_refrac': 1,   # refractory period time constant
-                    'tau_syn_E' : 20 , # excitatory current time constant
-                    'tau_syn_I' : 20 , # inhibitory current time constant
-                    'v_reset'   : -85, # reset potential
-                    'v_rest'    : -60, # resting potential
-                    'v_thresh'  : -50  # spiking threshold
+cell_params_semd = {'cm': 0.25,
+                    'i_offset': 0,   # offset current
+                    'tau_m': 10,  # membrane potential time constant
+                    'tau_refrac': 1,  # refractory period time constant
+                    'tau_syn_E': 20,  # excitatory current time constant
+                    'tau_syn_I': 20,  # inhibitory current time constant
+                    'v_reset': -85,  # reset potential
+                    'v_rest': -60,  # resting potential
+                    'v_thresh': -50  # spiking threshold
                     }
 
 # neuron populations
 # (population size, neuron type, cell parameters, label)
 sEMD = p.Population(1, p.extra_models.IF_curr_exp_sEMD, cell_params_semd,
-                    label = "sEMD")
+                    label="sEMD")
 input_facilitation = p.Population(1, p.SpikeSourceArray,
                                   {'spike_times': [[spike_time_facilitation]]},
-                                  label = "input_facilitation")
+                                  label="input_facilitation")
 input_trigger = p.Population(1, p.SpikeSourceArray,
                              {'spike_times': [[spike_time_trigger]]},
-                             label = "input_trigger")
+                             label="input_trigger")
 
 # initialize v
 sEMD.initialize(v=-60.0)
@@ -62,13 +62,13 @@ sEMD.initialize(v=-60.0)
 # projections
 p.Projection(input_facilitation, sEMD, p.OneToOneConnector(),
              p.StaticSynapse(weight=weights, delay=1),
-             receptor_type= 'excitatory')
+             receptor_type='excitatory')
 p.Projection(input_trigger, sEMD, p.OneToOneConnector(),
-             p.StaticSynapse(weight=weights,delay=1),
-             receptor_type= 'excitatory2')
+             p.StaticSynapse(weight=weights, delay=1),
+             receptor_type='excitatory2')
 
 # records
-sEMD.record(['spikes','v','gsyn_exc','gsyn_inh'])
+sEMD.record(['spikes', 'v', 'gsyn_exc', 'gsyn_inh'])
 
 # run simulation
 p.run(simulation_runtime)
