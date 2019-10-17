@@ -1,6 +1,22 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 Simple Associative Memory
 """
+from __future__ import division
 import spynnaker8 as p
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
@@ -71,9 +87,9 @@ p_from_inhib_connect = 1.0
 
 spikes0 = list()
 teachingSpikes = list()
-for i in range(runTime/40):
+for i in range(runTime//40):
     spikes0.append(i*40)
-for i in range(runTime/80):
+for i in range(runTime//80):
     teachingSpikes.append(i*40+5+120)
 
 # spikes0 = [0, 40, 80, 120, 160, 200, 240, 280, 320, 360, 400, 440, 480, 520,

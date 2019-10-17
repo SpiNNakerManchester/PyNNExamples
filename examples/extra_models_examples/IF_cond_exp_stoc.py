@@ -1,3 +1,18 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 A single IF neuron with exponential, current-based synapses, fed by two
 spike sources.
@@ -21,7 +36,7 @@ import matplotlib.pyplot as plt
 
 sim.setup(timestep=1.0, min_delay=1.0, max_delay=4.0)
 
-stoc_cell = sim.Population(1, sim.extra_models.IFCondExpStock(**{
+stoc_cell = sim.Population(1, sim.extra_models.IFCondExpStoc(**{
     'i_offset': 0.1,
     'tau_refrac': 3.0,
     'v_thresh': -51.0,
@@ -97,7 +112,7 @@ Figure(
     Panel(exp_data.segments[0].filter(name='gsyn_inh')[0],
           ylabel="gsyn inhibitory (mV)",
           data_labels=[exp_cell.label], yticks=True, xlim=(0, runtime)),
-    title="Simple synfire chain example",
+    title="IF_cond_exp_stoc example",
     annotations="Simulated with {}".format(sim.name())
 )
 plt.show()

@@ -1,3 +1,18 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 Simple test for STDP :
 
@@ -175,9 +190,9 @@ post_spikes = post_pop.get_data('spikes')
 Figure(
     # raster plot of the presynaptic neuron spike times
     Panel(pre_spikes.segments[0].spiketrains,
-          yticks=True, markersize=0.2, xlim=(0, simtime)),
+          yticks=True, markersize=0.5, xlim=(0, simtime)),
     Panel(post_spikes.segments[0].spiketrains,
-          yticks=True, markersize=0.2, xlim=(0, simtime)),
+          yticks=True, markersize=0.5, xlim=(0, simtime)),
     title="stdp example cond",
     annotations="Simulated with {}".format(sim.name()))
 plt.show()
