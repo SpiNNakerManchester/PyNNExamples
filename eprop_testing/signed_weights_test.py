@@ -15,7 +15,6 @@ neuron_params = {
     }
 
 
-
 spike_source = pynn.Population(2,
                                pynn.SpikeSourceArray,
                                {'spike_times': [10]},

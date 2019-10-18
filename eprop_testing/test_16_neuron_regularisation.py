@@ -13,7 +13,7 @@ pynn.setup(dt)
 n_neurons = 16
 
 neuron_params = {
-    "v": -54,
+    "v": 0,
     "target_rate": 10
     }
 
