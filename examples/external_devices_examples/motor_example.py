@@ -18,10 +18,10 @@ motor example that just feeds data to the motor pop which starts the motor
 going forward
 """
 
-try:
-    import pyNN.spiNNaker as p
-except Exception:
-    import spynnaker8 as p
+# try:
+import pyNN.spiNNaker as p
+# except Exception:
+import spynnaker as p
 
 # set up the tools
 p.setup(timestep=1.0, min_delay=1.0, max_delay=32.0)

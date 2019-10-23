@@ -29,7 +29,7 @@ Andrew Davison, UNIC, CNRS
 August 2006
 """
 import socket
-import spynnaker8 as p
+import spynnaker as p
 from pyNN.random import NumpyRNG, RandomDistribution
 from pyNN.utility import Timer
 from pyNN.utility.plotting import Figure, Panel

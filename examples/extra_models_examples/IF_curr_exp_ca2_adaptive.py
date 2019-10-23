@@ -24,7 +24,7 @@
 import math
 import numpy
 import matplotlib.pyplot as pylab
-import spynnaker8 as sim
+import spynnaker as sim
 from six import iteritems, iterkeys, itervalues
 
 # Timestep (ms)

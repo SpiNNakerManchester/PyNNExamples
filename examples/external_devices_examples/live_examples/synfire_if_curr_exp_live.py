@@ -14,7 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Standard PyNN imports
-import spynnaker8 as p
+import spynnaker as p
 
 # pynn plotting stuff
 from pyNN.utility.plotting import Figure, Panel

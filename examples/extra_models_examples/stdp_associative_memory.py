@@ -17,7 +17,7 @@
 Simple Associative Memory
 """
 from __future__ import division
-import spynnaker8 as p
+import spynnaker as p
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 from pyNN.random import NumpyRNG, RandomDistribution

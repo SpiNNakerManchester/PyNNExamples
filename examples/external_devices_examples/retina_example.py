@@ -17,10 +17,10 @@
 retina example that just feeds data from a retina to live output via an
 intermediate population
 """
-try:
-    import pyNN.spiNNaker as p
-except Exception:
-    import spynnaker8 as p
+# try:
+# import pyNN.spiNNaker as p
+# except Exception:
+import spynnaker as p
 
 connected_chip_details = {
     "spinnaker_link_id": 0,

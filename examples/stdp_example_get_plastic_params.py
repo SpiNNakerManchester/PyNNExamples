@@ -46,7 +46,7 @@ April 2013
 try:
     import pyNN.spiNNaker as sim
 except Exception:
-    import spynnaker8 as sim
+    import spynnaker as sim
 
 # SpiNNaker setup
 sim.setup(timestep=1.0, min_delay=1.0, max_delay=10.0)

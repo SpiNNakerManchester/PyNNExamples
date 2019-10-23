@@ -15,7 +15,7 @@
 
 import matplotlib.pyplot as pylab
 
-import spynnaker8 as sim
+import spynnaker as sim
 
 # -------------------------------------------------------------------
 # This example uses the sPyNNaker implementation of the triplet rule

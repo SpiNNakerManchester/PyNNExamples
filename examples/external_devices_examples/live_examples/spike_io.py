@@ -15,7 +15,7 @@
 
 # imports of both spynnaker and external device plugin.
 import random
-import spynnaker8 as Frontend
+import spynnaker as Frontend
 import time
 from threading import Condition
 from pyNN.utility.plotting import Figure, Panel

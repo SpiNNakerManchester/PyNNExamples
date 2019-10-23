@@ -17,7 +17,7 @@ import matplotlib.pyplot as pylab
 try:
     import pyNN.spiNNaker as sim
 except Exception:
-    import spynnaker8 as sim
+    import spynnaker as sim
 
 # ------------------------------------------------------------------
 # This example uses the sPyNNaker implementation of pair-based STDP

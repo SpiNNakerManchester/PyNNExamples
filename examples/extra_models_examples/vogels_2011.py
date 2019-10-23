@@ -13,10 +13,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import spynnaker8 as sim
+import spynnaker as sim
 import numpy
 import matplotlib.pyplot as pylab
-from spynnaker8.utilities import neo_convertor
+from spynnaker.pyNN.utilities import neo_convertor
 
 # -------------------------------------------------------------------
 # This example uses the sPyNNaker implementation of the inhibitory

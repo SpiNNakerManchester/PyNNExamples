@@ -20,10 +20,10 @@ A population of integrate-and-firing neurons with different input firing rates
 
 import numpy as np
 import matplotlib.pyplot as plt
-try:
-    import pyNN.spiNNaker as sim
-except Exception:
-    import spynnaker8 as sim
+#try:
+#    import pyNN.spiNNaker as sim
+#except Exception:
+import spynnaker as sim
 
 sim.setup(timestep=1.0, min_delay=1.0)
 

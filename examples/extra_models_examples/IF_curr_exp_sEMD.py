@@ -19,7 +19,7 @@ See https://www.cit-ec.de/en/nbs/spiking-insect-vision for more details
 """
 
 # imports
-import spynnaker8 as p
+import spynnaker as p
 import datetime
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt

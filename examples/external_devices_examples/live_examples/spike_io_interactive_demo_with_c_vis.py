@@ -15,7 +15,7 @@
 
 # imports of both spynnaker and external device plugin.
 import tkinter as tk
-import spynnaker8 as Frontend
+import spynnaker as Frontend
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 
@@ -255,7 +255,7 @@ class GUI(object):
     """
 
     def __init__(self, n_neurons, ready):
-        import spynnaker8 as Frontend
+        import spynnaker as Frontend
         self._n_neurons = n_neurons
 
         # Set up the live connection for sending and receiving spikes
