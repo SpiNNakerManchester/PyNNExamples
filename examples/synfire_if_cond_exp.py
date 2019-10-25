@@ -2,13 +2,14 @@
 Synfirechain-like example
 """
 import spynnaker8 as p
+import time
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 
-runtime = 5000
+runtime = 2000
 p.setup(timestep=1.0, min_delay=1.0, max_delay=144.0)
 nNeurons = 200  # number of neurons in each population
-p.set_number_of_neurons_per_core(p.IF_curr_exp, nNeurons / 2)
+#p.set_number_of_neurons_per_core(p.IF_curr_exp, 33)
 
 cell_params_lif = {'cm': 0.25,
                    'i_offset': 0.0,
@@ -24,7 +25,7 @@ cell_params_lif = {'cm': 0.25,
                    }
 
 weight_to_spike = 0.035
-delay = 17
+delay = 3
 
 loopConnections = list()
 for i in range(0, nNeurons):
@@ -32,7 +33,7 @@ for i in range(0, nNeurons):
     loopConnections.append(singleConnection)
 
 injectionConnection = [(0, 0)]
-spikeArray = {'spike_times': [[0]]}
+spikeArray = {'spike_times': [[2]]}
 main_pop = p.Population(
     nNeurons, p.IF_cond_exp(**cell_params_lif), label='pop_1')
 input_pop = p.Population(
@@ -40,14 +41,16 @@ input_pop = p.Population(
 
 p.Projection(
     main_pop, main_pop, p.FromListConnector(loopConnections),
-    p.StaticSynapse(weight=weight_to_spike, delay=delay))
+    p.StaticSynapse(weight=weight_to_spike, delay=delay), receptor_type="excitatory")
 p.Projection(
     input_pop, main_pop, p.FromListConnector(injectionConnection),
-    p.StaticSynapse(weight=weight_to_spike, delay=1))
+    p.StaticSynapse(weight=weight_to_spike, delay=1), receptor_type="excitatory")
 
-main_pop.record(['v', 'gsyn_exc', 'gsyn_inh', 'spikes'])
+main_pop.record(['spikes', 'gsyn_exc', 'gsyn_inh', 'v'])
 
 p.run(runtime)
+
+#time.sleep(3000)
 
 # get data (could be done as one, but can be done bit by bit as well)
 v = main_pop.get_data('v')
@@ -73,6 +76,16 @@ Figure(
     title="Simple synfire chain example",
     annotations="Simulated with {}".format(p.name())
 )
+
+for n in range(len(spikes.segments[0].spiketrains)):
+    print "Neuron: " + str(n) + " spiked at timestep: " + str(spikes.segments[0].spiketrains[n])
+
+
+#ind = 0
+#for elem in v.segments[0].filter(name='v')[0]:
+#    print str(ind) + "\n\n\n\n" + str(elem)
+#    ind += 1
+
 plt.show()
 print(figure_filename)
 
