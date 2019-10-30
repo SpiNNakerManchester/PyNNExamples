@@ -16,12 +16,12 @@ def soma_comp_stimulus():
     #                    "v": -65
     #                    }
 
-    weight_to_spike = 10
+    weight_to_spike = 1
 
     population = p.Population(1, p.extra_models.IFCurrExpTwoComp(), label='population_1')
     input = p.Population(1, p.SpikeSourceArray(spike_times=[1, 2, 3, 4, 5, 6]), label='input')
 
-    p.Projection(input, population, p.OneToOneConnector(), p.StaticSynapse(weight=weight_to_spike, delay=1), receptor_type="dendrite_exc")
+    p.Projection(input, population, p.OneToOneConnector(), p.StaticSynapse(weight=weight_to_spike, delay=1), receptor_type="soma_exc")
 
     population.record(['v', 'spikes', 'gsyn_exc', 'gsyn_inh'])
 

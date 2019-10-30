@@ -7,7 +7,7 @@ def dendrite_comp_stimulus():
 
     runtime = 50
     nNeurons = 65
-    p.setup(timestep=1.0, min_delay=1.0, max_delay=144.0)
+    p.setup(timestep=1)
 
     # cell_params_tcmp = {"u_thresh": -50,
     #                    "u_reset": -70,
@@ -16,7 +16,7 @@ def dendrite_comp_stimulus():
     #                    "v": -65
     #                    }
 
-    weight_to_spike = 100
+    weight_to_spike = 1
 
     population = p.Population(1, p.extra_models.IFCurrExpTwoComp(), label='population_1')
     input = p.Population(1, p.SpikeSourceArray(spike_times=[1, 2, 3, 4, 5, 6]), label='input')
@@ -51,6 +51,8 @@ def dendrite_comp_stimulus():
         title="multicompartment example",
         annotations="Simulated with {}".format(p.name())
     )
+
+    plt.grid(True)
 
     plt.show()
 

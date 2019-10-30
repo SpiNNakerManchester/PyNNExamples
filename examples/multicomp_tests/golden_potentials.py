@@ -2,9 +2,9 @@ import math
 import matplotlib.pyplot as plt
 
 
-def _expand(runtime, set, delay, weight):
+def _expand(runtime, set, delay, weight, scale):
 
-    set = [set[i] + delay for i in range(len(set))]
+    set = [(set[i] + delay) * scale for i in range(len(set))]
     expanded_set = []
     j = 0
     for i in range(runtime):
@@ -13,7 +13,11 @@ def _expand(runtime, set, delay, weight):
         elif i != set[j]:
             expanded_set.append(0)
         else:
-            expanded_set.append(weight)
+            tmp_weight = weight
+            while j < len(set) - 1 and set[j+1] == i:
+                j += 1
+                tmp_weight += weight
+            expanded_set.append(tmp_weight)
             j += 1
 
     return expanded_set
@@ -22,7 +26,7 @@ def _expand(runtime, set, delay, weight):
 def compute_rate(U):
 
     # parameters
-    phi_max = 150
+    phi_max = 500
     k = 0.5
     beta = 5
     delta = 1
@@ -32,7 +36,7 @@ def compute_rate(U):
     return current_rate
 
 
-def golden_potentials(runtime, timesteps_per_sec, somatic_exc, somatic_inh, dendritic_exc, dendritic_inh, delay, weight):
+def golden_potentials(runtime, timesteps_per_ms, somatic_exc, somatic_inh, dendritic_exc, dendritic_inh, delay, weight):
 
     # parameters
     # coupling conductance
@@ -57,10 +61,10 @@ def golden_potentials(runtime, timesteps_per_sec, somatic_exc, somatic_inh, dend
     V_prev = 0
     U_prev = 0
 
-    somatic_spikes_exc = _expand(runtime, somatic_exc, delay, weight)
-    somatic_spikes_inh = _expand(runtime, somatic_inh, delay, weight)
-    dendritic_spikes_exc = _expand(runtime, dendritic_exc, delay, weight)
-    dendritic_spikes_inh = _expand(runtime, dendritic_inh, delay, weight)
+    somatic_spikes_exc = _expand(runtime, somatic_exc, delay, weight, timesteps_per_ms)
+    somatic_spikes_inh = _expand(runtime, somatic_inh, delay, weight, timesteps_per_ms)
+    dendritic_spikes_exc = _expand(runtime, dendritic_exc, delay, weight, timesteps_per_ms)
+    dendritic_spikes_inh = _expand(runtime, dendritic_inh, delay, weight, timesteps_per_ms)
 
     # THE DELTA T IN THE EXPONENT IS THE MACHINE TIMESTEP, WHICH IS SET TO 1 MS,
     # SO WE ONLY TAKE INTO ACCOUNT THE TOME CONSTANT
@@ -68,12 +72,15 @@ def golden_potentials(runtime, timesteps_per_sec, somatic_exc, somatic_inh, dend
     tau_syn_soma = 5
     tau_syn_dend = 5
 
+    timestep_duration_microsec = float(1000.0) / timesteps_per_ms
+    timestep_duration_microsec = float(timestep_duration_microsec) / 1000
+
     # Exponential decay factors of the synapses
     # decay = e^-(1/tau_syn_soma)
-    decay_soma = math.exp(float(-1)/tau_syn_soma)
-    init_soma = tau_syn_soma * (1 - decay_soma)
-    decay_dend = math.exp(float(-1) / tau_syn_dend)
-    init_dend = tau_syn_dend * (1 - decay_dend)
+    decay_soma = math.exp(-timestep_duration_microsec / tau_syn_soma)
+    init_soma = (float(tau_syn_soma) / timestep_duration_microsec) * (1.0 - decay_soma)
+    decay_dend = math.exp(-timestep_duration_microsec / tau_syn_dend)
+    init_dend = (float(tau_syn_dend) / timestep_duration_microsec) * (1.0 - decay_dend)
 
     mean_isi_ticks = 65000
     time_to_spike = 65000
@@ -88,15 +95,19 @@ def golden_potentials(runtime, timesteps_per_sec, somatic_exc, somatic_inh, dend
         R_tot = 1 / g_tot
 
         # IS THIS CORRECT?
-        Isyn_dnd += dendritic_spikes_exc[i] - init_dend * dendritic_spikes_inh[i]
+        Isyn_dnd += init_dend * dendritic_spikes_exc[i] - init_dend * dendritic_spikes_inh[i]
+
+        print "\n" + str(ge) + " " + str(Ee) + " " + str(U_prev)
 
         # CHECK THIS, BECAUSE IN C IT HAS BEEN SET AS A DIFFERENCE, BUT IN THE PAPER IS A SUM AND Ei IS NEGATIVE!
-        Isyn_soma = ge * (Ee - U_prev) + gi * (Ei - U_prev)
+        Isyn_soma = ge * (Ee - U_prev) - gi * (Ei - U_prev)
 
         # Dendritic potential
         V.append(Isyn_dnd + math.exp(-gl) * (V_prev - Isyn_dnd))
 
         alpha = float((gsd * V[i] + Isyn_soma)) / g_tot
+
+        print str(math.exp(-g_tot)) + " " + str(Isyn_soma)
 
         # Somatic potential
         U.append(alpha + math.exp(-g_tot) * (U_prev - alpha))
@@ -111,7 +122,7 @@ def golden_potentials(runtime, timesteps_per_sec, somatic_exc, somatic_inh, dend
 
         rate.append(compute_rate(U[i]))
 
-        mean_isi_ticks = timesteps_per_sec / rate[i]
+        mean_isi_ticks = (timesteps_per_ms * 1000) / rate[i]
 
         time_to_spike -= 1
         time_since_last_spike += 1
@@ -133,11 +144,11 @@ if __name__ == "__main__":
     # "compensate for the valve behaviour of a synapse in biology (spike goes in, synapse opens, then closes slowly)
     #  and the leaky behaviour of the neuron" <- SpiNNaker C code
 
-    # Number of timesteps
+    # Length of the simulation in ms
     runtime = 50
 
     # Length of each timestep
-    timesteps_per_second = 1000
+    timesteps_per_ms = 1
 
     # Lists of spikes per receptor
     somatic_spikes_exc = []
@@ -150,8 +161,10 @@ if __name__ == "__main__":
     # Synaptic weight
     weight = 1
 
+    runtime *= timesteps_per_ms
+
     V, U, rate, out_spikes = golden_potentials(
-        runtime, timesteps_per_second, somatic_spikes_exc, somatic_spikes_inh,
+        runtime, timesteps_per_ms, somatic_spikes_exc, somatic_spikes_inh,
         dendritic_spikes_exc, dendritic_spikes_inh, delay, weight)
 
     spikes_val = [1 for i in range(len(out_spikes))]
