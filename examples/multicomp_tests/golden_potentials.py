@@ -36,7 +36,7 @@ def compute_rate(U):
     return current_rate
 
 
-def golden_potentials(runtime, timesteps_per_ms, somatic_exc, somatic_inh, dendritic_exc, dendritic_inh, delay, weight):
+def golden_potentials(runtime_ms, timesteps_per_ms, somatic_exc, somatic_inh, dendritic_exc, dendritic_inh, delay, weight):
 
     # parameters
     # coupling conductance
@@ -61,26 +61,26 @@ def golden_potentials(runtime, timesteps_per_ms, somatic_exc, somatic_inh, dendr
     V_prev = 0
     U_prev = 0
 
+    # Get the number of timesteps
+    runtime = runtime_ms * timesteps_per_ms
+
     somatic_spikes_exc = _expand(runtime, somatic_exc, delay, weight, timesteps_per_ms)
     somatic_spikes_inh = _expand(runtime, somatic_inh, delay, weight, timesteps_per_ms)
     dendritic_spikes_exc = _expand(runtime, dendritic_exc, delay, weight, timesteps_per_ms)
     dendritic_spikes_inh = _expand(runtime, dendritic_inh, delay, weight, timesteps_per_ms)
 
-    # THE DELTA T IN THE EXPONENT IS THE MACHINE TIMESTEP, WHICH IS SET TO 1 MS,
-    # SO WE ONLY TAKE INTO ACCOUNT THE TOME CONSTANT
-
     tau_syn_soma = 5
     tau_syn_dend = 5
 
     timestep_duration_microsec = float(1000.0) / timesteps_per_ms
-    timestep_duration_microsec = float(timestep_duration_microsec) / 1000
+    timestep_duration_millisec = float(timestep_duration_microsec) / 1000
 
     # Exponential decay factors of the synapses
     # decay = e^-(1/tau_syn_soma)
-    decay_soma = math.exp(-timestep_duration_microsec / tau_syn_soma)
-    init_soma = (float(tau_syn_soma) / timestep_duration_microsec) * (1.0 - decay_soma)
-    decay_dend = math.exp(-timestep_duration_microsec / tau_syn_dend)
-    init_dend = (float(tau_syn_dend) / timestep_duration_microsec) * (1.0 - decay_dend)
+    decay_soma = math.exp(-timestep_duration_millisec / tau_syn_soma)
+    init_soma = (float(tau_syn_soma) / timestep_duration_millisec) * (1.0 - decay_soma)
+    decay_dend = math.exp(-timestep_duration_millisec / tau_syn_dend)
+    init_dend = (float(tau_syn_dend) / timestep_duration_millisec) * (1.0 - decay_dend)
 
     mean_isi_ticks = 65000
     time_to_spike = 65000
@@ -97,17 +97,14 @@ def golden_potentials(runtime, timesteps_per_ms, somatic_exc, somatic_inh, dendr
         # IS THIS CORRECT?
         Isyn_dnd += init_dend * dendritic_spikes_exc[i] - init_dend * dendritic_spikes_inh[i]
 
-        print "\n" + str(ge) + " " + str(Ee) + " " + str(U_prev)
-
         # CHECK THIS, BECAUSE IN C IT HAS BEEN SET AS A DIFFERENCE, BUT IN THE PAPER IS A SUM AND Ei IS NEGATIVE!
-        Isyn_soma = ge * (Ee - U_prev) - gi * (Ei - U_prev)
+        Isyn_soma = ge * Ee - gi * Ei
 
         # Dendritic potential
-        V.append(Isyn_dnd + math.exp(-gl) * (V_prev - Isyn_dnd))
+        V.append(Isyn_dnd + math.exp(float(-gl * timestep_duration_microsec)/1000) * (V_prev - Isyn_dnd))
 
         alpha = float((gsd * V[i] + Isyn_soma)) / g_tot
 
-        print str(math.exp(-g_tot)) + " " + str(Isyn_soma)
 
         # Somatic potential
         U.append(alpha + math.exp(-g_tot) * (U_prev - alpha))
@@ -147,13 +144,13 @@ if __name__ == "__main__":
     # Length of the simulation in ms
     runtime = 50
 
-    # Length of each timestep
+    # Number of timesteps in one ms
     timesteps_per_ms = 1
 
     # Lists of spikes per receptor
-    somatic_spikes_exc = []
+    somatic_spikes_exc = [1, 2, 3, 4, 5, 6]
     somatic_spikes_inh = []
-    dendritic_spikes_exc = [1, 2, 3, 4, 5, 6]
+    dendritic_spikes_exc = []
     dendritic_spikes_inh = []
 
     # Synaptic delay
@@ -161,13 +158,13 @@ if __name__ == "__main__":
     # Synaptic weight
     weight = 1
 
-    runtime *= timesteps_per_ms
-
     V, U, rate, out_spikes = golden_potentials(
         runtime, timesteps_per_ms, somatic_spikes_exc, somatic_spikes_inh,
         dendritic_spikes_exc, dendritic_spikes_inh, delay, weight)
 
     spikes_val = [1 for i in range(len(out_spikes))]
+
+    runtime *= timesteps_per_ms
 
     plt.subplot(4, 1, 1)
     plt.xlim(-1, runtime + 1)
