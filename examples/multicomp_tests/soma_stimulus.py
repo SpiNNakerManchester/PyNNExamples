@@ -7,7 +7,7 @@ def soma_comp_stimulus():
 
     runtime = 50
     nNeurons = 65
-    p.setup(timestep=1.0, min_delay=1.0, max_delay=144.0)
+    p.setup(timestep=0.1)
 
     # cell_params_tcmp = {"u_thresh": -50,
     #                    "u_reset": -70,

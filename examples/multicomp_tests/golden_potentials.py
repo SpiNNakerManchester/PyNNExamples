@@ -50,7 +50,7 @@ def golden_potentials(runtime_ms, timesteps_per_ms, somatic_exc, somatic_inh, de
     Isyn_dnd = 0
     # reversal potentials
     Ee = 4.667
-    Ei = -0.333
+    Ei = 0.333
 
     # Return values
     V = list()
@@ -91,14 +91,14 @@ def golden_potentials(runtime_ms, timesteps_per_ms, somatic_exc, somatic_inh, de
         ge += init_soma * somatic_spikes_exc[i]
         gi += init_soma * somatic_spikes_inh[i]
 
-        g_tot = gl + gsd + gi + ge
+        g_tot = gl + gsd
         R_tot = 1 / g_tot
 
         # IS THIS CORRECT?
         Isyn_dnd += init_dend * dendritic_spikes_exc[i] - init_dend * dendritic_spikes_inh[i]
 
         # CHECK THIS, BECAUSE IN C IT HAS BEEN SET AS A DIFFERENCE, BUT IN THE PAPER IS A SUM AND Ei IS NEGATIVE!
-        Isyn_soma = ge * Ee - gi * Ei
+        Isyn_soma = (ge * (Ee - U_prev)) - (gi * (Ei - U_prev))
 
         # Dendritic potential
         V.append(Isyn_dnd + math.exp(float(-gl * timestep_duration_microsec)/1000) * (V_prev - Isyn_dnd))
@@ -107,7 +107,7 @@ def golden_potentials(runtime_ms, timesteps_per_ms, somatic_exc, somatic_inh, de
 
 
         # Somatic potential
-        U.append(alpha + math.exp(-g_tot) * (U_prev - alpha))
+        U.append(alpha + math.exp(float(-g_tot * timestep_duration_microsec) / 1000) * (U_prev - alpha))
 
         U_prev = U[i]
         V_prev = V[i]
@@ -127,7 +127,6 @@ def golden_potentials(runtime_ms, timesteps_per_ms, somatic_exc, somatic_inh, de
         time_to_spike = mean_isi_ticks - time_since_last_spike
 
         if time_to_spike <= 0:
-
             out_spikes.append(i)
             time_since_last_spike = 0
 
@@ -145,7 +144,7 @@ if __name__ == "__main__":
     runtime = 50
 
     # Number of timesteps in one ms
-    timesteps_per_ms = 1
+    timesteps_per_ms = 10
 
     # Lists of spikes per receptor
     somatic_spikes_exc = [1, 2, 3, 4, 5, 6]
@@ -173,14 +172,14 @@ if __name__ == "__main__":
     plt.ylabel("Spikes")
     plt.grid(True)
 
-    plt.subplot(4, 1, 3)
+    plt.subplot(4, 1, 2)
     plt.xlim(-1, runtime + 1)
     plt.plot(range(runtime), U, "-o", color="blue")
     # plt.xlabel("time (ms)")
     plt.ylabel("Somatic Potential")
     plt.grid(True)
 
-    plt.subplot(4, 1, 2)
+    plt.subplot(4, 1, 3)
     plt.xlim(-1, runtime + 1)
     plt.plot(range(runtime), V, "-o", color="green")
     # plt.xlabel("time (ms)")

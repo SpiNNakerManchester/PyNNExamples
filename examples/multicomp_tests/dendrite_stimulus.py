@@ -58,13 +58,8 @@ def dendrite_comp_stimulus():
 
     p.end()
 
-    if str(spikes.segments[0].spiketrains[0]) == "[ 4. 11. 18. 53.] ms":
-        return True
-    else:
-        return False
+    return False
 
-
-    #plt.show()
 
 if __name__ == "__main__":
     if dendrite_comp_stimulus():
