@@ -118,7 +118,7 @@ post_spikes = []
 weights = []
 
 for i in range(10):
-    weights.append(plastic_projections[i].getWeights())
+    weights.append(plastic_projections[i].get('weight', 'list'))
     spikes = post_pops[i].get_data('spikes').segments[0].spiketrains
     for x in spikes[0]:
         post_spikes.append([i+1, x])
