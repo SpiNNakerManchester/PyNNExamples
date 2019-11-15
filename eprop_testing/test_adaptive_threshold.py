@@ -14,13 +14,9 @@ neuron_params = {
     "v_rest": 0
     }
 
-
-
-
 neuron = pynn.Population(1,
                          pynn.extra_models.EPropAdaptive(**neuron_params),
                          label='eprop_pop')
-
 
 neuron.record('all')
 

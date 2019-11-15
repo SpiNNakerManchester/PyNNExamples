@@ -14,27 +14,28 @@ n_neurons = 16
 
 neuron_params = {
     "v": 0,
-    "target_rate": 10
+    "target_rate": 10,
+    "beta": 0.0  # Stops any adaptation occurring
     }
 
 
 
-neuron = pynn.Population(n_neurons, 
-                         pynn.extra_models.EPropAdaptive(**neuron_params), 
+neuron = pynn.Population(n_neurons,
+                         pynn.extra_models.EPropAdaptive(**neuron_params),
                          label='eprop_pop')
 
-poisson_src = pynn.Population(n_neurons, 
+poisson_src = pynn.Population(n_neurons,
                               pynn.SpikeSourcePoisson(rate=
                                                       10
 #                                                       [15.0, 5.0]
-                                                      ), 
+                                                      ),
                               label='Poisson Src')
 
 proj = pynn.Projection(
     poisson_src,
     neuron,
     pynn.OneToOneConnector(),
-    pynn.StaticSynapse(weight=5.0, delay=dt), 
+    pynn.StaticSynapse(weight=3.5, delay=dt),
     # weight set to cause postsynaptic neuron to fire
     receptor_type='excitatory'
     )
