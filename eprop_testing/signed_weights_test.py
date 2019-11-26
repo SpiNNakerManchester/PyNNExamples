@@ -26,6 +26,8 @@ neuron = pynn.Population(2,
 
 proj = pynn.Projection(spike_source, neuron,
                        pynn.OneToOneConnector(),
+                       # note that delays are now fixed to one in terms of spikes,
+                       # but the synaptic word field indexes the synapse array
                        pynn.StaticSynapse(weight=[-0.5, 2] , delay=[1, 5]),
                        label='exc_proj')
 
@@ -51,6 +53,9 @@ Figure(
     Panel(res.segments[0].filter(name='gsyn_inh')[0],
           xlabel="Time (ms)", xticks=True,
           ylabel="gsyn inhibitory (mV)",
+          data_labels=neuron.label, yticks=True, xlim=(0, runtime)),
+    Panel(res.segments[0].spiketrains,
+          ylabel="Output Spikes",
           data_labels=neuron.label, yticks=True, xlim=(0, runtime)),
     title="Single eprop neuron"
 )
