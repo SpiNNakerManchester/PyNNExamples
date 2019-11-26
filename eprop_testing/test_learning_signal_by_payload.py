@@ -14,6 +14,12 @@ neuron_params = {
     "v_rest": 0
     }
 
+readout_neuron_params = {
+    "v": 0,
+    "v_thresh": 30, # controls firing rate of error neurons
+    "poisson_pop_size": input_pop_size,
+    }
+
 
 input_pop = pynn.Population(1,
                             pynn.SpikeSourceArray,
@@ -29,6 +35,15 @@ in_proj = pynn.Projection(input_pop,
                           pynn.OneToOneConnector(),
                           pynn.StaticSynapse(weight=[-0.5], delay=[174]),
                           receptor_type='excitatory')
+
+
+# Output population
+pop_out = p.Population(3, # HARDCODED 3: One readout; one exc err, one inh err
+                       p.extra_models.StoreRecallReadout(
+                            **readout_neuron_params
+                           ),  # Neuron model
+                       label="pop_out" # identifier
+                       )
 
 
 input_pop.record('spikes')
