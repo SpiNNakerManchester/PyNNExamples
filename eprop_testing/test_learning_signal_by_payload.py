@@ -31,7 +31,7 @@ readout_neuron_params = {
 
 input_pop = pynn.Population(1,
                             pynn.SpikeSourceArray,
-                            {'spike_times': [200]},
+                            {'spike_times': [200, 210]},
                             label='input_pop')
 
 neuron = pynn.Population(1,
@@ -41,7 +41,7 @@ neuron = pynn.Population(1,
 in_proj = pynn.Projection(input_pop,
                           neuron,
                           pynn.OneToOneConnector(),
-                          pynn.StaticSynapse(weight=[-0.5], delay=[174]),
+                          pynn.StaticSynapse(weight=[-0.5], delay=[0]),
                           receptor_type='excitatory')
 
 # Output population
