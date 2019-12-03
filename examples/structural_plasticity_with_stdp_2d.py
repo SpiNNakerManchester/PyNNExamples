@@ -179,6 +179,8 @@ formation_distance = sim.DistanceDependentFormation(
     sigma_form_forward=.5  # spread of feed-forward connections
 )
 elimination_weight = sim.RandomByWeightElimination(
+    prob_elim_potentiatiated=0, # no eliminations for potentiated synapses
+    prob_elim_depressed=0, # no elimination for depressed synapses
     threshold=0.5  # Use same weight as initial weight for static connections
 )
 structure_model_with_stdp = sim.StructuralMechanismSTDP(
@@ -193,12 +195,12 @@ structure_model_with_stdp = sim.StructuralMechanismSTDP(
     # Use this weight for synapses at the start of simulation
     delay=10,
     # Maximum allowed fan-in per target-layer neuron
-    s_max=32,
+    s_max=64,
     # Frequency of rewiring in Hz
     f_rew=10 ** 4,
     # STDP rules
     timing_dependence=sim.SpikePairRule(
-        tau_plus=20., tau_minus=20.0, A_plus=0.02, A_minus=0.02),
+        tau_plus=20., tau_minus=20.0, A_plus=0.1, A_minus=0.02),
     weight_dependence=sim.AdditiveWeightDependence(w_min=0, w_max=1.)
 )
 
