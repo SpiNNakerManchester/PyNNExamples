@@ -179,7 +179,7 @@ formation_distance = sim.DistanceDependentFormation(
     sigma_form_forward=.5  # spread of feed-forward connections
 )
 elimination_weight = sim.RandomByWeightElimination(
-    prob_elim_potentiatiated=0, # no eliminations for potentiated synapses
+    prob_elim_potentiated=0, # no eliminations for potentiated synapses
     prob_elim_depressed=0, # no elimination for depressed synapses
     threshold=0.5  # Use same weight as initial weight for static connections
 )
