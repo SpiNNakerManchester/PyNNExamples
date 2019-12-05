@@ -39,9 +39,9 @@ import numpy as np
 timestep = 1.0
 stim_rate = 50
 duration = 12000
-plastic_weights = 0  # 1.5 ?? 0 ??
-n_neurons = 9
-n_pops = 1
+plastic_weights = 0.5  # 1.5 ?? 0 ??
+n_neurons = 7**2
+n_pops = 10
 
 # Times of rewards and punishments
 rewards = [x for x in range(2000, 2010)] + \
@@ -103,9 +103,9 @@ formation_distance = sim.DistanceDependentFormation(
     sigma_form_forward=.5  # spread of feed-forward connections
 )
 elimination_weight = sim.RandomByWeightElimination(
-    # prob_elim_potentiatiated=0,  # no eliminations for potentiated synapses
-    # prob_elim_depressed=0,  # no elimination for depressed synapses
-    threshold=1.5  # Use same weight as initial weight for static connections
+#     prob_elim_potentiatiated=0,  # no eliminations for potentiated synapses
+#     prob_elim_depressed=0,  # no elimination for depressed synapses
+    threshold=0.5  # Use same weight as initial weight for static connections
 )
 
 synapse_dynamics = sim.StructuralMechanismSTDP(
@@ -120,7 +120,7 @@ synapse_dynamics = sim.StructuralMechanismSTDP(
     # Use this delay for synapses at the start of simulation
     delay=10,
     # Maximum allowed fan-in per target-layer neuron
-    s_max=32,
+    s_max=64,
     # Frequency of rewiring in Hz
     f_rew=10 ** 4,
     # timing and weight as required for neuromodulation
