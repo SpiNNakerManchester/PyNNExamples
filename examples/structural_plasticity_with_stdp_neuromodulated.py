@@ -14,7 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Simple test for neuromodulated-STDP
+Simple test for neuromodulated-STDP with structural plasticity
 We take 10 populations of 5 stimuli neurons and connect to each
 10 post-synaptic populations of 5 neurons. The spiking of stimuli causes some
 spikes in post-synaptic neurons initially.
@@ -25,6 +25,8 @@ increased response to the stimuli.
 We then proceed to inject punishment signals from dopaminergic
 neurons which causes an inverse effect to reduce response of
 post-synaptic neurons to the same stimuli.
+At the same time we implement a straightforward creation/elimination structural
+method (similar to that used in the struct_pl examples).
 """
 
 try:
@@ -32,12 +34,14 @@ try:
 except Exception:
     import spynnaker8 as sim
 import pylab
+import numpy as np
 
 timestep = 1.0
 stim_rate = 50
 duration = 12000
-plastic_weights = 1.5
-n_neurons = 5
+plastic_weights = 0  # 1.5 ?? 0 ??
+n_neurons = 9
+n_pops = 1
 
 # Times of rewards and punishments
 rewards = [x for x in range(2000, 2010)] + \
@@ -75,7 +79,7 @@ punishment_projections = []
 plastic_projections = []
 stim_projections = []
 
-for i in range(10):
+for i in range(n_pops):
     stimulation.append(sim.Population(n_neurons, sim.SpikeSourcePoisson,
                        {'rate': stim_rate, 'duration': duration}, label="pre"))
     post_pops.append(sim.Population(n_neurons,
@@ -91,22 +95,49 @@ for i in range(10):
                                   receptor_type='punishment',
                                   label='punishment synapses'))
 
-# Create synapse dynamics with neuromodulated STDP.
-synapse_dynamics = sim.STDPMechanism(
+# Create synapse dynamics with neuromodulated STDP and structural plasticity
+# Structurally plastic connection between pre_pop and post_pop
+partner_selection_last_neuron = sim.RandomSelection()
+formation_distance = sim.DistanceDependentFormation(
+    grid=[np.sqrt(n_neurons), np.sqrt(n_neurons)],  # spatial org of neurons
+    sigma_form_forward=.5  # spread of feed-forward connections
+)
+elimination_weight = sim.RandomByWeightElimination(
+#     prob_elim_potentiatiated=0,  # no eliminations for potentiated synapses
+#     prob_elim_depressed=0,  # no elimination for depressed synapses
+    threshold=1.5  # Use same weight as initial weight for static connections
+)
+
+synapse_dynamics = sim.StructuralMechanismSTDP(
+    # Partner selection, formation and elimination rules from above
+    partner_selection_last_neuron, formation_distance, elimination_weight,
+    # Use this weight when creating a new synapse
+    initial_weight=plastic_weights,
+    # Use this weight for synapses at start of simulation
+    weight=plastic_weights,
+    # Use this delay when creating a new synapse
+    initial_delay=10,
+    # Use this delay for synapses at the start of simulation
+    delay=10,
+    # Maximum allowed fan-in per target-layer neuron
+    s_max=32,
+    # Frequency of rewiring in Hz
+    f_rew=10 ** 4,
+    # timing and weight as required for neuromodulation
     timing_dependence=sim.IzhikevichNeuromodulation(
         tau_plus=2, tau_minus=1,
         A_plus=1, A_minus=1,
         tau_c=100.0, tau_d=5.0),
     weight_dependence=sim.MultiplicativeWeightDependence(w_min=0, w_max=20),
-    weight=plastic_weights,
+    # Turn on neuromodulation
     neuromodulation=True)
 
 # Create plastic connections between stimulation populations and observed
 # neurons
-for i in range(10):
+for i in range(n_pops):
     plastic_projections.append(
         sim.Projection(stimulation[i], post_pops[i],
-                       sim.OneToOneConnector(),
+                       sim.FixedProbabilityConnector(0.),  # no initial conns
                        synapse_type=synapse_dynamics,
                        receptor_type='excitatory',
                        label='Pre-post projection'))
@@ -117,11 +148,11 @@ sim.run(duration)
 # Graphical diagnostics
 
 
-def plot_spikes(spikes, title, n_neurons):
+def plot_spikes(spikes, title, n_pops, n_neurons):
     if spikes is not None:
         pylab.figure(figsize=(15, 5))
         pylab.xlim((0, duration))
-        pylab.ylim((0, (10 * n_neurons) + 1))
+        pylab.ylim((0, (n_pops * n_neurons) + 1))
         pylab.plot([i[1] for i in spikes], [i[0] for i in spikes], ".")
         pylab.xlabel('Time/ms')
         pylab.ylabel('spikes')
@@ -133,14 +164,14 @@ def plot_spikes(spikes, title, n_neurons):
 post_spikes = []
 weights = []
 
-for i in range(10):
+for i in range(n_pops):
     weights.append(plastic_projections[i].get('weight', 'list'))
     spikes = post_pops[i].get_data('spikes').segments[0].spiketrains
     for j in range(n_neurons):
         for x in spikes[j]:
             post_spikes.append([(i*n_neurons)+j+1, x])
 
-plot_spikes(post_spikes, "post-synaptic neuron activity", n_neurons)
+plot_spikes(post_spikes, "post-synaptic neuron activity", n_pops, n_neurons)
 pylab.plot(rewards, [0.5 for x in rewards], 'g^')
 pylab.plot(punishments, [0.5 for x in punishments], 'r^')
 pylab.show()
