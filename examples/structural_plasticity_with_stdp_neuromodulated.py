@@ -124,6 +124,7 @@ synapse_dynamics = sim.StructuralMechanismSTDP(
     # Frequency of rewiring in Hz
     f_rew=10 ** 4,
     # timing and weight as required for neuromodulation
+    # (note that this is the only currently implemented combination)
     timing_dependence=sim.IzhikevichNeuromodulation(
         tau_plus=2, tau_minus=1,
         A_plus=1, A_minus=1,

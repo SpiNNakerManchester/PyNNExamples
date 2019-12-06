@@ -78,6 +78,8 @@ post_pop = sim.Population(1, sim.IF_curr_exp_izhikevich_neuromodulation,
                           cell_params, label='post1')
 
 # Create STDP dynamics with neuromodulation
+# Note: this is the only currently implemented combination of weight and
+# timing rules when using neuromodulation
 synapse_dynamics = sim.STDPMechanism(
     timing_dependence=sim.IzhikevichNeuromodulation(
         tau_plus=10, tau_minus=12,

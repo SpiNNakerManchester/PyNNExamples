@@ -92,6 +92,8 @@ for i in range(10):
                                   label='punishment synapses'))
 
 # Create synapse dynamics with neuromodulated STDP.
+# Note: this is the only currently implemented combination of weight and
+# timing rules when using neuromodulation
 synapse_dynamics = sim.STDPMechanism(
     timing_dependence=sim.IzhikevichNeuromodulation(
         tau_plus=2, tau_minus=1,
