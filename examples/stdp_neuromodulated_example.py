@@ -38,6 +38,7 @@ stim_rate = 50
 duration = 12000
 plastic_weights = 1.5
 n_neurons = 5
+n_pops = 10
 
 # Times of rewards and punishments
 rewards = [x for x in range(2000, 2010)] + \
@@ -75,12 +76,12 @@ punishment_projections = []
 plastic_projections = []
 stim_projections = []
 
-for i in range(10):
+for i in range(n_pops):
     stimulation.append(sim.Population(n_neurons, sim.SpikeSourcePoisson,
                        {'rate': stim_rate, 'duration': duration}, label="pre"))
-    post_pops.append(sim.Population(n_neurons,
-                                    sim.IF_curr_exp_izhikevich_neuromodulation,
-                                    cell_params, label='post'))
+    post_pops.append(sim.Population(
+        n_neurons, sim.extra_models.IF_curr_exp_izhikevich_neuromodulation,
+        cell_params, label='post'))
     reward_projections.append(sim.Projection(reward_pop, post_pops[i],
                               sim.OneToOneConnector(),
                               synapse_type=sim.StaticSynapse(weight=0.05),
@@ -95,7 +96,7 @@ for i in range(10):
 # Note: this is the only currently implemented combination of weight and
 # timing rules when using neuromodulation
 synapse_dynamics = sim.STDPMechanism(
-    timing_dependence=sim.IzhikevichNeuromodulation(
+    timing_dependence=sim.extra_models.TimingIzhikevichNeuromodulation(
         tau_plus=2, tau_minus=1,
         A_plus=1, A_minus=1,
         tau_c=100.0, tau_d=5.0),
@@ -105,7 +106,7 @@ synapse_dynamics = sim.STDPMechanism(
 
 # Create plastic connections between stimulation populations and observed
 # neurons
-for i in range(10):
+for i in range(n_pops):
     plastic_projections.append(
         sim.Projection(stimulation[i], post_pops[i],
                        sim.OneToOneConnector(),
@@ -135,7 +136,7 @@ def plot_spikes(spikes, title, n_neurons):
 post_spikes = []
 weights = []
 
-for i in range(10):
+for i in range(n_pops):
     weights.append(plastic_projections[i].get('weight', 'list'))
     spikes = post_pops[i].get_data('spikes').segments[0].spiketrains
     for j in range(n_neurons):

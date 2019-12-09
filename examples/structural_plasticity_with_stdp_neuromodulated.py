@@ -82,9 +82,9 @@ stim_projections = []
 for i in range(n_pops):
     stimulation.append(sim.Population(n_neurons, sim.SpikeSourcePoisson,
                        {'rate': stim_rate, 'duration': duration}, label="pre"))
-    post_pops.append(sim.Population(n_neurons,
-                                    sim.IF_curr_exp_izhikevich_neuromodulation,
-                                    cell_params, label='post'))
+    post_pops.append(sim.Population(
+        n_neurons, sim.extra_models.IF_curr_exp_izhikevich_neuromodulation,
+        cell_params, label='post'))
     reward_projections.append(sim.Projection(reward_pop, post_pops[i],
                               sim.OneToOneConnector(),
                               synapse_type=sim.StaticSynapse(weight=0.05),
@@ -125,7 +125,7 @@ synapse_dynamics = sim.StructuralMechanismSTDP(
     f_rew=10 ** 4,
     # timing and weight as required for neuromodulation
     # (note that this is the only currently implemented combination)
-    timing_dependence=sim.IzhikevichNeuromodulation(
+    timing_dependence=sim.extra_models.TimingIzhikevichNeuromodulation(
         tau_plus=2, tau_minus=1,
         A_plus=1, A_minus=1,
         tau_c=100.0, tau_d=5.0),

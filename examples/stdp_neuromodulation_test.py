@@ -74,14 +74,15 @@ post_stim = sim.Population(1, sim.SpikeSourceArray, {
     'spike_times': t_post})
 
 # Create post synaptic population which will be modulated by DA concentration.
-post_pop = sim.Population(1, sim.IF_curr_exp_izhikevich_neuromodulation,
-                          cell_params, label='post1')
+post_pop = sim.Population(
+    1, sim.extra_models.IF_curr_exp_izhikevich_neuromodulation, cell_params,
+    label='post1')
 
 # Create STDP dynamics with neuromodulation
 # Note: this is the only currently implemented combination of weight and
 # timing rules when using neuromodulation
 synapse_dynamics = sim.STDPMechanism(
-    timing_dependence=sim.IzhikevichNeuromodulation(
+    timing_dependence=sim.extra_models.TimingIzhikevichNeuromodulation(
         tau_plus=10, tau_minus=12,
         A_plus=1, A_minus=1,
         tau_c=1000, tau_d=200),
