@@ -28,7 +28,7 @@ in_proj = pynn.Projection(input_pop,
                           neuron,
                           pynn.OneToOneConnector(),
                           pynn.StaticSynapse(weight=[-0.5], delay=[0]),
-                          receptor_type='excitatory')
+                          receptor_type='input_connections')
 
 
 input_pop.record('spikes')

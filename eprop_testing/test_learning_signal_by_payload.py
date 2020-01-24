@@ -42,7 +42,7 @@ in_proj = pynn.Projection(input_pop,
                           neuron,
                           pynn.OneToOneConnector(),
                           pynn.StaticSynapse(weight=[-0.5], delay=[0]),
-                          receptor_type='excitatory')
+                          receptor_type='input_connections')
 
 # Output population
 readout_pop = pynn.Population(3, # HARDCODED 1
@@ -56,7 +56,7 @@ learning_proj = pynn.Projection(readout_pop,
                           neuron,
                           pynn.OneToOneConnector(),
                           pynn.StaticSynapse(weight=[-0.5], delay=[0]),
-                          receptor_type='excitatory')
+                          receptor_type='learning_signal')
 
 input_pop.record('spikes')
 neuron.record('all')

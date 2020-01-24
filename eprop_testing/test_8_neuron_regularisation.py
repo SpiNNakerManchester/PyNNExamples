@@ -10,7 +10,7 @@ dt = 1
 
 pynn.setup(dt)
 
-n_neurons = 16
+n_neurons = 8
 
 neuron_params = {
     "v": 0,
@@ -37,7 +37,7 @@ proj = pynn.Projection(
     pynn.OneToOneConnector(),
     pynn.StaticSynapse(weight=3.5, delay=dt),
     # weight set to cause postsynaptic neuron to fire
-    receptor_type='excitatory'
+    receptor_type='input_connections'
     )
 
 poisson_src.record('spikes')

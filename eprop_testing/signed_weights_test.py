@@ -29,7 +29,7 @@ proj = pynn.Projection(spike_source, neuron,
                        # note that delays are now fixed to one in terms of spikes,
                        # but the synaptic word field indexes the synapse array
                        pynn.StaticSynapse(weight=[-0.5, 2] , delay=[1, 5]),
-                       label='exc_proj')
+                       receptor_type='input_connections')
 
 
 neuron.record('all')
