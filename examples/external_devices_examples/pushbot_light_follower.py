@@ -153,15 +153,15 @@ id_to_middle_up = id_to_middle_up_1 & id_to_middle_up_2  # & id_to_middle_up_3
 
 # Extracts the neuron IDs to be connected to the left neuron of driver_pop
 id_to_left = np.extract(id_to_left, arr)
-print "left =", id_to_left
+print("left =", id_to_left)
 
 # Extracts the neuron IDs to be connected to the right neuron of driver_pop
 id_to_right = np.extract(id_to_right, arr)
-print "right =", id_to_right
+print("right =", id_to_right)
 
 # Extracts the neuron IDs to be connected to the forward neuron of driver_pop
 id_to_middle_up = np.extract(id_to_middle_up, arr)
-print "middle =", id_to_middle_up
+print("middle =", id_to_middle_up)
 
 # Conn list: (source neuron, target neuron, weight, delay)
 # Creates connection list to connect left neuron
