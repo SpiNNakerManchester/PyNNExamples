@@ -36,7 +36,7 @@ exc_proj = p.Projection(pop_src1, populations[0],
                         receptor_type="excitatory")
 inh_proj = p.Projection(pop_src1, populations[0],
                         p.OneToOneConnector(),
-                        p.StaticSynapse(weight=1, delay=100),
+                        p.StaticSynapse(weight=1, delay=10),
                         receptor_type="inhibitory")
 
 populations[0].record("all")
