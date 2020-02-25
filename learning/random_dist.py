@@ -47,6 +47,8 @@ sim.run(simtime)
 neo = pop_exc.get_data(variables=["spikes"])
 spikes = neo.segments[0].spiketrains
 
+sim.end()
+
 plot.Figure(
     # plot spikes
     plot.Panel(spikes, yticks=True, markersize=5, xlim=(0, simtime)),
