@@ -13,8 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import sys
-
 import numpy as np
 import pylab as plt
 
@@ -22,6 +20,7 @@ import spynnaker8 as sim
 
 import time as local_time
 import os
+
 
 def spike_raster_plot_8(
         spikes, plt, duration, ylim, scale_factor=0.001, title=None,
