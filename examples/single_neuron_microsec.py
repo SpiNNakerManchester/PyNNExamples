@@ -24,7 +24,7 @@ def single_neuron_microsec():
     weight_to_spike = 0.035
     delay = 3
 
-    population = p.Population(nNeurons, p.IF_cond_exp(**cell_params_lif), label='population_1')
+    population = p.Population(nNeurons, p.IF_cond_exp(**cell_params_lif), label='population_1', in_partitions=2, out_partitions=2)
     input = p.Population(nNeurons, p.SpikeSourceArray(spike_times=[8, 16, 50]), label='input')
 
     #input = p.Population(250, p.SpikeSourcePoisson(

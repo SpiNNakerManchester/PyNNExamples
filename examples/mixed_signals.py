@@ -26,8 +26,8 @@ def mixed_signals():
     weight_to_spike = 0.1
     delay = 3
 
-    exc_population = p.Population(nNeurons, p.IF_cond_exp(**cell_params_lif), label='exc_population')
-    inh_population = p.Population(nNeurons, p.IF_cond_exp(**cell_params_lif), label='inh_population')
+    exc_population = p.Population(nNeurons, p.IF_cond_exp(**cell_params_lif), label='exc_population', in_partitions=2, out_partitions=2)
+    inh_population = p.Population(nNeurons, p.IF_cond_exp(**cell_params_lif), label='inh_population', in_partitions=2, out_partitions=2)
     input = p.Population(1, p.SpikeSourceArray(spike_times=[1, 8, 16, 50]), label='input1')
     input2 = p.Population(1, p.SpikeSourceArray(spike_times=[3, 15, 49]), label='input2')
 

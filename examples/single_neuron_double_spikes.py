@@ -25,7 +25,7 @@ def single_neuron_double_spikes():
     weight_to_spike = 1
     delay = 3
 
-    population = p.Population(nNeurons, p.IF_curr_exp(**cell_params_lif), label='population')
+    population = p.Population(nNeurons, p.IF_curr_exp(**cell_params_lif), label='population', in_partitions=2, out_partitions=2)
     input = p.Population(1, p.SpikeSourceArray(spike_times=[1, 5, 7]), label='input1')
 
     p.Projection(input, population, p.FixedProbabilityConnector(p_connect=0.99), p.StaticSynapse(weight=weight_to_spike, delay=2), receptor_type="excitatory")

@@ -22,7 +22,7 @@ def single_neuron():
 
     weight_to_spike = 0.035
 
-    population = p.Population(nNeurons, p.IF_cond_exp(**cell_params_lif), label='population_1')
+    population = p.Population(nNeurons, p.IF_cond_exp(**cell_params_lif), label='population_1', in_partitions=2, out_partitions=2)
     input = p.Population(1, p.SpikeSourceArray(spike_times=[0, 8, 16, 50]), label='input')
 
     p.Projection(input, population, p.FromListConnector([(0, 0)]), p.StaticSynapse(weight=weight_to_spike, delay=2))
@@ -35,6 +35,9 @@ def single_neuron():
     spikes = population.get_data('spikes')
 
     p.end()
+
+    for i in range(nNeurons):
+        print str(spikes.segments[0].spiketrains[i])
 
     if str(spikes.segments[0].spiketrains[0]) == "[ 4. 11. 18. 53.] ms":
         return True

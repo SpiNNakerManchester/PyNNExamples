@@ -24,8 +24,8 @@ def multi_layer():
     weight_to_spike = 0.035
 
     source = p.Population(1, p.SpikeSourceArray(spike_times=[0, 1, 7]), label='source_array')
-    population = p.Population(nNeurons, p.IF_cond_exp(**cell_params_lif), label='population')
-    input = p.Population(nNeurons, p.IF_cond_exp(**cell_params_lif), label='input')
+    population = p.Population(nNeurons, p.IF_cond_exp(**cell_params_lif), label='population', in_partitions=2, out_partitions=2)
+    input = p.Population(nNeurons, p.IF_cond_exp(**cell_params_lif), label='input', in_partitions=2, out_partitions=2)
 
     p.Projection(source, input, p.FromListConnector([(0, 0), (0, 1), (0, 64), (0, 65), (0, 70)]), p.StaticSynapse(weight=weight_to_spike, delay=2))
     p.Projection(input, population, p.FromListConnector([(0, 2), (1, 3), (64, 4), (65, 5), (70, 6), (64, 71), (70, 73)]), p.StaticSynapse(weight=weight_to_spike, delay=2))

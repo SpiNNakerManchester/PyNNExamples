@@ -51,17 +51,17 @@ elif single_neuron_double_spikes.single_neuron_double_spikes() == False:
     print colored("Multi layer test PASSED", "green")
     print colored("Self connection test PASSED", "green")
     print colored("Single neuron double spikes test FAILED", "red")
-elif multi_source_single_dest() == False:
-    # 10 SpikeSourceArrays spiking in parallel to a single neuron
-    print colored("Spiking Neural Networks Base test", "red")
-    print colored("Author Luca Peres, The Univerity of Manchester", "red")
-    print "----------------------------------------------------------"
-    print colored("Single neuron test PASSED", "green")
-    print colored("Single neuron microsec test PASSED", "green")
-    print colored("Multi layer test PASSED", "green")
-    print colored("Self connection test PASSED", "green")
-    print colored("Single neuron double spikes test PASSED", "green")
-    print colored("Multi source single destination test FAILED", "red")
+# elif multi_source_single_dest.multi_source_single_dest() == False:
+#     # 10 SpikeSourceArrays spiking in parallel to a single neuron
+#     print colored("Spiking Neural Networks Base test", "red")
+#     print colored("Author Luca Peres, The Univerity of Manchester", "red")
+#     print "----------------------------------------------------------"
+#     print colored("Single neuron test PASSED", "green")
+#     print colored("Single neuron microsec test PASSED", "green")
+#     print colored("Multi layer test PASSED", "green")
+#     print colored("Self connection test PASSED", "green")
+#     print colored("Single neuron double spikes test PASSED", "green")
+#     print colored("Multi source single destination test FAILED", "red")
 elif mixed_signals.mixed_signals() == False:
     # Network containing two inputs connected through FixedProbabilityConnector to
     # two populations which excange both excitatory and inhibitory spikes with each other

@@ -6,9 +6,9 @@ import time
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 
-runtime = 2000
+runtime = 3500
 p.setup(timestep=1.0, min_delay=1.0, max_delay=144.0)
-nNeurons = 200  # number of neurons in each population
+nNeurons = 832  # number of neurons in each population
 #p.set_number_of_neurons_per_core(p.IF_curr_exp, 33)
 
 cell_params_lif = {'cm': 0.25,
@@ -25,7 +25,7 @@ cell_params_lif = {'cm': 0.25,
                    }
 
 weight_to_spike = 0.035
-delay = 3
+delay = 2
 
 loopConnections = list()
 for i in range(0, nNeurons):
@@ -35,7 +35,7 @@ for i in range(0, nNeurons):
 injectionConnection = [(0, 0)]
 spikeArray = {'spike_times': [[2]]}
 main_pop = p.Population(
-    nNeurons, p.IF_cond_exp(**cell_params_lif), label='pop_1')
+    nNeurons, p.IF_cond_exp(**cell_params_lif), label='pop_1', in_partitions=6, out_partitions=6)
 input_pop = p.Population(
     1, p.SpikeSourceArray(**spikeArray), label='inputSpikes_1')
 
