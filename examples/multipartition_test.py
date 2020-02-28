@@ -4,9 +4,10 @@ from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 
 
-def multipartition_test(part, neurons, timestep):
+def multipartition_test(part, step, timestep):
 
     runtime = 3
+    neurons = 10000
     p.setup(timestep=timestep)
 
     cell_params_lif_input = {'cm': 0.25,
@@ -18,7 +19,6 @@ def multipartition_test(part, neurons, timestep):
                              'v_reset': -70.0,
                              'v_rest': -65.0,
                              'v_thresh': -50.0,
-                             'v': -40.0
                             }
 
     cell_params_lif_dest = {'cm': 0.25,
@@ -33,14 +33,17 @@ def multipartition_test(part, neurons, timestep):
                             }
 
     weight_to_spike = 2
+    delay = 0.2
 
     input_population = p.Population(neurons, p.IF_curr_exp(**cell_params_lif_input),
                                     label='input', in_partitions=part, out_partitions=part)
+    sel = [i * step for i in range(neurons/step)]
+    input_population.set_initial_value("v", -40, sel)
     destination_population = p.Population(64, p.IF_curr_exp(**cell_params_lif_dest),
                                           label='dest', in_partitions=part, out_partitions=1)
 
     p.Projection(input_population, destination_population, p.FixedProbabilityConnector(p_connect=0.1),
-                 p.StaticSynapse(weight=weight_to_spike, delay=0.2))
+                 p.StaticSynapse(weight=weight_to_spike, delay=delay))
 
     destination_population.record(['gsyn_exc', 'gsyn_inh', 'synapse'])
     input_population.record(['gsyn_exc', 'gsyn_inh'])
@@ -121,17 +124,19 @@ if __name__ == "__main__":
 
     timestep = 1
 
-    neurons = [1500]
+    steps = [5]
 
-    for n in neurons:
+    n = 10000
 
-        with open("/localhome/g90604lp/ICPP_res/" + str(n) + "_neurons_" + str(timestep) + "_res.txt", "w") as fp:
+    for s in steps:
+
+        with open("/localhome/g90604lp/ICPP_res/" + str(n/s) + "_neurons_" + str(timestep) + "_res_sopt.txt", "w") as fp:
 
             for part in partitions:
 
-                fp.write(str(part) + " " + str(n) + "\n")
-                print("\n\n\n\n\n\n----------------RUNNING WITH " + str(part) + " PARTITIONS, " + str(n) + " NEURONS----------------\n\n\n\n\n\n")
-                results = multipartition_test(part, n, timestep)
+                fp.write(str(part) + " " + str(n/s) + "\n")
+                print("\n\n\n\n\n\n----------------RUNNING WITH " + str(part) + " PARTITIONS, " + str(n/s) + " SPIKING NEURONS----------------\n\n\n\n\n\n")
+                results = multipartition_test(part, s, timestep)
 
                 fp.write(str(results["dma_read"] * 0.005) + " " +
                          str(results["state_update"] * 0.005) + " " +
