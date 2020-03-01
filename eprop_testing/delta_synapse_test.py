@@ -15,21 +15,35 @@ neuron_params = {
     }
 
 
-spike_source = pynn.Population(2,
+inp_spike_source = pynn.Population(2,
                                pynn.SpikeSourceArray,
                                {'spike_times': [10]},
+                               label='Spike Source')
+
+pseudo_rec_spike_source = pynn.Population(2,
+                               pynn.SpikeSourceArray,
+                               {'spike_times': [80]},
                                label='Spike Source')
 
 neuron = pynn.Population(2,
                          pynn.extra_models.EPropAdaptive(**neuron_params),
                          label='eprop_pop')
 
-proj = pynn.Projection(spike_source, neuron,
+inp_proj = pynn.Projection(inp_spike_source, neuron,
                        pynn.OneToOneConnector(),
                        # note that delays are now fixed to one in terms of spikes,
                        # but the synaptic word field indexes the synapse array
-                       pynn.StaticSynapse(weight=[-0.5, 2] , delay=[1, 5]),
+                       pynn.StaticSynapse(weight=[-0.5, 10] , delay=[1, 1]),
                        receptor_type='input_connections')
+
+
+rec_proj = pynn.Projection(pseudo_rec_spike_source, neuron,
+                       pynn.OneToOneConnector(),
+                       # note that delays are now fixed to one in terms of spikes,
+                       # but the synaptic word field indexes the synapse array
+                       pynn.StaticSynapse(weight=[0.5, -10] , delay=[1, 1]),
+                       receptor_type='recurrent_connections')
+
 
 
 neuron.record('all')
@@ -37,8 +51,8 @@ neuron.record('all')
 pynn.run(runtime)
 
 res = neuron.get_data('all')
-weights = proj.get('weight', 'list', with_address=False)
-delays = proj.get('delay', 'list', with_address=False)
+weights = inp_proj.get('weight', 'list', with_address=False)
+delays = inp_proj.get('delay', 'list', with_address=False)
 
 for i in range(len(weights)):
     print(weights[i], delays[i])
