@@ -11,7 +11,7 @@ for txtfile in glob.iglob("/localhome/g90604lp/dma_writes/*.txt"):
         times = []
         for line in fp:
             values["cores"].append(float(line.split(" ")[0]))
-            values["times"].append(float(line.split(" ")[1]))
+            values["times"].append(float(line.split(" ")[1]) / 1000)
 
 
     plt.plot(values["cores"], values["times"], "o-")
