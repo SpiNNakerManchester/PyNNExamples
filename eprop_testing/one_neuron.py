@@ -28,7 +28,7 @@ neuron = pynn.Population(2,
 proj = pynn.Projection(spike_source, neuron,
                        pynn.OneToOneConnector(),
                        pynn.StaticSynapse(weight=[-0.5, 2] , delay=[1, 5]),
-                       label='input_connections')
+                       receptor_type='input_connections')
 
 
 neuron.record('all')

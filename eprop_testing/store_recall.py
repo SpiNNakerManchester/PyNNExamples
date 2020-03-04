@@ -103,7 +103,7 @@ pop_rec = p.Population(20,
                       label='pop_rec')
 
 # Output population
-pop_out = p.Population(3, # HARDCODED 3: One readout; one exc err, one inh err
+pop_out = p.Population(3, # HARDCODED 3: One readout; one exc err, one inh err todo check the new neuron ids
                        p.extra_models.StoreRecallReadout(
                             **readout_neuron_params
                            ),  # Neuron model

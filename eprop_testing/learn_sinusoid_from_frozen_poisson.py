@@ -1,11 +1,13 @@
 import spynnaker8 as pynn
 import numpy as np
 import matplotlib.pyplot as plt
+from frozen_poisson import build_input_spike_train
 from pyNN.random import NumpyRNG, RandomDistribution
 from pyNN.utility.plotting import Figure, Panel
 
 
-runtime = 1024
+cycle_time = 1024
+num_repeats = 1
 pynn.setup(1.0)
 
 neuron_params = {
@@ -30,6 +32,10 @@ readout_neuron_params = {
     }
 
 input_size = 1
+# input_pop = pynn.Population(input_size,
+#                             pynn.SpikeSourceArray,
+#                             {'spike_times': build_input_spike_train(num_repeats, cycle_time, input_size)},
+#                             label='input_pop')
 input_pop = pynn.Population(input_size,
                             pynn.SpikeSourceArray,
                             {'spike_times': [np.linspace(0, 1000, 10) for i in range(input_size)]},
@@ -47,32 +53,41 @@ readout_pop = pynn.Population(3, # HARDCODED 1
                        label="readout_pop"
                        )
 
-start_w = [-0.5]
+start_w = [-0.5 for i in range(input_size)]
 eprop_learning = pynn.STDPMechanism(
     timing_dependence=pynn.extra_models.TimingDependenceEprop(),
     weight_dependence=pynn.extra_models.WeightDependenceEpropReg(
         w_min=-2.0, w_max=2.0, reg_rate=0.0),
-    weight=start_w, delay=0)#[0, 0])
+    weight=start_w, delay=[i for i in range(input_size)])#[0, 0])
+
+start_w_ln = -0.5#[-0.5 for i in range(input_size)]
+eprop_learning_1n = pynn.STDPMechanism(
+    timing_dependence=pynn.extra_models.TimingDependenceEprop(),
+    weight_dependence=pynn.extra_models.WeightDependenceEpropReg(
+        w_min=-2.0, w_max=2.0, reg_rate=0.0),
+    weight=start_w_ln, delay=0)#[i for i in range(input_size)])#[0, 0])
 
 in_proj = pynn.Projection(input_pop,
-                          neuron,
+                          # neuron,
+                          readout_pop,
                           pynn.OneToOneConnector(),
                           synapse_type=eprop_learning,
                           label='input_connections',
                           receptor_type='input_connections')
 
-out_proj = pynn.Projection(neuron,
-                           readout_pop,
-                           pynn.OneToOneConnector(),
-                           synapse_type=eprop_learning,
-                           label='input_connections',
-                           receptor_type='input_connections')
 
-learning_proj = pynn.Projection(readout_pop,
-                                neuron,
-                                pynn.OneToOneConnector(),
-                                pynn.StaticSynapse(weight=[0.5], delay=[0]),
-                                receptor_type='learning_signal')
+# out_proj = pynn.Projection(neuron,
+#                            readout_pop,
+#                            pynn.OneToOneConnector(),
+#                            synapse_type=eprop_learning,
+#                            label='input_connections',
+#                            receptor_type='input_connections')
+
+# learning_proj = pynn.Projection(readout_pop,
+#                                 neuron,
+#                                 pynn.OneToOneConnector(),
+#                                 pynn.StaticSynapse(weight=[0.5], delay=[0]),
+#                                 receptor_type='learning_signal')
 
 # self_learning_proj = pynn.Projection(readout_pop,
 #                                      readout_pop,
@@ -84,6 +99,7 @@ input_pop.record('spikes')
 neuron.record('all')
 readout_pop.record('all')
 
+runtime = cycle_time * num_repeats
 pynn.run(runtime)
 in_spikes = input_pop.get_data('spikes')
 neuron_res = neuron.get_data('all')
