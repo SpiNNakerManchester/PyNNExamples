@@ -4,10 +4,9 @@ from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 
 
-def multipartition_test(part, step, timestep):
+def multipartition_test(part, step, timestep, neurons):
 
-    runtime = 0.3
-    neurons = 1000
+    runtime = 3*timestep
     p.setup(timestep=timestep)
 
     cell_params_lif_input = {'cm': 0.25,
@@ -32,8 +31,8 @@ def multipartition_test(part, step, timestep):
                             'v_thresh': -50.0
                             }
 
-    weight_to_spike = 2
-    delay = 0.2
+    weight_to_spike = 0.1
+    delay = 0.1
 
     input_population = p.Population(neurons, p.IF_curr_exp(**cell_params_lif_input),
                                     label='input', in_partitions=part, out_partitions=part)
@@ -120,21 +119,21 @@ if __name__ == "__main__":
               "state_update_input": [],
               "loop_time_input": []}
 
-    partitions = [i for i in range(7, 14)]
+    partitions = [i for i in range(13, 14)]
 
-    timestep = 0.1
+    timestep = 1
 
-    steps = [7, 6, 5, 5, 4, 4, 4]
+    steps = [4]
 
-    n = 1000
+    n = 10000
 
-    with open("/localhome/g90604lp/ICPP_res/" + str(n) + "_neurons_" + str(timestep) + "_res_sopt(2).txt", "w") as fp:
+    with open("/localhome/g90604lp/ICPP_res/" + str(n) + "_neurons_" + str(timestep) + "_res_sopt(4).txt", "w") as fp:
 
         for i in range(len(partitions)):
 
             fp.write(str(partitions[i]) + " " + str(n/steps[i]) + "\n")
             print("\n\n\n\n\n\n----------------RUNNING WITH " + str(partitions[i]) + " PARTITIONS, " + str(n/steps[i]) + " SPIKING NEURONS----------------\n\n\n\n\n\n")
-            results = multipartition_test(partitions[i], steps[i], timestep)
+            results = multipartition_test(partitions[i], steps[i], timestep, n)
 
             fp.write(#str(results["dma_read"] * 0.005) + " " +
                      #str(results["state_update"] * 0.005) + " " +
