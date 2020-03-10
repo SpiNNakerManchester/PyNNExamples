@@ -111,13 +111,17 @@ def build_input_spike_train(num_repeats, cycle_time, pop_size=None):
     l=[]
     for i in range(pop_size):
         l = []
-        for j in range(cycle_time):
-            l.append(j % 1024)
+        for j in range(len(pattern[i])):
+            if pattern[i][j] < cycle_time:
+                l.append(pattern[i][j])
+            else:
+                break
         spikes.append(l)
 
-    for r in range(1, num_repeats):
+    cycled_spikes = [[] for i in range(pop_size)]
+    for r in range(0, num_repeats):
         for p in range(pop_size):
             new_iter = [i + r * cycle_time for i in spikes[p]]
-            spikes[p].extend(new_iter)
+            cycled_spikes[p].extend(new_iter)
 
-    return spikes
+    return cycled_spikes
