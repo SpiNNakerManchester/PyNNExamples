@@ -10,18 +10,22 @@ def weight_distribution(pop_size):
     # base_weight = 0
     return base_weight
 
+def probability_connector(pre_pop_size, post_pop_size, prob, offset=0):
+    connections = []
+    for j in range(post_pop_size):
+        delay_count = offset
+        for i in range(pre_pop_size):
+            if np.random.random() < prob:
+                conn = [i, j, weight_distribution(pre_pop_size), delay_count]
+                delay_count += 1
+                connections.append(conn)
+    return connections
+
 np.random.seed(272727)
 
 cycle_time = 1024
-num_repeats = 200
+num_repeats = 100
 pynn.setup(1.0)
-
-neuron_params = {
-    "v": 0,
-    "i_offset": 0.8,
-    "v_rest": 0,
-    "w_fb": 0.75
-    }
 
 target_data = []
 for i in range(1024):
@@ -34,12 +38,13 @@ readout_neuron_params = {
     "v": 0,
     "v_thresh": 30, # controls firing rate of error neurons
     "target_data": target_data,
-    "eta": 0.01
+    "eta": 0.5
     }
 
 pynn.setup(timestep=1, max_delay=250)
+pynn.set_number_of_neurons_per_core(8)
 
-input_size = 100
+input_size = 10
 input_pop = pynn.Population(input_size,
                             pynn.SpikeSourceArray,
                             {'spike_times': build_input_spike_train(num_repeats, cycle_time, input_size)},
@@ -49,9 +54,19 @@ input_pop = pynn.Population(input_size,
 #                             {'spike_times': [np.linspace(0, 1000, 10) for i in range(input_size)]},
 #                             label='input_pop')
 
-# neuron = pynn.Population(1,
-#                          pynn.extra_models.EPropAdaptive(**neuron_params),
-#                          label='eprop_pop')
+neuron_pop_size = 10
+neuron_params = {
+    "v": 0,
+    "i_offset": 0,
+    "v_rest": 0,
+    "w_fb": [np.random.random() for i in range(neuron_pop_size)],
+    # "B": 0.0,
+    "beta": 0.0,
+    "eta": 0.5
+    }
+neuron = pynn.Population(neuron_pop_size,
+                         pynn.extra_models.EPropAdaptive(**neuron_params),
+                         label='eprop_pop')
 
 # Output population
 readout_pop = pynn.Population(3, # HARDCODED 1
@@ -61,62 +76,80 @@ readout_pop = pynn.Population(3, # HARDCODED 1
                        label="readout_pop"
                        )
 
+reg_rate = 0.001
+start_w = [weight_distribution(neuron_pop_size*input_size) for i in range(input_size)]
+eprop_learning_neuron = pynn.STDPMechanism(
+    timing_dependence=pynn.extra_models.TimingDependenceEprop(),
+    weight_dependence=pynn.extra_models.WeightDependenceEpropReg(
+        w_min=-2.0, w_max=2.0, reg_rate=reg_rate))#,
+    # weight=start_w, delay=[i for i in range(neuron_pop_size*input_size)])
+
+# from_list_in = [[i, j, weight_distribution(input_size), i+(j*input_size)] for i in range(input_size) for j in range(neuron_pop_size)]
+from_list_in = probability_connector(input_size, neuron_pop_size, 1.)
+in_proj = pynn.Projection(input_pop,
+                          neuron,
+                          # readout_pop,
+                          pynn.FromListConnector(from_list_in),
+                          # pynn.AllToAllConnector(),
+                          synapse_type=eprop_learning_neuron,
+                          label='input_connections',
+                          receptor_type='input_connections')
+
+
 # start_w = [(-0.5) / float(input_size*3) for i in range(input_size*3)]
 # start_w = [0 for i in range(input_size*3)]
 # start_w = [base_weight for i in range(input_size)]
-eprop_learning = pynn.STDPMechanism(
+eprop_learning_output = pynn.STDPMechanism(
     timing_dependence=pynn.extra_models.TimingDependenceEprop(),
     weight_dependence=pynn.extra_models.WeightDependenceEpropReg(
         w_min=-2, w_max=2, reg_rate=0.0))#,
     # weight=start_w, delay=[i for i in range(input_size)])#[0, 0])
 
-start_w_ln = -0.5#[-0.5 for i in range(input_size)]
-eprop_learning_1n = pynn.STDPMechanism(
+from_list_out = [[i, 0, weight_distribution(input_size), i] for i in range(input_size)]
+out_proj = pynn.Projection(neuron,
+                           readout_pop,
+                           # pynn.OneToOneConnector(),
+                           pynn.FromListConnector(from_list_out),
+                           synapse_type=eprop_learning_output,
+                           label='input_connections',
+                           receptor_type='input_connections')
+
+learning_proj = pynn.Projection(readout_pop,
+                                neuron,
+                                pynn.OneToOneConnector(),
+                                pynn.StaticSynapse(weight=[0.5], delay=[0]),
+                                receptor_type='learning_signal')
+
+
+# start_w = [(-0.5) / float(input_size*3) for i in range(input_size*3)]
+# start_w = [0 for i in range(input_size*3)]
+# start_w = [base_weight for i in range(input_size)]
+eprop_learning_recurrent = pynn.STDPMechanism(
     timing_dependence=pynn.extra_models.TimingDependenceEprop(),
     weight_dependence=pynn.extra_models.WeightDependenceEpropReg(
-        w_min=-2.0, w_max=2.0, reg_rate=0.0),
-    weight=start_w_ln, delay=0)#[i for i in range(input_size)])#[0, 0])
+        w_min=-2, w_max=2, reg_rate=0.0))#,
+    # weight=start_w, delay=[i for i in range(input_size)])#[0, 0])
 
-from_list = [[i, 0, weight_distribution(input_size), i] for i in range(input_size)]
-in_proj = pynn.Projection(input_pop,
-                          # neuron,
-                          readout_pop,
-                          pynn.FromListConnector(from_list),
-                          synapse_type=eprop_learning,
-                          label='input_connections',
-                          receptor_type='input_connections')
-
-
-# out_proj = pynn.Projection(neuron,
-#                            readout_pop,
-#                            pynn.OneToOneConnector(),
-#                            synapse_type=eprop_learning,
-#                            label='input_connections',
-#                            receptor_type='input_connections')
-#
-# learning_proj = pynn.Projection(readout_pop,
-#                                 neuron,
-#                                 pynn.OneToOneConnector(),
-#                                 pynn.StaticSynapse(weight=[0.5], delay=[0]),
-#                                 receptor_type='learning_signal')
-
-# self_learning_proj = pynn.Projection(readout_pop,
-#                                      readout_pop,
-#                                      pynn.OneToOneConnector(),
-#                                      pynn.StaticSynapse(weight=[0.5], delay=[0]),
-#                                      receptor_type='learning_signal')
+# from_list_rec = probability_connector(neuron_pop_size, neuron_pop_size, 0.4, offset=100)
+# recurrent_proj = pynn.Projection(neuron,
+#                                  neuron,
+#                                  pynn.FromListConnector(from_list_rec),
+#                                  synapse_type=eprop_learning_recurrent,
+#                                  label='recurrent_connections',
+#                                  receptor_type='recurrent_connections')
 
 input_pop.record('spikes')
-# neuron.record('all')
+neuron.record('all')
 readout_pop.record('all')
+
+experiment_label = "\neta:{}/{} - in size:{} - reg_rate: {}\n".format(readout_neuron_params["eta"], neuron_params["eta"], input_size, reg_rate)
+print experiment_label
 
 runtime = cycle_time * num_repeats
 pynn.run(runtime)
 in_spikes = input_pop.get_data('spikes')
-# neuron_res = neuron.get_data('all')
+neuron_res = neuron.get_data('all')
 readout_res = readout_pop.get_data('all')
-
-experiment_label = "eta: {} - in size:{}".format(readout_neuron_params["eta"], input_size)
 
 # Plot rec neuron output
 # plt.figure()
@@ -142,33 +175,45 @@ for cycle in range(num_repeats):
             readout_res.segments[0].filter(name='v')[0][time_index+(cycle*1024)][0]) - target_data[time_index])
         cycle_error[cycle] += instantaneous_error
         total_error += instantaneous_error
-new_connections = []
-for conn in in_proj.get('weight', 'delay').connections[0]:
-    if conn[2] > 3:
-        new_connections.append([conn[0], conn[1], conn[2]-16, conn[3]])
-    else:
-        new_connections.append([conn[0], conn[1], conn[2], conn[3]])
-connection_diff = []
-for i in range(len(from_list)):
-    connection_diff.append(new_connections[i][2] - from_list[i][2])
-print "original\n", np.array(from_list)
-print "new\n", np.array(new_connections)
-print "diff\n", np.array(connection_diff)
+new_connections_in = in_proj.get('weight', 'delay').connections[0]#[]
+# for conn in in_proj.get('weight', 'delay').connections[0]:
+#     if conn[2] > 3:
+#         new_connections_in.append([conn[0], conn[1], conn[2]-16, conn[3]])
+#     else:
+#         new_connections_in.append([conn[0], conn[1], conn[2], conn[3]])
+connection_diff_in = []
+for i in range(len(from_list_in)):
+    connection_diff_in.append(new_connections_in[i][2] - from_list_in[i][2])
+print "Input connections\noriginal\n", np.array(from_list_in)
+print "new\n", np.array(new_connections_in)
+print "diff\n", np.array(connection_diff_in)
+new_connections_out = out_proj.get('weight', 'delay').connections[0]#[]
+# for conn in out_proj.get('weight', 'delay').connections[0]:
+#     if conn[2] > 3:
+#         new_connections_out.append([conn[0], conn[1], conn[2]-16, conn[3]])
+#     else:
+#         new_connections_out.append([conn[0], conn[1], conn[2], conn[3]])
+connection_diff_out = []
+for i in range(len(from_list_out)):
+    connection_diff_out.append(new_connections_out[i][2] - from_list_out[i][2])
+print "Output connections\noriginal\n", np.array(from_list_out)
+print "new\n", np.array(new_connections_out)
+print "diff\n", np.array(connection_diff_out)
 print experiment_label
 print "cycle_error =", cycle_error
 print "total error =", total_error
 
 plt.figure()
 Figure(
-    # Panel(neuron_res.segments[0].filter(name='v')[0], ylabel='Membrane potential (mV)', yticks=True, xticks=True, xlim=(0, runtime)),
-    #
-    # Panel(neuron_res.segments[0].filter(name='gsyn_exc')[0], ylabel='gsyn_exc', yticks=True, xticks=True, xlim=(0, runtime)),
-    #
-    # Panel(neuron_res.segments[0].filter(name='gsyn_inh')[0], ylabel='gsyn_inh', yticks=True, xticks=True, xlim=(0, runtime)),
+    Panel(neuron_res.segments[0].filter(name='v')[0], ylabel='Membrane potential (mV)', yticks=True, xticks=True, xlim=(0, runtime)),
+
+    Panel(neuron_res.segments[0].filter(name='gsyn_exc')[0], ylabel='gsyn_exc', yticks=True, xticks=True, xlim=(0, runtime)),
+
+    Panel(neuron_res.segments[0].filter(name='gsyn_inh')[0], ylabel='gsyn_inh', yticks=True, xticks=True, xlim=(0, runtime)),
 
     Panel(in_spikes.segments[0].spiketrains, ylabel='in_spikes', xlabel='in_spikes', yticks=True, xticks=True, xlim=(0, runtime)),
 
-    # Panel(neuron_res.segments[0].spiketrains, ylabel='neuron_spikes', xlabel='neuron_spikes', yticks=True, xticks=True, xlim=(0, runtime)),
+    Panel(neuron_res.segments[0].spiketrains, ylabel='neuron_spikes', xlabel='neuron_spikes', yticks=True, xticks=True, xlim=(0, runtime)),
 
 #     title="eprop neuron"
 # )
@@ -209,6 +254,6 @@ print("job done")
 
 '''
 plt.figure()
-plt.scatter([1739.792622420481, 1709.5202466031203, 1553.4356064017663, 1416.4611380004644, 1296.884425553637, 1194.575622946901, 1107.4903712199666, 1033.3835733187398, 971.0615212114659, 917.5133821256777, 872.6510081750777, 834.5469131202292, 801.932674085516, 774.9009456814987, 750.1415036479369, 729.6718713370992, 711.7966887307455, 695.9602492993286, 681.0463025990683, 667.6629473587994, 655.1788626995324, 644.2886597336307, 635.1718852422105, 627.580679006996, 620.2473888815699, 612.6768968519833, 606.322878448528, 600.5606061879085, 594.9049025460067, 590.3165570869079, 585.928947121106, 581.7914075857282, 577.8478734542942, 573.9005069692499, 570.2323602781323, 566.9547954787932, 563.5905659961875, 560.5811679842368, 557.9392042159176, 555.1969595994593, 552.4119156301078, 549.6176570604082, 547.2449373430011, 545.09023468779, 542.9563983030412, 540.7090468143625, 538.6339804357523, 536.551477050181, 534.5158960960372, 532.5783979620755, 530.7991372597328, 529.3332156311888, 527.5736331116575, 526.0769687214514, 524.4955884459596, 522.6853104495779, 520.7073037035847, 519.0256202926344, 517.2003068373479, 515.4950684255847, 514.0947884900232, 512.6683798676718, 511.30226238544725, 509.91720766153156, 508.629168621346, 507.28459464673665, 506.1595595993376, 505.0124112046502, 503.7347607616274, 502.5661122235975, 501.247681309569, 499.8701919955723, 498.5544368876105, 497.26920048088226, 496.0205642565987, 494.7760495942485, 493.55579462040606, 492.3615918288879, 491.31921419064423, 490.1703845647036, 488.9975355860119, 487.84398840548664, 486.7731965026004, 485.7425479488428, 484.8627736282796, 484.038425699403, 483.21525583918657, 482.56062135331445, 481.71157503867664, 480.9726149884655, 480.03081703859186, 479.1709425611602, 478.3041092203702, 477.5888913548276, 476.9374040358187, 476.32121311710847, 475.7890564964918, 475.1812203423324, 474.54878441446164, 473.9732929852731], [i for i in range(num_repeats)])
+plt.scatter([i for i in range(num_repeats)], cycle_error)
 plt.show()
 '''
