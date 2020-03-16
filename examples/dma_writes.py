@@ -15,9 +15,10 @@ for txtfile in glob.iglob("/localhome/g90604lp/dma_writes/*.txt"):
 
 
     plt.plot(values["cores"], values["times"], "o-")
-    plt.title("DMA write timings")
     plt.grid()
-    plt.xlabel("# of cores")
-    plt.ylabel("Time (microseconds)")
+    plt.xlabel("cores", size=28)
+    plt.ylabel("Time (microseconds)", size=28)
+    plt.xticks(size=17)
+    plt.yticks(size=17)
 
     plt.show()

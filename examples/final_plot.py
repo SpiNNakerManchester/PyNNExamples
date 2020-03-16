@@ -38,7 +38,7 @@ for txtfile in glob.iglob("/localhome/g90604lp/ICPP_res/neurons/*.txt"):
 
             loop_time = l3[:-1]
             values["loop_time"].append(float(loop_time) * 64)
-            values["state_no_loop"].append(state_avg - float(loop_time))
+            values["state_no_loop"].append(state_avg - (float(loop_time) * 64))
 
 
             l1 = fp.readline()
@@ -50,19 +50,19 @@ for txtfile in glob.iglob("/localhome/g90604lp/ICPP_res/neurons/*.txt"):
     name = txtfile.split("/")[5].split(".")[0]
 
     plt.plot(x_axis, values["total"], "o-", color = "blue")
-    plt.plot(x_axis, values["state_update"], "o-", color="magenta")
+    #plt.plot(x_axis, values["state_update"], "o-", color="magenta")
     plt.plot(x_axis, values["state_no_loop"], "o-")
     plt.plot(x_axis, values["loop_time"], "o-", color="purple")
-    plt.plot(x_axis, values["dma_read"], "o-", color="lightblue")
+    plt.plot(x_axis, values["dma_read"], "o-", color="lightskyblue")
 
-    plt.legend(["Total", 'Total Neuron Update time', 'Neuron Update time', 'Synaptic contribution loop time', 'DMA timings'])
+    plt.legend(["Total", 'Neuron update time', 'Synaptic summation loop time', 'DMA timings'], prop={'size': 16})
     plt.grid()
-    plt.yticks(np.arange(0, 105, step=5))
-    plt.xticks(np.arange(2, 15, step=1))
+    plt.yticks(np.arange(0, 105, step=5),)
+    plt.xticks(np.arange(2, 15, step=1), size=17)
     #plt.title()
     #plt.yscale("log")
-    plt.xlabel("Connected synapse cores")
-    plt.ylabel("time (microseconds)")
+    plt.xlabel("Connected synapse cores", size=28)
+    plt.ylabel("Time (microseconds)", size=28)
     plt.show()
 
     values["dma_read"] = []

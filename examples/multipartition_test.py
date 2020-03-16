@@ -119,15 +119,15 @@ if __name__ == "__main__":
               "state_update_input": [],
               "loop_time_input": []}
 
-    partitions = [i for i in range(13, 14)]
+    partitions = [i for i in range(8, 9)]
 
-    timestep = 1
+    timestep = 0.1
 
-    steps = [4]
+    steps = [5]
 
-    n = 10000
+    n = 1000
 
-    with open("/localhome/g90604lp/ICPP_res/" + str(n) + "_neurons_" + str(timestep) + "_res_sopt(4).txt", "w") as fp:
+    with open("/localhome/g90604lp/ICPP_res/" + str(n) + "_neurons_" + str(timestep) + "_res_sopt(9).txt", "w") as fp:
 
         for i in range(len(partitions)):
 
