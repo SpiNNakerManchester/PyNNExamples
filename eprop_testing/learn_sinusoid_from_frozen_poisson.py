@@ -12,14 +12,19 @@ def weight_distribution(pop_size):
 
 def probability_connector(pre_pop_size, post_pop_size, prob, offset=0):
     connections = []
+    max_syn_per_neuron = 0
     for j in range(post_pop_size):
+        neuron_syn_count = 0
         delay_count = offset
         for i in range(pre_pop_size):
             if np.random.random() < prob:
+                neuron_syn_count += 1
                 conn = [i, j, weight_distribution(pre_pop_size), delay_count]
                 delay_count += 1
                 connections.append(conn)
-    return connections
+        if neuron_syn_count > max_syn_per_neuron:
+            max_syn_per_neuron = neuron_syn_count
+    return connections, max_syn_per_neuron
 
 np.random.seed(272727)
 
@@ -38,13 +43,13 @@ readout_neuron_params = {
     "v": 0,
     "v_thresh": 30, # controls firing rate of error neurons
     "target_data": target_data,
-    "eta": 0.5
+    "eta": 0.05
     }
 
-pynn.setup(timestep=1, max_delay=250)
-pynn.set_number_of_neurons_per_core(8)
+pynn.setup(timestep=1)
+# pynn.set_number_of_neurons_per_core(pynn.IF_curr_exp(), 8)
 
-input_size = 10
+input_size = 100
 input_pop = pynn.Population(input_size,
                             pynn.SpikeSourceArray,
                             {'spike_times': build_input_spike_train(num_repeats, cycle_time, input_size)},
@@ -54,15 +59,15 @@ input_pop = pynn.Population(input_size,
 #                             {'spike_times': [np.linspace(0, 1000, 10) for i in range(input_size)]},
 #                             label='input_pop')
 
-neuron_pop_size = 10
+neuron_pop_size = 100
 neuron_params = {
     "v": 0,
     "i_offset": 0,
     "v_rest": 0,
-    "w_fb": [np.random.random() for i in range(neuron_pop_size)],
+    "w_fb": [(np.random.random() / 2) + 0.5 for i in range(neuron_pop_size)],
     # "B": 0.0,
     "beta": 0.0,
-    "eta": 0.5
+    "eta": 0.05
     }
 neuron = pynn.Population(neuron_pop_size,
                          pynn.extra_models.EPropAdaptive(**neuron_params),
@@ -76,7 +81,7 @@ readout_pop = pynn.Population(3, # HARDCODED 1
                        label="readout_pop"
                        )
 
-reg_rate = 0.001
+reg_rate = 0.05
 start_w = [weight_distribution(neuron_pop_size*input_size) for i in range(input_size)]
 eprop_learning_neuron = pynn.STDPMechanism(
     timing_dependence=pynn.extra_models.TimingDependenceEprop(),
@@ -85,7 +90,11 @@ eprop_learning_neuron = pynn.STDPMechanism(
     # weight=start_w, delay=[i for i in range(neuron_pop_size*input_size)])
 
 # from_list_in = [[i, j, weight_distribution(input_size), i+(j*input_size)] for i in range(input_size) for j in range(neuron_pop_size)]
-from_list_in = probability_connector(input_size, neuron_pop_size, 1.)
+from_list_in, max_syn_per_neuron = probability_connector(input_size, neuron_pop_size, 1.)
+if max_syn_per_neuron > 250:
+    Exception
+else:
+    print "max number fo synapses per neuron:", max_syn_per_neuron
 in_proj = pynn.Projection(input_pop,
                           neuron,
                           # readout_pop,
@@ -175,24 +184,29 @@ for cycle in range(num_repeats):
             readout_res.segments[0].filter(name='v')[0][time_index+(cycle*1024)][0]) - target_data[time_index])
         cycle_error[cycle] += instantaneous_error
         total_error += instantaneous_error
-new_connections_in = in_proj.get('weight', 'delay').connections[0]#[]
-# for conn in in_proj.get('weight', 'delay').connections[0]:
-#     if conn[2] > 3:
-#         new_connections_in.append([conn[0], conn[1], conn[2]-16, conn[3]])
-#     else:
-#         new_connections_in.append([conn[0], conn[1], conn[2], conn[3]])
+new_connections_in = []#in_proj.get('weight', 'delay').connections[0]#[]
+for partition in in_proj.get('weight', 'delay').connections:
+    for conn in partition:
+        new_connections_in.append(conn)
+new_connections_in.sort(key=lambda x:x[1])
+from_list_in.sort(key=lambda x:x[1])
 connection_diff_in = []
 for i in range(len(from_list_in)):
     connection_diff_in.append(new_connections_in[i][2] - from_list_in[i][2])
 print "Input connections\noriginal\n", np.array(from_list_in)
 print "new\n", np.array(new_connections_in)
 print "diff\n", np.array(connection_diff_in)
-new_connections_out = out_proj.get('weight', 'delay').connections[0]#[]
+new_connections_out = []#out_proj.get('weight', 'delay').connections[0]#[]
+for partition in out_proj.get('weight', 'delay').connections:
+    for conn in partition:
+        new_connections_out.append(conn)
 # for conn in out_proj.get('weight', 'delay').connections[0]:
 #     if conn[2] > 3:
 #         new_connections_out.append([conn[0], conn[1], conn[2]-16, conn[3]])
 #     else:
 #         new_connections_out.append([conn[0], conn[1], conn[2], conn[3]])
+new_connections_out.sort(key=lambda x:x[1])
+from_list_out.sort(key=lambda x:x[1])
 connection_diff_out = []
 for i in range(len(from_list_out)):
     connection_diff_out.append(new_connections_out[i][2] - from_list_out[i][2])
