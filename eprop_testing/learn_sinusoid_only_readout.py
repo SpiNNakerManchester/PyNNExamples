@@ -1,7 +1,7 @@
 import spynnaker8 as pynn
 import numpy as np
 import matplotlib.pyplot as plt
-from frozen_poisson import build_input_spike_train
+from frozen_poisson import build_input_spike_train, frozen_poisson_variable_hz
 from pyNN.random import NumpyRNG, RandomDistribution
 from pyNN.utility.plotting import Figure, Panel
 
@@ -53,7 +53,8 @@ pynn.setup(timestep=1)
 input_size = 100
 input_pop = pynn.Population(input_size,
                             pynn.SpikeSourceArray,
-                            {'spike_times': build_input_spike_train(num_repeats, cycle_time, input_size)},
+                            # {'spike_times': build_input_spike_train(num_repeats, cycle_time, input_size)},
+                            {'spike_times': frozen_poisson_variable_hz(num_repeats, cycle_time, 7., 7., input_size)},
                             label='input_pop')
 
 # Output population
@@ -102,6 +103,7 @@ for cycle in range(num_repeats):
             readout_res.segments[0].filter(name='v')[0][time_index+(cycle*1024)][0]) - target_data[time_index])
         cycle_error[cycle] += instantaneous_error
         total_error += instantaneous_error
+
 new_connections_in = []#in_proj.get('weight', 'delay').connections[0]#[]
 for partition in in_proj.get('weight', 'delay').connections:
     for conn in partition:
@@ -117,6 +119,10 @@ print "diff\n", np.array(connection_diff_in)
 print experiment_label
 print "cycle_error =", cycle_error
 print "total error =", total_error
+print "average error = ", np.average(cycle_error)
+print "weighted average", np.average(cycle_error, weights=[i for i in range(num_repeats)])
+print "minimum error = ", np.min(cycle_error)
+print "minimum iteration = ", cycle_error.index(np.min(cycle_error))
 
 plt.figure()
 Figure(
@@ -131,7 +137,11 @@ Figure(
 
     title="neuron data for {}".format(experiment_label)
 )
+plt.show()
 
+plt.figure()
+plt.scatter([i for i in range(num_repeats)], cycle_error)
+plt.title(experiment_label)
 plt.show()
 
 pynn.end()
