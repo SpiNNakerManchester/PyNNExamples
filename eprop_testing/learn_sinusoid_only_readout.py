@@ -29,7 +29,7 @@ def probability_connector(pre_pop_size, post_pop_size, prob, offset=0):
 np.random.seed(272727)
 
 cycle_time = 1024
-num_repeats = 200
+num_repeats = 800 # 200
 pynn.setup(1.0)
 
 target_data = []
@@ -75,7 +75,7 @@ from_list_in, max_syn_per_neuron = probability_connector(input_size, 1, 1.)
 if max_syn_per_neuron > 250:
     Exception
 else:
-    print "max number fo synapses per neuron:", max_syn_per_neuron
+    print("max number fo synapses per neuron:", max_syn_per_neuron)
 in_proj = pynn.Projection(input_pop,
                           readout_pop,
                           pynn.FromListConnector(from_list_in),
@@ -88,7 +88,7 @@ input_pop.record('spikes')
 readout_pop.record('all')
 
 experiment_label = "eta:{} - in size:{} - reg_rate: {}".format(readout_neuron_params["eta"], input_size, reg_rate)
-print "\n", experiment_label, "\n"
+print("\n", experiment_label, "\n")
 
 runtime = cycle_time * num_repeats
 pynn.run(runtime)
@@ -113,16 +113,16 @@ from_list_in.sort(key=lambda x:x[1])
 connection_diff_in = []
 for i in range(len(from_list_in)):
     connection_diff_in.append(new_connections_in[i][2] - from_list_in[i][2])
-print "Input connections\noriginal\n", np.array(from_list_in)
-print "new\n", np.array(new_connections_in)
-print "diff\n", np.array(connection_diff_in)
-print experiment_label
-print "cycle_error =", cycle_error
-print "total error =", total_error
-print "average error = ", np.average(cycle_error)
-print "weighted average", np.average(cycle_error, weights=[i for i in range(num_repeats)])
-print "minimum error = ", np.min(cycle_error)
-print "minimum iteration = ", cycle_error.index(np.min(cycle_error))
+print("Input connections\noriginal\n", np.array(from_list_in))
+print("new\n", np.array(new_connections_in))
+print("diff\n", np.array(connection_diff_in))
+print(experiment_label)
+print("cycle_error =", cycle_error)
+print("total error =", total_error)
+print("average error = ", np.average(cycle_error))
+print("weighted average", np.average(cycle_error, weights=[i for i in range(num_repeats)]))
+print("minimum error = ", np.min(cycle_error))
+print("minimum iteration = ", cycle_error.index(np.min(cycle_error)))
 
 plt.figure()
 Figure(
