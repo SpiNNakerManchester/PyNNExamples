@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 from pyNN.random import NumpyRNG, RandomDistribution
 from pyNN.utility.plotting import Figure, Panel
 
-runtime_factor = 1000
-runtime = 1024 * runtime_factor
+
+runtime = 1024
 pynn.setup(1.0)
 
 neuron_params = {
