@@ -29,7 +29,7 @@ def probability_connector(pre_pop_size, post_pop_size, prob, offset=0):
 np.random.seed(272727)
 
 cycle_time = 1024
-num_repeats = 800 # 200
+num_repeats = 100 # 200
 pynn.setup(1.0)
 
 target_data = []
@@ -39,7 +39,7 @@ for i in range(1024):
                     + 2 * np.sin((4 * i * 2* np.pi / 1024))
                 )
 
-synapse_eta = 0.01
+synapse_eta = 100
 
 readout_neuron_params = {
     "v": 0,
@@ -53,8 +53,7 @@ pynn.setup(timestep=1)
 input_size = 100
 input_pop = pynn.Population(input_size,
                             pynn.SpikeSourceArray,
-                            # {'spike_times': build_input_spike_train(num_repeats, cycle_time, input_size)},
-                            {'spike_times': frozen_poisson_variable_hz(num_repeats, cycle_time, 7., 7., input_size)},
+                            {'spike_times': build_input_spike_train(num_repeats, cycle_time, input_size)},
                             label='input_pop')
 
 # Output population
@@ -91,7 +90,10 @@ experiment_label = "eta:{} - in size:{} - reg_rate: {}".format(readout_neuron_pa
 print("\n", experiment_label, "\n")
 
 runtime = cycle_time * num_repeats
-pynn.run(runtime)
+
+for i in range(num_repeats):
+    pynn.run(cycle_time)
+    
 in_spikes = input_pop.get_data('spikes')
 readout_res = readout_pop.get_data('all')
 
@@ -113,6 +115,7 @@ from_list_in.sort(key=lambda x:x[1])
 connection_diff_in = []
 for i in range(len(from_list_in)):
     connection_diff_in.append(new_connections_in[i][2] - from_list_in[i][2])
+    
 print("Input connections\noriginal\n", np.array(from_list_in))
 print("new\n", np.array(new_connections_in))
 print("diff\n", np.array(connection_diff_in))
