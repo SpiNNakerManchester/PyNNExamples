@@ -12,6 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from pyNN.random import NumpyRNG
 
 import spynnaker8 as sim
 import numpy
@@ -59,23 +60,27 @@ def build_network(stdp_model):
 
     # Make excitatory->inhibitory projections
     sim.Projection(ex_pop, in_pop,
-                   sim.FixedProbabilityConnector(0.02),
+                   sim.FixedProbabilityConnector(
+                       0.02, rng=NumpyRNG(seed=4242)),
                    receptor_type='excitatory',
                    synapse_type=sim.StaticSynapse(weight=0.03))
     sim.Projection(ex_pop, ex_pop,
-                   sim.FixedProbabilityConnector(0.02),
+                   sim.FixedProbabilityConnector(
+                       0.02, rng=NumpyRNG(seed=4242)),
                    receptor_type='excitatory',
                    synapse_type=sim.StaticSynapse(weight=0.03))
 
     # Make inhibitory->inhibitory projections
     sim.Projection(in_pop, in_pop,
-                   sim.FixedProbabilityConnector(0.02),
+                   sim.FixedProbabilityConnector(
+                       0.02, rng=NumpyRNG(seed=4242)),
                    receptor_type='inhibitory',
                    synapse_type=sim.StaticSynapse(weight=-0.3))
 
     # Make inhibitory->excitatory projections
     ie_projection = sim.Projection(
-        in_pop, ex_pop, sim.FixedProbabilityConnector(0.02),
+        in_pop, ex_pop, sim.FixedProbabilityConnector(
+            0.02, rng=NumpyRNG(seed=4242)),
         receptor_type='inhibitory', synapse_type=stdp_model)
 
     return ex_pop, ie_projection
