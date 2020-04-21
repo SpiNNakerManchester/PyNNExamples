@@ -39,7 +39,9 @@ for i in range(1024):
                     + 2 * np.sin((4 * i * 2* np.pi / 1024))
                 )
 
-synapse_eta = 0.01
+synapse_eta = 0.02
+input_split = 30
+input_speed_up = 1.
 
 readout_neuron_params = {
     "v": 0,
@@ -54,7 +56,7 @@ input_size = 100
 input_pop = pynn.Population(input_size,
                             pynn.SpikeSourceArray,
                             # {'spike_times': build_input_spike_train(num_repeats, cycle_time, input_size)},
-                            {'spike_times': frozen_poisson_variable_hz(num_repeats, cycle_time, 7., 7., input_size)},
+                            {'spike_times': frozen_poisson_variable_hz(num_repeats, cycle_time, input_split, input_speed_up, input_size)},
                             label='input_pop')
 
 # Output population
@@ -87,7 +89,7 @@ in_proj = pynn.Projection(input_pop,
 input_pop.record('spikes')
 readout_pop.record('all')
 
-experiment_label = "eta:{} - in size:{} - reg_rate: {}".format(readout_neuron_params["eta"], input_size, reg_rate)
+experiment_label = "eta:{} - in size:{} - reg_rate: {} - 10*{}hz".format(readout_neuron_params["eta"], input_size, reg_rate, input_split)
 print "\n", experiment_label, "\n"
 
 runtime = cycle_time * num_repeats
