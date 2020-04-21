@@ -101,7 +101,7 @@ if neuron_pop_size:
     if max_syn_per_input > 100:
         Exception
     else:
-        print "max number of synapses per neuron:", max_syn_per_input
+        print("max number of synapses per neuron:", max_syn_per_input)
     in_proj = pynn.Projection(input_pop,
                               neuron,
                               pynn.FromListConnector(from_list_in),
@@ -120,7 +120,7 @@ if neuron_pop_size:
     if max_syn_per_output > 100:
         Exception
     else:
-        print "max number of synapses per readout:", max_syn_per_output
+        print("max number of synapses per readout:", max_syn_per_output)
     out_proj = pynn.Projection(neuron,
                                readout_pop,
                                # pynn.OneToOneConnector(),
@@ -160,7 +160,7 @@ if recurrent_connections:
     if max_syn_per_rec > 150:
         Exception
     else:
-        print "max number of synapses per neuron:", max_syn_per_rec
+        print("max number of synapses per neuron:", max_syn_per_rec)
     recurrent_proj = pynn.Projection(neuron,
                                      neuron,
                                      pynn.FromListConnector(from_list_rec),
@@ -176,7 +176,7 @@ readout_pop.record('all')
 
 experiment_label = "eta:{}/{} - size:{}/{} - reg_rate:{} - p_conn:{}/{}/{} - rec:{} - 10*{}hz all2all".format(
     readout_neuron_params["eta"], neuron_params["eta"], input_size, neuron_pop_size, reg_rate, p_connect_in, p_connect_rec, p_connect_out, recurrent_connections, input_split)
-print "\n", experiment_label, "\n"
+print("\n", experiment_label, "\n")
 
 runtime = cycle_time * num_repeats
 pynn.run(runtime)
@@ -204,9 +204,9 @@ if neuron_pop_size:
     connection_diff_in = []
     for i in range(len(from_list_in)):
         connection_diff_in.append(new_connections_in[i][2] - from_list_in[i][2])
-    print "Input connections\noriginal\n", np.array(from_list_in)
-    print "new\n", np.array(new_connections_in)
-    print "diff\n", np.array(connection_diff_in)
+    print("Input connections\noriginal\n", np.array(from_list_in))
+    print("new\n", np.array(new_connections_in))
+    print("diff\n", np.array(connection_diff_in))
 
 new_connections_out = []#out_proj.get('weight', 'delay').connections[0]#[]
 for partition in out_proj.get('weight', 'delay').connections:
@@ -217,9 +217,9 @@ from_list_out.sort(key=lambda x:x[1])
 connection_diff_out = []
 for i in range(len(from_list_out)):
     connection_diff_out.append(new_connections_out[i][2] - from_list_out[i][2])
-print "Output connections\noriginal\n", np.array(from_list_out)
-print "new\n", np.array(new_connections_out)
-print "diff\n", np.array(connection_diff_out)
+print("Output connections\noriginal\n", np.array(from_list_out))
+print("new\n", np.array(new_connections_out))
+print("diff\n", np.array(connection_diff_out))
 
 if recurrent_connections:
     new_connections_rec = []#out_proj.get('weight', 'delay').connections[0]#[]
@@ -231,17 +231,17 @@ if recurrent_connections:
     connection_diff_rec = []
     for i in range(len(from_list_out)):
         connection_diff_rec.append(new_connections_rec[i][2] - from_list_rec[i][2])
-    print "Recurrent connections\noriginal\n", np.array(from_list_out)
-    print "new\n", np.array(new_connections_out)
-    print "diff\n", np.array(connection_diff_out)
+    print("Recurrent connections\noriginal\n", np.array(from_list_out))
+    print("new\n", np.array(new_connections_out))
+    print("diff\n", np.array(connection_diff_out))
 
-print experiment_label
-print "cycle_error =", cycle_error
-print "total error =", total_error
-print "average error = ", np.average(cycle_error)
-print "weighted average", np.average(cycle_error, weights=[i for i in range(num_repeats)])
-print "minimum error = ", np.min(cycle_error)
-print "minimum iteration =", cycle_error.index(np.min(cycle_error)), "- with time stamp =", cycle_error.index(np.min(cycle_error)) * 1024
+print(experiment_label)
+print("cycle_error =", cycle_error)
+print("total error =", total_error)
+print("average error = ", np.average(cycle_error))
+print("weighted average", np.average(cycle_error, weights=[i for i in range(num_repeats)]))
+print("minimum error = ", np.min(cycle_error))
+print("minimum iteration = ", cycle_error.index(np.min(cycle_error)), "- with time stamp =", cycle_error.index(np.min(cycle_error)) * 1024)
 
 if neuron_pop_size:
     plt.figure()
