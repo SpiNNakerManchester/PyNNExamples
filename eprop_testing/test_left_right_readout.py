@@ -30,7 +30,7 @@ def probability_connector(pre_pop_size, post_pop_size, prob, offset=0):
 np.random.seed(272727)
 
 cycle_time = 1024
-num_repeats = 300
+num_repeats = 2
 pynn.setup(1.0)
 
 target_data = []
@@ -41,7 +41,7 @@ for i in range(1024):
                 )
 
 
-reg_rate = 0.0001
+reg_rate = 0.01
 p_connect_in = 1.
 p_connect_rec = 1.
 p_connect_out = 1.
@@ -57,7 +57,7 @@ input_size = 80
 readout_neuron_params = {
     "v": 0,
     "v_thresh": 30, # controls firing rate of error neurons
-    "poisson_pop_size": 20,
+    "poisson_pop_size": input_size / 4,
     "eta": synapse_eta - 0.02
     }
 input_pop = pynn.Population(input_size,
@@ -97,7 +97,7 @@ readout_pop = pynn.Population(3, # HARDCODED 1
                        label="readout_pop"
                        )
 
-SpynnakerExternalDevicePluginManager.add_edge(input_pop._get_vertex, readout_pop._get_vertex, "CONTROL")
+SpynnakerExternalDevicePluginManager.add_edge(readout_pop._get_vertex, input_pop._get_vertex, "CONTROL")
 
 start_w = [weight_distribution(neuron_pop_size*input_size) for i in range(input_size)]
 eprop_learning_neuron = pynn.STDPMechanism(
@@ -160,7 +160,7 @@ if recurrent_connections:
                                      label='recurrent_connections',
                                      receptor_type='recurrent_connections')
 
-# input_pop.record('spikes')
+input_pop.record('spikes')
 neuron.record('spikes')
 neuron.record(['gsyn_exc', 'v', 'gsyn_inh'], indexes=[0, 1, 2, 3])
 readout_pop.record('all')
@@ -171,7 +171,7 @@ print "\n", experiment_label, "\n"
 
 runtime = cycle_time * num_repeats
 pynn.run(runtime)
-# in_spikes = input_pop.get_data('spikes')
+in_spikes = input_pop.get_data('spikes')
 neuron_res = neuron.get_data('all')
 readout_res = readout_pop.get_data('all')
 
@@ -240,7 +240,7 @@ Figure(
 
     Panel(neuron_res.segments[0].filter(name='gsyn_inh')[0], ylabel='gsyn_inh', yticks=True, xticks=True, xlim=(0, runtime)),
 
-    # Panel(in_spikes.segments[0].spiketrains, ylabel='in_spikes', xlabel='in_spikes', yticks=True, xticks=True, xlim=(0, runtime)),
+    Panel(in_spikes.segments[0].spiketrains, ylabel='in_spikes', xlabel='in_spikes', yticks=True, xticks=True, xlim=(0, runtime)),
 
     Panel(neuron_res.segments[0].spiketrains, ylabel='neuron_spikes', xlabel='neuron_spikes', yticks=True, xticks=True, xlim=(0, runtime)),
 
