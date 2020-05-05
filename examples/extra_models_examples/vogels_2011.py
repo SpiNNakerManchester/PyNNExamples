@@ -235,4 +235,3 @@ if __name__ == "__main__":
     result_weights, static, plastic = x.run(
         SLOWDOWN, EXTRACT_WEIGHTS)
     x.plot(result_weights, static, plastic)
-
