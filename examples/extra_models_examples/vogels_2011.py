@@ -26,7 +26,7 @@ SLOWDOWN = 12
 EXTRACT_WEIGHTS = False
 
 
-class Vogals2011(object):
+class Vogels2011(object):
     """
     This example uses the sPyNNaker implementation of the inhibitory
     Plasticity rule developed by Vogels, Sprekeler, Zenke et al (2011)
@@ -231,7 +231,7 @@ class Vogals2011(object):
 
 
 if __name__ == "__main__":
-    x = Vogals2011()
+    x = Vogels2011()
     result_weights, static, plastic = x.run(
         SLOWDOWN, EXTRACT_WEIGHTS)
     x.plot(result_weights, static, plastic)
