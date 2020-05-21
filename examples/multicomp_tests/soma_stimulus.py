@@ -7,7 +7,7 @@ def soma_comp_stimulus():
 
     runtime = 50
     nNeurons = 65
-    p.setup(timestep=0.1)
+    p.setup(timestep=1)
 
     # cell_params_tcmp = {"u_thresh": -50,
     #                    "u_reset": -70,
@@ -18,8 +18,8 @@ def soma_comp_stimulus():
 
     weight_to_spike = 1
 
-    population = p.Population(1, p.extra_models.IFCurrExpTwoComp(), label='population_1')
-    input = p.Population(1, p.SpikeSourceArray(spike_times=[1, 2, 3, 4, 5, 6]), label='input')
+    population = p.Population(1, p.extra_models.IFExpRateTwoComp(starting_rate=0), label='population_1')
+    input = p.Population(1, p.RateSourceArray(rate_times=[1, 2, 3, 4, 5, 6], rate_values=[150, 300, 450, 600, 750, 900]), label='input')
 
     p.Projection(input, population, p.OneToOneConnector(), p.StaticSynapse(weight=weight_to_spike, delay=1), receptor_type="soma_exc")
 

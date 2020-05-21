@@ -16,19 +16,26 @@ def rate_based_test():
     #                    "v": -65
     #                    }
 
-    weight_to_spike = 10
-    r = 150
+    weight_to_spike = 1
+    r = 0.1
     to_send = list()
     for _ in range(1, 20):
         to_send.append(r)
-        r += 150
+        r += 0.01
 
     population1 = p.Population(1, p.extra_models.IFExpRateTwoComp(starting_rate=0), label='population_1')
     source = p.Population(1, p.RateSourceArray(rate_times=[i for i in range(1, 20)], rate_values=to_send), label='rate_source')
     #source2 = p.Population(1, p.RateSourceArray(rate_times=[1, 2], rate_values=[3, 4]), label='rate_source2')
 
-    p.Projection(source, population1, p.OneToOneConnector(), p.StaticSynapse(weight=weight_to_spike),
+    plasticity = p.STDPMechanism(
+        timing_dependence=p.extra_models.TimingDependenceMulticompBern(
+            tau_plus=20., tau_minus=20.0),
+        weight_dependence=p.extra_models.WeightDependenceMultiplicativeMulticompBern(w_min=0, w_max=10, learning_rate=0.09),
+        weight=1.0)
+
+    p.Projection(source, population1, p.OneToOneConnector(), synapse_type=plasticity,
                  receptor_type="dendrite_exc")
+
     #p.Projection(source2, population1, p.OneToOneConnector(), p.StaticSynapse(weight=weight_to_spike),
     #             receptor_type="dendrite_exc")
 
