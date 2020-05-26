@@ -29,7 +29,7 @@ def probability_connector(pre_pop_size, post_pop_size, prob, offset=0):
 np.random.seed(272727)
 
 cycle_time = 1024
-num_repeats = 100 # 200
+num_repeats = 400 # 200
 pynn.setup(1.0)
 
 target_data = []
@@ -39,11 +39,12 @@ for i in range(1024):
                     + 2 * np.sin((4 * i * 2* np.pi / 1024))
                 )
 
-synapse_eta = 100
+synapse_eta = 20
 
 readout_neuron_params = {
     "v": 0,
     "v_thresh": 30, # controls firing rate of error neurons
+    "tau_m": 100,
     "target_data": target_data,
     "eta": synapse_eta
     }
@@ -53,7 +54,7 @@ pynn.setup(timestep=1)
 input_size = 100
 input_pop = pynn.Population(input_size,
                             pynn.SpikeSourceArray,
-                            {'spike_times': build_input_spike_train(num_repeats, cycle_time, input_size)},
+                            {'spike_times': build_input_spike_train(num_repeats, cycle_time, input_size, use_old=True)},
                             label='input_pop')
 
 # Output population
@@ -92,6 +93,7 @@ print("\n", experiment_label, "\n")
 runtime = cycle_time * num_repeats
 
 for i in range(num_repeats):
+    print('\nrepeat: {}\n'.format(i))
     pynn.run(cycle_time)
     
 in_spikes = input_pop.get_data('spikes')

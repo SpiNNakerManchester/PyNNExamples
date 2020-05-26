@@ -29,7 +29,7 @@ def probability_connector(pre_pop_size, post_pop_size, prob, offset=0):
 np.random.seed(272727)
 
 cycle_time = 1024
-num_repeats = 200
+num_repeats =250
 pynn.setup(1.0)
 
 target_data = []
@@ -39,7 +39,7 @@ for i in range(1024):
                     + 2 * np.sin((4 * i * 2* np.pi / 1024))
                 )
 
-synapse_eta = 0.02
+synapse_eta = 40
 input_split = 30
 input_speed_up = 1.
 
