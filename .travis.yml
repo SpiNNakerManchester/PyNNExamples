@@ -14,7 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 language: python
-dist: xenial
+dist: bionic
 python:
   - 2.7
   - 3.6
