@@ -7,7 +7,7 @@ from pyNN.utility.plotting import Figure, Panel
 from spynnaker.pyNN.spynnaker_external_device_plugin_manager import SpynnakerExternalDevicePluginManager
 
 def weight_distribution(pop_size):
-    base_weight = np.random.randn() / np.sqrt(pop_size)
+    base_weight = np.random.randn() / np.sqrt(pop_size) #+ 0.5
     # base_weight = 0
     return base_weight
 
@@ -29,8 +29,9 @@ def probability_connector(pre_pop_size, post_pop_size, prob, offset=0):
 
 np.random.seed(272727)
 
-cycle_time = 1024
-num_repeats = 2
+number_of_cues = 1
+cycle_time = (number_of_cues*150)+1000+150
+num_repeats = 800
 pynn.setup(1.0)
 
 target_data = []
@@ -41,36 +42,44 @@ for i in range(1024):
                 )
 
 
-reg_rate = 0.01
+reg_rate = 0.000
 p_connect_in = 1.
 p_connect_rec = 1.
 p_connect_out = 1.
-recurrent_connections = False
-synapse_eta = 0.05
+recurrent_connections = True
+synapse_eta = 0.5
+tau_a = 1500#[cycle_time - 150 + (np.random.randn() * 200) for i in range(100)]
 input_split = 20
 
 
 pynn.setup(timestep=1)
 
 
-input_size = 80
+input_size = 40
 readout_neuron_params = {
     "v": 0,
     "v_thresh": 30, # controls firing rate of error neurons
     "poisson_pop_size": input_size / 4,
-    "eta": synapse_eta - 0.02
+    # "tau_m": tau_a,
+    "eta": synapse_eta / 5.
     }
+rates = []
+for i in range(input_size):
+    if i >= (3*input_size) / 4:
+        rates.append(10)
+    else:
+        rates.append(0)
 input_pop = pynn.Population(input_size,
-                            pynn.SpikeSourcePoisson(rate=0),
+                            pynn.SpikeSourcePoisson(rate=rates),
                             # {'spike_times': build_input_spike_train(num_repeats, cycle_time, input_size)},
                             # {'spike_times': frozen_poisson_variable_hz(num_repeats, cycle_time, input_split, input_split, input_size)},
                             label='input_pop')
 
-neuron_pop_size = 80
+neuron_pop_size = 100
 ratio_of_LIF = 0.5
 beta = []
 for i in range(neuron_pop_size):
-    if i < neuron_pop_size/2:
+    if i % 2 == 0:
         beta.append(0)
     else:
         beta.append(1.8)
@@ -78,12 +87,14 @@ neuron_params = {
     "v": 0,
     "i_offset": 0,
     "v_rest": 0,
-    "w_fb": [np.random.random() for i in range(neuron_pop_size)], # best it seems
+    # "w_fb": [np.random.random() for i in range(neuron_pop_size)], # best it seems
     # "w_fb": [(np.random.random() * 2) - 1. for i in range(neuron_pop_size)],
+    "w_fb": [np.random.random() - np.random.random() for i in range(neuron_pop_size)],  ## for both feedback weights
     # "B": 0.0,
     "beta": beta,
     "target_rate": 10,
-    "eta": synapse_eta #/ 4.
+    "tau_a": tau_a,
+    "eta": synapse_eta / 20.
     }
 neuron = pynn.Population(neuron_pop_size,
                          pynn.extra_models.EPropAdaptive(**neuron_params),
@@ -103,7 +114,7 @@ start_w = [weight_distribution(neuron_pop_size*input_size) for i in range(input_
 eprop_learning_neuron = pynn.STDPMechanism(
     timing_dependence=pynn.extra_models.TimingDependenceEprop(),
     weight_dependence=pynn.extra_models.WeightDependenceEpropReg(
-        w_min=-1.0, w_max=1.0, reg_rate=reg_rate))
+        w_min=-2.0, w_max=2.0, reg_rate=reg_rate))
 
 from_list_in, max_syn_per_input = probability_connector(input_size, neuron_pop_size, p_connect_in)
 if max_syn_per_input > 100:
@@ -113,6 +124,7 @@ else:
 in_proj = pynn.Projection(input_pop,
                           neuron,
                           pynn.FromListConnector(from_list_in),
+                          # pynn.AllToAllConnector(),
                           synapse_type=eprop_learning_neuron,
                           label='input_connections',
                           receptor_type='input_connections')
@@ -120,10 +132,10 @@ in_proj = pynn.Projection(input_pop,
 eprop_learning_output = pynn.STDPMechanism(
     timing_dependence=pynn.extra_models.TimingDependenceEprop(),
     weight_dependence=pynn.extra_models.WeightDependenceEpropReg(
-        w_min=-1.0, w_max=1.0, reg_rate=0.0))
+        w_min=-2.0, w_max=2.0, reg_rate=0.0))
 
 # from_list_out = [[i, 0, weight_distribution(input_size), i] for i in range(input_size)]
-from_list_out, max_syn_per_output = probability_connector(neuron_pop_size, 1, p_connect_out)
+from_list_out, max_syn_per_output = probability_connector(neuron_pop_size, 2, p_connect_out)
 if max_syn_per_output > 100:
     Exception
 else:
@@ -142,11 +154,17 @@ learning_proj = pynn.Projection(readout_pop,
                                 pynn.StaticSynapse(weight=0.5, delay=0),
                                 receptor_type='learning_signal')
 
+learning_proj = pynn.Projection(readout_pop,
+                                readout_pop,
+                                pynn.AllToAllConnector(),
+                                pynn.StaticSynapse(weight=0.5, delay=0),
+                                receptor_type='learning_signal')
+
 if recurrent_connections:
     eprop_learning_recurrent = pynn.STDPMechanism(
         timing_dependence=pynn.extra_models.TimingDependenceEprop(),
         weight_dependence=pynn.extra_models.WeightDependenceEpropReg(
-            w_min=-1.0, w_max=1.0, reg_rate=reg_rate))
+            w_min=-2.0, w_max=2.0, reg_rate=reg_rate))
 
     from_list_rec, max_syn_per_rec = probability_connector(neuron_pop_size, neuron_pop_size, p_connect_rec, offset=0)
     if max_syn_per_rec > 150:
@@ -162,14 +180,15 @@ if recurrent_connections:
 
 input_pop.record('spikes')
 neuron.record('spikes')
-neuron.record(['gsyn_exc', 'v', 'gsyn_inh'], indexes=[0, 1, 2, 3])
+neuron.record(['gsyn_exc', 'v', 'gsyn_inh'], indexes=[i for i in range(45, 55)])
 readout_pop.record('all')
 
-experiment_label = "eta:{}/{} - size:{}/{} - reg_rate:{} - p_conn:{}/{}/{} - rec:{} - 100/{}hz 2048".format(
-    readout_neuron_params["eta"], neuron_params["eta"], input_size, neuron_pop_size, reg_rate, p_connect_in, p_connect_rec, p_connect_out, recurrent_connections, input_split)
+runtime = cycle_time * num_repeats
+
+experiment_label = "eta:{}/{} - size:{}/{} - reg_rate:{} - p_conn:{}/{}/{} - rec:{} - cycle:{}/{} -=10 5050 reg>0.5".format(
+    readout_neuron_params["eta"], neuron_params["eta"], input_size, neuron_pop_size, reg_rate, p_connect_in, p_connect_rec, p_connect_out, recurrent_connections, cycle_time, runtime)
 print "\n", experiment_label, "\n"
 
-runtime = cycle_time * num_repeats
 pynn.run(runtime)
 in_spikes = input_pop.get_data('spikes')
 neuron_res = neuron.get_data('all')
@@ -177,12 +196,64 @@ readout_res = readout_pop.get_data('all')
 
 total_error = 0.0
 cycle_error = [0.0 for i in range(num_repeats)]
+soft_max = [[], []]
+cross_entropy = [] # how do I extract the answer easily? final gsyn exc value?
+all_cross = [[], []]
+from_soft = [[], []]
 for cycle in range(num_repeats):
-    for time_index in range(1024):
+    ticks_for_mean = 0
+    mean_0 = 0.
+    mean_1 = 0.
+    # mean_0_all = 0.
+    # mean_1_all = 0.
+    for time_index in range(cycle_time):
         instantaneous_error = np.abs(float(
-            readout_res.segments[0].filter(name='v')[0][time_index+(cycle*1024)][0]) - target_data[time_index])
+            readout_res.segments[0].filter(name='gsyn_inh')[0][time_index+(cycle*cycle_time)][0]))
         cycle_error[cycle] += instantaneous_error
         total_error += instantaneous_error
+
+        # if time_index > cycle_time - 150:
+        #     ticks_for_mean = 1
+        #     instantaneous_v0 = float(readout_res.segments[0].filter(name='v')[0][time_index+(cycle*cycle_time)][0])
+        #     instantaneous_v1 = float(readout_res.segments[0].filter(name='v')[0][time_index+(cycle*cycle_time)][1])
+        #     mean_0 = instantaneous_v0 * 0.1
+        #     mean_1 = instantaneous_v1 * 0.1
+        #     exp_0 = np.exp(mean_0 / ticks_for_mean)
+        #     exp_1 = np.exp(mean_1 / ticks_for_mean)
+        #     if exp_0 == 0 and exp_1 == 0:
+        #         if instantaneous_v0 > instantaneous_v1:
+        #             soft_max[0].append(1)
+        #             soft_max[1].append(0)
+        #         else:
+        #             soft_max[0].append(0)
+        #             soft_max[1].append(1)
+        #     else:
+        #         soft_max[0].append(-np.log(exp_0 / (exp_0 + exp_1)))
+        #         soft_max[1].append(-np.log(exp_1 / (exp_0 + exp_1)))
+        #     if float(readout_res.segments[0].filter(name='gsyn_exc')[0][time_index+(cycle*cycle_time)][2]) < 3.5:
+        #         cross_entropy.append(soft_max[0][-1])
+        #     else:
+        #         cross_entropy.append(soft_max[1][-1])
+        #
+        #     from_soft[0].append(-np.log(float(readout_res.segments[0].filter(name='gsyn_exc')[0][time_index+(cycle*cycle_time)][0])))
+        #     from_soft[1].append(-np.log(float(readout_res.segments[0].filter(name='gsyn_exc')[0][time_index+(cycle*cycle_time)][1])))
+        # else:
+        #     soft_max[0].append(0)
+        #     soft_max[1].append(0)
+        #     from_soft[0].append(0)
+        #     from_soft[1].append(0)
+        #     cross_entropy.append(0)
+        #
+        # instantaneous_v0 = float(readout_res.segments[0].filter(name='v')[0][time_index + (cycle * cycle_time)][0])
+        # instantaneous_v1 = float(readout_res.segments[0].filter(name='v')[0][time_index + (cycle * cycle_time)][1])
+        # # mean_0_all += instantaneous_v0
+        # # mean_1_all += instantaneous_v1
+        # exp_0 = np.exp(instantaneous_v0 * 0.1)
+        # exp_1 = np.exp(instantaneous_v1 * 0.1)
+        # all_cross[0].append(-np.log(exp_0 / (exp_0 + exp_1)))
+        # all_cross[1].append(-np.log(exp_1 / (exp_0 + exp_1)))
+
+
 
 new_connections_in = []#in_proj.get('weight', 'delay').connections[0]#[]
 for partition in in_proj.get('weight', 'delay').connections:
@@ -254,9 +325,14 @@ Figure(
 )
 plt.show()
 
-plt.figure()
-plt.scatter([i for i in range(num_repeats)], cycle_error)
-plt.title(experiment_label)
+fig, axs = plt.subplots(1, 1)
+axs.set_title(experiment_label)
+# axs[0].plot([i for i in range(len(cross_entropy))], cross_entropy)
+# axs[1].plot([i for i in range(len(all_cross[0]))], all_cross[0])
+# axs[2].plot([i for i in range(len(all_cross[1]))], all_cross[1])
+axs.scatter([i for i in range(len(cycle_error))], cycle_error)
+# axs[1].plot([i for i in range(len(from_soft[0]))], from_soft[0])
+# axs[2].plot([i for i in range(len(from_soft[1]))], from_soft[1])
 plt.show()
 
 pynn.end()
@@ -285,6 +361,12 @@ ave_sine = moving_average(sine_wave, 20)
 plt.figure()
 plt.plot([i for i in range(len(ave_mem))], cum_mem)
 plt.plot([i for i in range(len(ave_sine))], cum_sine)
+plt.title(experiment_label)
+plt.show()
+
+plt.figure()
+plt.plot([i for i in range(len(soft_max[0]))], soft_max[0])
+plt.plot([i for i in range(len(soft_max[1]))], soft_max[1])
 plt.title(experiment_label)
 plt.show()
 '''
