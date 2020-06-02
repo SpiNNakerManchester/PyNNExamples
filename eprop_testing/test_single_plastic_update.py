@@ -5,7 +5,7 @@ from pyNN.random import NumpyRNG, RandomDistribution
 from pyNN.utility.plotting import Figure, Panel
 
 
-runtime = 100
+runtime = 2000
 pynn.setup(1.0)
 
 neuron_params = {
@@ -17,7 +17,7 @@ neuron_params = {
 
 spike_source = pynn.Population(2,
                                pynn.SpikeSourceArray,
-                               {'spike_times': [10]},
+                               {'spike_times': [1025]},
                                label='Spike Source')
 
 neuron = pynn.Population(2,

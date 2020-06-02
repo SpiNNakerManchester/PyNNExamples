@@ -30,12 +30,12 @@ def build_input_spike_train(num_repeats, cycle_time, pop_size, use_old=False):
 
 def frozen_poisson_variable_hz(num_repeats, cycle_time, split, speed_up, pop_size, use_old=False):
     if use_old:
-        pattern = pattern_50
+        pattern = pattern_10
     else:
-        pattern = np.load('1000 neurons - 10Hz - 100*1024s.npy').tolist()
+        pattern = np.load('1000 neurons - 10Hz - 100*1024s.npy', allow_pickle=True).tolist()
 
     if split > pop_size:
-        print "Cannot split population into sizes smaller than 1 i.e. split > population size"
+        print("Cannot split population into sizes smaller than 1 i.e. split > population size")
         raise Exception
 
     spikes = []
