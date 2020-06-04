@@ -27,6 +27,17 @@ neurons which causes an inverse effect to reduce response of
 post-synaptic neurons to the same stimuli.
 At the same time we implement a straightforward creation/elimination structural
 method (similar to that used in the struct_pl examples).
+
+Please note: the binary required for this example is not automatically built
+as it is very close to the ITCM limit; you need to (a) have a recent version of
+arm-none-eabi-gcc (we have tested with v9.2.0 and it works), and (b) you
+either need to (1) uncomment the line
+# IF_curr_exp_stdp_izhikevich_neuromodulation_structural_random_distance_weight
+in sPyNNaker/neural_modelling/makefiles/neuron/Makefile
+and run the automatic_make script, or (2) go to the directory
+sPyNNaker/neural_modelling/makefiles/neuron/
+IF_curr_exp_stdp_izhikevich_neuromodulation_structural_random_distance_weight
+and run make directly there.
 """
 
 try:
