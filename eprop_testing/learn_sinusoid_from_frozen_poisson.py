@@ -29,7 +29,7 @@ def probability_connector(pre_pop_size, post_pop_size, prob, offset=0):
 np.random.seed(272727)
 
 cycle_time = 1024
-num_repeats = 300
+num_repeats = 10
 pynn.setup(1.0)
 
 target_data = []
@@ -141,7 +141,7 @@ else:
     if max_syn_per_output > 100:
         Exception
     else:
-        print "max number of synapses per readout:", max_syn_per_output
+        print("max number of synapses per readout:", max_syn_per_output)
     out_proj = pynn.Projection(input_pop,
                                readout_pop,
                                # pynn.OneToOneConnector(),
