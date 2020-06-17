@@ -30,17 +30,17 @@ def probability_connector(pre_pop_size, post_pop_size, prob, offset=0):
 def range_connector(pre_min, pre_max, post_min, post_max, weight=1.5, delay_offset=0):
     connections = []
     for j in range(post_min, post_max):
-        # delay = delay_offset
+        delay = delay_offset
         for i in range(pre_min, pre_max):
             connections.append([i, j, weight, i+delay_offset])
-            # delay += 1
+            delay += 1
     return connections
 
 np.random.seed(272727)
 
 number_of_cues = 1
 cycle_time = (number_of_cues*150)+1000+150
-num_repeats = 21
+num_repeats = 4
 pynn.setup(1.0)
 
 target_data = []
@@ -55,14 +55,14 @@ reg_rate = 0.000
 p_connect_in = 1.
 p_connect_rec = 1.
 p_connect_out = 1.
-recurrent_connections = True
+recurrent_connections = False
 synapse_eta = 0.5
-tau_a = 2500#[cycle_time - 150 + (np.random.randn() * 200) for i in range(100)]
+tau_a = 5500#[cycle_time - 150 + (np.random.randn() * 200) for i in range(100)]
 input_split = 100
-window_size = cycle_time*10
+window_size = 1300*10
 
 in_weight = 2
-prompt_weight = 1
+prompt_weight = 2
 rec_weight = -1.9
 out_weight = 1
 
@@ -70,7 +70,7 @@ out_weight = 1
 pynn.setup(timestep=1)
 
 
-input_size = 40
+input_size = 24
 readout_neuron_params = {
     "v": 0,
     "v_thresh": 30, # controls firing rate of error neurons
@@ -94,15 +94,15 @@ input_pop = pynn.Population(input_size,
                             # {'spike_times': frozen_poisson_variable_hz(num_repeats, cycle_time, input_split, input_split, input_size)},
                             label='input_pop')
 
-neuron_pop_size = 100
+neuron_pop_size = 10
 ratio_of_LIF = 0.5
 beta = []
 for i in range(neuron_pop_size):
     if i < neuron_pop_size/2:
     # if i % 2 == 0:
-        beta.append(2.8)
+        beta.append(25.8)
     else:
-        beta.append(2.8)
+        beta.append(25.8)
 neuron_params = {
     "v": 0,
     "i_offset": 0,
@@ -159,8 +159,6 @@ eprop_learning_output = pynn.STDPMechanism(
 # from_list_out, max_syn_per_output = probability_connector(neuron_pop_size, 2, p_connect_out)
 from_list_out = range_connector(0, neuron_pop_size/2, 1, 2, weight=out_weight)
 from_list_out += range_connector(neuron_pop_size/2, neuron_pop_size, 0, 1, weight=out_weight)
-from_list_out += range_connector(0, neuron_pop_size/2, 0, 1, weight=-out_weight)
-from_list_out += range_connector(neuron_pop_size/2, neuron_pop_size, 1, 2, weight=-out_weight)
 out_proj = pynn.Projection(neuron,
                            readout_pop,
                            # pynn.OneToOneConnector(),
@@ -188,8 +186,8 @@ if recurrent_connections:
             w_min=-2.0, w_max=2.0, reg_rate=reg_rate))
 
     # from_list_rec, max_syn_per_rec = probability_connector(neuron_pop_size, neuron_pop_size, p_connect_rec, offset=0)
-    from_list_rec = range_connector(0, neuron_pop_size/2, neuron_pop_size/2, neuron_pop_size, weight=rec_weight, delay_offset=100)
-    from_list_rec += range_connector(neuron_pop_size/2, neuron_pop_size, 0, neuron_pop_size/2, weight=rec_weight, delay_offset=100)
+    from_list_rec = range_connector(0, 50, 50, 100, weight=rec_weight, delay_offset=100)
+    from_list_rec += range_connector(50, 100, 0, 50, weight=rec_weight, delay_offset=100)
     recurrent_proj = pynn.Projection(neuron,
                                      neuron,
                                      pynn.FromListConnector(from_list_rec),
@@ -199,7 +197,7 @@ if recurrent_connections:
 
 input_pop.record('spikes')
 neuron.record('spikes')
-neuron.record(['gsyn_exc', 'v', 'gsyn_inh'], indexes=[i for i in range(45, 55)])
+neuron.record(['gsyn_exc', 'v', 'gsyn_inh'])#, indexes=[i for i in range(45, 55)])
 readout_pop.record('all')
 
 runtime = cycle_time * num_repeats

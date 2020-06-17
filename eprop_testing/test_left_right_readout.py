@@ -7,7 +7,7 @@ from pyNN.utility.plotting import Figure, Panel
 from spynnaker.pyNN.spynnaker_external_device_plugin_manager import SpynnakerExternalDevicePluginManager
 
 def weight_distribution(pop_size):
-    base_weight = np.random.randn() / np.sqrt(pop_size) + 0.25
+    base_weight = np.random.randn() / np.sqrt(pop_size) + 0.5
     if abs(base_weight) < np.exp(-10):  # checking because if too many are small neurons can't learn
         print "stop"
     # base_weight = 0
@@ -33,7 +33,7 @@ np.random.seed(272727)
 
 number_of_cues = 1
 cycle_time = (number_of_cues*150)+1000+150
-num_repeats = 800
+num_repeats = 200
 pynn.setup(1.0)
 
 target_data = []
@@ -48,11 +48,11 @@ reg_rate = 0.000
 p_connect_in = 1.
 p_connect_rec = 1.
 p_connect_out = 1.
-recurrent_connections = True
+recurrent_connections = False
 synapse_eta = 0.25
-tau_a = 2000#[cycle_time - 150 + (np.random.randn() * 200) for i in range(100)]
+tau_a = 2500#[cycle_time - 150 + (np.random.randn() * 200) for i in range(100)]
 input_split = 20
-window_size = 14300
+window_size = cycle_time*10
 
 
 pynn.setup(timestep=1)
@@ -161,11 +161,11 @@ learning_proj = pynn.Projection(readout_pop,
                                 pynn.StaticSynapse(weight=0.5, delay=0),
                                 receptor_type='learning_signal')
 
-learning_proj = pynn.Projection(readout_pop,
-                                readout_pop,
-                                pynn.AllToAllConnector(),
-                                pynn.StaticSynapse(weight=0.5, delay=0),
-                                receptor_type='learning_signal')
+# learning_proj = pynn.Projection(readout_pop,
+#                                 readout_pop,
+#                                 pynn.AllToAllConnector(),
+#                                 pynn.StaticSynapse(weight=0.5, delay=0),
+#                                 receptor_type='learning_signal')
 
 if recurrent_connections:
     eprop_learning_recurrent = pynn.STDPMechanism(
@@ -192,7 +192,7 @@ readout_pop.record('all')
 
 runtime = cycle_time * num_repeats
 
-experiment_label = "eta:{}/{} - size:{}/{} - reg_rate:{} - p_conn:{}/{}/{} - rec:{} - cycle:{}/{}/{} fullreg0".format(
+experiment_label = "eta:{}/{} - size:{}/{} - reg_rate:{} - p_conn:{}/{}/{} - rec:{} - cycle:{}/{}/{} 0reg 0.5sd".format(
     readout_neuron_params["eta"], neuron_params["eta"], input_size, neuron_pop_size, reg_rate, p_connect_in, p_connect_rec, p_connect_out, recurrent_connections, cycle_time, window_size, runtime)
 print "\n", experiment_label, "\n"
 
