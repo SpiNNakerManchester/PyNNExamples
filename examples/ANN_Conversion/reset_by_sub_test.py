@@ -6,7 +6,8 @@ import matplotlib.pyplot as plt
 p.setup(time_scale_factor=1, timestep=1)
 
 pop1 = p.Population(1, p.SpikeSourceArray([10, 30, 50, 70, 90, 110]))
-pop2 = p.Population(1, p.IF_curr_exp())
+#In the hacked together reset by subtraction model the v_reset is subtracted from the v_mem at reset
+pop2 = p.Population(1, p.IF_curr_exp(v_reset=15.0))
 
 p.Projection(pop1, pop2, p.AllToAllConnector(), p.StaticSynapse(weight=4.0, delay=1.0))
 
