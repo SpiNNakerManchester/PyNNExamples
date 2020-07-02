@@ -15,12 +15,13 @@
 from pyNN.random import NumpyRNG
 import spynnaker8 as sim
 import numpy
+import os
 import matplotlib.pyplot as pylab
 from spynnaker8.utilities import neo_convertor
 
 # how much slowdown to put into the network to allow it to run without any
 # runtime errors
-SLOWDOWN = 12
+SLOWDOWN = 200
 
 # bool hard code for extracting the weights or not
 EXTRACT_WEIGHTS = False
@@ -66,10 +67,28 @@ class Vogels2011(object):
     FIRST_RUN_RUNTIME = 1000
 
     # second run runtime
-    SECOND_RUN_RUNTIME = 10000
+    SECOND_RUN_RUNTIME = 3000
 
     # bool for saving plastic spikes
-    SAVE_PLASTIC_SPIKES = False
+    SAVE_SPIKES = True
+
+    # bool saying to run static version or not
+    RUN_STATIC_VERSION = True
+
+    # bool for reading and saving all connectivity
+    SAVE_ALL_CONNECTIVITY_IF_INSANE = False
+
+    # file name for ex static spikes
+    STATIC_EX_SPIKES_FILE_NAME = "staticExcitSpikes"
+
+    # file name for in static spikes
+    STATIC_IN_SPIKES_FILE_NAME = "staticInhibSpikes"
+
+    # file name for plastic ex spikes
+    PLASTIC_EX_SPIKES_FILE_NAME = "plasticExcitSpikes"
+
+    # file name for plastic in spikes
+    PLASTIC_IN_SPIKES_FILE_NAME = "plasticInhibSpikes"
 
     def _build_network(self, uses_stdp, slow_down):
         """ builds the network with either stdp or not, and with a given
@@ -98,44 +117,61 @@ class Vogels2011(object):
 
         # Record excitatory spikes
         ex_pop.record(['spikes'])
+        in_pop.record(['spikes'])
 
         # create seeder
         rng_seeder = NumpyRNG(seed=self.RANDOM_NUMBER_GENERATOR_SEED)
 
         # Make excitatory->inhibitory projections
-        sim.Projection(ex_pop, in_pop,
-                       sim.FixedProbabilityConnector(0.02, rng=rng_seeder),
-                       receptor_type='excitatory',
-                       synapse_type=sim.StaticSynapse(weight=0.03))
-        sim.Projection(ex_pop, ex_pop,
-                       sim.FixedProbabilityConnector(0.02, rng=rng_seeder),
-                       receptor_type='excitatory',
-                       synapse_type=sim.StaticSynapse(weight=0.03))
+        proj1 = sim.Projection(
+            ex_pop, in_pop,
+            sim.FixedProbabilityConnector(
+                0.02, rng=NumpyRNG(seed=self.RANDOM_NUMBER_GENERATOR_SEED)),
+            receptor_type='excitatory',
+            synapse_type=sim.StaticSynapse(weight=0.03))
+        proj2 = sim.Projection(
+            ex_pop, ex_pop,
+            sim.FixedProbabilityConnector(
+                0.02, rng=NumpyRNG(seed=self.RANDOM_NUMBER_GENERATOR_SEED)),
+            receptor_type='excitatory',
+            synapse_type=sim.StaticSynapse(weight=0.03))
 
         # Make inhibitory->inhibitory projections
-        sim.Projection(in_pop, in_pop,
-                       sim.FixedProbabilityConnector(0.02, rng=rng_seeder),
-                       receptor_type='inhibitory',
-                       synapse_type=sim.StaticSynapse(weight=-0.3))
+        proj3 = sim.Projection(
+            in_pop, in_pop,
+            sim.FixedProbabilityConnector(
+                0.02, rng=NumpyRNG(seed=self.RANDOM_NUMBER_GENERATOR_SEED)),
+            receptor_type='inhibitory',
+            synapse_type=sim.StaticSynapse(weight=-0.3))
 
         # Build inhibitory plasticity model
         stdp_model = None
         if uses_stdp:
             stdp_model = sim.STDPMechanism(
-                timing_dependence=sim.extra_models.Vogels2011Rule(
-                    alpha=0.12, tau=20.0, A_plus=0.05),
+                timing_dependence=sim.extra_models.SpikeNearestPairRule(
+                    A_plus=0.05),
                 weight_dependence=sim.AdditiveWeightDependence(
                     w_min=0.0, w_max=1.0))
 
         # Make inhibitory->excitatory projection
         ie_projection = sim.Projection(
             in_pop, ex_pop,
-            sim.FixedProbabilityConnector(0.02, rng=rng_seeder),
+            sim.FixedProbabilityConnector(
+                0.02, rng=NumpyRNG(seed=self.RANDOM_NUMBER_GENERATOR_SEED)),
             receptor_type='inhibitory', synapse_type=stdp_model)
 
         # return the excitatory population and the inhibitory->excitatory
         # projection
-        return ex_pop, ie_projection
+        return ex_pop, in_pop, ie_projection, proj1, proj2, proj3
+
+    @staticmethod
+    def save_name(spike_name):
+        index = 0
+        file_name = spike_name + "{}".format(index)
+        while os.path.exists(file_name):
+            index += 1
+            file_name = spike_name + "{}".format(index)
+        return file_name
 
     def run(self, slow_down, extract_weights):
         """ builds and runs a network
@@ -146,30 +182,71 @@ class Vogels2011(object):
         :return: plastic weights, the static and plastic spikes.
         """
 
-        # Build static network
-        static_ex_pop, _ = self._build_network(False, slow_down)
+        static_ex_spikes_numpy = None
+        if self.RUN_STATIC_VERSION:
+            # Build static network
+            (static_ex_pop, static_in_pop, static_ie_projection, proj1, proj2,
+             proj3) = self._build_network(False, slow_down)
 
-        # Run for 1s
-        sim.run(self.FIRST_RUN_RUNTIME)
+            # Run for 1s
+            for _ in range(1):
+                sim.run(self.FIRST_RUN_RUNTIME / 1)
 
-        # Get static spikes
-        static_spikes = static_ex_pop.get_data('spikes')
-        static_spikes_numpy = neo_convertor.convert_spikes(static_spikes)
+            # get all connectivity
+            projs = [proj2, proj3, static_ie_projection, proj1]
+            index = 0
+            if self.SAVE_ALL_CONNECTIVITY_IF_INSANE:
+                for proj in projs:
+                    proj.save("all", "projection{}_data".format(index))
+                    index += 1
+
+            # Get static spikes
+            static_ex_spikes = static_ex_pop.get_data('spikes')
+            static_ex_spikes_numpy = neo_convertor.convert_spikes(
+                static_ex_spikes)
+            static_in_spikes = static_in_pop.get_data('spikes')
+            static_in_spikes_numpy = neo_convertor.convert_spikes(
+                static_in_spikes)
+
+            if self.SAVE_SPIKES:
+                ex_name = self.save_name(self.STATIC_EX_SPIKES_FILE_NAME)
+                in_name = self.save_name(self.STATIC_IN_SPIKES_FILE_NAME)
+                numpy.savetxt(ex_name, static_ex_spikes_numpy)
+                numpy.savetxt(in_name, static_in_spikes_numpy)
+
+            # end static simulation
+            sim.end()
 
         # Build plastic network
-        sim.end()
-        plastic_ex_pop, plastic_ie_projection = self._build_network(
-            True, slow_down)
+        (plastic_ex_pop, static_in_pop, plastic_ie_projection, proj1, proj2,
+         proj3) = self._build_network(True, slow_down)
+
+        index = 0
+        if self.SAVE_ALL_CONNECTIVITY_IF_INSANE:
+            plastic_ie_projection.save(
+                "all", "projection{}_before_data_plastic".format(index))
 
         # Run simulation
         sim.run(self.SECOND_RUN_RUNTIME)
 
+        if self.SAVE_ALL_CONNECTIVITY_IF_INSANE:
+            projs = [plastic_ie_projection]
+            index = 0
+            for proj in projs:
+                proj.save("all", "projection{}_data_plastic".format(index))
+                index += 1
+
         # Get plastic spikes and save to disk
         plastic_spikes = plastic_ex_pop.get_data('spikes')
         plastic_spikes_numpy = neo_convertor.convert_spikes(plastic_spikes)
+        static_in_spikes = static_in_pop.get_data('spikes')
+        static_in_spikes_numpy = neo_convertor.convert_spikes(static_in_spikes)
 
-        if self.SAVE_PLASTIC_SPIKES:
-            numpy.save("plastic_spikes.npy", plastic_spikes_numpy)
+        if self.SAVE_SPIKES:
+            ex_name = self.save_name(self.PLASTIC_EX_SPIKES_FILE_NAME)
+            in_name = self.save_name(self.PLASTIC_IN_SPIKES_FILE_NAME)
+            numpy.savetxt(ex_name, plastic_spikes_numpy)
+            numpy.savetxt(in_name, static_in_spikes_numpy)
 
         plastic_weights = None
         if extract_weights:
@@ -179,7 +256,7 @@ class Vogels2011(object):
         sim.end()
 
         # return things for plotting
-        return plastic_weights, static_spikes_numpy, plastic_spikes_numpy
+        return plastic_weights, static_ex_spikes_numpy, plastic_spikes_numpy
 
     def plot(
             self, plastic_weights, static_spikes_numpy, plastic_spikes_numpy):
@@ -201,29 +278,38 @@ class Vogels2011(object):
         fig, axes = pylab.subplots(3)
 
         # Plot last 200ms of static spikes (to match Brian script)
-        axes[0].set_title("Excitatory raster without inhibitory plasticity")
-        axes[0].scatter(static_spikes_numpy[:, 1],
-                        static_spikes_numpy[:, 0], s=2, color="blue")
-        axes[0].set_xlim(800, 1000)
-        axes[0].set_ylim(0, self.NUM_EXCITATORY)
+        if static_spikes_numpy is not None:
+            axes[0].set_title(
+                "Excitatory raster without inhibitory plasticity")
+            axes[0].scatter(static_spikes_numpy[:, 1],
+                            static_spikes_numpy[:, 0], s=2, color="blue")
+            axes[0].set_xlim(800, 1000)
+            axes[0].set_ylim(0, self.NUM_EXCITATORY)
 
         # Plot last 200ms of plastic spikes (to match Brian script)
         axes[1].set_title("Excitatory raster with inhibitory plasticity")
         axes[1].scatter(plastic_spikes_numpy[:, 1],
                         plastic_spikes_numpy[:, 0], s=2, color="blue")
-        axes[1].set_xlim(9800, 10000)
+
+        # only plot last 50th
+        axes[1].set_xlim(
+            self.SECOND_RUN_RUNTIME - (self.SECOND_RUN_RUNTIME / 50),
+            self.SECOND_RUN_RUNTIME)
         axes[1].set_ylim(0, self.NUM_EXCITATORY)
 
         # Plot rates
         binsize = 10
-        bins = numpy.arange(0, 10000 + 1, binsize)
+        bins = numpy.arange(0, self.SECOND_RUN_RUNTIME + 1, binsize)
         plastic_hist, _ = (
             numpy.histogram(plastic_spikes_numpy[:, 1], bins=bins))
         plastic_rate = (
             plastic_hist * (1000.0 / binsize) * (1.0 / self.NUM_EXCITATORY))
         axes[2].set_title("Excitatory rates with inhibitory plasticity")
         axes[2].plot(bins[0:-1], plastic_rate, color="red")
-        axes[2].set_xlim(9800, 10000)
+        # only plot last 50th
+        axes[2].set_xlim(
+            self.SECOND_RUN_RUNTIME - (self.SECOND_RUN_RUNTIME / 50),
+            self.SECOND_RUN_RUNTIME)
         axes[2].set_ylim(0, 20)
 
         # Show figures
