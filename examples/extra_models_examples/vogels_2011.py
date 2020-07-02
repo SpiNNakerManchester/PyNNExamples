@@ -75,6 +75,9 @@ class Vogels2011(object):
     # bool saying to run static version or not
     RUN_STATIC_VERSION = True
 
+    # bool saying to run the plastic version or not
+    RUN_PLASTIC_VERSION = False
+
     # bool for reading and saving all connectivity
     SAVE_ALL_CONNECTIVITY_IF_INSANE = False
 
@@ -183,6 +186,9 @@ class Vogels2011(object):
         """
 
         static_ex_spikes_numpy = None
+        plastic_weights = None
+        plastic_spikes_numpy = None
+
         if self.RUN_STATIC_VERSION:
             # Build static network
             (static_ex_pop, static_in_pop, static_ie_projection, proj1, proj2,
@@ -217,43 +223,44 @@ class Vogels2011(object):
             # end static simulation
             sim.end()
 
-        # Build plastic network
-        (plastic_ex_pop, static_in_pop, plastic_ie_projection, proj1, proj2,
-         proj3) = self._build_network(True, slow_down)
+        if self.RUN_PLASTIC_VERSION:
+            # Build plastic network
+            (plastic_ex_pop, static_in_pop, plastic_ie_projection, proj1,
+             proj2, proj3) = self._build_network(True, slow_down)
 
-        index = 0
-        if self.SAVE_ALL_CONNECTIVITY_IF_INSANE:
-            plastic_ie_projection.save(
-                "all", "projection{}_before_data_plastic".format(index))
-
-        # Run simulation
-        sim.run(self.SECOND_RUN_RUNTIME)
-
-        if self.SAVE_ALL_CONNECTIVITY_IF_INSANE:
-            projs = [plastic_ie_projection]
             index = 0
-            for proj in projs:
-                proj.save("all", "projection{}_data_plastic".format(index))
-                index += 1
+            if self.SAVE_ALL_CONNECTIVITY_IF_INSANE:
+                plastic_ie_projection.save(
+                    "all", "projection{}_before_data_plastic".format(index))
 
-        # Get plastic spikes and save to disk
-        plastic_spikes = plastic_ex_pop.get_data('spikes')
-        plastic_spikes_numpy = neo_convertor.convert_spikes(plastic_spikes)
-        static_in_spikes = static_in_pop.get_data('spikes')
-        static_in_spikes_numpy = neo_convertor.convert_spikes(static_in_spikes)
+            # Run simulation
+            sim.run(self.SECOND_RUN_RUNTIME)
 
-        if self.SAVE_SPIKES:
-            ex_name = self.save_name(self.PLASTIC_EX_SPIKES_FILE_NAME)
-            in_name = self.save_name(self.PLASTIC_IN_SPIKES_FILE_NAME)
-            numpy.savetxt(ex_name, plastic_spikes_numpy)
-            numpy.savetxt(in_name, static_in_spikes_numpy)
+            if self.SAVE_ALL_CONNECTIVITY_IF_INSANE:
+                projs = [plastic_ie_projection]
+                index = 0
+                for proj in projs:
+                    proj.save("all", "projection{}_data_plastic".format(index))
+                    index += 1
 
-        plastic_weights = None
-        if extract_weights:
-            plastic_weights = plastic_ie_projection.get('weight', 'list')
+            # Get plastic spikes and save to disk
+            plastic_spikes = plastic_ex_pop.get_data('spikes')
+            plastic_spikes_numpy = neo_convertor.convert_spikes(plastic_spikes)
+            static_in_spikes = static_in_pop.get_data('spikes')
+            static_in_spikes_numpy = neo_convertor.convert_spikes(
+                static_in_spikes)
 
-        # End simulation on SpiNNaker
-        sim.end()
+            if self.SAVE_SPIKES:
+                ex_name = self.save_name(self.PLASTIC_EX_SPIKES_FILE_NAME)
+                in_name = self.save_name(self.PLASTIC_IN_SPIKES_FILE_NAME)
+                numpy.savetxt(ex_name, plastic_spikes_numpy)
+                numpy.savetxt(in_name, static_in_spikes_numpy)
+
+            if extract_weights:
+                plastic_weights = plastic_ie_projection.get('weight', 'list')
+
+            # End simulation on SpiNNaker
+            sim.end()
 
         # return things for plotting
         return plastic_weights, static_ex_spikes_numpy, plastic_spikes_numpy
@@ -287,30 +294,32 @@ class Vogels2011(object):
             axes[0].set_ylim(0, self.NUM_EXCITATORY)
 
         # Plot last 200ms of plastic spikes (to match Brian script)
-        axes[1].set_title("Excitatory raster with inhibitory plasticity")
-        axes[1].scatter(plastic_spikes_numpy[:, 1],
-                        plastic_spikes_numpy[:, 0], s=2, color="blue")
+        if plastic_spikes_numpy is not None:
+            axes[1].set_title("Excitatory raster with inhibitory plasticity")
+            axes[1].scatter(plastic_spikes_numpy[:, 1],
+                            plastic_spikes_numpy[:, 0], s=2, color="blue")
 
-        # only plot last 50th
-        axes[1].set_xlim(
-            self.SECOND_RUN_RUNTIME - (self.SECOND_RUN_RUNTIME / 50),
-            self.SECOND_RUN_RUNTIME)
-        axes[1].set_ylim(0, self.NUM_EXCITATORY)
+            # only plot last 50th
+            axes[1].set_xlim(
+                self.SECOND_RUN_RUNTIME - (self.SECOND_RUN_RUNTIME / 50),
+                self.SECOND_RUN_RUNTIME)
+            axes[1].set_ylim(0, self.NUM_EXCITATORY)
 
-        # Plot rates
-        binsize = 10
-        bins = numpy.arange(0, self.SECOND_RUN_RUNTIME + 1, binsize)
-        plastic_hist, _ = (
-            numpy.histogram(plastic_spikes_numpy[:, 1], bins=bins))
-        plastic_rate = (
-            plastic_hist * (1000.0 / binsize) * (1.0 / self.NUM_EXCITATORY))
-        axes[2].set_title("Excitatory rates with inhibitory plasticity")
-        axes[2].plot(bins[0:-1], plastic_rate, color="red")
-        # only plot last 50th
-        axes[2].set_xlim(
-            self.SECOND_RUN_RUNTIME - (self.SECOND_RUN_RUNTIME / 50),
-            self.SECOND_RUN_RUNTIME)
-        axes[2].set_ylim(0, 20)
+            # Plot rates
+            binsize = 10
+            bins = numpy.arange(0, self.SECOND_RUN_RUNTIME + 1, binsize)
+            plastic_hist, _ = (
+                numpy.histogram(plastic_spikes_numpy[:, 1], bins=bins))
+            plastic_rate = (
+                plastic_hist * (1000.0 / binsize) *
+                (1.0 / self.NUM_EXCITATORY))
+            axes[2].set_title("Excitatory rates with inhibitory plasticity")
+            axes[2].plot(bins[0:-1], plastic_rate, color="red")
+            # only plot last 50th
+            axes[2].set_xlim(
+                self.SECOND_RUN_RUNTIME - (self.SECOND_RUN_RUNTIME / 50),
+                self.SECOND_RUN_RUNTIME)
+            axes[2].set_ylim(0, 20)
 
         # Show figures
         pylab.show()
