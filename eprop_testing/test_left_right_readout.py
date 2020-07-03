@@ -49,11 +49,12 @@ p_connect_in = 1.
 p_connect_rec = 1.
 p_connect_out = 1.
 recurrent_connections = True
-synapse_eta = 0.01
+synapse_eta = 0.002
 tau_a = 2500#[cycle_time - 150 + (np.random.randn() * 200) for i in range(100)]
 input_split = 20
-window_size = cycle_time*20
-eprop_beta = 0.02
+window_cycles = 4
+window_size = cycle_time*window_cycles
+eprop_beta = 0.3
 
 
 pynn.setup(timestep=1)
@@ -66,7 +67,7 @@ readout_neuron_params = {
     "poisson_pop_size": input_size / 4,
     # "tau_m": tau_a,
     "w_fb": [1, -1, 0],
-    "eta": synapse_eta / 5.,
+    "eta": synapse_eta * 5.,
     "window_size": window_size,
     }
 rates = []
@@ -101,7 +102,7 @@ neuron_params = {
     "beta": beta,
     "target_rate": 10,
     "tau_a": tau_a,
-    "eta": synapse_eta / 5.,
+    "eta": synapse_eta * 5.,
     "window_size": window_size,
     }
 neuron = pynn.Population(neuron_pop_size,
@@ -193,7 +194,7 @@ readout_pop.record('all')
 
 runtime = cycle_time * num_repeats
 
-experiment_label = "eta:{}/{} - size:{}/{} - reg_rate:{} - p_conn:{}/{}/{} - rec:{} - cycle:{}/{}/{} fullregtest 0sd b:{}".format(
+experiment_label = "eta:{}/{} - size:{}/{} - reg_rate:{} - p_conn:{}/{}/{} - rec:{} - cycle:{}/{}/{} vmemregtest 0.5sd b:{}".format(
     readout_neuron_params["eta"], neuron_params["eta"], input_size, neuron_pop_size, reg_rate, p_connect_in, p_connect_rec, p_connect_out, recurrent_connections, cycle_time, window_size, runtime, eprop_beta)
 print "\n", experiment_label, "\n"
 
@@ -315,7 +316,9 @@ if recurrent_connections:
 print experiment_label
 print "cycle_error =", cycle_error
 print "total error =", total_error
-print "correct =", correct_or_not
+print "correct:"# =", correct_or_not
+for i in range(int(np.ceil(len(correct_or_not) / float(window_cycles)))):
+    print correct_or_not[i*window_cycles:(i+1)*window_cycles], np.average(correct_or_not[i*window_cycles:(i+1)*window_cycles])
 print "average error = ", np.average(cycle_error)
 print "weighted average", np.average(cycle_error, weights=[i for i in range(num_repeats)])
 print "minimum error = ", np.min(cycle_error)
@@ -342,6 +345,28 @@ Figure(
     title="neuron data for {}".format(experiment_label)
 )
 plt.show()
+
+# plt.figure()
+# Figure(
+#     Panel(neuron_res.segments[0].filter(name='v')[0], ylabel='Membrane potential (mV)', yticks=True, xticks=True, xlim=(runtime-(window_size*1.5), runtime)),
+#
+#     Panel(neuron_res.segments[0].filter(name='gsyn_exc')[0], ylabel='gsyn_exc', yticks=True, xticks=True, xlim=(runtime-(window_size*1.5), runtime)),
+#
+#     Panel(neuron_res.segments[0].filter(name='gsyn_inh')[0], ylabel='gsyn_inh', yticks=True, xticks=True, xlim=(runtime-(window_size*1.5), runtime)),
+#
+#     Panel(in_spikes.segments[0].spiketrains, ylabel='in_spikes', xlabel='in_spikes', yticks=True, xticks=True, xlim=(runtime-(window_size*1.5), runtime)),
+#
+#     Panel(neuron_res.segments[0].spiketrains, ylabel='neuron_spikes', xlabel='neuron_spikes', yticks=True, xticks=True, xlim=(runtime-(window_size*1.5), runtime)),
+#
+#     Panel(readout_res.segments[0].filter(name='v')[0], ylabel='Membrane potential (mV)', yticks=True, xticks=True, xlim=(runtime-(window_size*1.5), runtime)),
+#
+#     Panel(readout_res.segments[0].filter(name='gsyn_exc')[0], ylabel='gsyn_exc', yticks=True, xticks=True, xlim=(runtime-(window_size*1.5), runtime)),
+#
+#     Panel(readout_res.segments[0].filter(name='gsyn_inh')[0], ylabel='gsyn_inh', yticks=True, xticks=True, xlim=(runtime-(window_size*1.5), runtime)),
+#
+#     title="neuron data for {}".format(experiment_label)
+# )
+# plt.show()
 
 fig, axs = plt.subplots(1, 1)
 axs.set_title(experiment_label)
