@@ -17,14 +17,18 @@ import spynnaker8 as sim
 import numpy
 import os
 import matplotlib.pyplot as pylab
+
+from spynnaker.pyNN.models.neuron import AbstractPopulationVertex
 from spynnaker8.utilities import neo_convertor
 
 # how much slowdown to put into the network to allow it to run without any
 # runtime errors
-SLOWDOWN = 200
+SLOWDOWN = 125
 
 # bool hard code for extracting the weights or not
 EXTRACT_WEIGHTS = False
+
+GENERATE_PLOT = True
 
 
 class Vogels2011(object):
@@ -67,16 +71,16 @@ class Vogels2011(object):
     FIRST_RUN_RUNTIME = 1000
 
     # second run runtime
-    SECOND_RUN_RUNTIME = 3000
+    SECOND_RUN_RUNTIME = 1000
 
-    # bool for saving plastic spikes
+    # bool for saving spikes
     SAVE_SPIKES = True
 
     # bool saying to run static version or not
-    RUN_STATIC_VERSION = True
+    RUN_STATIC_VERSION = False
 
     # bool saying to run the plastic version or not
-    RUN_PLASTIC_VERSION = False
+    RUN_PLASTIC_VERSION = True
 
     # bool for reading and saving all connectivity
     SAVE_ALL_CONNECTIVITY_IF_INSANE = False
@@ -131,13 +135,13 @@ class Vogels2011(object):
             sim.FixedProbabilityConnector(
                 0.02, rng=NumpyRNG(seed=self.RANDOM_NUMBER_GENERATOR_SEED)),
             receptor_type='excitatory',
-            synapse_type=sim.StaticSynapse(weight=0.03))
+            synapse_type=sim.StaticSynapse(weight=0.029))
         proj2 = sim.Projection(
             ex_pop, ex_pop,
             sim.FixedProbabilityConnector(
                 0.02, rng=NumpyRNG(seed=self.RANDOM_NUMBER_GENERATOR_SEED)),
             receptor_type='excitatory',
-            synapse_type=sim.StaticSynapse(weight=0.03))
+            synapse_type=sim.StaticSynapse(weight=0.029))
 
         # Make inhibitory->inhibitory projections
         proj3 = sim.Projection(
@@ -145,7 +149,7 @@ class Vogels2011(object):
             sim.FixedProbabilityConnector(
                 0.02, rng=NumpyRNG(seed=self.RANDOM_NUMBER_GENERATOR_SEED)),
             receptor_type='inhibitory',
-            synapse_type=sim.StaticSynapse(weight=-0.3))
+            synapse_type=sim.StaticSynapse(weight=-0.29))
 
         # Build inhibitory plasticity model
         stdp_model = None
@@ -190,6 +194,7 @@ class Vogels2011(object):
         plastic_spikes_numpy = None
 
         if self.RUN_STATIC_VERSION:
+            print("Generating Static network")
             # Build static network
             (static_ex_pop, static_in_pop, static_ie_projection, proj1, proj2,
              proj3) = self._build_network(False, slow_down)
@@ -224,6 +229,7 @@ class Vogels2011(object):
             sim.end()
 
         if self.RUN_PLASTIC_VERSION:
+            print("Generating plastic network")
             # Build plastic network
             (plastic_ex_pop, static_in_pop, plastic_ie_projection, proj1,
              proj2, proj3) = self._build_network(True, slow_down)
@@ -329,4 +335,5 @@ if __name__ == "__main__":
     x = Vogels2011()
     result_weights, static, plastic = x.run(
         SLOWDOWN, EXTRACT_WEIGHTS)
-    x.plot(result_weights, static, plastic)
+    if GENERATE_PLOT:
+        x.plot(result_weights, static, plastic)
