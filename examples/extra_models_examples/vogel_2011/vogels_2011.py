@@ -23,25 +23,25 @@ from spynnaker8.utilities import neo_convertor
 # runtime errors
 
 # cheating with 6 boards
-#SLOWDOWN_STATIC = 4 # confirmed
+# SLOWDOWN_STATIC = 4 # confirmed
 SLOWDOWN_STATIC = 3
 SLOWDOWN_PLASTIC = 136
 
 # slow down bitfields and placer
-#SLOWDOWN_STATIC = 6 # confirmed
-#SLOWDOWN_PLASTIC = 136
+# SLOWDOWN_STATIC = 6 # confirmed
+# SLOWDOWN_PLASTIC = 136
 
 # slowdown bitfields merged
-#SLOWDOWN_STATIC = 6 # confirmed
-#SLOWDOWN_PLASTIC = 136
+# SLOWDOWN_STATIC = 6 # confirmed
+# SLOWDOWN_PLASTIC = 136
 
 # slowdown bitfields on core
-#SLOWDOWN_STATIC = 10  # confirmed
-#SLOWDOWN_PLASTIC = 136 # confirmed
+# SLOWDOWN_STATIC = 10  # confirmed
+# SLOWDOWN_PLASTIC = 136 # confirmed
 
 # slowdown old master
-#SLOWDOWN_STATIC = 13 # confirmed
-#SLOWDOWN_PLASTIC = 158 #  confirmed
+# SLOWDOWN_STATIC = 13 # confirmed
+# SLOWDOWN_PLASTIC = 158 #  confirmed
 
 # bool hard code for extracting the weights or not
 EXTRACT_WEIGHTS = False

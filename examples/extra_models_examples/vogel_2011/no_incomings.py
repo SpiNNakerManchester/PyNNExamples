@@ -124,6 +124,7 @@ class Vogels2011NoIncoming(object):
         # end static simulation
         sim.end()
 
+
 if __name__ == "__main__":
     x = Vogels2011NoIncoming()
     x.run(SLOWDOWN)
