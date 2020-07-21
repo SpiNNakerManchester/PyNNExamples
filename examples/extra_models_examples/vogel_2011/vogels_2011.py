@@ -17,18 +17,35 @@ import spynnaker8 as sim
 import numpy
 import os
 import matplotlib.pyplot as pylab
-
-from spynnaker.pyNN.models.neuron import AbstractPopulationVertex
 from spynnaker8.utilities import neo_convertor
 
 # how much slowdown to put into the network to allow it to run without any
 # runtime errors
-SLOWDOWN = 125
+
+# cheating with 6 boards
+#SLOWDOWN_STATIC = 4 # confirmed
+SLOWDOWN_STATIC = 3
+SLOWDOWN_PLASTIC = 136
+
+# slow down bitfields and placer
+#SLOWDOWN_STATIC = 6 # confirmed
+#SLOWDOWN_PLASTIC = 136
+
+# slowdown bitfields merged
+#SLOWDOWN_STATIC = 6 # confirmed
+#SLOWDOWN_PLASTIC = 136
+
+# slowdown bitfields on core
+#SLOWDOWN_STATIC = 10  # confirmed
+#SLOWDOWN_PLASTIC = 136 # confirmed
+
+# slowdown old master
+#SLOWDOWN_STATIC = 13 # confirmed
+#SLOWDOWN_PLASTIC = 158 #  confirmed
 
 # bool hard code for extracting the weights or not
 EXTRACT_WEIGHTS = False
-
-GENERATE_PLOT = True
+GENERATE_PLOT = False
 
 
 class Vogels2011(object):
@@ -74,13 +91,14 @@ class Vogels2011(object):
     SECOND_RUN_RUNTIME = 1000
 
     # bool for saving spikes
-    SAVE_SPIKES = True
+    SAVE_SPIKES = False
+    EXTRACT_SPIKES = False
 
     # bool saying to run static version or not
-    RUN_STATIC_VERSION = False
+    RUN_STATIC_VERSION = True
 
     # bool saying to run the plastic version or not
-    RUN_PLASTIC_VERSION = True
+    RUN_PLASTIC_VERSION = False
 
     # bool for reading and saving all connectivity
     SAVE_ALL_CONNECTIVITY_IF_INSANE = False
@@ -104,13 +122,12 @@ class Vogels2011(object):
         :param uses_stdp: the bool for having plastic projections or not.
         :param slow_down: the time scale factor to adjust the simulation by.
         :return: the excitatory population and the inhibitory->excitatory
-        # projection
         """
 
         # SpiNNaker setup
         sim.setup(
             timestep=1.0, min_delay=1.0, max_delay=10.0,
-            time_scale_factor=slow_down)
+            time_scale_factor=slow_down, n_boards_required=6)
 
         # Reduce number of neurons to simulate on each core
         sim.set_number_of_neurons_per_core(
@@ -127,7 +144,7 @@ class Vogels2011(object):
         in_pop.record(['spikes'])
 
         # create seeder
-        rng_seeder = NumpyRNG(seed=self.RANDOM_NUMBER_GENERATOR_SEED)
+        # rng_seeder = NumpyRNG(seed=self.RANDOM_NUMBER_GENERATOR_SEED)
 
         # Make excitatory->inhibitory projections
         proj1 = sim.Projection(
@@ -155,8 +172,8 @@ class Vogels2011(object):
         stdp_model = None
         if uses_stdp:
             stdp_model = sim.STDPMechanism(
-                timing_dependence=sim.extra_models.SpikeNearestPairRule(
-                    A_plus=0.05),
+                timing_dependence=sim.extra_models.Vogels2011Rule(
+                    alpha=0.12, tau=20.0, A_plus=0.05),
                 weight_dependence=sim.AdditiveWeightDependence(
                     w_min=0.0, w_max=1.0))
 
@@ -180,10 +197,13 @@ class Vogels2011(object):
             file_name = spike_name + "{}".format(index)
         return file_name
 
-    def run(self, slow_down, extract_weights):
+    def run(self, slow_down_static, slow_down_plastic, extract_weights):
         """ builds and runs a network
 
-        :param slow_down: the slowdown for the network.
+        :param slow_down_static: the slowdown for the network during \
+        static run.
+        :param slow_down_plastic: the slowdown for the network during \
+        plastic run
         :param extract_weights: bool for if we should run without weight
         extraction
         :return: plastic weights, the static and plastic spikes.
@@ -197,11 +217,10 @@ class Vogels2011(object):
             print("Generating Static network")
             # Build static network
             (static_ex_pop, static_in_pop, static_ie_projection, proj1, proj2,
-             proj3) = self._build_network(False, slow_down)
+             proj3) = self._build_network(False, slow_down_static)
 
             # Run for 1s
-            for _ in range(1):
-                sim.run(self.FIRST_RUN_RUNTIME / 1)
+            sim.run(self.FIRST_RUN_RUNTIME)
 
             # get all connectivity
             projs = [proj2, proj3, static_ie_projection, proj1]
@@ -212,12 +231,15 @@ class Vogels2011(object):
                     index += 1
 
             # Get static spikes
-            static_ex_spikes = static_ex_pop.get_data('spikes')
-            static_ex_spikes_numpy = neo_convertor.convert_spikes(
-                static_ex_spikes)
-            static_in_spikes = static_in_pop.get_data('spikes')
-            static_in_spikes_numpy = neo_convertor.convert_spikes(
-                static_in_spikes)
+            static_ex_spikes_numpy = None
+            static_in_spikes_numpy = None
+            if self.EXTRACT_SPIKES:
+                static_ex_spikes = static_ex_pop.get_data('spikes')
+                static_ex_spikes_numpy = neo_convertor.convert_spikes(
+                    static_ex_spikes)
+                static_in_spikes = static_in_pop.get_data('spikes')
+                static_in_spikes_numpy = neo_convertor.convert_spikes(
+                    static_in_spikes)
 
             if self.SAVE_SPIKES:
                 ex_name = self.save_name(self.STATIC_EX_SPIKES_FILE_NAME)
@@ -232,7 +254,7 @@ class Vogels2011(object):
             print("Generating plastic network")
             # Build plastic network
             (plastic_ex_pop, static_in_pop, plastic_ie_projection, proj1,
-             proj2, proj3) = self._build_network(True, slow_down)
+             proj2, proj3) = self._build_network(True, slow_down_plastic)
 
             index = 0
             if self.SAVE_ALL_CONNECTIVITY_IF_INSANE:
@@ -250,11 +272,15 @@ class Vogels2011(object):
                     index += 1
 
             # Get plastic spikes and save to disk
-            plastic_spikes = plastic_ex_pop.get_data('spikes')
-            plastic_spikes_numpy = neo_convertor.convert_spikes(plastic_spikes)
-            static_in_spikes = static_in_pop.get_data('spikes')
-            static_in_spikes_numpy = neo_convertor.convert_spikes(
-                static_in_spikes)
+            static_in_spikes_numpy = None
+            plastic_spikes_numpy = None
+            if self.EXTRACT_SPIKES:
+                plastic_spikes = plastic_ex_pop.get_data('spikes')
+                plastic_spikes_numpy = (
+                    neo_convertor.convert_spikes(plastic_spikes))
+                static_in_spikes = static_in_pop.get_data('spikes')
+                static_in_spikes_numpy = neo_convertor.convert_spikes(
+                    static_in_spikes)
 
             if self.SAVE_SPIKES:
                 ex_name = self.save_name(self.PLASTIC_EX_SPIKES_FILE_NAME)
@@ -334,6 +360,6 @@ class Vogels2011(object):
 if __name__ == "__main__":
     x = Vogels2011()
     result_weights, static, plastic = x.run(
-        SLOWDOWN, EXTRACT_WEIGHTS)
+        SLOWDOWN_STATIC, SLOWDOWN_PLASTIC, EXTRACT_WEIGHTS)
     if GENERATE_PLOT:
         x.plot(result_weights, static, plastic)
