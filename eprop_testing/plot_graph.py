@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
-import imageio
+# import imageio
 import os
 
 def load_connections(npy_label, pop_size, rec=True):
@@ -27,7 +27,7 @@ def load_connections(npy_label, pop_size, rec=True):
         if delay not in checking_delays[post]:
             checking_delays.append(delay)
         else:
-            print "delays are overlapped"
+            print("delays are overlapped")
             Exception
     if not rec:
         rec_conn = []
@@ -184,8 +184,8 @@ def plot_learning_curve(data, address_string, test_label, save_flag=False):
 def create_video(top_directory, base_label):
     for root, dirs, files in os.walk(top_directory):
         if base_label in files:
-            print "save files"
-    print "creating video"
+            print("save files")
+    print("creating video")
     # for filename in filenames:
     #     images.append(imageio.imread(filename))
     # imageio.mimsave(top_directory+'/videos/'+base_label+'.gif', images)
