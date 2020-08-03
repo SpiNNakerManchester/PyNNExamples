@@ -16,8 +16,8 @@ def Urbanczik_Senn_plasticity():
 
     dend_rate = 10
 
-    g_I = [20 for _ in range(runtime)]
-    g_E = [10 if (i > 2 and i % 2 != 0) else 0 for i in range(runtime)]
+    g_I = [2 if i == 0 else 0 for i in range(runtime)]
+    g_E = [1 if (i > 2 and i % 2 != 0) else -1 for i in range(runtime)]
     dend = [-1 if i % 2 != 0 else 1 for i in range(2, runtime)]
     dend_input = [10]
     dend_input.extend(dend)
@@ -52,9 +52,6 @@ def Urbanczik_Senn_plasticity():
     v = population1.get_data('gsyn_exc')
     rate = population1.get_data('gsyn_inh')
 
-
-    figure_filename = "results.png"
-
     Figure(
         # membrane potential of the postsynaptic neuron
         Panel(u.segments[0].filter(name='v')[0],
@@ -73,7 +70,6 @@ def Urbanczik_Senn_plasticity():
     plt.grid(True)
 
     plt.show()
-    plt.savefig(figure_filename)
 
     p.end()
 

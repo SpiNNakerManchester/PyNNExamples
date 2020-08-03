@@ -1,20 +1,22 @@
 import spynnaker8 as p
 
-# This test combines excitatory and inhibitory stimuli arriving both to soma and dendrite and tests multiple sources
-# firing to the same neuron simultaneously, both on somatic and dendritic compartments and both on excitatory and
-# inhibitory receptors. Negative values on both receptors are also tested.
+# This test uses the same network as Mixed static dendritic and somatic stimuli test, but with different values and
+# also checks the correctness of the output rates.
 
 
 def test(g_D=2, g_L=0.1, E_E=4.667, E_I=0.333, exc_times=[1, 2, 5, 6], inh_times=[3, 4, 5, 6], exc_dend_times=[1, 3, 4, 7],
          inh_dend_times=[2, 3, 5, 6], exc_r_diff=[[1, 1.3, 3.3, 1.5], [1.5, 2, 1.3, 3]] , inh_r_diff=[[1, 1.3, 1.5, 3.3], [1.5, 2, 3, 1.3]],
-         exc_dend_r_diff=[[4, 3.5, 12, -6], [1.5, 8, 5, 2.5]], inh_dend_r_diff=[[1.5, 8, -5, -2.5], [1, 3.5, 2, 9]]):
+         exc_dend_r_diff=[[4, 3.5, 12, -6], [1.5, 8, 5, 2.5]], inh_dend_r_diff=[[1.5, 8, -5, -2.5], [1, 3.5, 2, 9]],
+         update_thresh=2):
+
     runtime = 9
 
     p.setup(timestep=1)
 
     weight_to_spike = 1
 
-    population = p.Population(1, p.extra_models.IFExpRateTwoComp(g_D=g_D, g_L=g_L, e_rev_E=E_E, e_rev_I=E_I),
+    population = p.Population(1, p.extra_models.IFExpRateTwoComp(g_D=g_D, g_L=g_L, e_rev_E=E_E, e_rev_I=E_I,
+                                                                 rate_update_threshold=update_thresh),
                               label='population_1')
 
     input1 = p.Population(1, p.RateSourceArray(rate_times=exc_dend_times, rate_values=exc_dend_r_diff[0]), label='exc_input')
@@ -45,13 +47,15 @@ def test(g_D=2, g_L=0.1, E_E=4.667, E_I=0.333, exc_times=[1, 2, 5, 6], inh_times
     p.Projection(soma_input4, population, p.OneToOneConnector(), p.StaticSynapse(weight=weight_to_spike),
                  receptor_type="soma_inh")
 
-    population.record(['v', 'gsyn_exc'])
+    population.record(['v', 'gsyn_exc', 'gsyn_inh'])
 
     p.run(runtime)
 
     u = population.get_data('v').segments[0].filter(name='v')[0]
 
     v = population.get_data('gsyn_exc').segments[0].filter(name='gsyn_exc')[0]
+
+    rate = population.get_data('gsyn_inh').segments[0].filter(name='gsyn_inh')[0]
 
     p.end()
 
@@ -84,7 +88,7 @@ def test(g_D=2, g_L=0.1, E_E=4.667, E_I=0.333, exc_times=[1, 2, 5, 6], inh_times
 
         V_exp = float(Idnd) / g_L
         num = float(v[i])
-        if (float(int(num * 1000)) / 1000 != float(int(V_exp * 1000)) / 1000) and (round(num, 3) != round(V_exp, 3)):
+        if float(int(num * 1000)) / 1000 != float(int(V_exp * 1000)) / 1000:
             print "Dendritic voltage " + str(float(v[i])) + " != " + str(V_exp)
             return False
 
@@ -95,6 +99,7 @@ def test(g_D=2, g_L=0.1, E_E=4.667, E_I=0.333, exc_times=[1, 2, 5, 6], inh_times
     Idnd = 0
     r_E = 0
     r_I = 0
+    U_vals = []
 
     for i in range(len(u)):
 
@@ -118,15 +123,36 @@ def test(g_D=2, g_L=0.1, E_E=4.667, E_I=0.333, exc_times=[1, 2, 5, 6], inh_times
         num = float(u[i])
         U_exp = float((weight_to_spike * E_E * r_E) - (weight_to_spike * E_I * r_I) + (g_D * float(Idnd) / g_L)) \
                     / (g_D + g_L + (r_E * weight_to_spike) + (r_I * weight_to_spike))
-        if (float(int(num * 1000)) / 1000 != float(int(U_exp * 1000)) / 1000) and (round(num, 3) != round(U_exp, 3)):
+        U_vals.append(U_exp)
+        if float(int(num * 1000)) / 1000 != float(int(U_exp * 1000)) / 1000:
             print "Somatic voltage " + str(float(u[i])) + " != " + str(U_exp)
+            return False
+
+    cubic_term = -24.088958
+    square_term = 48.012303
+    linear_term = 73.084895
+    constant_term = 1.994506
+    expected_rate = 0
+
+    for i in range(len(U_vals)):
+        if U_vals[i] > 2:
+            tmp_rate = 150.0
+        elif U_vals[i] < 0:
+            tmp_rate = 0.01
+        else:
+            tmp_rate =\
+                (cubic_term * (U_vals[i] ** 3)) + (square_term * (U_vals[i] ** 2)) + (linear_term * U_vals[i]) + constant_term
+        if (tmp_rate - expected_rate > update_thresh) or (tmp_rate - expected_rate < -update_thresh):
+            expected_rate = tmp_rate
+        if float(int(rate[i] *1000)) / 1000 != float(int(expected_rate * 1000)) / 1000:
+            print "Rate " + str(float(rate[i])) + " != " + str(expected_rate)
             return False
 
 
     return True
 
 def success_desc():
-    return "Mixed static combined dendritic and somatic stimuli test PASSED"
+    return "Static rate test PASSED"
 
 def failure_desc():
-    return "Mixed static combined dendritic and somatic stimuli test FAILED"
+    return "Static rate test FAILED"

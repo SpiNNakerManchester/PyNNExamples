@@ -2,6 +2,10 @@ import examples.multicomp_tests.multicomp_rate_plasticity_test as multicomp_rate
 import dendrite_exc_inh_stimuli as t1
 import soma_exc_inh_stimuli as t2
 import mixed_static_dend_soma_stimuli as t3
+import static_rate_test as t4
+import dendritic_plasticity_test as t5
+import dendritic_plasticity_teaching_current_test as t6
+import dendritic_prediction_sin_soma as t7
 
 from termcolor import colored
 
@@ -18,7 +22,7 @@ def run_test(obj, to_print):
 if __name__ == "__main__":
 
     to_print = []
-    test_list = [t1, t2, t3]
+    test_list = [t1, t2, t3, t4, t5, t6, t7]
     failed = False
 
     for test in test_list:

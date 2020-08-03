@@ -6,7 +6,7 @@ import spynnaker8 as p
 
 def test(g_D=2, g_L=0.1, E_E=4.667, E_I=0.333, exc_times=[1, 2, 5, 6], inh_times=[3, 4, 5, 6],
          exc_r_diff=[1, 1.3, 3.3, 1.5] , inh_r_diff=[1, 1.3, 1.5, 3.3]):
-    runtime = 9
+    runtime = 900
 
     p.setup(timestep=1)
 
@@ -52,7 +52,7 @@ def test(g_D=2, g_L=0.1, E_E=4.667, E_I=0.333, exc_times=[1, 2, 5, 6], inh_times
         num = float(u[i])
         U_exp = float((weight_to_spike * E_E * r_E) - (weight_to_spike * E_I * r_I)) \
                     / (g_D + g_L + (r_E * weight_to_spike) + (r_I * weight_to_spike))
-        if float(int(num * 1000) / 1000) != float(int(U_exp * 1000) / 1000):
+        if (float(int(num * 1000)) / 1000 != float(int(U_exp * 1000)) / 1000) and (round(num, 3) != round(U_exp, 3)):
             print "Somatic voltage " + str(float(u[i])) + " != " + str(U_exp)
             return False
 
@@ -60,7 +60,7 @@ def test(g_D=2, g_L=0.1, E_E=4.667, E_I=0.333, exc_times=[1, 2, 5, 6], inh_times
 
     for i in range(len(v)):
         num = float(v[i])
-        if float(int(num * 1000) / 1000) != V_exp:
+        if (float(int(num * 1000)) / 1000 != V_exp) and (round(num, 3) != round(V_exp, 3)):
             print "Dendritic voltage " + str(float(v[i])) + " != " + str(V_exp)
             return False
 
