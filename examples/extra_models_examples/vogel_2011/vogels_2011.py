@@ -22,10 +22,14 @@ from spynnaker8.utilities import neo_convertor
 # how much slowdown to put into the network to allow it to run without any
 # runtime errors
 
+# cheating with 6 boards and pair compressor
+# SLOWDOWN_STATIC = 3 # confirmed
+SLOWDOWN_STATIC = 2
+SLOWDOWN_PLASTIC = 136
+
 # cheating with 6 boards
 # SLOWDOWN_STATIC = 4 # confirmed
-SLOWDOWN_STATIC = 3
-SLOWDOWN_PLASTIC = 136
+# SLOWDOWN_PLASTIC = 136
 
 # slow down bitfields and placer
 # SLOWDOWN_STATIC = 6 # confirmed
@@ -135,9 +139,11 @@ class Vogels2011(object):
 
         # Create excitatory and inhibitory populations of neurons
         ex_pop = sim.Population(
-            self.NUM_EXCITATORY, self.MODEL(**self.CELL_PARAMETERS))
+            self.NUM_EXCITATORY, self.MODEL(**self.CELL_PARAMETERS),
+            label="excit_pop")
         in_pop = sim.Population(
-            self.NUM_INHIBITORY, self.MODEL(**self.CELL_PARAMETERS))
+            self.NUM_INHIBITORY, self.MODEL(**self.CELL_PARAMETERS),
+            label="inhib_pop")
 
         # Record excitatory spikes
         ex_pop.record(['spikes'])
