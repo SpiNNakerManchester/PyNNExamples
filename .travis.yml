@@ -1,5 +1,7 @@
 language: python
-python: 2.7
+python: 3.7
+os: linux
+dist: focal
 
 virtualenv:
   system_site_packages: true
