@@ -1,6 +1,7 @@
 import spynnaker8 as p
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
+import numpy as np
 
 # This test provides a fixed teaching current with the dendrite trying to follow it
 
@@ -8,7 +9,7 @@ import matplotlib.pyplot as plt
 def test(g_D=2, g_L=0.1, exc_times=[1, 2, 5, 6], inh_times=[3, 4, 5, 6], exc_r_diff=[1, 1.3, 3.3, 1.5] ,
          Ee=4.667, Ei=-0.333):
 
-    runtime = 8000
+    runtime = 22000
 
     p.setup(timestep=1)
 
@@ -29,22 +30,46 @@ def test(g_D=2, g_L=0.1, exc_times=[1, 2, 5, 6], inh_times=[3, 4, 5, 6], exc_r_d
     # for i in range(30):
     #     exc_som_val.append(0)
 
+    # a = np.linspace(0, np.pi, 100)
+    # b = [np.sin(i) for i in a]
+    #
+    # exc_som_val = [0]
+    #
+    # for i in b[1:]:
+    #     exc_som_val.append(i - sum(exc_som_val[:]))
 
-    exc_som_val = []
-    for i in range(18):
-        exc_som_val.append(0.016)
-    for i in range(21):
-        exc_som_val.append(0.029)
-    for i in range(4):
-        exc_som_val.append(0.025)
-    for i in range(4):
-        exc_som_val.append(-0.025)
-    for i in range(21):
-        exc_som_val.append(-0.029)
-    for i in range(18):
-        exc_som_val.append(-0.016)
-    for i in range(14):
-        exc_som_val.append(0)
+
+    xsin = np.linspace(0, np.pi, 50)
+    xpar = np.linspace(-28, 27, 55)
+    par = [0.0001754 * (i ** 2) for i in xpar]
+    par.insert(28, 0.0)
+    sin = [np.sin(i) for i in xsin]
+
+    exc_som_val = [par[-1]]
+    exc_som_val.extend(sin[3:47])
+    exc_som_val.extend(par[:-1])
+
+    # for i in tmp_shape[1:]:
+    #     exc_som_val.append(i - sum(exc_som_val[:]))
+
+
+    # exc_som_val = []
+    # for i in range(18):
+    #     exc_som_val.append(0.016)
+    # for i in range(21):
+    #     exc_som_val.append(0.029)
+    # for i in range(4):
+    #     exc_som_val.append(0.025)
+    # for i in range(7):
+    #     exc_som_val.append(0)
+    # for i in range(4):
+    #     exc_som_val.append(-0.025)
+    # for i in range(21):
+    #     exc_som_val.append(-0.029)
+    # for i in range(18):
+    #     exc_som_val.append(-0.016)
+    # for i in range(7):
+    #     exc_som_val.append(0)
 
     # exc_som_val = []
     # for i in range(25):
@@ -65,13 +90,13 @@ def test(g_D=2, g_L=0.1, exc_times=[1, 2, 5, 6], inh_times=[3, 4, 5, 6], exc_r_d
 
     for i in range(100):
         if i == 98:
-            dend_input.append([2.5, -2.5])
+            dend_input.append([2.5, 0])
             dend_times.append([98, 99])
         elif i == 99:
-            dend_input.append([-2.5, 2.5])
+            dend_input.append([0, 2.5])
             dend_times.append([0, 99])
         else:
-            dend_input.append([2.5, -2.5, 0])
+            dend_input.append([2.5, 0, 0])
             dend_times.append([i, i+1, 99])
 
     exp_dend_input = []
@@ -95,17 +120,18 @@ def test(g_D=2, g_L=0.1, exc_times=[1, 2, 5, 6], inh_times=[3, 4, 5, 6], exc_r_d
     weights_val = [weight_to_spike for _ in range(len(dend_input))]
 
 
-    exc_vals = [2.5 if i == 0 else 0 for i in range(runtime)]
-    soma_vals = [exc_som_val[i % len(exc_som_val)] for i in range(runtime)]
-    soma_inh_vals = [2 if (i == 0) else 0 for i in range(runtime)]
+    exc_vals = [2.5 for i in range(runtime)]
+    soma_vals = [exc_som_val[i % len(exc_som_val)] if i >= 1000 and i < 20000 else 0 for i in range(runtime)]
+    soma_inh_vals = [2 if i >= 1000 and i < 20000 else 0 for i in range(runtime)]
+    exc_som_val_to_spinnaker = np.array(exc_som_val) / som_weight
 
     population = p.Population(1, p.extra_models.IFExpRateTwoComp(g_D=g_D, g_L=g_L, rate_update_threshold=0), label='population_1')
     input = []
 
     for i in range(100):
         input.append(p.Population(1, p.RateSourceArray(rate_times=dend_times[i], rate_values=dend_input[i], looping=1), label='exc_input_'+str(i)))
-    input2 = p.Population(1, p.RateSourceArray(rate_times=[_ for _ in range(100)], rate_values=exc_som_val, looping=1), label='soma_exc_input')
-    input3 = p.Population(1, p.RateSourceArray(rate_times=[0], rate_values=[2]), label='soma_inh_input')
+    input2 = p.Population(1, p.RateSourceArray(rate_times=[_ for _ in range(1000, 1100)], rate_values=exc_som_val_to_spinnaker, looping=2), label='soma_exc_input')
+    input3 = p.Population(1, p.RateSourceArray(rate_times=[1000, 20000], rate_values=[2/som_weight, 0]), label='soma_inh_input')
 
     plasticity = p.STDPMechanism(
         timing_dependence=p.extra_models.TimingDependenceMulticompBern(),
@@ -158,7 +184,7 @@ def test(g_D=2, g_L=0.1, exc_times=[1, 2, 5, 6], inh_times=[3, 4, 5, 6], exc_r_d
 
     u_vals = u.segments[0].filter(name='v')[0]
     v_vals = v.segments[0].filter(name='gsyn_exc')[0]
-    rate_vals = rate.segments[0].filter(name='gsyn_inh')[0]
+    um_vals = rate.segments[0].filter(name='gsyn_inh')[0]
     x = [_ for _ in range(runtime)]
 
     ge = 0
@@ -183,18 +209,18 @@ def test(g_D=2, g_L=0.1, exc_times=[1, 2, 5, 6], inh_times=[3, 4, 5, 6], exc_r_d
 
             #exp_weights.append(dend_weight)
 
-            incoming_rates[z] += exp_dend_input[z][i]
+            incoming_rates[z] = exp_dend_input[z][i]
 
-            dend_curr += (incoming_rates[z] * weights_val[z])
+            dend_curr += incoming_rates[z] * weights_val[z]
 
         V.append(dend_curr)
 
-        ge += soma_vals[i]
-        gi += soma_inh_vals[i]
+        ge = soma_vals[i]
+        gi = soma_inh_vals[i]
 
-        som_curr = (somatic_weight * ge * Ee) + (somatic_weight * gi * Ei)
+        som_curr = (ge * Ee) + (gi * Ei)
 
-        gtot = g_D + g_L + (ge * somatic_weight) + (gi * somatic_weight)
+        gtot = g_D + g_L + (ge) + (gi)
 
         som_voltage = float((dend_curr * g_D) + som_curr) / gtot
 
@@ -217,14 +243,26 @@ def test(g_D=2, g_L=0.1, exc_times=[1, 2, 5, 6], inh_times=[3, 4, 5, 6], exc_r_d
     V.insert(0, 0)
     V.pop()
 
+    with open("/localhome/g90604lp/um.txt", "w") as fp:
+        for U in Um:
+            fp.write(str(float(U)) + "\n")
+
+    with open("/localhome/g90604lp/u.txt", "w") as fp:
+        for U in u_vals:
+            fp.writelines(str(float(U)) + "\n")
+
+    with open("/localhome/g90604lp/v.txt", "w") as fp:
+        for V in v_vals:
+            fp.writelines(str(float(V)) + "\n")
+
     exp_weights.insert(0, 0)
     exp_weights.pop()
 
     plt.plot(x, Um, "--", color="red", linewidth=2, label="U_m")
     plt.plot(x, u_vals, color="blue", linewidth=1.5, label="U")
     plt.plot(x, v_vals, color="green", linewidth=1.5, label="V")
-    plt.plot(x, U, "--", color="aqua", linewidth=1.5, label="U expected")
-    plt.plot(x, V, "--", color="lightgreen", linewidth=1.5, label="V expected")
+    #plt.plot(x, U, "--", color="aqua", linewidth=1.5, label="U expected")
+    #plt.plot(x, V, "--", color="lightgreen", linewidth=1.5, label="V expected")
     plt.grid(True)
     plt.title("Urbanczik-Senn plasticity Voltages")
     plt.xticks(x)
@@ -239,23 +277,23 @@ def test(g_D=2, g_L=0.1, exc_times=[1, 2, 5, 6], inh_times=[3, 4, 5, 6], exc_r_d
     plt.legend()
     plt.show()
 
-    plt.plot(x, U, color="blue", linewidth=2, label="somatic rate")
-    plt.plot(x, rate_vals, "--", color="green", linewidth=2, label="expected somatic rate")
-    plt.grid(True)
-    plt.title("Urbanczik-Senn plasticity somatic rates")
-    plt.xticks(x)
-    plt.legend()
-    plt.show()
+    # plt.plot(x, U, color="blue", linewidth=2, label="somatic rate")
+    # plt.plot(x, rate_vals, "--", color="green", linewidth=2, label="expected somatic rate")
+    # plt.grid(True)
+    # plt.title("Urbanczik-Senn plasticity somatic rates")
+    # plt.xticks(x)
+    # plt.legend()
+    # plt.show()
 
     return True
 
 
 def success_desc():
-    return "Dendritic prediction of oscillating somatic voltage test PASSED"
+    return "Urbanczik-Senn test PASSED"
 
 
 def failure_desc():
-    return "Dendritic prediction of oscillating somatic voltage test FAILED"
+    return "Urbanczik-Senn test FAILED"
 
 
 if __name__ == "__main__":
