@@ -24,24 +24,30 @@ def main(plot):
     delay = 17  # delay (below delay extension point)
 
     p.setup(timestep=1.0, min_delay=1.0, max_delay=1.0)
+    p.set_number_of_neurons_per_core(p.IF_curr_exp, int(n_neurons / 2))
 
     loop_connections = list()
     for i in range(0, n_neurons):
         single_connection = (i, (i + 1) % n_neurons, weight_to_spike, delay)
         loop_connections.append(single_connection)
 
-    injection_connection = [(0, 0)]
     neuron = p.Population(
         n_neurons, p.IF_curr_exp(), label='pop_1')
+    neuron2 = p.Population(
+        n_neurons, p.IF_curr_exp(), label='pop_1')
     input = p.Population(
-        1, p.SpikeSourcePoisson(), label='inputSpikes_1')
+        n_neurons, p.SpikeSourcePoisson(), label='inputSpikes_1')
 
     p.Projection(
         neuron, neuron, p.FromListConnector(loop_connections),
         p.StaticSynapse(weight=weight_to_spike, delay=delay))
     p.Projection(
-        input, neuron, p.FromListConnector(injection_connection),
+        input, neuron, p.OneToOneConnector(),
         p.StaticSynapse(weight=weight_to_spike, delay=delay))
+    p.Projection(
+        input, neuron2, p.OneToOneConnector(),
+        p.StaticSynapse(weight=weight_to_spike, delay=delay))
+
 
     neuron.record(['v', 'gsyn_exc', 'gsyn_inh', 'spikes'])
 
