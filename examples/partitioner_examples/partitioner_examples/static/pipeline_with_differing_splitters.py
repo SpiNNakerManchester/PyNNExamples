@@ -13,8 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import spynnaker8 as p
-from pyNN.utility.plotting import Figure, Panel
-import matplotlib.pyplot as plt
 
 from examples.partitioner_examples.splitter_objects.\
     splitter_by_compartments_abstract_pop_vertex import \
@@ -32,7 +30,7 @@ def main(plot):
     runtime = 1000
     n_neurons = 100  # number of neurons in each population
     weight_to_spike = 2.0  # weight to spike
-    delay = 17  # delay (below delay extension point)
+    delay = 17  # delay (above delay extension point)
 
     p.setup(timestep=1.0, min_delay=1.0, max_delay=1.0)
     p.set_number_of_neurons_per_core(p.IF_curr_exp, int(n_neurons / 2))
