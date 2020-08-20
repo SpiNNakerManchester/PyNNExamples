@@ -23,8 +23,8 @@ from spynnaker8.utilities import neo_convertor
 # runtime errors
 
 # cheating with 6 boards and pair compressor
-# SLOWDOWN_STATIC = 3 # confirmed
-SLOWDOWN_STATIC = 2
+SLOWDOWN_STATIC = 3 # confirmed
+# SLOWDOWN_STATIC = 2
 SLOWDOWN_PLASTIC = 136
 
 # cheating with 6 boards
@@ -50,6 +50,9 @@ SLOWDOWN_PLASTIC = 136
 # bool hard code for extracting the weights or not
 EXTRACT_WEIGHTS = False
 GENERATE_PLOT = False
+
+# how many boards to use for this test
+N_BOARDS = 6
 
 
 class Vogels2011(object):
@@ -95,8 +98,8 @@ class Vogels2011(object):
     SECOND_RUN_RUNTIME = 1000
 
     # bool for saving spikes
-    SAVE_SPIKES = False
-    EXTRACT_SPIKES = False
+    SAVE_SPIKES = True
+    EXTRACT_SPIKES = True
 
     # bool saying to run static version or not
     RUN_STATIC_VERSION = True
@@ -131,7 +134,7 @@ class Vogels2011(object):
         # SpiNNaker setup
         sim.setup(
             timestep=1.0, min_delay=1.0, max_delay=10.0,
-            time_scale_factor=slow_down, n_boards_required=6)
+            time_scale_factor=slow_down, n_boards_required=N_BOARDS)
 
         # Reduce number of neurons to simulate on each core
         sim.set_number_of_neurons_per_core(
