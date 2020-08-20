@@ -48,7 +48,6 @@ def main(plot):
         input, neuron2, p.OneToOneConnector(),
         p.StaticSynapse(weight=weight_to_spike, delay=delay))
 
-
     neuron.record(['v', 'gsyn_exc', 'gsyn_inh', 'spikes'])
 
     p.run(runtime)
