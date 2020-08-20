@@ -18,7 +18,7 @@ from spynnaker.pyNN.utilities.constants import \
     MAX_TIMER_TICS_SUPPORTED_PER_BLOCK
 
 
-class SplitterBySlice(CommonSplitter):
+class SplitterBySliceAbstractPopVertex(CommonSplitter):
 
     def __init__(self):
         CommonSplitter.__init__(self)

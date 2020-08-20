@@ -16,11 +16,12 @@ import spynnaker8 as p
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 
-from examples.partitioner_examples.splitter_objects.splitter_by_slice import \
-    SplitterBySlice
+from examples.partitioner_examples.splitter_objects.\
+    splitter_by_slice_abstract_pop_vertex import (
+        SplitterBySliceAbstractPopVertex)
 
 
-def main():
+def main(plot):
     runtime = 1000
     n_neurons = 100  # number of neurons in each population
     weight_to_spike = 2.0  # weight to spike
@@ -37,7 +38,8 @@ def main():
     spike_array = {'spike_times': [[0]]}
     neuron = p.Population(
         n_neurons, p.IF_curr_exp(), label='pop_1',
-        additional_parameters={"splitter_object": SplitterBySlice()})
+        additional_parameters={
+            "splitter_object": SplitterBySliceAbstractPopVertex()})
     input = p.Population(
         1, p.SpikeSourceArray(**spike_array), label='inputSpikes_1')
 
@@ -59,26 +61,27 @@ def main():
     spikes = neuron.get_data('spikes')
     p.end()
 
-    Figure(
-        # raster plot of the presynaptic neuron spike times
-        Panel(spikes.segments[0].spiketrains,
-              yticks=True, markersize=0.2, xlim=(0, runtime)),
-        # membrane potential of the postsynaptic neuron
-        Panel(v.segments[0].filter(name='v')[0],
-              ylabel="Membrane potential (mV)",
-              data_labels=[neuron.label], yticks=True, xlim=(0, runtime)),
-        Panel(gsyn_exc.segments[0].filter(name='gsyn_exc')[0],
-              ylabel="gsyn excitatory (mV)",
-              data_labels=[neuron.label], yticks=True, xlim=(0, runtime)),
-        Panel(gsyn_inh.segments[0].filter(name='gsyn_inh')[0],
-              xlabel="Time (ms)", xticks=True,
-              ylabel="gsyn inhibitory (mV)",
-              data_labels=[neuron.label], yticks=True, xlim=(0, runtime)),
-        title="Simple synfire chain example",
-        annotations="Simulated with {}".format(p.name())
-    )
-    plt.show()
+    if plot:
+        Figure(
+            # raster plot of the presynaptic neuron spike times
+            Panel(spikes.segments[0].spiketrains,
+                  yticks=True, markersize=0.2, xlim=(0, runtime)),
+            # membrane potential of the postsynaptic neuron
+            Panel(v.segments[0].filter(name='v')[0],
+                  ylabel="Membrane potential (mV)",
+                  data_labels=[neuron.label], yticks=True, xlim=(0, runtime)),
+            Panel(gsyn_exc.segments[0].filter(name='gsyn_exc')[0],
+                  ylabel="gsyn excitatory (mV)",
+                  data_labels=[neuron.label], yticks=True, xlim=(0, runtime)),
+            Panel(gsyn_inh.segments[0].filter(name='gsyn_inh')[0],
+                  xlabel="Time (ms)", xticks=True,
+                  ylabel="gsyn inhibitory (mV)",
+                  data_labels=[neuron.label], yticks=True, xlim=(0, runtime)),
+            title="Simple synfire chain example",
+            annotations="Simulated with {}".format(p.name())
+        )
+        plt.show()
 
 
 if __name__ == '__main__':
-    main()
+    main(plot=False)
