@@ -63,7 +63,14 @@ def main():
         input, neuron, p.OneToOneConnector(),
         p.StaticSynapse(weight=weight_to_spike, delay=delay))
 
+    for pop in [neuron, neuron2, neuron3, neuron4]:
+        pop.record(["spikes", "v", "gsyn"])
+
     p.run(runtime)
+
+    for pop in [neuron, neuron2, neuron3, neuron4]:
+        pop.get_data(["all"])
+
     p.end()
 
 

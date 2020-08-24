@@ -13,11 +13,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import spynnaker8 as p
-from pyNN.utility.plotting import Figure, Panel
-import matplotlib.pyplot as plt
 
 
-def main(plot):
+def main():
     runtime = 1000
     n_neurons = 100  # number of neurons in each population
     weight_to_spike = 2.0  # weight to spike
@@ -53,33 +51,12 @@ def main(plot):
     p.run(runtime)
 
     # get data (could be done as one, but can be done bit by bit as well)
-    v = neuron.get_data('v')
-    gsyn_exc = neuron.get_data('gsyn_exc')
-    gsyn_inh = neuron.get_data('gsyn_inh')
-    spikes = neuron.get_data('spikes')
+    neuron.get_data('v')
+    neuron.get_data('gsyn_exc')
+    neuron.get_data('gsyn_inh')
+    neuron.get_data('spikes')
     p.end()
-
-    if plot:
-        Figure(
-            # raster plot of the presynaptic neuron spike times
-            Panel(spikes.segments[0].spiketrains,
-                  yticks=True, markersize=0.2, xlim=(0, runtime)),
-            # membrane potential of the postsynaptic neuron
-            Panel(v.segments[0].filter(name='v')[0],
-                  ylabel="Membrane potential (mV)",
-                  data_labels=[neuron.label], yticks=True, xlim=(0, runtime)),
-            Panel(gsyn_exc.segments[0].filter(name='gsyn_exc')[0],
-                  ylabel="gsyn excitatory (mV)",
-                  data_labels=[neuron.label], yticks=True, xlim=(0, runtime)),
-            Panel(gsyn_inh.segments[0].filter(name='gsyn_inh')[0],
-                  xlabel="Time (ms)", xticks=True,
-                  ylabel="gsyn inhibitory (mV)",
-                  data_labels=[neuron.label], yticks=True, xlim=(0, runtime)),
-            title="Simple synfire chain example",
-            annotations="Simulated with {}".format(p.name())
-        )
-        plt.show()
 
 
 if __name__ == '__main__':
-    main(plot=False)
+    main()
