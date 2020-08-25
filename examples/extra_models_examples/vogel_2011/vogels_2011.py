@@ -23,7 +23,7 @@ from spynnaker8.utilities import neo_convertor
 # runtime errors
 
 # cheating with 6 boards and pair compressor
-SLOWDOWN_STATIC = 3 # confirmed
+SLOWDOWN_STATIC = 3  # confirmed
 # SLOWDOWN_STATIC = 2
 SLOWDOWN_PLASTIC = 9
 
