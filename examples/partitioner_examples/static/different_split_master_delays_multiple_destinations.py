@@ -81,4 +81,3 @@ Figure(
     annotations="Simulated with {}".format(p.name())
 )
 plt.show()
-
