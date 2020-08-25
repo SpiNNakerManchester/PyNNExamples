@@ -25,7 +25,7 @@ from spynnaker8.utilities import neo_convertor
 # cheating with 6 boards and pair compressor
 SLOWDOWN_STATIC = 3 # confirmed
 # SLOWDOWN_STATIC = 2
-SLOWDOWN_PLASTIC = 7
+SLOWDOWN_PLASTIC = 9
 
 # cheating with 6 boards
 # SLOWDOWN_STATIC = 4 # confirmed
