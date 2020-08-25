@@ -25,7 +25,7 @@ from spynnaker8.utilities import neo_convertor
 # cheating with 6 boards and pair compressor
 SLOWDOWN_STATIC = 3 # confirmed
 # SLOWDOWN_STATIC = 2
-SLOWDOWN_PLASTIC = 136
+SLOWDOWN_PLASTIC = 7
 
 # cheating with 6 boards
 # SLOWDOWN_STATIC = 4 # confirmed
@@ -52,7 +52,7 @@ EXTRACT_WEIGHTS = False
 GENERATE_PLOT = False
 
 # how many boards to use for this test
-N_BOARDS = 6
+N_BOARDS = 1
 
 
 class Vogels2011(object):
@@ -102,10 +102,10 @@ class Vogels2011(object):
     EXTRACT_SPIKES = True
 
     # bool saying to run static version or not
-    RUN_STATIC_VERSION = True
+    RUN_STATIC_VERSION = False
 
     # bool saying to run the plastic version or not
-    RUN_PLASTIC_VERSION = False
+    RUN_PLASTIC_VERSION = True
 
     # bool for reading and saving all connectivity
     SAVE_ALL_CONNECTIVITY_IF_INSANE = False
