@@ -23,9 +23,9 @@ from spynnaker8.utilities import neo_convertor
 # runtime errors
 
 # cheating with 6 boards and pair compressor
-SLOWDOWN_STATIC = 3  # confirmed
+SLOWDOWN_STATIC = 4  # confirmed
 # SLOWDOWN_STATIC = 2
-SLOWDOWN_PLASTIC = 9
+SLOWDOWN_PLASTIC = 120
 
 # cheating with 6 boards
 # SLOWDOWN_STATIC = 4 # confirmed
@@ -102,10 +102,10 @@ class Vogels2011(object):
     EXTRACT_SPIKES = True
 
     # bool saying to run static version or not
-    RUN_STATIC_VERSION = False
+    RUN_STATIC_VERSION = True
 
     # bool saying to run the plastic version or not
-    RUN_PLASTIC_VERSION = True
+    RUN_PLASTIC_VERSION = False
 
     # bool for reading and saving all connectivity
     SAVE_ALL_CONNECTIVITY_IF_INSANE = False
