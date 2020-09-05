@@ -14,13 +14,15 @@ def test(g_D=2, g_L=0.1, exc_times=[1, 2, 5, 6], inh_times=[3, 4, 5, 6], exc_r_d
 
     population = p.Population(1, p.extra_models.IFExpRateTwoComp(g_D=g_D, g_L=g_L, rate_update_threshold=update_thresh),
                               label='population_1')
-    input = p.Population(1, p.RateSourceArray(rate_times=exc_times, rate_values=exc_r_diff), label='exc_input')
-    input2 = p.Population(1, p.RateSourceArray(rate_times=inh_times, rate_values=inh_r_diff), label='inh_input')
+    input = p.Population(1, p.RateSourceArray(rate_times=exc_times, rate_values=exc_r_diff, looping=4),
+                         label='exc_input')
+    input2 = p.Population(1, p.RateSourceArray(rate_times=inh_times, rate_values=inh_r_diff, looping=4),
+                          label='inh_input')
 
     plasticity = p.STDPMechanism(
         timing_dependence=p.extra_models.TimingDependenceMulticompBern(
             tau_plus=20., tau_minus=20.0),
-        weight_dependence=p.extra_models.WeightDependenceMultiplicativeMulticompBern(w_min=0, w_max=10,
+        weight_dependence=p.extra_models.WeightDependenceMultiplicativeMulticompBern(w_min=-10, w_max=10,
                                                                                      learning_rate=learning_rate),
         weight=weight_to_spike)
 
@@ -57,26 +59,28 @@ def test(g_D=2, g_L=0.1, exc_times=[1, 2, 5, 6], inh_times=[3, 4, 5, 6], exc_r_d
 
     for i in range(len(u)):
 
+        Idnd = 0
+
         if i in test_exc_times:
             weight_exc += delta_exc
             if weight_exc > 10:
                 weight_exc = 10
-            elif weight_exc < 0:
-                weight_exc = 0
+            elif weight_exc < -10:
+                weight_exc = -10
             Idnd += (exc_r_diff[j] * weight_exc)
-            irate_exc += exc_r_diff[j]
+            irate_exc = exc_r_diff[j]
             j += 1
         if i in test_inh_times:
             weight_inh += delta_inh
             if weight_inh > 10:
                 weight_inh = 10
-            elif weight_inh < 0:
-                weight_inh = 0
+            elif weight_inh < -10:
+                weight_inh = -10
             Idnd -= (inh_r_diff[k] * weight_inh)
-            irate_inh += inh_r_diff[k]
+            irate_inh = inh_r_diff[k]
             k += 1
 
-        Vdnd = float(Idnd) / g_L
+        Vdnd = float(Idnd)
         num = float(v[i])
         if (float(int(num * 100)) / 100 != float(int(Vdnd * 100)) / 100) and (round(num, 2) != round(Vdnd, 2)):
             print "Dendritic voltage " + str(float(v[i])) + " != " + str(Vdnd)
@@ -90,10 +94,9 @@ def test(g_D=2, g_L=0.1, exc_times=[1, 2, 5, 6], inh_times=[3, 4, 5, 6], exc_r_d
 
         out_rate = _compute_rate(U)
 
-        if abs(out_rate - prev_rate) > update_thresh:
-            prev_rate = out_rate
-            V_rate = _compute_rate(Vdnd)
-            U_rate = _compute_rate((float(g_L + g_D) * U) / g_D)
+
+        V_rate = _compute_rate(Vdnd)
+        U_rate = _compute_rate((float(g_L + g_D) * U) / g_D)
 
         delta_exc = learning_rate * (U_rate - V_rate) * irate_exc
         delta_inh = learning_rate * (U_rate - V_rate) * irate_inh
@@ -104,18 +107,7 @@ def test(g_D=2, g_L=0.1, exc_times=[1, 2, 5, 6], inh_times=[3, 4, 5, 6], exc_r_d
 
 def _compute_rate(voltage):
 
-    cubic_term = -24.088958
-    square_term = 48.012303
-    linear_term = 73.084895
-    constant_term = 1.994506
-
-    if voltage > 2:
-        tmp_rate = 150.0
-    elif voltage < 0:
-        tmp_rate = 0.01
-    else:
-        tmp_rate = \
-            (cubic_term * (voltage ** 3)) + (square_term * (voltage ** 2)) + (linear_term * voltage) + constant_term
+    tmp_rate = voltage if voltage > 0 else 0
 
     return tmp_rate
 
@@ -124,3 +116,11 @@ def success_desc():
 
 def failure_desc():
     return "Dendritic plasticity test FAILED"
+
+
+if __name__ == "__main__":
+
+    if test():
+        print success_desc()
+    else:
+        print failure_desc()

@@ -13,8 +13,10 @@ def test(g_D=2, g_L=0.1, exc_times=[1, 2, 5, 6], inh_times=[3, 4, 5, 6], exc_r_d
     weight_to_spike = 1.5
 
     population = p.Population(1, p.extra_models.IFExpRateTwoComp(g_D=g_D, g_L=g_L), label='population_1')
-    input = p.Population(1, p.RateSourceArray(rate_times=exc_times, rate_values=exc_r_diff), label='exc_input')
-    input2 = p.Population(1, p.RateSourceArray(rate_times=inh_times, rate_values=inh_r_diff), label='inh_input')
+    input = p.Population(1, p.RateSourceArray(rate_times=exc_times, rate_values=exc_r_diff, looping=4),
+                         label='exc_input')
+    input2 = p.Population(1, p.RateSourceArray(rate_times=inh_times, rate_values=inh_r_diff, looping=4),
+                          label='inh_input')
 
     p.Projection(input, population, p.OneToOneConnector(), p.StaticSynapse(weight=weight_to_spike),
                  receptor_type="dendrite_exc")
@@ -34,35 +36,39 @@ def test(g_D=2, g_L=0.1, exc_times=[1, 2, 5, 6], inh_times=[3, 4, 5, 6], exc_r_d
     test_exc_times = [t + 1 for t in exc_times]
     test_inh_times = [t + 1 for t in inh_times]
 
-    Idnd = 0
     j = 0
     k = 0
 
     for i in range(len(u)):
+
+        Idnd = 0
+
         if i in test_exc_times:
             Idnd += (exc_r_diff[j] * weight_to_spike)
             j += 1
         if i in test_inh_times:
             Idnd -= (inh_r_diff[k] * weight_to_spike)
             k += 1
-        U = (float(g_D * Idnd) / (g_L * (g_L + g_D)))
+        U = (float(Idnd * g_D) / (g_L + g_D))
         num =float(u[i])
         if (float(int(num * 1000)) / 1000 != float(int(U * 1000)) / 1000) and (round(num, 3) != round(U, 3)):
             print "Somatic voltage " + str(float(u[i])) + " != " + str(U)
             return False
 
-    Idnd = 0
     j = 0
     k = 0
 
     for i in range(len(v)):
+
+        Idnd = 0
+
         if i in test_exc_times:
             Idnd += (exc_r_diff[j] * weight_to_spike)
             j += 1
         if i in test_inh_times:
             Idnd -= (inh_r_diff[k] * weight_to_spike)
             k += 1
-        V = float(Idnd) / g_L
+        V = float(Idnd)
         num = float(v[i])
         if (float(int(num * 1000)) / 1000 != float(int(V * 1000)) / 1000) and (round(num, 3) != round(V, 3)):
             print "Dendritic voltage " + str(float(v[i])) + " != " + str(V)
@@ -76,3 +82,10 @@ def success_desc():
 
 def failure_desc():
     return "Dendrite excitatory and inhibitory stimuli test FAILED"
+
+if __name__ == "__main__":
+
+    if test():
+        print success_desc()
+    else:
+        print failure_desc()
