@@ -107,7 +107,9 @@ def draw_graph_from_file(address_string, test_label, rec_flag, save_flag=False):
     all_weights += weights
     all_colours += colours
 
-    pos = create_pos(4, 20, 2)
+    hidden_nodes = int(np.amax(from_list_in, axis=0)[1] + 1)
+
+    pos = create_pos(4, hidden_nodes, 2)
 
     # nodes
     nx.draw_networkx_nodes(G, pos, node_size=700)
@@ -148,7 +150,9 @@ def draw_graph_from_list(from_list_in, from_list_rec, from_list_out, address_str
     all_weights += weights
     all_colours += colours
 
-    pos = create_pos(4, 20, 2)
+    hidden_nodes = int(np.amax(from_list_in, axis=0)[1] + 1)
+
+    pos = create_pos(4, hidden_nodes, 2)
 
     # nodes
     nx.draw_networkx_nodes(G, pos, node_size=700)
