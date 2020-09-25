@@ -1,11 +1,11 @@
 import spynnaker8 as pynn
 import numpy as np
 import matplotlib.pyplot as plt
-from frozen_poisson import build_input_spike_train, frozen_poisson_variable_hz
+from PyNN8Examples.eprop_testing.frozen_poisson import build_input_spike_train, frozen_poisson_variable_hz
 from pyNN.random import NumpyRNG, RandomDistribution
 from pyNN.utility.plotting import Figure, Panel
 from spynnaker.pyNN.spynnaker_external_device_plugin_manager import SpynnakerExternalDevicePluginManager
-from plot_graph import draw_graph_from_list, plot_learning_curve
+from PyNN8Examples.eprop_testing.plot_graph import draw_graph_from_list, plot_learning_curve
 
 def weight_distribution(pop_size):
     base_weight = np.random.randn() / np.sqrt(pop_size) #+ 0.5
@@ -30,19 +30,19 @@ def probability_connector(pre_pop_size, post_pop_size, prob, offset=0):
 
 def range_connector(pre_min, pre_max, post_min, post_max, weight=1.5, delay_offset=0):
     connections = []
-    for j in range(post_min, post_max):
+    for j in range(int(post_min), int(post_max)):
         # delay = delay_offset
-        for i in range(pre_min, pre_max):
+        for i in range(int(pre_min), int(pre_max)):
             nd_weight = weight_distribution(pre_max-pre_min)
             connections.append([i, j, weight+nd_weight, i+delay_offset])
             # delay += 1
     return connections
 
-np.random.seed(28)
+np.random.seed(272727)
 
 number_of_cues = 1
 cycle_time = (number_of_cues*150)+1000+150
-num_repeats = 500
+num_repeats = 1000
 pynn.setup(1.0)
 
 target_data = []
@@ -57,19 +57,19 @@ reg_rate = 0.000
 p_connect_in = 1.
 p_connect_rec = 1.
 p_connect_out = 1.
-recurrent_connections = True
+recurrent_connections = False
 synapse_eta = 0.01
 tau_a = 2500#[cycle_time - 150 + (np.random.randn() * 200) for i in range(100)]
 input_split = 100
 window_cycles = 2
 window_size = cycle_time*window_cycles
-threshold_beta = 0.3
+threshold_beta = .3
 
 max_weight = 8.0
 in_weight = 0.55
 prompt_weight = 0.55
 rec_weight = 0#-0.5
-out_weight = 0#0.01
+out_weight = 0
 weight_string = "i{}-p{}-r{}-o{}".format(in_weight, prompt_weight, rec_weight, out_weight)
 pynn.setup(timestep=1)
 
@@ -98,13 +98,13 @@ input_pop = pynn.Population(input_size,
                             # {'spike_times': frozen_poisson_variable_hz(num_repeats, cycle_time, input_split, input_split, input_size)},
                             label='input_pop')
 
-neuron_pop_size = 4*5
+neuron_pop_size = 4*25
 ratio_of_LIF = 0.5
 beta = []
 for i in range(neuron_pop_size):
     if i < neuron_pop_size/2:
     # if i % 2 == 0:
-        beta.append(threshold_beta)
+        beta.append(0)
     else:
         beta.append(threshold_beta)
 neuron_params = {
@@ -113,9 +113,9 @@ neuron_params = {
     "v_rest": 0,
     # "w_fb": [np.random.random() for i in range(neuron_pop_size)], # best it seems
     # "w_fb": [(np.random.random() * 2) - 1. for i in range(neuron_pop_size)],
-    # "w_fb": [4*np.random.random() - 4*np.random.random() for i in range(neuron_pop_size)],  ## for both feedback weights
+    "w_fb": [4*np.random.random() - 4*np.random.random() for i in range(neuron_pop_size)],  ## for both feedback weights
     # "w_fb": [-3]*(neuron_pop_size/2) + [3]*(neuron_pop_size/2),
-    "w_fb": [3]*(neuron_pop_size/4) + [-3]*(neuron_pop_size/4) + [3]*(neuron_pop_size/4) + [-3]*(neuron_pop_size/4),
+    # "w_fb": [3]*int(neuron_pop_size/4) + [-3]*int(neuron_pop_size/4) + [3]*int(neuron_pop_size/4) + [-3]*int(neuron_pop_size/4),
     # "B": 0.0,
     "beta": beta,
     "target_rate": 10,
@@ -144,12 +144,13 @@ eprop_learning_neuron = pynn.STDPMechanism(
         w_min=-max_weight, w_max=max_weight, reg_rate=reg_rate))
 
 # from_list_in, max_syn_per_input = probability_connector(input_size, neuron_pop_size, p_connect_in)
-ps = readout_neuron_params["poisson_pop_size"]
+ps = int(readout_neuron_params["poisson_pop_size"])
 # from_list_in = range_connector(0, ps, 0, neuron_pop_size/2, weight=in_weight)  # connect 1/2st 2 left
 # from_list_in += range_connector(ps, ps*2, neuron_pop_size/2, neuron_pop_size, weight=in_weight)  # connect 2/2nd 2 right
 # from_list_in = range_connector(0, ps*2, 0, neuron_pop_size, weight=in_weight)  # connect all cues to pop
 # from_list_in += range_connector(ps*2, ps*3, 0, neuron_pop_size, delay_offset=0, weight=prompt_weight)  # connect all 2 prompt
-from_list_in = range_connector(0, ps*4, 0, neuron_pop_size, delay_offset=0, weight=prompt_weight)  # connect all 2 prompt
+from_list_in = range_connector(0, ps*2, 0, neuron_pop_size, delay_offset=0, weight=in_weight)  # connect all 2 prompt
+from_list_in += range_connector(ps*2, ps*4, 0, neuron_pop_size, delay_offset=0, weight=prompt_weight)  # connect all 2 prompt
 in_proj = pynn.Projection(input_pop,
                           neuron,
                           pynn.FromListConnector(from_list_in),
@@ -169,7 +170,7 @@ eprop_learning_output = pynn.STDPMechanism(
 # from_list_out += range_connector(neuron_pop_size/2, neuron_pop_size, 0, 1, weight=out_weight)  # connect 2/2nd 2 left output
 # from_list_out += range_connector(0, neuron_pop_size/2, 0, 1, weight=-out_weight)  # connect 1/2st -2 left output
 # from_list_out += range_connector(neuron_pop_size/2, neuron_pop_size, 1, 2, weight=-out_weight)  # connect 2/2nd -2 right output
-from_list_out = range_connector(0, neuron_pop_size, 0, 2, weight=out_weight)  # connect 2/2nd -2 right output
+from_list_out = range_connector(0, neuron_pop_size, 0, 2, weight=out_weight)  # connect all
 out_proj = pynn.Projection(neuron,
                            readout_pop,
                            # pynn.OneToOneConnector(),
@@ -209,14 +210,14 @@ if recurrent_connections:
 
 input_pop.record('spikes')
 neuron.record('spikes')
-neuron.record(['gsyn_exc', 'v', 'gsyn_inh'], indexes=[i for i in range((neuron_pop_size/2)-5, (neuron_pop_size/2)+5)])
+neuron.record(['gsyn_exc', 'v', 'gsyn_inh'], indexes=[i for i in range(int((neuron_pop_size/2)-5), int((neuron_pop_size/2)+5))])
 readout_pop.record('all')
 
 runtime = cycle_time * num_repeats
 
-experiment_label = "eta:{}/{} - size:{}/{} - weights:{} - p_conn:{}/{}/{} - rec:{} - cycle:{}/{}/{} xavier noreset b:{}".format(
+experiment_label = "eta:{}/{} - size:{}/{} - weights:{} - p_conn:{}/{}/{} - rec:{} - cycle:{}/{}/{} xavier b:{}".format(
     readout_neuron_params["eta"], neuron_params["eta"], input_size, neuron_pop_size, weight_string, p_connect_in, p_connect_rec, p_connect_out, recurrent_connections, cycle_time, window_size, runtime, threshold_beta)
-print "\n", experiment_label, "\n"
+print("\n", experiment_label, "\n")
 
 pynn.run(runtime)
 in_spikes = input_pop.get_data('spikes')
@@ -255,9 +256,9 @@ from_list_in.sort(key=lambda x:x[1])
 connection_diff_in = []
 for i in range(len(from_list_in)):
     connection_diff_in.append(new_connections_in[i][2] - from_list_in[i][2])
-print "Input connections\noriginal\n", np.array(from_list_in)
-print "new\n", np.array(new_connections_in)
-print "diff\n", np.array(connection_diff_in)
+print("Input connections\noriginal\n", np.array(from_list_in))
+print("new\n", np.array(new_connections_in))
+print("diff\n", np.array(connection_diff_in))
 
 new_connections_out = []#out_proj.get('weight', 'delay').connections[0]#[]
 for partition in out_proj.get('weight', 'delay').connections:
@@ -270,9 +271,9 @@ from_list_out.sort(key=lambda x:x[1])
 connection_diff_out = []
 for i in range(len(from_list_out)):
     connection_diff_out.append(new_connections_out[i][2] - from_list_out[i][2])
-print "Output connections\noriginal\n", np.array(from_list_out)
-print "new\n", np.array(new_connections_out)
-print "diff\n", np.array(connection_diff_out)
+print("Output connections\noriginal\n", np.array(from_list_out))
+print("new\n", np.array(new_connections_out))
+print("diff\n", np.array(connection_diff_out))
 
 if recurrent_connections:
     new_connections_rec = []#out_proj.get('weight', 'delay').connections[0]#[]
@@ -286,66 +287,69 @@ if recurrent_connections:
     connection_diff_rec = []
     for i in range(len(from_list_rec)):
         connection_diff_rec.append(new_connections_rec[i][2] - from_list_rec[i][2])
-    print "Recurrent connections\noriginal\n", np.array(from_list_rec)
-    print "new\n", np.array(new_connections_rec)
-    print "diff\n", np.array(connection_diff_rec)
+    print("Recurrent connections\noriginal\n", np.array(from_list_rec))
+    print("new\n", np.array(new_connections_rec))
+    print("diff\n", np.array(connection_diff_rec))
 
-print experiment_label
-print "cycle_error =", cycle_error
-print "total error =", total_error
-print "correct:"# =", correct_or_not
+print(experiment_label)
+print("cycle_error =", cycle_error)
+print("total error =", total_error)
+print("correct:")# =", correct_or_not
 for i in range(int(np.ceil(len(correct_or_not) / float(window_cycles)))):
-    print correct_or_not[i*window_cycles:(i+1)*window_cycles], np.average(correct_or_not[i*window_cycles:(i+1)*window_cycles])
-print "average error = ", np.average(cycle_error)
-print "weighted average", np.average(cycle_error, weights=[i for i in range(num_repeats)])
-print "minimum error = ", np.min(cycle_error)
-print "minimum iteration =", cycle_error.index(np.min(cycle_error)), "- with time stamp =", cycle_error.index(np.min(cycle_error)) * 1024
+    print(correct_or_not[i*window_cycles:(i+1)*window_cycles], np.average(correct_or_not[i*window_cycles:(i+1)*window_cycles]))
+print("average error = ", np.average(cycle_error))
+print("weighted average", np.average(cycle_error, weights=[i for i in range(num_repeats)]))
+print("minimum error = ", np.min(cycle_error))
+print("minimum iteration =", cycle_error.index(np.min(cycle_error)), "- with time stamp =", cycle_error.index(np.min(cycle_error)) * 1024)
+print(experiment_label)
 
+# plt.figure()
+# Figure(
+#     Panel(neuron_res.segments[0].filter(name='v')[0], ylabel='Membrane potential (mV)', yticks=True, xticks=True, xlim=(0, runtime)),
+#
+#     Panel(neuron_res.segments[0].filter(name='gsyn_exc')[0], ylabel='gsyn_exc', yticks=True, xticks=True, xlim=(0, runtime)),
+#
+#     Panel(neuron_res.segments[0].filter(name='gsyn_inh')[0], ylabel='gsyn_inh', yticks=True, xticks=True, xlim=(0, runtime)),
+#
+#     Panel(in_spikes.segments[0].spiketrains, ylabel='in_spikes', xlabel='in_spikes', yticks=True, xticks=True, xlim=(0, runtime)),
+#
+#     Panel(neuron_res.segments[0].spiketrains, ylabel='neuron_spikes', xlabel='neuron_spikes', yticks=True, xticks=True, xlim=(0, runtime)),
+#
+#     Panel(readout_res.segments[0].filter(name='v')[0], ylabel='Membrane potential (mV)', yticks=True, xticks=True, xlim=(0, runtime)),
+#
+#     Panel(readout_res.segments[0].filter(name='gsyn_exc')[0], ylabel='gsyn_exc', yticks=True, xticks=True, xlim=(0, runtime)),
+#
+#     Panel(readout_res.segments[0].filter(name='gsyn_inh')[0], ylabel='gsyn_inh', yticks=True, xticks=True, xlim=(0, runtime)),
+#
+#     title="neuron data for {}".format(experiment_label)
+# )
+# plt.show()
+
+plot_start = runtime-(cycle_time*15)
+plot_end = runtime
 plt.figure()
 Figure(
-    Panel(neuron_res.segments[0].filter(name='v')[0], ylabel='Membrane potential (mV)', yticks=True, xticks=True, xlim=(0, runtime)),
+    Panel(neuron_res.segments[0].filter(name='v')[0], ylabel='Membrane potential (mV)', yticks=True, xticks=True, xlim=(plot_start, plot_end)),
 
-    Panel(neuron_res.segments[0].filter(name='gsyn_exc')[0], ylabel='gsyn_exc', yticks=True, xticks=True, xlim=(0, runtime)),
+    Panel(neuron_res.segments[0].filter(name='gsyn_exc')[0], ylabel='gsyn_exc', yticks=True, xticks=True, xlim=(plot_start, plot_end)),
 
-    Panel(neuron_res.segments[0].filter(name='gsyn_inh')[0], ylabel='gsyn_inh', yticks=True, xticks=True, xlim=(0, runtime)),
+    Panel(neuron_res.segments[0].filter(name='gsyn_inh')[0], ylabel='gsyn_inh', yticks=True, xticks=True, xlim=(plot_start, plot_end)),
 
-    Panel(in_spikes.segments[0].spiketrains, ylabel='in_spikes', xlabel='in_spikes', yticks=True, xticks=True, xlim=(0, runtime)),
+    Panel(in_spikes.segments[0].spiketrains, ylabel='in_spikes', xlabel='in_spikes', yticks=True, xticks=True, xlim=(plot_start, plot_end)),
 
-    Panel(neuron_res.segments[0].spiketrains, ylabel='neuron_spikes', xlabel='neuron_spikes', yticks=True, xticks=True, xlim=(0, runtime)),
+    Panel(neuron_res.segments[0].spiketrains, ylabel='neuron_spikes', xlabel='neuron_spikes', yticks=True, xticks=True, xlim=(plot_start, plot_end)),
 
-    Panel(readout_res.segments[0].filter(name='v')[0], ylabel='Membrane potential (mV)', yticks=True, xticks=True, xlim=(0, runtime)),
+    Panel(readout_res.segments[0].filter(name='v')[0], ylabel='Membrane potential (mV)', yticks=True, xticks=True, xlim=(plot_start, plot_end)),
 
-    Panel(readout_res.segments[0].filter(name='gsyn_exc')[0], ylabel='gsyn_exc', yticks=True, xticks=True, xlim=(0, runtime)),
+    Panel(readout_res.segments[0].filter(name='gsyn_exc')[0], ylabel='gsyn_exc', yticks=True, xticks=True, xlim=(plot_start, plot_end)),
 
-    Panel(readout_res.segments[0].filter(name='gsyn_inh')[0], ylabel='gsyn_inh', yticks=True, xticks=True, xlim=(0, runtime)),
+    Panel(readout_res.segments[0].filter(name='gsyn_inh')[0], ylabel='gsyn_inh', yticks=True, xticks=True, xlim=(plot_start, plot_end)),
 
     title="neuron data for {}".format(experiment_label)
 )
 plt.show()
 
-# plot_start = runtime-(window_size*1.5)
-# plot_end = runtime
-# plt.figure()
-# Figure(
-#     Panel(neuron_res.segments[0].filter(name='v')[0], ylabel='Membrane potential (mV)', yticks=True, xticks=True, xlim=(plot_start, plot_end)),
-#
-#     Panel(neuron_res.segments[0].filter(name='gsyn_exc')[0], ylabel='gsyn_exc', yticks=True, xticks=True, xlim=(plot_start, plot_end)),
-#
-#     Panel(neuron_res.segments[0].filter(name='gsyn_inh')[0], ylabel='gsyn_inh', yticks=True, xticks=True, xlim=(plot_start, plot_end)),
-#
-#     Panel(in_spikes.segments[0].spiketrains, ylabel='in_spikes', xlabel='in_spikes', yticks=True, xticks=True, xlim=(plot_start, plot_end)),
-#
-#     Panel(neuron_res.segments[0].spiketrains, ylabel='neuron_spikes', xlabel='neuron_spikes', yticks=True, xticks=True, xlim=(plot_start, plot_end)),
-#
-#     Panel(readout_res.segments[0].filter(name='v')[0], ylabel='Membrane potential (mV)', yticks=True, xticks=True, xlim=(plot_start, plot_end)),
-#
-#     Panel(readout_res.segments[0].filter(name='gsyn_exc')[0], ylabel='gsyn_exc', yticks=True, xticks=True, xlim=(plot_start, plot_end)),
-#
-#     Panel(readout_res.segments[0].filter(name='gsyn_inh')[0], ylabel='gsyn_inh', yticks=True, xticks=True, xlim=(plot_start, plot_end)),
-#
-#     title="neuron data for {}".format(experiment_label)
-# )
-# plt.show()
+print("plotted neuron data")
 
 fig, axs = plt.subplots(2, 1)
 axs[0].set_title(experiment_label)
@@ -353,6 +357,8 @@ axs[0].scatter([i for i in range(len(correct_or_not))], correct_or_not)
 axs[1].scatter([i for i in range(len(cycle_error))], cycle_error)
 axs[1].plot([0, len(cycle_error)], [75, 75], 'r')
 plt.show()
+
+print("plotted curves")
 
 pynn.end()
 print("job done")

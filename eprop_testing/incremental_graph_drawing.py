@@ -1,11 +1,11 @@
 import spynnaker8 as pynn
 import numpy as np
 import matplotlib.pyplot as plt
-from frozen_poisson import build_input_spike_train, frozen_poisson_variable_hz
+from PyNN8Examples.eprop_testing.frozen_poisson import build_input_spike_train, frozen_poisson_variable_hz
 from pyNN.random import NumpyRNG, RandomDistribution
 from pyNN.utility.plotting import Figure, Panel
 from spynnaker.pyNN.spynnaker_external_device_plugin_manager import SpynnakerExternalDevicePluginManager
-from plot_graph import draw_graph_from_list, plot_learning_curve
+from PyNN8Examples.eprop_testing.plot_graph import draw_graph_from_list, plot_learning_curve
 
 def load_connections(npy_label, pop_size, rec=True):
     in_conn = [list(ele) for ele in np.load(npy_label+' in.npy').tolist()]
@@ -30,7 +30,7 @@ def load_connections(npy_label, pop_size, rec=True):
         if delay not in checking_delays[post]:
             checking_delays.append(delay)
         else:
-            print "delays are overlapped"
+            print("delays are overlapped")
             Exception
     if not rec:
         rec_conn = []
@@ -249,7 +249,7 @@ runtime = cycle_time * num_repeats
 
 experiment_label = "eta-{}_{} - size-{}_{} - weights-{} - p_conn-{}_{}_{} - rec-{} - cycle-{}_{}_{} regoff 40hz nd b-{}".format(
     readout_neuron_params["eta"], neuron_params["eta"], input_size, neuron_pop_size, weight_string, p_connect_in, p_connect_rec, p_connect_out, recurrent_connections, cycle_time, window_size, runtime, threshold_beta)
-print "\n", experiment_label, "\n"
+print("\n", experiment_label, "\n")
 
 current_window = 0
 while current_window*window_size < runtime:
@@ -319,13 +319,13 @@ while current_window*window_size < runtime:
     #     print "new\n", np.array(new_connections_rec)
     #     print "diff\n", np.array(connection_diff_rec)
 
-    print cycle_error
+    print(cycle_error)
     for i in range(int(np.ceil(len(correct_or_not) / float(window_cycles)))):
-        print correct_or_not[i*window_cycles:(i+1)*window_cycles], np.average(correct_or_not[i*window_cycles:(i+1)*window_cycles])
+        print(correct_or_not[i*window_cycles:(i+1)*window_cycles], np.average(correct_or_not[i*window_cycles:(i+1)*window_cycles]))
 
-    # graph_directory = '/home/adampcloth/PycharmProjects/PyNN8Examples/eprop_testing/graphs/'
-    # draw_graph_from_list(new_connections_in, new_connections_rec, new_connections_out, graph_directory, experiment_label+' {}'.format(current_window), rec_flag=recurrent_connections, save_flag=True)
-    # plot_learning_curve([correct_or_not, cycle_error], graph_directory, experiment_label+' {}'.format(current_window), save_flag=True)
+    graph_directory = './graphs/'
+    draw_graph_from_list(new_connections_in, new_connections_rec, new_connections_out, graph_directory, experiment_label+' {}'.format(current_window), rec_flag=recurrent_connections, save_flag=True)
+    plot_learning_curve([correct_or_not, cycle_error], graph_directory, experiment_label+' {}'.format(current_window), save_flag=True)
 
 
 total_error = 0.0
@@ -355,9 +355,9 @@ from_list_in.sort(key=lambda x:x[1])
 connection_diff_in = []
 for i in range(len(from_list_in)):
     connection_diff_in.append(new_connections_in[i][2] - from_list_in[i][2])
-print "Input connections\noriginal\n", np.array(from_list_in)
-print "new\n", np.array(new_connections_in)
-print "diff\n", np.array(connection_diff_in)
+print("Input connections\noriginal\n", np.array(from_list_in))
+print("new\n", np.array(new_connections_in))
+print("diff\n", np.array(connection_diff_in))
 
 new_connections_out = []#out_proj.get('weight', 'delay').connections[0]#[]
 for partition in out_proj.get('weight', 'delay').connections:
@@ -370,9 +370,9 @@ from_list_out.sort(key=lambda x:x[1])
 connection_diff_out = []
 for i in range(len(from_list_out)):
     connection_diff_out.append(new_connections_out[i][2] - from_list_out[i][2])
-print "Output connections\noriginal\n", np.array(from_list_out)
-print "new\n", np.array(new_connections_out)
-print "diff\n", np.array(connection_diff_out)
+print("Output connections\noriginal\n", np.array(from_list_out))
+print("new\n", np.array(new_connections_out))
+print("diff\n", np.array(connection_diff_out))
 
 if recurrent_connections:
     new_connections_rec = []#out_proj.get('weight', 'delay').connections[0]#[]
@@ -386,20 +386,20 @@ if recurrent_connections:
     connection_diff_rec = []
     for i in range(len(from_list_rec)):
         connection_diff_rec.append(new_connections_rec[i][2] - from_list_rec[i][2])
-    print "Recurrent connections\noriginal\n", np.array(from_list_rec)
-    print "new\n", np.array(new_connections_rec)
-    print "diff\n", np.array(connection_diff_rec)
+    print("Recurrent connections\noriginal\n", np.array(from_list_rec))
+    print("new\n", np.array(new_connections_rec))
+    print("diff\n", np.array(connection_diff_rec))
 
-print experiment_label
-print "cycle_error =", cycle_error
-print "total error =", total_error
-print "correct:"# =", correct_or_not
+print(experiment_label)
+print("cycle_error =", cycle_error)
+print("total error =", total_error)
+print("correct:")# =", correct_or_not
 for i in range(int(np.ceil(len(correct_or_not) / float(window_cycles)))):
-    print correct_or_not[i*window_cycles:(i+1)*window_cycles], np.average(correct_or_not[i*window_cycles:(i+1)*window_cycles])
-print "average error = ", np.average(cycle_error)
-print "weighted average", np.average(cycle_error, weights=[i for i in range(num_repeats)])
-print "minimum error = ", np.min(cycle_error)
-print "minimum iteration =", cycle_error.index(np.min(cycle_error)), "- with time stamp =", cycle_error.index(np.min(cycle_error)) * 1024
+    print(correct_or_not[i*window_cycles:(i+1)*window_cycles], np.average(correct_or_not[i*window_cycles:(i+1)*window_cycles]))
+print("average error = ", np.average(cycle_error))
+print("weighted average", np.average(cycle_error, weights=[i for i in range(num_repeats)]))
+print("minimum error = ", np.min(cycle_error))
+print("minimum iteration =", cycle_error.index(np.min(cycle_error)), "- with time stamp =", cycle_error.index(np.min(cycle_error)) * 1024)
 
 plt.figure()
 Figure(
