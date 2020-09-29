@@ -38,20 +38,12 @@ def range_connector(pre_min, pre_max, post_min, post_max, weight=1.5, delay_offs
             # delay += 1
     return connections
 
-np.random.seed(272727)
+np.random.seed(2727)
 
 number_of_cues = 1
 cycle_time = (number_of_cues*150)+1000+150
-num_repeats = 1000
+num_repeats = 500
 pynn.setup(1.0)
-
-target_data = []
-for i in range(1024):
-            target_data.append(#1)
-                0 + 2 * np.sin(2 * i * 2* np.pi / 1024) \
-                    + 2 * np.sin((4 * i * 2* np.pi / 1024))
-                )
-
 
 reg_rate = 0.000
 p_connect_in = 1.
@@ -63,7 +55,7 @@ tau_a = 2500#[cycle_time - 150 + (np.random.randn() * 200) for i in range(100)]
 input_split = 100
 window_cycles = 2
 window_size = cycle_time*window_cycles
-threshold_beta = .3
+threshold_beta = 3
 
 max_weight = 8.0
 in_weight = 0.55
@@ -85,6 +77,7 @@ readout_neuron_params = {
     "w_fb": [1, -1, 0],
     "eta": synapse_eta * 10.,
     "window_size": window_size,
+    "number_of_cues": number_of_cues
     }
 rates = []
 for i in range(input_size):
@@ -105,6 +98,7 @@ for i in range(neuron_pop_size):
     if i < neuron_pop_size/2:
     # if i % 2 == 0:
         beta.append(0)
+        # beta.append(threshold_beta)
     else:
         beta.append(threshold_beta)
 neuron_params = {
@@ -113,9 +107,9 @@ neuron_params = {
     "v_rest": 0,
     # "w_fb": [np.random.random() for i in range(neuron_pop_size)], # best it seems
     # "w_fb": [(np.random.random() * 2) - 1. for i in range(neuron_pop_size)],
-    "w_fb": [4*np.random.random() - 4*np.random.random() for i in range(neuron_pop_size)],  ## for both feedback weights
+    # "w_fb": [4*np.random.random() - 4*np.random.random() for i in range(neuron_pop_size)],  ## for both feedback weights
     # "w_fb": [-3]*(neuron_pop_size/2) + [3]*(neuron_pop_size/2),
-    # "w_fb": [3]*int(neuron_pop_size/4) + [-3]*int(neuron_pop_size/4) + [3]*int(neuron_pop_size/4) + [-3]*int(neuron_pop_size/4),
+    "w_fb": [3]*int(neuron_pop_size/4) + [-3]*int(neuron_pop_size/4) + [3]*int(neuron_pop_size/4) + [-3]*int(neuron_pop_size/4),
     # "B": 0.0,
     "beta": beta,
     "target_rate": 10,
@@ -215,7 +209,7 @@ readout_pop.record('all')
 
 runtime = cycle_time * num_repeats
 
-experiment_label = "eta:{}/{} - size:{}/{} - weights:{} - p_conn:{}/{}/{} - rec:{} - cycle:{}/{}/{} xavier b:{}".format(
+experiment_label = "eta:{}/{} - size:{}/{} - weights:{} - p_conn:{}/{}/{} - rec:{} - cycle:{}/{}/{} vmem fb b:{}".format(
     readout_neuron_params["eta"], neuron_params["eta"], input_size, neuron_pop_size, weight_string, p_connect_in, p_connect_rec, p_connect_out, recurrent_connections, cycle_time, window_size, runtime, threshold_beta)
 print("\n", experiment_label, "\n")
 
