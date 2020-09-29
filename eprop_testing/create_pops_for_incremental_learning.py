@@ -160,11 +160,13 @@ def first_create_pops():
         from_list_rec = []
         recurrent_proj = None
 
-    input_pop.record('spikes')
-    neuron.record('spikes')
+    input_pop.record('spikes', clear=True)
+    neuron.record('spikes', clear=True)
     neuron.record(['gsyn_exc', 'v', 'gsyn_inh'],
-                  indexes=[i for i in range(int((neuron_pop_size / 2) - 5), int((neuron_pop_size / 2) + 5))])
-    readout_pop.record('all')
+                  indexes=[i for i in range(int((neuron_pop_size / 2) - 5),
+                                            int((neuron_pop_size / 2) + 5))],
+                  clear=True)
+    readout_pop.record('all', clear=True)
 
     runtime = cycle_time * num_repeats
 

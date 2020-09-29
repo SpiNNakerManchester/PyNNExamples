@@ -252,9 +252,9 @@ print("\n", experiment_label, "\n")
 current_window = 0
 while current_window*window_size < runtime:
     pynn.run(window_size)
-    in_spikes = input_pop.get_data('spikes')
-    neuron_res = neuron.get_data('all')
-    readout_res = readout_pop.get_data('all')
+    in_spikes = input_pop.get_data('spikes', clear=True)
+    neuron_res = neuron.get_data('all', clear=True)
+    readout_res = readout_pop.get_data('all', clear=True)
     plot_start = (window_size*current_window)
     current_window += 1
     plot_end = (window_size*current_window)
