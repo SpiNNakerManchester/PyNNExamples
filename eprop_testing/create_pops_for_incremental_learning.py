@@ -160,13 +160,12 @@ def first_create_pops():
         from_list_rec = []
         recurrent_proj = None
 
-    input_pop.record('spikes', clear=True)
-    neuron.record('spikes', clear=True)
+    input_pop.record('spikes')
+    neuron.record('spikes')
     neuron.record(['gsyn_exc', 'v', 'gsyn_inh'],
                   indexes=[i for i in range(int((neuron_pop_size / 2) - 5),
-                                            int((neuron_pop_size / 2) + 5))],
-                  clear=True)
-    readout_pop.record('all', clear=True)
+                                            int((neuron_pop_size / 2) + 5))])
+    readout_pop.record('all')
 
     runtime = cycle_time * num_repeats
 
@@ -268,9 +267,9 @@ def run_until(experiment_label, runtime, pynn, in_proj, recurrent_proj, out_proj
     current_window = 0
     while current_window * window_size < runtime:
         pynn.run(window_size)
-        in_spikes = input_pop.get_data('spikes')
-        neuron_res = neuron.get_data('all')
-        readout_res = readout_pop.get_data('all')
+        in_spikes = input_pop.get_data('spikes', clear=True)
+        neuron_res = neuron.get_data('all', clear=True)
+        readout_res = readout_pop.get_data('all', clear=True)
         plot_start = (window_size * current_window)
         current_window += 1
         plot_end = (window_size * current_window)
