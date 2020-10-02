@@ -309,7 +309,7 @@ def run_until(experiment_label, runtime, pynn, in_proj, recurrent_proj, out_proj
         readout_res = readout_pop.get_data('all', clear=True)
         # plot_start = (window_size * current_window)
         # plot_end = (window_size * current_window)
-        
+
         total_error = 0.0
         for cycle in range(window_cycles):
             for time_index in range(cycle_time):
