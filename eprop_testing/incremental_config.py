@@ -2,19 +2,20 @@ import numpy as np
 
 number_of_cues = 1
 cycle_time = (number_of_cues * 150) + 1000 + 150
-num_repeats = 300
+num_repeats = 2000
+learning_threshold = 0.9
 
 reg_rate = 0.000
 p_connect_in = 1.
 p_connect_rec = 1.
 p_connect_out = 1.
 recurrent_connections = False
-synapse_eta = 0.01
-tau_a = 2500  # [cycle_time - 150 + (np.random.randn() * 200) for i in range(100)]
+synapse_eta = 0.003
+tau_a = 6500  # [cycle_time - 150 + (np.random.randn() * 200) for i in range(100)]
 input_split = 100
 window_cycles = 2
 window_size = cycle_time * window_cycles
-threshold_beta = 3
+threshold_beta = 10
 
 max_weight = 8.0
 in_weight = 0.55
@@ -43,7 +44,7 @@ for i in range(input_size):
     else:
         rates.append(0)
 
-neuron_pop_size = 4 * 15
+neuron_pop_size = 4 * 25
 # from_list_in, from_list_rec, from_list_out = load_connections('good 1 cue 20n recT', neuron_pop_size)
 
 ratio_of_LIF = 0.5
@@ -70,4 +71,5 @@ neuron_params = {
     "tau_a": tau_a,
     "eta": synapse_eta * 5,  # / 20.,
     "window_size": window_size,
+    "number_of_cues": number_of_cues
 }

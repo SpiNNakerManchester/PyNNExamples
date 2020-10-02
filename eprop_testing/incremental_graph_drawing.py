@@ -74,14 +74,6 @@ cycle_time = (number_of_cues*150)+1000+150
 num_repeats = 300
 pynn.setup(1.0)
 
-target_data = []
-for i in range(1024):
-            target_data.append(#1)
-                0 + 2 * np.sin(2 * i * 2* np.pi / 1024) \
-                    + 2 * np.sin((4 * i * 2* np.pi / 1024))
-                )
-
-
 reg_rate = 0.000
 p_connect_in = 1.
 p_connect_rec = 1.
@@ -252,9 +244,9 @@ print("\n", experiment_label, "\n")
 current_window = 0
 while current_window*window_size < runtime:
     pynn.run(window_size)
-    in_spikes = input_pop.get_data('spikes')
-    neuron_res = neuron.get_data('all')
-    readout_res = readout_pop.get_data('all')
+    in_spikes = input_pop.get_data('spikes', clear=True)
+    neuron_res = neuron.get_data('all', clear=True)
+    readout_res = readout_pop.get_data('all', clear=True)
     plot_start = (window_size*current_window)
     current_window += 1
     plot_end = (window_size*current_window)

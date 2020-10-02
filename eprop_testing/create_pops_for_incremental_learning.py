@@ -160,16 +160,16 @@ def first_create_pops():
         from_list_rec = []
         recurrent_proj = None
 
-    input_pop.record('spikes')
-    neuron.record('spikes')
-    neuron.record(['gsyn_exc', 'v', 'gsyn_inh'],
-                  indexes=[i for i in range(int((neuron_pop_size / 2) - 5), int((neuron_pop_size / 2) + 5))])
+    # input_pop.record('spikes')
+    # neuron.record('spikes')
+    # neuron.record(['gsyn_exc', 'v', 'gsyn_inh'],
+    #               indexes=[i for i in range(int((neuron_pop_size / 2) - 5), int((neuron_pop_size / 2) + 5))])
     readout_pop.record('all')
 
     runtime = cycle_time * num_repeats
 
-    experiment_label = "eta-{}_{} - size-{}_{} - weights-{} - p_conn-{}_{}_{} - rec-{} - cycle-{}_{}_{} regoff 40hz nd b-{}".format(
-        readout_neuron_params["eta"], neuron_params["eta"], input_size, neuron_pop_size, weight_string, p_connect_in,
+    experiment_label = "c-{} eta-{}_{} - size-{}_{} - weights-{} - p_conn-{}_{}_{} - rec-{} - cycle-{}_{}_{} b-{}".format(
+        readout_neuron_params["number_of_cues"], readout_neuron_params["eta"], neuron_params["eta"], input_size, neuron_pop_size, weight_string, p_connect_in,
         p_connect_rec, p_connect_out, recurrent_connections, cycle_time, window_size, runtime, threshold_beta)
     print("\n", experiment_label, "\n")
 
@@ -177,7 +177,7 @@ def first_create_pops():
            from_list_in, from_list_rec, from_list_out
 
 
-def next_create_pops(number_of_cues, from_list_in, from_list_rec, from_list_out):
+def next_create_pops(from_list_in, from_list_rec, from_list_out):
     pynn.setup(timestep=1)
     input_pop = pynn.Population(input_size,
                                 pynn.SpikeSourcePoisson(rate=rates),
@@ -204,9 +204,19 @@ def next_create_pops(number_of_cues, from_list_in, from_list_rec, from_list_out)
         weight_dependence=pynn.extra_models.WeightDependenceEpropReg(
             w_min=-max_weight, w_max=max_weight, reg_rate=reg_rate))
 
+    from_list_in_list = []
+    for conn in from_list_in:
+        a = conn[0]
+        b = conn[1]
+        w = conn[2]
+        d = conn[3]
+        if a % input_size == 0:
+            d = 0.0
+        from_list_in_list.append([a, b, w, d])
+
     in_proj = pynn.Projection(input_pop,
                               neuron,
-                              pynn.FromListConnector(from_list_in),
+                              pynn.FromListConnector(from_list_in_list),
                               # pynn.AllToAllConnector(),
                               synapse_type=eprop_learning_neuron,
                               label='input_connections',
@@ -217,10 +227,20 @@ def next_create_pops(number_of_cues, from_list_in, from_list_rec, from_list_out)
         weight_dependence=pynn.extra_models.WeightDependenceEpropReg(
             w_min=-max_weight, w_max=max_weight, reg_rate=0.0))
 
+    from_list_out_list = []
+    for conn in from_list_out:
+        a = conn[0]
+        b = conn[1]
+        w = conn[2]
+        d = conn[3]
+        if a % neuron_pop_size == 0:
+            d = 0.0
+        from_list_out_list.append([a, b, w, d])
+
     out_proj = pynn.Projection(neuron,
                                readout_pop,
                                # pynn.OneToOneConnector(),
-                               pynn.FromListConnector(from_list_out),
+                               pynn.FromListConnector(from_list_out_list),
                                synapse_type=eprop_learning_output,
                                label='input_connections',
                                receptor_type='input_connections')
@@ -230,30 +250,41 @@ def next_create_pops(number_of_cues, from_list_in, from_list_rec, from_list_out)
                                     pynn.AllToAllConnector(),
                                     pynn.StaticSynapse(weight=0.5, delay=0),
                                     receptor_type='learning_signal')
-
+    recurrent_proj = None
     if recurrent_connections:
         eprop_learning_recurrent = pynn.STDPMechanism(
             timing_dependence=pynn.extra_models.TimingDependenceEprop(),
             weight_dependence=pynn.extra_models.WeightDependenceEpropReg(
                 w_min=-max_weight, w_max=max_weight, reg_rate=reg_rate))
 
+        from_list_rec_list = []
+        for conn in from_list_rec:
+            a = conn[0]
+            b = conn[1]
+            w = conn[2]
+            d = conn[3]
+            # might need some check for delay
+            from_list_rec_list.append([a, b, w, d])
+
         recurrent_proj = pynn.Projection(neuron,
                                          neuron,
-                                         pynn.FromListConnector(from_list_rec),
+                                         pynn.FromListConnector(from_list_rec_list),
                                          synapse_type=eprop_learning_recurrent,
                                          label='recurrent_connections',
                                          receptor_type='recurrent_connections')
 
-    input_pop.record('spikes')
-    neuron.record('spikes')
-    neuron.record(['gsyn_exc', 'v', 'gsyn_inh'],
-                  indexes=[i for i in range(int((neuron_pop_size / 2) - 5), int((neuron_pop_size / 2) + 5))])
+    # input_pop.record('spikes')
+    # neuron.record('spikes')
+    # neuron.record(['gsyn_exc', 'v', 'gsyn_inh'],
+    #               indexes=[i for i in range(int((neuron_pop_size / 2) - 5), int((neuron_pop_size / 2) + 5))])
     readout_pop.record('all')
 
+    window_size = neuron_params["window_size"]
+    cycle_time = int(window_size / window_cycles)
     runtime = cycle_time * num_repeats
 
-    experiment_label = "eta-{}_{} - size-{}_{} - weights-{} - p_conn-{}_{}_{} - rec-{} - cycle-{}_{}_{} regoff 40hz nd b-{}".format(
-        readout_neuron_params["eta"], neuron_params["eta"], input_size, neuron_pop_size, weight_string, p_connect_in,
+    experiment_label = "c-{} eta-{}_{} - size-{}_{} - weights-{} - p_conn-{}_{}_{} - rec-{} - cycle-{}_{}_{} b-{}".format(
+        readout_neuron_params["number_of_cues"], readout_neuron_params["eta"], neuron_params["eta"], input_size, neuron_pop_size, weight_string, p_connect_in,
         p_connect_rec, p_connect_out, recurrent_connections, cycle_time, window_size, runtime, threshold_beta)
     print("\n", experiment_label, "\n")
 
@@ -261,29 +292,33 @@ def next_create_pops(number_of_cues, from_list_in, from_list_rec, from_list_out)
            from_list_in, from_list_rec, from_list_out
 
 def run_until(experiment_label, runtime, pynn, in_proj, recurrent_proj, out_proj, input_pop, neuron, readout_pop,
-              from_list_in, from_list_rec, from_list_out):
+              from_list_in, from_list_rec, from_list_out, threshold=0.95):
     good_performance = False
     current_window = 0
+    current_iter = current_window * window_cycles
+    window_size = neuron_params["window_size"]
+    cycle_time = int(window_size / window_cycles)
+    runtime = cycle_time * num_repeats
+    cycle_error = [0.0 for i in range(int(runtime/window_size))]
+    correct_or_not = [0 for i in range(int(runtime/window_size))]
+
     while current_window * window_size < runtime:
         pynn.run(window_size)
-        in_spikes = input_pop.get_data('spikes')
-        neuron_res = neuron.get_data('all')
-        readout_res = readout_pop.get_data('all')
-        plot_start = (window_size * current_window)
-        current_window += 1
-        plot_end = (window_size * current_window)
-
+        # in_spikes = input_pop.get_data('spikes', clear=True)
+        # neuron_res = neuron.get_data('all', clear=True)
+        readout_res = readout_pop.get_data('all', clear=True)
+        # plot_start = (window_size * current_window)
+        # plot_end = (window_size * current_window)
+        
         total_error = 0.0
-        cycle_error = [0.0 for i in range(current_window * window_cycles)]
-        correct_or_not = [0 for i in range(current_window * window_cycles)]
-        for cycle in range(current_window * window_cycles):
+        for cycle in range(window_cycles):
             for time_index in range(cycle_time):
                 instantaneous_error = np.abs(float(
-                    readout_res.segments[0].filter(name='gsyn_inh')[0][time_index + (cycle * cycle_time)][0]))
-                cycle_error[cycle] += instantaneous_error
+                    readout_res.segments[0].filter(name='gsyn_inh')[0][time_index + ((cycle+current_iter) * cycle_time)][0]))
+                cycle_error[(current_iter)+cycle] += instantaneous_error
                 total_error += instantaneous_error
-            if cycle_error[cycle] < 75:
-                correct_or_not[cycle] = 1
+            if cycle_error[(current_iter)+cycle] < 75:
+                correct_or_not[(current_iter)+cycle] = 1
 
         new_connections_in = []  # in_proj.get('weight', 'delay').connections[0]#[]
         for partition in in_proj.get('weight', 'delay').connections:
@@ -331,8 +366,11 @@ def run_until(experiment_label, runtime, pynn, in_proj, recurrent_proj, out_proj
             print("new\n", np.array(new_connections_rec))
             print("diff\n", np.array(connection_diff_rec))
 
-        print(cycle_error)
-        for i in range(int(np.ceil(len(correct_or_not) / float(window_cycles)))):
+        current_window += 1
+        current_iter = current_window * window_cycles
+
+        print(cycle_error[:current_iter])
+        for i in range(current_window):
             print(correct_or_not[i * window_cycles:(i + 1) * window_cycles],
                   np.average(correct_or_not[i * window_cycles:(i + 1) * window_cycles]))
 
@@ -340,13 +378,22 @@ def run_until(experiment_label, runtime, pynn, in_proj, recurrent_proj, out_proj
         draw_graph_from_list(new_connections_in, new_connections_rec, new_connections_out, graph_directory,
                              experiment_label + ' {}'.format(current_window), rec_flag=recurrent_connections,
                              save_flag=True)
-        plot_learning_curve([correct_or_not, cycle_error], graph_directory,
+        plot_learning_curve(correct_or_not[:current_iter], cycle_error[:current_iter], graph_directory,
                             experiment_label + ' {}'.format(current_window), save_flag=True)
 
-        if len(correct_or_not) > 64 and np.average(correct_or_not[-64]) > 0.95:
-            print("has achieved threshold performance at window:", current_window)
-            print("this corresponds to itertation:", current_window*window_size)
-            good_performance = True
-            break
-
-    return new_connections_in, new_connections_rec, new_connections_out, good_performance
+        if current_iter > 64 and \
+                np.average(correct_or_not[(current_iter)-64: current_iter]) > threshold:
+            pynn.end()
+            print(cycle_error[:current_iter])
+            for i in range(current_window):
+                print(correct_or_not[i * window_cycles:(i + 1) * window_cycles],
+                      np.average(correct_or_not[i * window_cycles:(i + 1) * window_cycles]))
+            print("Simulation has achieved threshold performance at window:", current_window)
+            print("this corresponds to itertation:", current_iter)
+            good_performance = current_iter
+            return new_connections_in, new_connections_rec, new_connections_out, \
+                   correct_or_not[:current_iter], cycle_error[:current_iter], good_performance
+    pynn.end()
+    print("Learning has failed to achieve threshold performance in runtime")
+    return new_connections_in, new_connections_rec, new_connections_out, \
+           correct_or_not[:current_iter], cycle_error[:current_iter], good_performance

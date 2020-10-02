@@ -170,15 +170,33 @@ def draw_graph_from_list(from_list_in, from_list_rec, from_list_out, address_str
         plt.show() # display
     plt.close()
 
-def plot_learning_curve(data, address_string, test_label, save_flag=False):
+def moving_average(a, n=3):
+    ret = np.cumsum(a, dtype=float)
+    ret[n:] = ret[n:] - ret[:-n]
+    return ret[n - 1:] / n
+
+def plot_learning_curve(correct_or_not, cycle_error, address_string, test_label, save_flag=False):
     # if not isinstance(data[0], list):
     #     data = [data]
+    num_repeats = len(correct_or_not)
+    ave_corr10 = moving_average(correct_or_not, 10)
+    ave_corr64 = moving_average(correct_or_not, 64)
 
-    fig, axs = plt.subplots(len(data), 1)
+    fig, axs = plt.subplots(4, 1)
     axs[0].set_title(test_label)
-    axs[0].scatter([i for i in range(len(data[0]))], data[0])
-    axs[1].scatter([i for i in range(len(data[1]))], data[1])
-    axs[1].plot([0, len(data[1])], [75, 75], 'r')
+    axs[0].scatter([i for i in range(len(correct_or_not))], correct_or_not)
+    axs[0].set_xlim([0, num_repeats])
+    axs[1].scatter([i for i in range(len(cycle_error))], cycle_error)
+    axs[1].set_xlim([0, num_repeats])
+    axs[1].plot([0, len(cycle_error)], [75, 75], 'r')
+    axs[2].plot([i + 5 for i in range(len(ave_corr10))], ave_corr10)
+    axs[2].plot([0, num_repeats], [0.9, 0.9], 'r')
+    axs[2].plot([0, num_repeats], [0.95, 0.95], 'g')
+    axs[2].set_xlim([0, num_repeats])
+    axs[3].plot([i + 32 for i in range(len(ave_corr64))], ave_corr64)
+    axs[3].plot([0, num_repeats], [0.9, 0.9], 'r')
+    axs[3].plot([0, num_repeats], [0.95, 0.95], 'g')
+    axs[3].set_xlim([0, num_repeats])
     if save_flag:
         plt.savefig(address_string+test_label+" learning curve.png")
     # plt.show()

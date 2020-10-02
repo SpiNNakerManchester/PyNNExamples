@@ -40,9 +40,9 @@ def range_connector(pre_min, pre_max, post_min, post_max, weight=1.5, delay_offs
 
 np.random.seed(2727)
 
-number_of_cues = 1
+number_of_cues = 7
 cycle_time = (number_of_cues*150)+1000+150
-num_repeats = 500
+num_repeats = 2000
 pynn.setup(1.0)
 
 reg_rate = 0.000
@@ -50,12 +50,13 @@ p_connect_in = 1.
 p_connect_rec = 1.
 p_connect_out = 1.
 recurrent_connections = False
+
 synapse_eta = 0.01
-tau_a = 2500#[cycle_time - 150 + (np.random.randn() * 200) for i in range(100)]
+tau_a = 6500  #[cycle_time - 150 + (np.random.randn() * 200) for i in range(100)]
 input_split = 100
 window_cycles = 2
 window_size = cycle_time*window_cycles
-threshold_beta = 3
+threshold_beta = 10
 
 max_weight = 8.0
 in_weight = 0.55
@@ -97,8 +98,8 @@ beta = []
 for i in range(neuron_pop_size):
     if i < neuron_pop_size/2:
     # if i % 2 == 0:
-        beta.append(0)
-        # beta.append(threshold_beta)
+    #     beta.append(0)
+        beta.append(threshold_beta)
     else:
         beta.append(threshold_beta)
 neuron_params = {
@@ -107,15 +108,16 @@ neuron_params = {
     "v_rest": 0,
     # "w_fb": [np.random.random() for i in range(neuron_pop_size)], # best it seems
     # "w_fb": [(np.random.random() * 2) - 1. for i in range(neuron_pop_size)],
-    # "w_fb": [4*np.random.random() - 4*np.random.random() for i in range(neuron_pop_size)],  ## for both feedback weights
+    "w_fb": [4*np.random.random() - 4*np.random.random() for i in range(neuron_pop_size)],  ## for both feedback weights
     # "w_fb": [-3]*(neuron_pop_size/2) + [3]*(neuron_pop_size/2),
-    "w_fb": [3]*int(neuron_pop_size/4) + [-3]*int(neuron_pop_size/4) + [3]*int(neuron_pop_size/4) + [-3]*int(neuron_pop_size/4),
+    # "w_fb": [3]*int(neuron_pop_size/4) + [-3]*int(neuron_pop_size/4) + [3]*int(neuron_pop_size/4) + [-3]*int(neuron_pop_size/4),
     # "B": 0.0,
     "beta": beta,
     "target_rate": 10,
     "tau_a": tau_a,
     "eta": synapse_eta * 5,#/ 20.,
     "window_size": window_size,
+    "number_of_cues": number_of_cues
     }
 neuron = pynn.Population(neuron_pop_size,
                          pynn.extra_models.EPropAdaptive(**neuron_params),
@@ -209,14 +211,14 @@ readout_pop.record('all')
 
 runtime = cycle_time * num_repeats
 
-experiment_label = "eta:{}/{} - size:{}/{} - weights:{} - p_conn:{}/{}/{} - rec:{} - cycle:{}/{}/{} vmem fb b:{}".format(
+experiment_label = "eta:{}/{} - size:{}/{} - weights:{} - p_conn:{}/{}/{} - rec:{} - cycle:{}/{}/{} Atau65 b:{}".format(
     readout_neuron_params["eta"], neuron_params["eta"], input_size, neuron_pop_size, weight_string, p_connect_in, p_connect_rec, p_connect_out, recurrent_connections, cycle_time, window_size, runtime, threshold_beta)
 print("\n", experiment_label, "\n")
 
 pynn.run(runtime)
-in_spikes = input_pop.get_data('spikes')
-neuron_res = neuron.get_data('all')
-readout_res = readout_pop.get_data('all')
+in_spikes = input_pop.get_data('spikes', clear=True)
+neuron_res = neuron.get_data('all', clear=True)
+readout_res = readout_pop.get_data('all', clear=True)
 
 total_error = 0.0
 cycle_error = [0.0 for i in range(num_repeats)]
@@ -319,6 +321,7 @@ print(experiment_label)
 # )
 # plt.show()
 
+
 plot_start = runtime-(cycle_time*15)
 plot_end = runtime
 plt.figure()
@@ -345,11 +348,29 @@ plt.show()
 
 print("plotted neuron data")
 
-fig, axs = plt.subplots(2, 1)
+def moving_average(a, n=3) :
+    ret = np.cumsum(a, dtype=float)
+    ret[n:] = ret[n:] - ret[:-n]
+    return ret[n - 1:] / n
+
+ave_corr10 = moving_average(correct_or_not, 10)
+ave_corr64 = moving_average(correct_or_not, 64)
+
+fig, axs = plt.subplots(4, 1)
 axs[0].set_title(experiment_label)
 axs[0].scatter([i for i in range(len(correct_or_not))], correct_or_not)
+axs[0].set_xlim([-20, num_repeats+20])
 axs[1].scatter([i for i in range(len(cycle_error))], cycle_error)
+axs[1].set_xlim([-20, num_repeats+20])
 axs[1].plot([0, len(cycle_error)], [75, 75], 'r')
+axs[2].plot([i+5 for i in range(len(ave_corr10))], ave_corr10)
+axs[2].plot([0, num_repeats], [0.9, 0.9], 'r')
+axs[2].plot([0, num_repeats], [0.95, 0.95], 'g')
+axs[2].set_xlim([-20, num_repeats+20])
+axs[3].plot([i+32 for i in range(len(ave_corr64))], ave_corr64)
+axs[3].plot([0, num_repeats], [0.9, 0.9], 'r')
+axs[3].plot([0, num_repeats], [0.95, 0.95], 'g')
+axs[3].set_xlim([-20, num_repeats+20])
 plt.show()
 
 print("plotted curves")
