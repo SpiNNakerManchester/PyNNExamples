@@ -168,9 +168,11 @@ def first_create_pops():
 
     runtime = cycle_time * num_repeats
 
-    experiment_label = "c-{} eta-{}_{} - size-{}_{} - weights-{} - p_conn-{}_{}_{} - rec-{} - cycle-{}_{}_{} b-{}".format(
-        readout_neuron_params["number_of_cues"], readout_neuron_params["eta"], neuron_params["eta"], input_size, neuron_pop_size, weight_string, p_connect_in,
-        p_connect_rec, p_connect_out, recurrent_connections, cycle_time, window_size, runtime, threshold_beta)
+    experiment_label = "c-{} eta-{}_{} - size-{}_{} - " \
+                       "rec-{} - cycle-{}_{}_{} b-{}".format(  # "weights-{} - p_conn-{}_{}_{} - " \
+        readout_neuron_params["number_of_cues"], readout_neuron_params["eta"], neuron_params["eta"], input_size, neuron_pop_size,
+        # weight_string, p_connect_in, p_connect_rec, p_connect_out,
+        recurrent_connections, cycle_time, window_size, runtime, threshold_beta)
     print("\n", experiment_label, "\n")
 
     return experiment_label, runtime, pynn, in_proj, recurrent_proj, out_proj, input_pop, neuron, readout_pop, \
@@ -283,26 +285,30 @@ def next_create_pops(from_list_in, from_list_rec, from_list_out):
     cycle_time = int(window_size / window_cycles)
     runtime = cycle_time * num_repeats
 
-    experiment_label = "c-{} eta-{}_{} - size-{}_{} - weights-{} - p_conn-{}_{}_{} - rec-{} - cycle-{}_{}_{} b-{}".format(
-        readout_neuron_params["number_of_cues"], readout_neuron_params["eta"], neuron_params["eta"], input_size, neuron_pop_size, weight_string, p_connect_in,
-        p_connect_rec, p_connect_out, recurrent_connections, cycle_time, window_size, runtime, threshold_beta)
+    experiment_label = "c-{} eta-{}_{} - size-{}_{} - " \
+                       "rec-{} - cycle-{}_{}_{} b-{}".format(  # "weights-{} - p_conn-{}_{}_{} - " \
+        readout_neuron_params["number_of_cues"], readout_neuron_params["eta"], neuron_params["eta"], input_size, neuron_pop_size,
+        # weight_string, p_connect_in, p_connect_rec, p_connect_out,
+        recurrent_connections, cycle_time, window_size, runtime, threshold_beta)
     print("\n", experiment_label, "\n")
 
     return experiment_label, runtime, pynn, in_proj, recurrent_proj, out_proj, input_pop, neuron, readout_pop, \
            from_list_in, from_list_rec, from_list_out
 
 def run_until(experiment_label, runtime, pynn, in_proj, recurrent_proj, out_proj, input_pop, neuron, readout_pop,
-              from_list_in, from_list_rec, from_list_out, threshold=0.95):
+              from_list_in, from_list_rec, from_list_out,
+              correct_or_not, cycle_error, threshold=0.95, cue_break=[]):
     good_performance = False
     current_window = 0
     current_iter = current_window * window_cycles
     window_size = neuron_params["window_size"]
     cycle_time = int(window_size / window_cycles)
     runtime = cycle_time * num_repeats
-    cycle_error = [0.0 for i in range(int(runtime/window_size))]
-    correct_or_not = [0 for i in range(int(runtime/window_size))]
+    # cycle_error = [0.0 for i in range(int(runtime/window_size))]
+    # correct_or_not = [0 for i in range(int(runtime/window_size))]
 
     while current_window * window_size < runtime:
+        print(experiment_label)
         pynn.run(window_size)
         # in_spikes = input_pop.get_data('spikes', clear=True)
         # neuron_res = neuron.get_data('all', clear=True)
@@ -310,15 +316,17 @@ def run_until(experiment_label, runtime, pynn, in_proj, recurrent_proj, out_proj
         # plot_start = (window_size * current_window)
         # plot_end = (window_size * current_window)
 
-        total_error = 0.0
         for cycle in range(window_cycles):
+            cycle_error.append(0.0)
+            correct_or_not.append([])
             for time_index in range(cycle_time):
                 instantaneous_error = np.abs(float(
                     readout_res.segments[0].filter(name='gsyn_inh')[0][time_index + ((cycle+current_iter) * cycle_time)][0]))
-                cycle_error[(current_iter)+cycle] += instantaneous_error
-                total_error += instantaneous_error
-            if cycle_error[(current_iter)+cycle] < 75:
-                correct_or_not[(current_iter)+cycle] = 1
+                cycle_error[-1] += instantaneous_error
+            if cycle_error[-1] < 75:
+                correct_or_not[-1] = 1
+            else:
+                correct_or_not[-1] = 0
 
         new_connections_in = []  # in_proj.get('weight', 'delay').connections[0]#[]
         for partition in in_proj.get('weight', 'delay').connections:
@@ -369,31 +377,35 @@ def run_until(experiment_label, runtime, pynn, in_proj, recurrent_proj, out_proj
         current_window += 1
         current_iter = current_window * window_cycles
 
-        print(cycle_error[:current_iter])
+        print(cycle_error)
         for i in range(current_window):
             print(correct_or_not[i * window_cycles:(i + 1) * window_cycles],
                   np.average(correct_or_not[i * window_cycles:(i + 1) * window_cycles]))
+        print(experiment_label)
 
-        graph_directory = './graphs/'
+        graph_directory = './big_with_labels/'
         draw_graph_from_list(new_connections_in, new_connections_rec, new_connections_out, graph_directory,
                              experiment_label + ' {}'.format(current_window), rec_flag=recurrent_connections,
                              save_flag=True)
-        plot_learning_curve(correct_or_not[:current_iter], cycle_error[:current_iter], graph_directory,
-                            experiment_label + ' {}'.format(current_window), save_flag=True)
+        plot_learning_curve(correct_or_not, cycle_error, graph_directory,
+                            experiment_label + ' {}'.format(current_window),
+                            save_flag=True,
+                            cue_break=cue_break)
 
         if current_iter > 64 and \
-                np.average(correct_or_not[(current_iter)-64: current_iter]) > threshold:
+                np.average(correct_or_not[-64:]) > threshold:
             pynn.end()
-            print(cycle_error[:current_iter])
+            print(cycle_error)
             for i in range(current_window):
                 print(correct_or_not[i * window_cycles:(i + 1) * window_cycles],
                       np.average(correct_or_not[i * window_cycles:(i + 1) * window_cycles]))
             print("Simulation has achieved threshold performance at window:", current_window)
             print("this corresponds to itertation:", current_iter)
-            good_performance = current_iter
+            print(experiment_label)
+            good_performance = len(correct_or_not)
             return new_connections_in, new_connections_rec, new_connections_out, \
-                   correct_or_not[:current_iter], cycle_error[:current_iter], good_performance
+                   correct_or_not, cycle_error, good_performance
     pynn.end()
     print("Learning has failed to achieve threshold performance in runtime")
     return new_connections_in, new_connections_rec, new_connections_out, \
-           correct_or_not[:current_iter], cycle_error[:current_iter], good_performance
+           correct_or_not, cycle_error, good_performance

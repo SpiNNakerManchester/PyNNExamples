@@ -344,6 +344,8 @@ Figure(
 
     title="neuron data for {}".format(experiment_label)
 )
+manager = plt.get_current_fig_manager()
+manager.resize(*manager.window.maxsize())
 plt.show()
 
 print("plotted neuron data")
@@ -371,6 +373,8 @@ axs[3].plot([i+32 for i in range(len(ave_corr64))], ave_corr64)
 axs[3].plot([0, num_repeats], [0.9, 0.9], 'r')
 axs[3].plot([0, num_repeats], [0.95, 0.95], 'g')
 axs[3].set_xlim([-20, num_repeats+20])
+manager = plt.get_current_fig_manager()
+manager.resize(*manager.window.maxsize())
 plt.show()
 
 print("plotted curves")

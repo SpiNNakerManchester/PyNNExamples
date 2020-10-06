@@ -22,20 +22,22 @@ transiterations = []
 for interative_cue in range(1, 9, 2):
     # run until learning threshold criteria met
     new_connections_in, new_connections_rec, new_connections_out, \
-    correct_or_not, cycle_error, final_iteration = \
+    correct_or_not_full_list, cycle_error_full_list, final_iteration = \
         run_until(experiment_label, runtime, pynn, in_proj, recurrent_proj, out_proj,
                   input_pop, neuron, readout_pop,
                   from_list_in, from_list_rec, from_list_out,
-                  threshold=learning_threshold)
+                  correct_or_not_full_list, cycle_error_full_list,
+                  threshold=learning_threshold,
+                  cue_break=transiterations)
 
     if not final_iteration:
         print("Ending simulation")
         break
     # save performance
-    for result in correct_or_not:
-        correct_or_not_full_list.append(result)
-    for err in cycle_error:
-        cycle_error_full_list.append(err)
+    # for result in correct_or_not:
+    #     correct_or_not_full_list.append(result)
+    # for err in cycle_error:
+    #     cycle_error_full_list.append(err)
     transiterations.append(final_iteration)
 
     # update cues in params
@@ -50,7 +52,7 @@ for interative_cue in range(1, 9, 2):
     from_list_in, from_list_rec, from_list_out = \
         next_create_pops(new_connections_in, new_connections_rec, new_connections_out)
 
-plot_learning_curve(correct_or_not_full_list, cycle_error_full_list, './graphs/',
+plot_learning_curve(correct_or_not_full_list, cycle_error_full_list, './big_with_labels/',
                     'full', save_flag=True)
 
 print("job done")

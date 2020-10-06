@@ -1,8 +1,9 @@
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
-# import imageio
+import imageio
 import os
+import time
 
 def load_connections(npy_label, pop_size, rec=True):
     in_conn = [list(ele) for ele in np.load(npy_label+' in.npy').tolist()]
@@ -121,9 +122,17 @@ def draw_graph_from_file(address_string, test_label, rec_flag, save_flag=False):
     nx.draw_networkx_labels(G, pos, font_size=20, font_family='sans-serif')
 
     plt.axis('off')
+    # plt.tight_layout()
+    # manager = plt.get_current_fig_manager()
+    # manager.resize(*manager.window.maxsize())
+    # print(manager.window.maxsize())
+    figure = plt.gcf()  # get current figure
+    figure.set_size_inches(16, 9)
+    plt.tight_layout()
+    # time.sleep(10)
     if save_flag:
-        plt.savefig(address_string+test_label+".png") # save as png
-    plt.show() # display
+        plt.savefig(address_string+test_label+".png", bbox_inches='tight') # save as png
+    # plt.show() # display
     plt.close()
 
 def draw_graph_from_list(from_list_in, from_list_rec, from_list_out, address_string=None, test_label=None, rec_flag=False, save_flag=False, plot_flag=False):
@@ -164,8 +173,16 @@ def draw_graph_from_list(from_list_in, from_list_rec, from_list_out, address_str
     nx.draw_networkx_labels(G, pos, font_size=20, font_family='sans-serif')
 
     plt.axis('off')
+    # plt.tight_layout()
+    # manager = plt.get_current_fig_manager()
+    # manager.resize(*manager.window.maxsize())
+    figure = plt.gcf()  # get current figure
+    figure.set_size_inches(16, 9)
+    # print(manager.window.maxsize())
+    plt.tight_layout()
+    # time.sleep(10)
     if save_flag:
-        plt.savefig(address_string+test_label+" SNN.png") # save as png
+        plt.savefig(address_string+test_label+" SNN.png", bbox_inches='tight') # save as png
     if plot_flag:
         plt.show() # display
     plt.close()
@@ -175,7 +192,7 @@ def moving_average(a, n=3):
     ret[n:] = ret[n:] - ret[:-n]
     return ret[n - 1:] / n
 
-def plot_learning_curve(correct_or_not, cycle_error, address_string, test_label, save_flag=False):
+def plot_learning_curve(correct_or_not, cycle_error, address_string, test_label, save_flag=False, cue_break=[]):
     # if not isinstance(data[0], list):
     #     data = [data]
     num_repeats = len(correct_or_not)
@@ -183,36 +200,115 @@ def plot_learning_curve(correct_or_not, cycle_error, address_string, test_label,
     ave_corr64 = moving_average(correct_or_not, 64)
 
     fig, axs = plt.subplots(4, 1)
-    axs[0].set_title(test_label)
+    fig.suptitle(test_label, fontsize=16)
     axs[0].scatter([i for i in range(len(correct_or_not))], correct_or_not)
     axs[0].set_xlim([0, num_repeats])
+    for iteration_break in cue_break:
+        axs[0].axvline(x=iteration_break, color='b')
+    axs[0].set_title('Thresholded performance')
     axs[1].scatter([i for i in range(len(cycle_error))], cycle_error)
     axs[1].set_xlim([0, num_repeats])
     axs[1].plot([0, len(cycle_error)], [75, 75], 'r')
+    for iteration_break in cue_break:
+        axs[1].axvline(x=iteration_break, color='b')
+    axs[1].set_title('Iteration error')
     axs[2].plot([i + 5 for i in range(len(ave_corr10))], ave_corr10)
     axs[2].plot([0, num_repeats], [0.9, 0.9], 'r')
     axs[2].plot([0, num_repeats], [0.95, 0.95], 'g')
+    for iteration_break in cue_break:
+        axs[2].axvline(x=iteration_break-5, color='b')
     axs[2].set_xlim([0, num_repeats])
+    axs[2].set_title('Averaged performance over 10 cycles')
     axs[3].plot([i + 32 for i in range(len(ave_corr64))], ave_corr64)
     axs[3].plot([0, num_repeats], [0.9, 0.9], 'r')
     axs[3].plot([0, num_repeats], [0.95, 0.95], 'g')
     axs[3].set_xlim([0, num_repeats])
+    for iteration_break in cue_break:
+        axs[3].axvline(x=iteration_break-32, color='b')
+    axs[3].set_title('Averaged performance over 64 cycles')
+
+    # plt.tight_layout()
+    # manager = plt.get_current_fig_manager()
+    # manager.resize(*manager.window.maxsize())
+    # manager.full_screen_toggle()
+    figure = plt.gcf()  # get current figure
+    figure.set_size_inches(16, 9)
+    # print(manager.window.maxsize())
+    # plt.tight_layout()
+    plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+    # time.sleep(10)
     if save_flag:
-        plt.savefig(address_string+test_label+" learning curve.png")
+        plt.savefig(address_string+test_label+" learning curve.png", bbox_inches='tight')
     # plt.show()
     plt.close()
 
 
-def create_video(top_directory, base_label):
+def create_video(top_directory, base_label, string_end=' SNN.png'):
+    files_for_video = [[], [], [], []]
     for root, dirs, files in os.walk(top_directory):
-        if base_label in files:
-            print("save files")
+        for filename in files:
+            if base_label in filename and string_end in filename:
+                if 'c-1' in filename:
+                    iteration = filename.replace(string_end, '')
+                    for i in range(2, 5, 1):
+                        if iteration[-i] == ' ':
+                            break
+                    iteration = int(iteration[-i+1:])
+                    files_for_video[0].append([filename, iteration])
+                elif 'c-3' in filename:
+                    iteration = filename.replace(string_end, '')
+                    for i in range(2, 5, 1):
+                        if iteration[-i] == ' ':
+                            break
+                    iteration = int(iteration[-i+1:])
+                    files_for_video[1].append([filename, iteration])
+                elif 'c-5' in filename:
+                    iteration = filename.replace(string_end, '')
+                    for i in range(2, 5, 1):
+                        if iteration[-i] == ' ':
+                            break
+                    iteration = int(iteration[-i+1:])
+                    files_for_video[2].append([filename, iteration])
+                elif 'c-7' in filename:
+                    iteration = filename.replace(string_end, '')
+                    for i in range(2, 5, 1):
+                        if iteration[-i] == ' ':
+                            break
+                    iteration = int(iteration[-i+1:])
+                    files_for_video[3].append([filename, iteration])
+                else:
+                    print("incorrect file name", filename)
+    files_for_video[0] = sorted(files_for_video[0], key=lambda l: l[1])
+    files_for_video[1] = sorted(files_for_video[1], key=lambda l: l[1])
+    files_for_video[2] = sorted(files_for_video[2], key=lambda l: l[1])
+    files_for_video[3] = sorted(files_for_video[3], key=lambda l: l[1])
+
     print("creating video")
-    # for filename in filenames:
-    #     images.append(imageio.imread(filename))
-    # imageio.mimsave(top_directory+'/videos/'+base_label+'.gif', images)
+    images = []
+    for filenames in files_for_video:
+        for filename in filenames:
+            images.append(imageio.imread(top_directory+'/'+filename[0]))
+    imageio.mimsave(top_directory+'/videos/'+base_label+string_end+'.gif', images)
+
+    # with imageio.get_writer('/path/to/movie.gif', mode='I') as writer:
+    #     for filename in filenames:
+    #         image = imageio.imread(filename)
+    #         writer.append_data(image)
 
 # draw_graph_from_file('/home/adampcloth/PycharmProjects/PyNN8Examples/eprop_testing/connection_lists/',
 #                      'full 0nd 1 cue 20n recF',
 #                      False,
 #                      save_flag=False)
+
+if __name__ == '__main__':
+    directory = '/localhome/mbaxrap7/eprop_python3/PyNN8Examples/eprop_testing/big_with_labels'
+    # label = 'eta-0.1_0.05 - size-40_100 - rec-False'
+    label = 'eta-0.03_0.015 - size-40_100 - rec-False'
+    create_video(directory, label,
+                 # string_end=' learning curve.png')
+                 string_end=' SNN.png')
+    create_video(directory, label,
+                 string_end=' learning curve.png')
+                 # string_end=' SNN.png')
+    
+    print("done")
