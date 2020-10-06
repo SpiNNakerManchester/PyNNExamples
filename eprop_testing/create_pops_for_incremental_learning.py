@@ -1,7 +1,7 @@
 import spynnaker8 as pynn
 from spynnaker.pyNN.spynnaker_external_device_plugin_manager import SpynnakerExternalDevicePluginManager
-from PyNN8Examples.eprop_testing.plot_graph import draw_graph_from_list, plot_learning_curve
-from PyNN8Examples.eprop_testing.incremental_config import *
+from eprop_testing.plot_graph import draw_graph_from_list, plot_learning_curve
+from eprop_testing.incremental_config import *
 
 def load_connections(npy_label, pop_size, rec=True):
     in_conn = [list(ele) for ele in np.load(npy_label+' in.npy').tolist()]

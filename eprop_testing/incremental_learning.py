@@ -1,6 +1,7 @@
-from PyNN8Examples.eprop_testing.plot_graph import draw_graph_from_list, plot_learning_curve
-from PyNN8Examples.eprop_testing.create_pops_for_incremental_learning import first_create_pops, next_create_pops, run_until
-from PyNN8Examples.eprop_testing.incremental_config import *
+import numpy as np
+from eprop_testing.plot_graph import draw_graph_from_list, plot_learning_curve
+from eprop_testing.create_pops_for_incremental_learning import first_create_pops, next_create_pops, run_until
+from eprop_testing.incremental_config import *
 
 np.random.seed(272727)
 
