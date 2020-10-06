@@ -168,9 +168,9 @@ def first_create_pops():
 
     runtime = cycle_time * num_repeats
 
-    experiment_label = "c-{} eta-{}_{} - size-{}_{} - " \
+    experiment_label = "c-{} {} eta-{}_{} - size-{}_{} - " \
                        "rec-{} - cycle-{}_{}_{} b-{}".format(  # "weights-{} - p_conn-{}_{}_{} - " \
-        readout_neuron_params["number_of_cues"], readout_neuron_params["eta"], neuron_params["eta"], input_size, neuron_pop_size,
+        readout_neuron_params["number_of_cues"], free_label, readout_neuron_params["eta"], neuron_params["eta"], input_size, neuron_pop_size,
         # weight_string, p_connect_in, p_connect_rec, p_connect_out,
         recurrent_connections, cycle_time, window_size, runtime, threshold_beta)
     print("\n", experiment_label, "\n")
@@ -285,9 +285,9 @@ def next_create_pops(from_list_in, from_list_rec, from_list_out):
     cycle_time = int(window_size / window_cycles)
     runtime = cycle_time * num_repeats
 
-    experiment_label = "c-{} eta-{}_{} - size-{}_{} - " \
+    experiment_label = "c-{} {} eta-{}_{} - size-{}_{} - " \
                        "rec-{} - cycle-{}_{}_{} b-{}".format(  # "weights-{} - p_conn-{}_{}_{} - " \
-        readout_neuron_params["number_of_cues"], readout_neuron_params["eta"], neuron_params["eta"], input_size, neuron_pop_size,
+        readout_neuron_params["number_of_cues"], free_label, readout_neuron_params["eta"], neuron_params["eta"], input_size, neuron_pop_size,
         # weight_string, p_connect_in, p_connect_rec, p_connect_out,
         recurrent_connections, cycle_time, window_size, runtime, threshold_beta)
     print("\n", experiment_label, "\n")

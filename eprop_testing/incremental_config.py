@@ -10,12 +10,12 @@ p_connect_in = 1.
 p_connect_rec = 1.
 p_connect_out = 1.
 recurrent_connections = False
-synapse_eta = 0.1
-tau_a = 8500  # [cycle_time - 150 + (np.random.randn() * 200) for i in range(100)]
+synapse_eta = 0.03
+tau_a = 3500  # [cycle_time - 150 + (np.random.randn() * 200) for i in range(100)]
 input_split = 100
 window_cycles = 2
 window_size = cycle_time * window_cycles
-threshold_beta = 10
+threshold_beta = 3
 
 max_weight = 8.0
 in_weight = 0.55
@@ -23,6 +23,7 @@ prompt_weight = 0.55
 rec_weight = 0  # -0.5
 out_weight = 0  # 0.01
 weight_string = "i{}-p{}-r{}-o{}".format(in_weight, prompt_weight, rec_weight, out_weight)
+free_label = 't35'
 
 input_size = 40
 readout_neuron_params = {
