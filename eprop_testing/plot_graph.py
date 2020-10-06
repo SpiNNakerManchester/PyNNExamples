@@ -3,7 +3,6 @@ import networkx as nx
 import numpy as np
 import imageio
 import os
-import time
 
 def load_connections(npy_label, pop_size, rec=True):
     in_conn = [list(ele) for ele in np.load(npy_label+' in.npy').tolist()]
@@ -129,7 +128,6 @@ def draw_graph_from_file(address_string, test_label, rec_flag, save_flag=False):
     figure = plt.gcf()  # get current figure
     figure.set_size_inches(16, 9)
     plt.tight_layout()
-    # time.sleep(10)
     if save_flag:
         plt.savefig(address_string+test_label+".png", bbox_inches='tight') # save as png
     # plt.show() # display
@@ -180,7 +178,6 @@ def draw_graph_from_list(from_list_in, from_list_rec, from_list_out, address_str
     figure.set_size_inches(16, 9)
     # print(manager.window.maxsize())
     plt.tight_layout()
-    # time.sleep(10)
     if save_flag:
         plt.savefig(address_string+test_label+" SNN.png", bbox_inches='tight') # save as png
     if plot_flag:
@@ -236,7 +233,6 @@ def plot_learning_curve(correct_or_not, cycle_error, address_string, test_label,
     # print(manager.window.maxsize())
     # plt.tight_layout()
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])
-    # time.sleep(10)
     if save_flag:
         plt.savefig(address_string+test_label+" learning curve.png", bbox_inches='tight')
     # plt.show()
@@ -289,16 +285,6 @@ def create_video(top_directory, base_label, string_end=' SNN.png'):
         for filename in filenames:
             images.append(imageio.imread(top_directory+'/'+filename[0]))
     imageio.mimsave(top_directory+'/videos/'+base_label+string_end+'.gif', images)
-
-    # with imageio.get_writer('/path/to/movie.gif', mode='I') as writer:
-    #     for filename in filenames:
-    #         image = imageio.imread(filename)
-    #         writer.append_data(image)
-
-# draw_graph_from_file('/home/adampcloth/PycharmProjects/PyNN8Examples/eprop_testing/connection_lists/',
-#                      'full 0nd 1 cue 20n recF',
-#                      False,
-#                      save_flag=False)
 
 if __name__ == '__main__':
     directory = '/localhome/mbaxrap7/eprop_python3/PyNN8Examples/eprop_testing/big_with_labels'

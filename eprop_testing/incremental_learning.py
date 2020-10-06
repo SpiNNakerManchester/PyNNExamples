@@ -1,10 +1,3 @@
-import spynnaker8 as pynn
-import numpy as np
-import matplotlib.pyplot as plt
-from PyNN8Examples.eprop_testing.frozen_poisson import build_input_spike_train, frozen_poisson_variable_hz
-from pyNN.random import NumpyRNG, RandomDistribution
-from pyNN.utility.plotting import Figure, Panel
-from spynnaker.pyNN.spynnaker_external_device_plugin_manager import SpynnakerExternalDevicePluginManager
 from PyNN8Examples.eprop_testing.plot_graph import draw_graph_from_list, plot_learning_curve
 from PyNN8Examples.eprop_testing.create_pops_for_incremental_learning import first_create_pops, next_create_pops, run_until
 from PyNN8Examples.eprop_testing.incremental_config import *
@@ -33,11 +26,6 @@ for interative_cue in range(1, 9, 2):
     if not final_iteration:
         print("Ending simulation")
         break
-    # save performance
-    # for result in correct_or_not:
-    #     correct_or_not_full_list.append(result)
-    # for err in cycle_error:
-    #     cycle_error_full_list.append(err)
     transiterations.append(final_iteration)
 
     # update cues in params

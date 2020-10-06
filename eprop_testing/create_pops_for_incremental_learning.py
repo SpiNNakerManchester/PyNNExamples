@@ -1,9 +1,4 @@
 import spynnaker8 as pynn
-import numpy as np
-import matplotlib.pyplot as plt
-from PyNN8Examples.eprop_testing.frozen_poisson import build_input_spike_train, frozen_poisson_variable_hz
-from pyNN.random import NumpyRNG, RandomDistribution
-from pyNN.utility.plotting import Figure, Panel
 from spynnaker.pyNN.spynnaker_external_device_plugin_manager import SpynnakerExternalDevicePluginManager
 from PyNN8Examples.eprop_testing.plot_graph import draw_graph_from_list, plot_learning_curve
 from PyNN8Examples.eprop_testing.incremental_config import *
@@ -73,8 +68,6 @@ def first_create_pops():
     pynn.setup(timestep=1)
     input_pop = pynn.Population(input_size,
                                 pynn.SpikeSourcePoisson(rate=rates),
-                                # {'spike_times': build_input_spike_train(num_repeats, cycle_time, input_size)},
-                                # {'spike_times': frozen_poisson_variable_hz(num_repeats, cycle_time, input_split, input_split, input_size)},
                                 label='input_pop')
     neuron = pynn.Population(neuron_pop_size,
                              pynn.extra_models.EPropAdaptive(**neuron_params),
@@ -97,10 +90,6 @@ def first_create_pops():
 
     # from_list_in, max_syn_per_input = probability_connector(input_size, neuron_pop_size, p_connect_in)
     ps = int(readout_neuron_params["poisson_pop_size"])
-    # from_list_in = range_connector(0, ps, 0, neuron_pop_size/2, weight=in_weight)  # connect 1/2st 2 left
-    # from_list_in += range_connector(ps, ps*2, neuron_pop_size/2, neuron_pop_size, weight=in_weight)  # connect 2/2nd 2 right
-    # from_list_in = range_connector(0, ps*2, 0, neuron_pop_size, weight=in_weight)  # connect all cues to pop
-    # from_list_in += range_connector(ps*2, ps*3, 0, neuron_pop_size, delay_offset=0, weight=prompt_weight)  # connect all 2 prompt
     from_list_in = range_connector(0, ps * 2, 0, neuron_pop_size, delay_offset=0,
                                    weight=in_weight)  # connect all 2 prompt
     from_list_in += range_connector(ps * 2, ps * 4, 0, neuron_pop_size, delay_offset=0,
@@ -118,12 +107,6 @@ def first_create_pops():
         weight_dependence=pynn.extra_models.WeightDependenceEpropReg(
             w_min=-max_weight, w_max=max_weight, reg_rate=0.0))
 
-    # from_list_out = [[i, 0, weight_distribution(input_size), i] for i in range(input_size)]
-    # from_list_out, max_syn_per_output = probability_connector(neuron_pop_size, 2, p_connect_out)
-    # from_list_out = range_connector(0, neuron_pop_size/2, 1, 2, weight=out_weight)  # connect 1/2st 2 right output
-    # from_list_out += range_connector(neuron_pop_size/2, neuron_pop_size, 0, 1, weight=out_weight)  # connect 2/2nd 2 left output
-    # from_list_out += range_connector(0, neuron_pop_size/2, 0, 1, weight=-out_weight)  # connect 1/2st -2 left output
-    # from_list_out += range_connector(neuron_pop_size/2, neuron_pop_size, 1, 2, weight=-out_weight)  # connect 2/2nd -2 right output
     from_list_out = range_connector(0, neuron_pop_size, 0, 2, weight=out_weight)  # connect all
     out_proj = pynn.Projection(neuron,
                                readout_pop,
@@ -145,9 +128,6 @@ def first_create_pops():
             weight_dependence=pynn.extra_models.WeightDependenceEpropReg(
                 w_min=-max_weight, w_max=max_weight, reg_rate=reg_rate))
 
-        # from_list_rec, max_syn_per_rec = probability_connector(neuron_pop_size, neuron_pop_size, p_connect_rec, offset=0)
-        # from_list_rec = range_connector(0, neuron_pop_size/2, neuron_pop_size/2, neuron_pop_size, weight=rec_weight, delay_offset=100)  # inhibitory connections between 1/2s
-        # from_list_rec += range_connector(neuron_pop_size/2, neuron_pop_size, 0, neuron_pop_size/2, weight=rec_weight, delay_offset=100)  # inhibitory connections between 1/2s
         from_list_rec = range_connector(0, neuron_pop_size, 0, neuron_pop_size, weight=rec_weight,
                                         delay_offset=100)  # recurrent connections
         recurrent_proj = pynn.Projection(neuron,
@@ -304,8 +284,6 @@ def run_until(experiment_label, runtime, pynn, in_proj, recurrent_proj, out_proj
     window_size = neuron_params["window_size"]
     cycle_time = int(window_size / window_cycles)
     runtime = cycle_time * num_repeats
-    # cycle_error = [0.0 for i in range(int(runtime/window_size))]
-    # correct_or_not = [0 for i in range(int(runtime/window_size))]
 
     while current_window * window_size < runtime:
         print(experiment_label)
@@ -313,8 +291,6 @@ def run_until(experiment_label, runtime, pynn, in_proj, recurrent_proj, out_proj
         # in_spikes = input_pop.get_data('spikes', clear=True)
         # neuron_res = neuron.get_data('all', clear=True)
         readout_res = readout_pop.get_data('all', clear=True)
-        # plot_start = (window_size * current_window)
-        # plot_end = (window_size * current_window)
 
         for cycle in range(window_cycles):
             cycle_error.append(0.0)

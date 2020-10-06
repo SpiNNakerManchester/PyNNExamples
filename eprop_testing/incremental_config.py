@@ -32,7 +32,6 @@ readout_neuron_params = {
     "poisson_pop_size": input_size / 4,
     "rate_on": 100,
     "rate_off": 0,
-    # "tau_m": tau_a,
     "w_fb": [1, -1, 0],
     "eta": synapse_eta * 10.,
     "window_size": window_size,
@@ -46,13 +45,11 @@ for i in range(input_size):
         rates.append(0)
 
 neuron_pop_size = 4 * 25
-# from_list_in, from_list_rec, from_list_out = load_connections('good 1 cue 20n recT', neuron_pop_size)
 
 ratio_of_LIF = 0.5
 beta = []
 for i in range(neuron_pop_size):
     if i < neuron_pop_size / 2:
-        # if i % 2 == 0:
         beta.append(threshold_beta)
     else:
         beta.append(threshold_beta)
@@ -60,12 +57,8 @@ neuron_params = {
     "v": 0,
     "i_offset": 0,
     "v_rest": 0,
-    # "w_fb": [np.random.random() for i in range(neuron_pop_size)], # best it seems
-    # "w_fb": [(np.random.random() * 2) - 1. for i in range(neuron_pop_size)],
     # "w_fb": [4*np.random.random() - 4*np.random.random() for i in range(neuron_pop_size)],  ## for both feedback weights
-    # "w_fb": [-3]*(neuron_pop_size/2) + [3]*(neuron_pop_size/2),
-    "w_fb": [3] * int(neuron_pop_size / 4) + [-3] * int(neuron_pop_size / 4) + [3] * int(neuron_pop_size / 4) + [
-        -3] * int(neuron_pop_size / 4),
+    "w_fb": [3] * int(neuron_pop_size / 4) + [-3] * int(neuron_pop_size / 4) + [3] * int(neuron_pop_size / 4) + [-3] * int(neuron_pop_size / 4),
     # "B": 0.0,
     "beta": beta,
     "target_rate": 10,
