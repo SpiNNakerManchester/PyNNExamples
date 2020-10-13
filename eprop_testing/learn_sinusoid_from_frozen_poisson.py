@@ -1,7 +1,7 @@
 import spynnaker8 as pynn
 import numpy as np
 import matplotlib.pyplot as plt
-from frozen_poisson import build_input_spike_train, frozen_poisson_variable_hz
+from PyNN8Examples.eprop_testing.frozen_poisson import build_input_spike_train, frozen_poisson_variable_hz
 from pyNN.random import NumpyRNG, RandomDistribution
 from pyNN.utility.plotting import Figure, Panel
 
@@ -10,7 +10,7 @@ def weight_distribution(pop_size):
     # base_weight = 0
     return base_weight
 
-def probability_connector(pre_pop_size, post_pop_size, prob, offset=0):
+def probability_connector(pre_pop_size, post_pop_size, prob, offset=0, base_weight=0.0):
     connections = []
     max_syn_per_neuron = 0
     for j in range(post_pop_size):
@@ -19,7 +19,7 @@ def probability_connector(pre_pop_size, post_pop_size, prob, offset=0):
         for i in range(pre_pop_size):
             if np.random.random() < prob:
                 neuron_syn_count += 1
-                conn = [i, j, weight_distribution(pre_pop_size), delay_count]
+                conn = [i, j, weight_distribution(pre_pop_size)+base_weight, delay_count]
                 delay_count += 1
                 connections.append(conn)
         if neuron_syn_count > max_syn_per_neuron:
@@ -29,7 +29,7 @@ def probability_connector(pre_pop_size, post_pop_size, prob, offset=0):
 np.random.seed(272727)
 
 cycle_time = 1024
-num_repeats = 10
+num_repeats = 100
 pynn.setup(1.0)
 
 target_data = []
@@ -40,15 +40,15 @@ for i in range(1024):
                 )
 
 
-reg_rate = 0.0001
+reg_rate = 0.00001
 p_connect_in = 1.
 p_connect_rec = 1.
 p_connect_out = 1.
 recurrent_connections = False
-synapse_eta = 0.2
+synapse_eta = 0.001
 input_split = 20
 input_speed_up = 1.
-
+base_weight = 0.55
 
 pynn.setup(timestep=1)
 
@@ -58,7 +58,8 @@ readout_neuron_params = {
     "v": 0,
     "v_thresh": 30, # controls firing rate of error neurons
     "target_data": target_data,
-    "eta": synapse_eta #- 0.1
+    "eta": synapse_eta + 0.0,
+    "update_ready": cycle_time
     }
 input_pop = pynn.Population(input_size,
                             pynn.SpikeSourceArray,
@@ -76,7 +77,8 @@ neuron_params = {
     # "B": 0.0,
     "beta": 0.0,
     "target_rate": 10,#[10 + np.random.randn() for i in range(neuron_pop_size)],
-    "eta": 0#synapse_eta #/ 4.
+    "eta": synapse_eta, #/ 4.
+    "window_size": 1
     }
 if neuron_pop_size:
     neuron = pynn.Population(neuron_pop_size,
@@ -90,6 +92,12 @@ readout_pop = pynn.Population(3, # HARDCODED 1
                            ),
                        label="readout_pop"
                        )
+
+eprop_learning_output = pynn.STDPMechanism(
+    timing_dependence=pynn.extra_models.TimingDependenceEprop(),
+    weight_dependence=pynn.extra_models.WeightDependenceEpropReg(
+        w_min=-2, w_max=2, reg_rate=0.0))
+
 if neuron_pop_size:
     start_w = [weight_distribution(neuron_pop_size*input_size) for i in range(input_size)]
     eprop_learning_neuron = pynn.STDPMechanism(
@@ -97,7 +105,7 @@ if neuron_pop_size:
         weight_dependence=pynn.extra_models.WeightDependenceEpropReg(
             w_min=-2.0, w_max=2.0, reg_rate=reg_rate))
 
-    from_list_in, max_syn_per_input = probability_connector(input_size, neuron_pop_size, p_connect_in)
+    from_list_in, max_syn_per_input = probability_connector(input_size, neuron_pop_size, p_connect_in, base_weight=base_weight)
     if max_syn_per_input > 100:
         Exception
     else:
@@ -109,12 +117,6 @@ if neuron_pop_size:
                               label='input_connections',
                               receptor_type='input_connections')
 
-eprop_learning_output = pynn.STDPMechanism(
-    timing_dependence=pynn.extra_models.TimingDependenceEprop(),
-    weight_dependence=pynn.extra_models.WeightDependenceEpropReg(
-        w_min=-2, w_max=2, reg_rate=0.0))
-
-if neuron_pop_size:
     # from_list_out = [[i, 0, weight_distribution(input_size), i] for i in range(input_size)]
     from_list_out, max_syn_per_output = probability_connector(neuron_pop_size, 1, p_connect_out)
     if max_syn_per_output > 100:
@@ -137,7 +139,7 @@ if neuron_pop_size:
                                     pynn.StaticSynapse(weight=0.5, delay=0),
                                     receptor_type='learning_signal')
 else:
-    from_list_out, max_syn_per_output = probability_connector(input_size, 1, p_connect_out)
+    from_list_out, max_syn_per_output = probability_connector(input_size, 1, p_connect_out, base_weight=base_weight)
     if max_syn_per_output > 100:
         Exception
     else:
@@ -168,7 +170,7 @@ if recurrent_connections:
                                      label='recurrent_connections',
                                      receptor_type='recurrent_connections')
 
-# input_pop.record('spikes')
+input_pop.record('spikes')
 if neuron_pop_size:
     neuron.record('spikes')
     neuron.record(['gsyn_exc', 'v', 'gsyn_inh'], indexes=[0, 1, 9, 17, 25, 33])
@@ -180,7 +182,7 @@ print("\n", experiment_label, "\n")
 
 runtime = cycle_time * num_repeats
 pynn.run(runtime)
-# in_spikes = input_pop.get_data('spikes')
+in_spikes = input_pop.get_data('spikes')
 if neuron_pop_size:
     neuron_res = neuron.get_data('all')
 readout_res = readout_pop.get_data('all')
@@ -243,6 +245,7 @@ print("weighted average", np.average(cycle_error, weights=[i for i in range(num_
 print("minimum error = ", np.min(cycle_error))
 print("minimum iteration = ", cycle_error.index(np.min(cycle_error)), "- with time stamp =", cycle_error.index(np.min(cycle_error)) * 1024)
 
+
 if neuron_pop_size:
     plt.figure()
     Figure(
@@ -252,11 +255,11 @@ if neuron_pop_size:
 
         Panel(neuron_res.segments[0].filter(name='gsyn_inh')[0], ylabel='gsyn_inh', yticks=True, xticks=True, xlim=(0, runtime)),
 
-        # Panel(in_spikes.segments[0].spiketrains, ylabel='in_spikes', xlabel='in_spikes', yticks=True, xticks=True, xlim=(0, runtime)),
+        Panel(in_spikes.segments[0].spiketrains, ylabel='in_spikes', xlabel='in_spikes', yticks=True, xticks=True, xlim=(0, runtime)),
 
         Panel(neuron_res.segments[0].spiketrains, ylabel='neuron_spikes', xlabel='neuron_spikes', yticks=True, xticks=True, xlim=(0, runtime)),
 
-        Panel(readout_res.segments[0].filter(name='v')[0], ylabel='Membrane potential (mV)', yticks=True, xticks=True, xlim=(0, runtime)),
+        Panel(readout_res.segments[0].filter(name='v')[0], ylabel='Membrane potential (mV)', yticks=True, xticks=True, xlim=(runtime-cycle_time*3, runtime)),
 
         Panel(readout_res.segments[0].filter(name='gsyn_exc')[0], ylabel='gsyn_exc', yticks=True, xticks=True, xlim=(0, runtime)),
 
@@ -268,10 +271,10 @@ if neuron_pop_size:
 else:
     plt.figure()
     Figure(
-        # Panel(in_spikes.segments[0].spiketrains, ylabel='in_spikes', xlabel='in_spikes', yticks=True, xticks=True, xlim=(0, runtime)),
+        Panel(in_spikes.segments[0].spiketrains, ylabel='in_spikes', xlabel='in_spikes', yticks=True, xticks=True, xlim=(0, runtime)),
 
         Panel(readout_res.segments[0].filter(name='v')[0], ylabel='Membrane potential (mV)', yticks=True, xticks=True,
-              xlim=(0, runtime)),
+              xlim=(runtime-cycle_time*3, runtime)),
 
         Panel(readout_res.segments[0].filter(name='gsyn_exc')[0], ylabel='gsyn_exc', yticks=True, xticks=True,
               xlim=(0, runtime)),

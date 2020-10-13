@@ -289,7 +289,8 @@ def create_video(top_directory, base_label, string_end=' SNN.png'):
 if __name__ == '__main__':
     directory = '/localhome/mbaxrap7/eprop_python3/PyNN8Examples/eprop_testing/big_with_labels'
     # label = 'eta-0.1_0.05 - size-40_100 - rec-False'
-    label = 'eta-0.03_0.015 - size-40_100 - rec-False'
+    # label = 'eta-0.03_0.015 - size-40_100 - rec-False'
+    label = 't35 eta-0.03_0.015 - size-40_100 - rec-False'
     create_video(directory, label,
                  # string_end=' learning curve.png')
                  string_end=' SNN.png')

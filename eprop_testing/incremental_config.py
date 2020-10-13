@@ -10,12 +10,12 @@ p_connect_in = 1.
 p_connect_rec = 1.
 p_connect_out = 1.
 recurrent_connections = False
-synapse_eta = 0.03
+synapse_eta = 0.003
 tau_a = 3500  # [cycle_time - 150 + (np.random.randn() * 200) for i in range(100)]
 input_split = 100
 window_cycles = 2
 window_size = cycle_time * window_cycles
-threshold_beta = 3
+threshold_beta = 0.3
 
 max_weight = 8.0
 in_weight = 0.55
@@ -23,7 +23,7 @@ prompt_weight = 0.55
 rec_weight = 0  # -0.5
 out_weight = 0  # 0.01
 weight_string = "i{}-p{}-r{}-o{}".format(in_weight, prompt_weight, rec_weight, out_weight)
-free_label = 't35'
+free_label = 't35 rfb.3'
 
 input_size = 40
 readout_neuron_params = {
@@ -57,8 +57,8 @@ neuron_params = {
     "v": 0,
     "i_offset": 0,
     "v_rest": 0,
-    # "w_fb": [4*np.random.random() - 4*np.random.random() for i in range(neuron_pop_size)],  ## for both feedback weights
-    "w_fb": [3] * int(neuron_pop_size / 4) + [-3] * int(neuron_pop_size / 4) + [3] * int(neuron_pop_size / 4) + [-3] * int(neuron_pop_size / 4),
+    "w_fb": [5*np.random.random() - 5*np.random.random() for i in range(neuron_pop_size)],  ## for both feedback weights
+    # "w_fb": [3] * int(neuron_pop_size / 4) + [-3] * int(neuron_pop_size / 4) + [3] * int(neuron_pop_size / 4) + [-3] * int(neuron_pop_size / 4),
     # "B": 0.0,
     "beta": beta,
     "target_rate": 10,
