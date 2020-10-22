@@ -62,7 +62,7 @@ max_weight = 8.0
 in_weight = 0.55
 prompt_weight = 0.55
 rec_weight = 0#-0.5
-out_weight = 0#0.01
+out_weight = 0
 weight_string = "i{}-p{}-r{}-o{}".format(in_weight, prompt_weight, rec_weight, out_weight)
 pynn.setup(timestep=1)
 
@@ -320,7 +320,6 @@ print(experiment_label)
 #     title="neuron data for {}".format(experiment_label)
 # )
 # plt.show()
-
 
 plot_start = runtime-(cycle_time*15)
 plot_end = runtime
