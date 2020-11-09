@@ -13,3 +13,4 @@
 **/SpiNNFrontEndCommon/**
 **/sPyNNaker/**
 **/sPyNNaker8/**
+**/.pylintrc
