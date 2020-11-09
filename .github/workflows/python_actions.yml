@@ -36,28 +36,105 @@ jobs:
 
     - name: Checkout
       uses: actions/checkout@v2
-
     - name: Checkout SupportScripts
       uses: actions/checkout@v2
       with:
         repository: SpiNNakerManchester/SupportScripts
         path: support
 
-    - name: Instal lint tools
+    - name: Checkout Spinnaker Dependencies
       run: |
-        pip install 'pylint<2.5' flake8
+        support/gitclone2.sh https://github.com/SpiNNakerManchester/SpiNNUtils.git
+        support/gitclone2.sh https://github.com/SpiNNakerManchester/SpiNNMachine.git
+        support/gitclone2.sh https://github.com/SpiNNakerManchester/SpiNNMan.git
+        support/gitclone2.sh https://github.com/SpiNNakerManchester/PACMAN.git
+        support/gitclone2.sh https://github.com/SpiNNakerManchester/DataSpecification.git
+        support/gitclone2.sh https://github.com/SpiNNakerManchester/spalloc.git
+        support/gitclone2.sh git://github.com/SpiNNakerManchester/SpiNNFrontEndCommon.git
+        support/gitclone.sh https://github.com/SpiNNakerManchester/sPyNNaker.git
+        support/gitclone.sh https://github.com/SpiNNakerManchester/sPyNNaker8.git
+
+    - name: Install -pip
+      run: |
+        python -m pip install --upgrade pip
+        pip install 'pylint<2.5' python-coveralls 'coverage>=4.4,<5.0'
+
+    - name: Install SpiNNUtils
+      run: python setup.py install
+      working-directory: SpiNNUtils
+
+    - name: Install SpiNNMachine
+      run: python setup.py install
+      working-directory: SpiNNMachine
+
+    - name: Install SpiNNMan
+      run: python setup.py install
+      working-directory: SpiNNMan
+
+    - name: Preinstall pacman requirements (2.7 Only)
+      if: matrix.python-version == 2.7
+      run: pip install -r requirements.txt
+      working-directory: PACMAN
+
+    - name: Install PACMAN
+      run: python setup.py install
+      working-directory: PACMAN
+
+    - name: Install DataSpecification
+      run: python setup.py install
+      working-directory: DataSpecification
+
+    - name: Install spalloc
+      run: python setup.py install
+      working-directory: spalloc
+
+    - name: Preinstall SpiNNFrontEndCommon requirements (2.7 Only)
+      if: matrix.python-version == 2.7
+      run: pip install -r requirements.txt
+      working-directory: SpiNNFrontEndCommon
+
+    - name: Install SpiNNFrontEndCommon
+      run: python setup.py install
+      working-directory: SpiNNFrontEndCommon
+
+    - name: Preinstall sPyNNaker requirements (2.7 Only)
+      if: matrix.python-version == 2.7
+      run: pip install -r requirements.txt
+      working-directory: sPyNNaker
+
+    - name: Install sPyNNaker
+      run: python setup.py install
+      working-directory: sPyNNaker
+
+    - name: Preinstall sPyNNaker8 requirements (2.7 Only)
+      if: matrix.python-version == 2.7
+      run: pip install -r requirements.txt
+      working-directory: sPyNNaker8
+
+    - name: Install sPyNNaker8
+      run: python setup.py install
+      working-directory: sPyNNaker8
+
+    - name: Create a spynnaker.cfg
+      run: |
+        echo '[Machine]' > ~/.spynnaker.cfg
+        echo "machineName = $SPINNAKER_BOARD_ADDRESS" >> ~/.spynnaker.cfg
+        echo "version = ${SPINNAKER_BOARD_VERSION:-5}" >> ~/.spynnaker.cfg
+        echo '[Database]' >> ~/.spynnaker.cfg
+        echo '[Simulation]' >> ~/.spynnaker.cfg
+        echo '[Buffers]' >> ~/.spynnaker.cfg
 
     - name: Lint with flake8
       run: |
         # run flake8
-        flake8
+        flake8 balanced_random learning sudoku synfire
 
-    #- name: Lint with pylint
-    #  # Broken in 2.7 as it can not find data_specification.exceptions
-    #  if: matrix.python-version != 2.7
-    #  # Note that there's special conditioning of the return code of pylint
-    #  run: |
-    #    pylint --output-format=colorized --disable=R,C balanced_random learning sudoku synfire || exit $(($? & 35))
+    - name: Lint with pylint
+      # Broken in 2.7 as it can not find data_specification.exceptions
+      if: matrix.python-version != 2.7
+      # Note that there's special conditioning of the return code of pylint
+      run: |
+        pylint --output-format=colorized --disable=R,C balanced_random learning sudoku synfire || exit $(($? & 35))
 
     - name: Run rat copyright enforcement
       if: matrix.python-version == 3.6
