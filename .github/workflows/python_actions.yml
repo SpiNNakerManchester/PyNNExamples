@@ -43,6 +43,10 @@ jobs:
         repository: SpiNNakerManchester/SupportScripts
         path: support
 
+    - name: Instal lint tools
+      run: |
+        pip install 'pylint<2.5' flake8
+
     - name: Lint with flake8
       run: |
         # run flake8
