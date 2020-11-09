@@ -57,7 +57,7 @@ jobs:
       if: matrix.python-version != 2.7
       # Note that there's special conditioning of the return code of pylint
       run: |
-        pylint --output-format=colorized --disable=R,C || exit $(($? & 35))
+        pylint --output-format=colorized --disable=R,C balanced_random learning sudoku synfire || exit $(($? & 35))
 
     - name: Run rat copyright enforcement
       if: matrix.python-version == 3.6
