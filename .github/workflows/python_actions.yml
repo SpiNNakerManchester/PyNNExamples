@@ -52,12 +52,12 @@ jobs:
         # run flake8
         flake8
 
-    - name: Lint with pylint
-      # Broken in 2.7 as it can not find data_specification.exceptions
-      if: matrix.python-version != 2.7
-      # Note that there's special conditioning of the return code of pylint
-      run: |
-        pylint --output-format=colorized --disable=R,C balanced_random learning sudoku synfire || exit $(($? & 35))
+    #- name: Lint with pylint
+    #  # Broken in 2.7 as it can not find data_specification.exceptions
+    #  if: matrix.python-version != 2.7
+    #  # Note that there's special conditioning of the return code of pylint
+    #  run: |
+    #    pylint --output-format=colorized --disable=R,C balanced_random learning sudoku synfire || exit $(($? & 35))
 
     - name: Run rat copyright enforcement
       if: matrix.python-version == 3.6
