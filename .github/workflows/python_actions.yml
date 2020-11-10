@@ -50,9 +50,9 @@ jobs:
         support/gitclone2.sh https://github.com/SpiNNakerManchester/PACMAN.git
         support/gitclone2.sh https://github.com/SpiNNakerManchester/DataSpecification.git
         support/gitclone2.sh https://github.com/SpiNNakerManchester/spalloc.git
-        support/gitclone2.sh git://github.com/SpiNNakerManchester/SpiNNFrontEndCommon.git
-        support/gitclone.sh https://github.com/SpiNNakerManchester/sPyNNaker.git
-        support/gitclone.sh https://github.com/SpiNNakerManchester/sPyNNaker8.git
+        support/gitclone2.sh https://github.com/SpiNNakerManchester/SpiNNFrontEndCommon.git
+        support/gitclone2.sh https://github.com/SpiNNakerManchester/sPyNNaker.git
+        support/gitclone2.sh https://github.com/SpiNNakerManchester/sPyNNaker8.git
 
     - name: Install -pip
       run: |
