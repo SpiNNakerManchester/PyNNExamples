@@ -16,32 +16,56 @@ import spynnaker8 as p
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 
+from pacman.model.partitioner_splitters import SplitterOneToOneLegacy
+from spynnaker.pyNN.extra_algorithms.splitter_components import \
+    SplitterAbstractPopulationVertexSlice
+from spynnaker.pyNN.extra_algorithms.splitter_components.spynnaker_splitter_slice_legacy import \
+    SpynnakerSplitterSliceLegacy
+
 runtime = 1000
 n_neurons = 100  # number of neurons in each population
 weight_to_spike = 2.0  # weight to spike
 delay = 17  # delay (above delay extension point)
 
 p.setup(timestep=1.0, min_delay=1.0, max_delay=1.0)
+p.set_number_of_neurons_per_core(p.IF_curr_exp, int(n_neurons / 2))
 
-loop_connections = list()
-for i in range(0, n_neurons):
-    single_connection = (i, (i + 1) % n_neurons, weight_to_spike, delay)
-    loop_connections.append(single_connection)
-
-injection_connection = [(0, 0)]
 neuron = p.Population(
-    n_neurons, p.IF_curr_exp(), label='pop_1')
+    n_neurons, p.IF_curr_exp(), label='pop_1',
+    additional_parameters={
+        "splitter_object": SplitterAbstractPopulationVertexSlice()})
+neuron2 = p.Population(
+    int(n_neurons / 2), p.IF_curr_exp(), label='pop_1',
+    additional_parameters={
+        "splitter_object": SplitterAbstractPopulationVertexSlice()})
+neuron3 = p.Population(
+    n_neurons * 2, p.IF_curr_exp(), label='pop_1',
+    additional_parameters={
+        "splitter_object": SplitterAbstractPopulationVertexSlice()})
+neuron4 = p.Population(
+    int(n_neurons / 3), p.IF_curr_exp(), label='pop_1',
+    additional_parameters={
+        "splitter_object": SplitterAbstractPopulationVertexSlice()})
 input = p.Population(
-    1, p.SpikeSourcePoisson(), label='inputSpikes_1')
+    n_neurons, p.SpikeSourcePoisson(), label='inputSpikes_1',
+    additional_parameters={
+        "splitter_object": SpynnakerSplitterSliceLegacy()})
+input2 = p.Population(
+    n_neurons, p.SpikeSourcePoisson(), label='inputSpikes_2',
+    additional_parameters={
+        "splitter_object": SplitterOneToOneLegacy()})
 
+for pop in [neuron, neuron2, neuron3, neuron4]:
+    for pop2 in [neuron, neuron2, neuron3, neuron4]:
+        p.Projection(
+            pop, pop2, p.FixedProbabilityConnector(p_connect=0.1),
+            p.StaticSynapse(weight=weight_to_spike, delay=delay))
 p.Projection(
-    neuron, neuron, p.FromListConnector(loop_connections),
+    input, neuron, p.OneToOneConnector(),
     p.StaticSynapse(weight=weight_to_spike, delay=delay))
 p.Projection(
-    input, neuron, p.FromListConnector(injection_connection),
+    input2, neuron, p.OneToOneConnector(),
     p.StaticSynapse(weight=weight_to_spike, delay=delay))
-
-neuron.record(['v', 'gsyn_exc', 'gsyn_inh', 'spikes'])
 
 p.run(runtime)
 
