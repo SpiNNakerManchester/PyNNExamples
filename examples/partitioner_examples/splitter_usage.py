@@ -21,7 +21,7 @@ from spynnaker.pyNN.extra_algorithms.splitter_components import (
     SplitterAbstractPopulationVertexSlice)
 from spynnaker.pyNN.extra_algorithms.splitter_components.\
     spynnaker_splitter_slice_legacy import (
-    SpynnakerSplitterSliceLegacy)
+        SpynnakerSplitterSliceLegacy)
 
 runtime = 1000
 n_neurons = 100  # number of neurons in each population
