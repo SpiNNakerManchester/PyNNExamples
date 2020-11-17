@@ -17,10 +17,11 @@ from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 
 from pacman.model.partitioner_splitters import SplitterOneToOneLegacy
-from spynnaker.pyNN.extra_algorithms.splitter_components import \
-    SplitterAbstractPopulationVertexSlice
-from spynnaker.pyNN.extra_algorithms.splitter_components.spynnaker_splitter_slice_legacy import \
-    SpynnakerSplitterSliceLegacy
+from spynnaker.pyNN.extra_algorithms.splitter_components import (
+    SplitterAbstractPopulationVertexSlice)
+from spynnaker.pyNN.extra_algorithms.splitter_components.\
+    spynnaker_splitter_slice_legacy import (
+    SpynnakerSplitterSliceLegacy)
 
 runtime = 1000
 n_neurons = 100  # number of neurons in each population
