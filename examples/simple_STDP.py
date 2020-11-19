@@ -58,6 +58,7 @@ sim.setup(timestep=0.05, min_delay=delay, max_delay=delay)
 
 # === Build the network =====================================================
 
+
 def build_spike_sequences(period, duration, n, delta_t):
     """
     Return a spike time generator for `n` neurons (spike sources), where
@@ -69,6 +70,7 @@ def build_spike_sequences(period, duration, n, delta_t):
         return [numpy.arange(
             period + j * delta_t, duration, period) for j in (i - n // 2)]
     return spike_time_gen
+
 
 spike_sequence_generator = build_spike_sequences(
     firing_period, t_stop, n, delta_t)
@@ -131,13 +133,13 @@ Figure(
     # raster plot of the presynaptic neuron spike times
     Panel(presynaptic_spikes.spiketrains,
           yticks=True, markersize=0.2, xlim=(0, t_stop)),
-        # membrane potential of the postsynaptic neuron
+    # membrane potential of the postsynaptic neuron
     Panel(postsynaptic_v.filter(name='v')[0],
           ylabel="Membrane potential (mV)",
           data_labels=[p2.label], xticks=True, yticks=True, xlim=(0, t_stop)),
     # evolution of the synaptic weights with time
-#     Panel(weights, xticks=True, yticks=True, xlabel="Time (ms)",
-#           legend=False, xlim=(0, t_stop)),
+    # Panel(weights, xticks=True, yticks=True, xlabel="Time (ms)",
+    #       legend=False, xlim=(0, t_stop)),
     # scatterplot of the final weight of each synapse against the relative
     # timing of pre- and postsynaptic spikes for that synapse
     Panel(plasticity_data,
@@ -152,6 +154,6 @@ Figure(
 # plt.savefig(figure_filename)
 plt.show()
 
-# === Clean up and quit ========================================================
+# === Clean up and quit =======================================================
 
 sim.end()
