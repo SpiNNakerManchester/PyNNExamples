@@ -35,6 +35,7 @@ neuron = p.Population(
     n_neurons, p.IF_curr_exp(), label='pop_1',
     additional_parameters={
         "splitter_object": SplitterAbstractPopulationVertexSlice()})
+neuron.record("all")
 neuron2 = p.Population(
     int(n_neurons / 2), p.IF_curr_exp(), label='pop_1',
     additional_parameters={
