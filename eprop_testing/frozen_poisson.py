@@ -4,7 +4,7 @@ def build_input_spike_train(num_repeats, cycle_time, pop_size, use_old=False):
     if use_old:
         pattern = pattern_50
     else:
-        pattern = np.load('1000 neurons - 10Hz - 100*1024s.npy').tolist()
+        pattern = np.load('1000 neurons - 10Hz - 100*1024s.npy', allow_pickle=True).tolist()
 
     # if not pop_size:
     #     pop_size = len(pattern)
