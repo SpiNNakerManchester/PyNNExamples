@@ -1,7 +1,7 @@
 import spynnaker8 as pynn
 import numpy as np
 import matplotlib.pyplot as plt
-from PyNN8Examples.eprop_testing.frozen_poisson import build_input_spike_train, frozen_poisson_variable_hz
+from eprop_testing.frozen_poisson import build_input_spike_train, frozen_poisson_variable_hz
 from pyNN.random import NumpyRNG, RandomDistribution
 from pyNN.utility.plotting import Figure, Panel
 import tables
@@ -99,7 +99,8 @@ neuron_params = {
     "v": 0,
     "i_offset": 0,
     "v_rest": 0,
-    "w_fb": [[np.random.random() for j in range(output_size)] for i in range(neuron_pop_size)], # best it seems
+#     "w_fb": [[np.random.random() for j in range(output_size)] for i in range(neuron_pop_size)], # best it seems
+    "w_fb": [RandomDistribution("uniform", low=0.0, high=1.0) for i in range(output_size)], # best it seems
     # "w_fb": [(np.random.random() * 2) - 1. for i in range(neuron_pop_size)],
     # "B": 0.0,
     "beta": 0.0,
