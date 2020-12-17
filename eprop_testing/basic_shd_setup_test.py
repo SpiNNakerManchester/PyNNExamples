@@ -50,7 +50,7 @@ def shd_to_spike_array(file_name):
 np.random.seed(272727)
 
 cycle_time = 1000
-num_repeats = 10
+num_repeats = 10 # 1
 # pynn.setup(1.0)
 
 # file_name = '/data/mbaxrap7/Heidelberg speech/shd_train.h5'
@@ -204,8 +204,9 @@ if recurrent_connections:
 
 input_pop.record('spikes')
 if neuron_pop_size:
-    neuron.record('spikes')
-    neuron.record(['gsyn_exc', 'v', 'gsyn_inh'], indexes=[0, 1, 9, 17, 25, 33])
+    neuron.record('all')
+#     neuron.record('spikes')
+#     neuron.record(['gsyn_exc', 'v', 'gsyn_inh'], indexes=[0, 1, 9, 17, 25, 33])
 readout_pop.record('all')
 
 # experiment_label = "eta:{}/{} - size:{}/{} - reg_rate:{} - p_conn:{}/{}/{} - rec:{} - 10*{}hz all2all".format(
@@ -218,14 +219,14 @@ pynn.run(runtime)
 in_spikes = input_pop.get_data('spikes')
 if neuron_pop_size:
     neuron_res = neuron.get_data('all')
-readout_res = readout_pop.get_data('all')
+readout_res = readout_pop.get_data(['v', 'gsyn_exc', 'gsyn_inh'])  # ('all')
 
 total_error = 0.0
 cycle_error = [0.0 for i in range(num_repeats)]
 for cycle in range(num_repeats):
-    for time_index in range(1024):
+    for time_index in range(cycle_time):
         instantaneous_error = np.abs(float(
-            readout_res.segments[0].filter(name='v')[0][time_index+(cycle*1024)][0]))
+            readout_res.segments[0].filter(name='v')[0][time_index+(cycle*cycle_time)][0]))
         cycle_error[cycle] += instantaneous_error
         total_error += instantaneous_error
 
@@ -269,6 +270,9 @@ if recurrent_connections:
     print("Recurrent connections\noriginal\n", np.array(from_list_out))
     print("new\n", np.array(new_connections_out))
     print("diff\n", np.array(connection_diff_out))
+
+pynn.end()
+print("job done")
 
 print(experiment_label)
 print("cycle_error =", cycle_error)
@@ -328,8 +332,8 @@ plt.scatter([i for i in range(num_repeats)], cycle_error)
 plt.title(experiment_label)
 plt.show()
 
-pynn.end()
-print("job done")
+# pynn.end()
+# print("job done")
 
 '''
 plt.figure()

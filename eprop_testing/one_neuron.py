@@ -11,7 +11,8 @@ pynn.setup(1.0)
 neuron_params = {
     "v": 0,
     "i_offset": 0,
-    "v_rest": 0
+    "v_rest": 0,
+    "w_fb": [RandomDistribution("uniform", low=0.0, high=1.0) for i in range(10)], # best it seems
     }
 
 
