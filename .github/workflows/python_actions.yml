@@ -48,6 +48,8 @@ jobs:
           SpiNNFrontEndCommon sPyNNaker sPyNNaker8
         install: true
         preinstall: ${{ matrix.python-version == 2.7 }}
+    - name: Install Python validation tools
+      run: pip install flake8
 
     - name: Lint with flake8
       run: flake8 examples
