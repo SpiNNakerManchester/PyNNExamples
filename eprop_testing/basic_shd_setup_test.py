@@ -42,7 +42,7 @@ def shd_to_spike_array(file_name):
             spike_times = times[idx]
             neuron_idx = units[idx]
             for spike, unit in zip(spike_times, neuron_idx):
-                spike_array[unit].append(spike+(cycle_time*data_count))
+                spike_array[unit].append((spike*1000)+(cycle_time*data_count))
             data_count += 1
     return spike_array, data_labels
 
@@ -50,14 +50,14 @@ def shd_to_spike_array(file_name):
 np.random.seed(272727)
 
 cycle_time = 1000
-num_repeats = 10 # 1
+num_repeats = 1 # 1
 # pynn.setup(1.0)
 
-# file_name = '/data/mbaxrap7/Heidelberg speech/shd_train.h5'
+# file_name = '/data/mbaxrap7/Heidelberg speech/shd_test.h5'
 # print("formatting data")
 # spike_times, labels = shd_to_spike_array(file_name)
 # print("pickling")
-# filename = "shd_training_english.pickle"
+# filename = "shd_testing_english.pickle"
 # outfile = open(filename, 'wb')
 # pickle.dump([spike_times, labels], outfile)
 # outfile.close()
@@ -71,7 +71,7 @@ p_connect_rec = 1.
 p_connect_out = 1.
 recurrent_connections = False
 synapse_eta = 0.001
-base_weight = 0.35
+base_weight = 0.25
 output_size = 10
 
 pynn.setup(timestep=1, max_delay=1000)
@@ -82,7 +82,7 @@ readout_neuron_params = {
     "v": 0,
     "v_thresh": 30, # controls firing rate of error neurons
     "target_data": labels,
-    "eta": 0.001, #synapse_eta + 0.0,
+    "eta": synapse_eta + 0.0,
     "update_ready": cycle_time
     }
 input_pop = pynn.Population(input_size,
@@ -102,15 +102,17 @@ neuron_params = {
 #     "w_fb": [[np.random.random() for j in range(output_size)] for i in range(neuron_pop_size)], # best it seems
     "w_fb": [RandomDistribution("uniform", low=0.0, high=1.0) for i in range(output_size)], # best it seems
     # "w_fb": [(np.random.random() * 2) - 1. for i in range(neuron_pop_size)],
-    # "B": 0.0,
-    "beta": 0.0,
+    # "small_b": 1.0,
+    "beta": 0.3,
     "target_rate": 70,#[10 + np.random.randn() for i in range(neuron_pop_size)],
-    "eta": synapse_eta / 4.,
+    "eta": synapse_eta,
     "tau_err": 1000*1.,
+    "tau_a": 2*cycle_time,
     "window_size": cycle_time,
     "input_synapses": input_size,
     "rec_synapses": recurrent_connections * neuron_pop_size,
-    "number_of_cues": 1
+    "number_of_cues": 1,
+    "scalar": 1
     }
 if neuron_pop_size:
     neuron = pynn.Population(neuron_pop_size,
@@ -150,7 +152,7 @@ if neuron_pop_size:
                               receptor_type='input_connections')
 
     # from_list_out = [[i, 0, weight_distribution(input_size), i] for i in range(input_size)]
-    from_list_out, max_syn_per_output = probability_connector(neuron_pop_size, 1, p_connect_out)
+    from_list_out, max_syn_per_output = probability_connector(neuron_pop_size, output_size, p_connect_out)
     if max_syn_per_output > 100:
         Exception
     else:
@@ -171,7 +173,7 @@ if neuron_pop_size:
                                     pynn.StaticSynapse(weight=0.5, delay=0),
                                     receptor_type='learning_signal')
 else:
-    from_list_out, max_syn_per_output = probability_connector(input_size, 1, p_connect_out, base_weight=base_weight)
+    from_list_out, max_syn_per_output = probability_connector(input_size, output_size, p_connect_out, base_weight=base_weight)
     if max_syn_per_output > 100:
         Exception
     else:
@@ -211,7 +213,7 @@ readout_pop.record('all')
 
 # experiment_label = "eta:{}/{} - size:{}/{} - reg_rate:{} - p_conn:{}/{}/{} - rec:{} - 10*{}hz all2all".format(
 #     readout_neuron_params["eta"], neuron_params["eta"], input_size, neuron_pop_size, reg_rate, p_connect_in, p_connect_rec, p_connect_out, recurrent_connections, input_split)
-experiment_label = "english training"
+experiment_label = "english training - base_w {} - eta {}".format(base_weight, synapse_eta)
 print("\n", experiment_label, "\n")
 
 runtime = cycle_time * num_repeats
@@ -226,7 +228,7 @@ cycle_error = [0.0 for i in range(num_repeats)]
 for cycle in range(num_repeats):
     for time_index in range(cycle_time):
         instantaneous_error = np.abs(float(
-            readout_res.segments[0].filter(name='v')[0][time_index+(cycle*cycle_time)][0]))
+            readout_res.segments[0].filter(name='gsyn_inh')[0][time_index+(cycle*cycle_time)][0]))
         cycle_error[cycle] += instantaneous_error
         total_error += instantaneous_error
 
@@ -271,8 +273,8 @@ if recurrent_connections:
     print("new\n", np.array(new_connections_out))
     print("diff\n", np.array(connection_diff_out))
 
-pynn.end()
-print("job done")
+# pynn.end()
+# print("job done")
 
 print(experiment_label)
 print("cycle_error =", cycle_error)
@@ -284,27 +286,29 @@ print("minimum iteration = ", cycle_error.index(np.min(cycle_error)), "- with ti
 
 
 if neuron_pop_size:
+    start_time = 0#runtime-cycle_time*3
+    end_time = runtime
     plt.figure()
     Figure(
-        Panel(neuron_res.segments[0].filter(name='v')[0], ylabel='Membrane potential (mV)', yticks=True, xticks=True, xlim=(0, runtime)),
+        Panel(neuron_res.segments[0].filter(name='v')[0], ylabel='Membrane potential (mV)', yticks=True, xticks=True, xlim=(start_time, end_time)),
 
-        Panel(neuron_res.segments[0].filter(name='gsyn_exc')[0], ylabel='gsyn_exc', yticks=True, xticks=True, xlim=(0, runtime)),
+        Panel(neuron_res.segments[0].filter(name='gsyn_exc')[0], ylabel='gsyn_exc', yticks=True, xticks=True, xlim=(start_time, end_time)),
 
-        Panel(neuron_res.segments[0].filter(name='gsyn_inh')[0], ylabel='gsyn_inh', yticks=True, xticks=True, xlim=(0, runtime)),
+        Panel(neuron_res.segments[0].filter(name='gsyn_inh')[0], ylabel='gsyn_inh', yticks=True, xticks=True, xlim=(start_time, end_time)),
 
-        Panel(in_spikes.segments[0].spiketrains, ylabel='in_spikes', xlabel='in_spikes', yticks=True, xticks=True, xlim=(runtime-cycle_time*3, runtime)),
-
-        Panel(neuron_res.segments[0].spiketrains, ylabel='neuron_spikes', xlabel='neuron_spikes', yticks=True,
-              xticks=True, xlim=(0, cycle_time * 3)),
+        Panel(in_spikes.segments[0].spiketrains, ylabel='in_spikes', xlabel='in_spikes', yticks=True, xticks=True, xlim=(start_time, end_time)),
 
         Panel(neuron_res.segments[0].spiketrains, ylabel='neuron_spikes', xlabel='neuron_spikes', yticks=True,
-              xticks=True, xlim=(runtime - cycle_time * 3, runtime)),
+              xticks=True, xlim=(start_time, end_time)),
 
-        Panel(readout_res.segments[0].filter(name='v')[0], ylabel='Membrane potential (mV)', yticks=True, xticks=True, xlim=(runtime-cycle_time*3, runtime)),
+        Panel(neuron_res.segments[0].spiketrains, ylabel='neuron_spikes', xlabel='neuron_spikes', yticks=True,
+              xticks=True, xlim=(start_time, end_time)),
 
-        Panel(readout_res.segments[0].filter(name='gsyn_exc')[0], ylabel='gsyn_exc', yticks=True, xticks=True, xlim=(0, runtime)),
+        Panel(readout_res.segments[0].filter(name='v')[0], ylabel='Membrane potential (mV)', yticks=True, xticks=True, xlim=(start_time, end_time)),
 
-        Panel(readout_res.segments[0].filter(name='gsyn_inh')[0], ylabel='gsyn_inh', yticks=True, xticks=True, xlim=(0, runtime)),
+        Panel(readout_res.segments[0].filter(name='gsyn_exc')[0], ylabel='gsyn_exc', yticks=True, xticks=True, xlim=(start_time, end_time)),
+
+        Panel(readout_res.segments[0].filter(name='gsyn_inh')[0], ylabel='gsyn_inh', yticks=True, xticks=True, xlim=(start_time, end_time)),
 
         title="neuron data for {}".format(experiment_label)
     )
@@ -332,8 +336,9 @@ plt.scatter([i for i in range(num_repeats)], cycle_error)
 plt.title(experiment_label)
 plt.show()
 
-# pynn.end()
-# print("job done")
+print("hold")
+pynn.end()
+print("job done")
 
 '''
 plt.figure()
