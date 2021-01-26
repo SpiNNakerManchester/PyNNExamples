@@ -45,7 +45,7 @@ April 2013
 """
 try:
     import pyNN.spiNNaker as sim
-except Exception:
+except ImportError:
     import spynnaker8 as sim
 
 # SpiNNaker setup

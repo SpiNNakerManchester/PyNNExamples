@@ -323,7 +323,7 @@ class Vogels2011(object):
             print("Mean learnt ie weight:%f" % mean_weight)
 
         # Create plot
-        fig, axes = pylab.subplots(3)
+        _fig, axes = pylab.subplots(3)
 
         # Plot last 200ms of static spikes (to match Brian script)
         if static_spikes_numpy is not None:
