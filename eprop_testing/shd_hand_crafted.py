@@ -1,5 +1,7 @@
 import spynnaker8 as pynn
 import numpy as np
+import seaborn as sn
+import pandas as pd
 import matplotlib.pyplot as plt
 from eprop_testing.frozen_poisson import build_input_spike_train, frozen_poisson_variable_hz
 from pyNN.random import NumpyRNG, RandomDistribution
@@ -45,11 +47,15 @@ def shd_to_spike_array(file_name):
             data_count += 1
     return spike_array, data_labels
 
+def moving_average(a, n=3):
+    ret = np.cumsum(a, dtype=float)
+    ret[n:] = ret[n:] - ret[:-n]
+    return ret[n - 1:] / n
 
 np.random.seed(272727)
 
 cycle_time = 1000
-num_repeats = 100
+num_repeats = 950
 # pynn.setup(1.0)
 
 # file_name = '/data/mbaxrap7/Heidelberg speech/shd_test.h5'
@@ -70,7 +76,7 @@ p_connect_rec = 1.
 p_connect_out = 1.
 recurrent_connections = False
 synapse_eta = 0.5
-hidden_eta_modifier = 0.#00001
+hidden_eta_modifier = 0.2
 base_weight_in = 0.35
 base_weight_out = 0.
 base_weight_rec = 0.0
@@ -78,6 +84,7 @@ max_weight = 8
 output_size = 10
 threshold_beta = 0.3
 ratio_of_LIF = 0.5
+forced_w_fb = False
 
 
 pynn.setup(timestep=1, max_delay=1000)
@@ -102,6 +109,7 @@ input_pop = pynn.Population(input_size,
 
 neuron_pop_size = 256
 beta = []
+w_fb = []
 for i in range(neuron_pop_size):
     # if i < neuron_pop_size/2:
     if np.random.random() < ratio_of_LIF:
@@ -109,12 +117,20 @@ for i in range(neuron_pop_size):
         # beta.append(threshold_beta)
     else:
         beta.append(threshold_beta)
+    if forced_w_fb:
+        feedback_weights = [0. for j in range(output_size)]
+        feedback_weights[np.random.randint(output_size)] = 1.
+    else:
+        feedback_weights = [np.random.random() for j in range(output_size)]
+    w_fb.append(feedback_weights)
+w_fb = np.array(w_fb).T.tolist()
 neuron_params = {
     "v": 0,
     "i_offset": 0,
     "v_rest": 0,
 #     "w_fb": [[np.random.random() for j in range(output_size)] for i in range(neuron_pop_size)], # best it seems
-    "w_fb": [RandomDistribution("uniform", low=0.0, high=1.0) for i in range(output_size)], # best it seems
+#     "w_fb": [RandomDistribution("uniform", low=0.0, high=1.0) for i in range(output_size)], # best it seems
+    "w_fb": w_fb,
     # "w_fb": [(np.random.random() * 2) - 1. for i in range(neuron_pop_size)],
     # "small_b": 1.0,
     "beta": beta,
@@ -230,11 +246,10 @@ readout_pop.record('all')
 
 # experiment_label = "eta:{}/{} - size:{}/{} - reg_rate:{} - p_conn:{}/{}/{} - rec:{} - 10*{}hz all2all".format(
 #     readout_neuron_params["eta"], neuron_params["eta"], input_size, neuron_pop_size, reg_rate, p_connect_in, p_connect_rec, p_connect_out, recurrent_connections, input_split)
-experiment_label = "english training - base_w in{} out{} rec{}{} - eta h{}r{} - b{}-{}".format(base_weight_in, base_weight_out,
-                                                                                base_weight_rec, recurrent_connections,
-                                                                                neuron_params["eta"],
-                                                                                readout_neuron_params["eta"],
-                                                                                threshold_beta, ratio_of_LIF)
+experiment_label = "english training - base_w in{} out{} rec{}{} - eta h{}r{} - b{}-{} - w_fb{}".format(
+    base_weight_in, base_weight_out, base_weight_rec, recurrent_connections,
+    neuron_params["eta"], readout_neuron_params["eta"],
+    threshold_beta, ratio_of_LIF, forced_w_fb)
 print("\n", experiment_label, "\n")
 
 runtime = cycle_time * num_repeats
@@ -248,6 +263,7 @@ total_error = 0.0
 cycle_error = [0.0 for i in range(num_repeats)]
 cycle_classification = [-1 for i in range(cycle_time)]
 test_classification = []
+confusion_matrix = [[0. for i in range(output_size)] for i in range(output_size)]
 for cycle in range(num_repeats):
     for time_index in range(cycle_time):
         instantaneous_error = np.abs(float(
@@ -260,6 +276,12 @@ for cycle in range(num_repeats):
             voltages[n_out] = v_mem
         cycle_classification[time_index] = voltages.index(max(voltages))
     test_classification.append([labels[cycle], max(set(cycle_classification), key=cycle_classification.count)])  # mode
+    confusion_matrix[test_classification[-1][0]][test_classification[-1][1]] += 1
+# for i in range(output_size):
+#     total_tests = sum(confusion_matrix[i])
+#     for j in range(output_size):
+#         confusion_matrix[i][j] /= total_tests
+
 correct_or_not = [int(i == j) for [i, j] in test_classification]
 
 if neuron_pop_size:
@@ -312,6 +334,17 @@ print(experiment_label)
 print("total error =", total_error)
 print("classification = ", test_classification)
 print("correct or not = ", correct_or_not)
+print("\\", "|\t", end="")
+for i in range(output_size):
+    print("{:5}\t|\t".format(i), end="")
+print("")
+class_count = 0
+for test_label in confusion_matrix:
+    print(class_count, "|\t", end="")
+    for choice in test_label:
+        print("{:5}\t|\t".format(round(choice, 3)), end="")
+    print("")
+    class_count += 1
 print("average classification = ", np.average(correct_or_not))
 print("weighted average classification = ", np.average(correct_or_not, weights=[i for i in range(num_repeats)]))
 print(experiment_label)
@@ -320,6 +353,19 @@ print("weighted average", np.average(cycle_error, weights=[i for i in range(num_
 print("minimum error = ", np.min(cycle_error))
 print("minimum iteration = ", cycle_error.index(np.min(cycle_error)), "- with time stamp =", cycle_error.index(np.min(cycle_error)) * 1024)
 
+fig, axs = plt.subplots(2, 1)
+df_cm = pd.DataFrame(confusion_matrix, range(output_size), range(output_size))
+ave_corr10 = moving_average(cycle_error, 10)
+ave_corr60 = moving_average(cycle_error, 60)
+axs[0].scatter([i for i in range(num_repeats)], cycle_error)
+axs[0].plot([i + 5 for i in range(len(ave_corr10))], ave_corr10, 'r')
+axs[0].plot([i + 30 for i in range(len(ave_corr60))], ave_corr60, 'r')
+axs[0].set_title(experiment_label)
+axs[1] = sn.heatmap(df_cm, annot=True, annot_kws={"size": 8}) # font size
+# plt.figure()
+# plt.scatter([i for i in range(num_repeats)], cycle_error)
+# plt.title(experiment_label)
+plt.show()
 
 if neuron_pop_size:
     start_time = runtime-cycle_time*10
@@ -366,11 +412,6 @@ else:
         title="neuron data for {}".format(experiment_label)
     )
     plt.show()
-
-plt.figure()
-plt.scatter([i for i in range(num_repeats)], cycle_error)
-plt.title(experiment_label)
-plt.show()
 
 print("hold")
 pynn.end()
