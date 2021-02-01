@@ -10,7 +10,7 @@ p_connect_in = 1.
 p_connect_rec = 1.
 p_connect_out = 1.
 recurrent_connections = False
-synapse_eta = 0.003
+synapse_eta = 0.01
 tau_a = 3500  # [cycle_time - 150 + (np.random.randn() * 200) for i in range(100)]
 input_split = 100
 window_cycles = 2
@@ -65,5 +65,6 @@ neuron_params = {
     "tau_a": tau_a,
     "eta": synapse_eta * 5,  # / 20.,
     "window_size": window_size,
+    "tau_err": 10000.,
     "number_of_cues": number_of_cues
 }

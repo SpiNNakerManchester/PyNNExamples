@@ -96,10 +96,10 @@ neuron_pop_size = 4*25
 ratio_of_LIF = 0.5
 beta = []
 for i in range(neuron_pop_size):
-    if i < neuron_pop_size/2:
-    # if i % 2 == 0:
-    #     beta.append(0)
-        beta.append(threshold_beta)
+    # if i < neuron_pop_size/2:
+    if i % 2 == 0:
+        beta.append(0)
+        # beta.append(threshold_beta)
     else:
         beta.append(threshold_beta)
 neuron_params = {
@@ -108,7 +108,8 @@ neuron_params = {
     "v_rest": 0,
     # "w_fb": [np.random.random() for i in range(neuron_pop_size)], # best it seems
     # "w_fb": [(np.random.random() * 2) - 1. for i in range(neuron_pop_size)],
-    "w_fb": [4*np.random.random() - 4*np.random.random() for i in range(neuron_pop_size)],  ## for both feedback weights
+    # "w_fb": [4*np.random.random() - 4*np.random.random() for i in range(neuron_pop_size)],  ## for both feedback weights
+    "w_fb": [RandomDistribution("uniform", low=0.0, high=1.0) for i in range(10)],  # best it seems
     # "w_fb": [-3]*(neuron_pop_size/2) + [3]*(neuron_pop_size/2),
     # "w_fb": [3]*int(neuron_pop_size/4) + [-3]*int(neuron_pop_size/4) + [3]*int(neuron_pop_size/4) + [-3]*int(neuron_pop_size/4),
     # "B": 0.0,
@@ -117,6 +118,7 @@ neuron_params = {
     "tau_a": tau_a,
     "eta": synapse_eta * 5,#/ 20.,
     "window_size": window_size,
+    "tau_err": 1000*1.,
     "number_of_cues": number_of_cues
     }
 neuron = pynn.Population(neuron_pop_size,
@@ -324,6 +326,8 @@ print(experiment_label)
 
 plot_start = runtime-(cycle_time*15)
 plot_end = runtime
+# plot_start = 0
+# plot_end = cycle_time*15
 plt.figure()
 Figure(
     Panel(neuron_res.segments[0].filter(name='v')[0], ylabel='Membrane potential (mV)', yticks=True, xticks=True, xlim=(plot_start, plot_end)),

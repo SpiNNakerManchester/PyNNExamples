@@ -47,6 +47,25 @@ def shd_to_spike_array(file_name):
             data_count += 1
     return spike_array, data_labels
 
+def shd_to_split_array(file_name):
+    data_labels = []
+    data_spikes = []
+    h5data = tables.open_file(file_name, mode='r')
+    units = h5data.root.spikes.units
+    times = h5data.root.spikes.times
+    labels = h5data.root.labels
+    data_count = 0
+    for idx, label in enumerate(labels):
+        if label < 10:
+            spike_array = [[] for i in range(700)]
+            data_labels.append(label)
+            spike_times = times[idx]
+            neuron_idx = units[idx]
+            for spike, unit in zip(spike_times, neuron_idx):
+                spike_array[unit].append((spike*1000))
+            data_spikes.append(spike_array.copy())
+    return data_spikes, data_labels
+
 def moving_average(a, n=3):
     ret = np.cumsum(a, dtype=float)
     ret[n:] = ret[n:] - ret[:-n]
@@ -55,14 +74,14 @@ def moving_average(a, n=3):
 np.random.seed(272727)
 
 cycle_time = 1000
-num_repeats = 950
+num_repeats = 1000
 # pynn.setup(1.0)
 
-# file_name = '/data/mbaxrap7/Heidelberg speech/shd_test.h5'
+# file_name = '/data/mbaxrap7/Heidelberg speech/shd_train.h5'
 # print("formatting data")
-# spike_times, labels = shd_to_spike_array(file_name)
+# spike_times, labels = shd_to_split_array(file_name)
 # print("pickling")
-# filename = "shd_testing_english.pickle"
+# filename = "shd_testing_english_individual.pickle"
 # outfile = open(filename, 'wb')
 # pickle.dump([spike_times, labels], outfile)
 # outfile.close()
@@ -76,15 +95,17 @@ p_connect_rec = 1.
 p_connect_out = 1.
 recurrent_connections = False
 synapse_eta = 0.5
-hidden_eta_modifier = 0.2
+hidden_eta_modifier = 0.#2
 base_weight_in = 0.35
 base_weight_out = 0.
 base_weight_rec = 0.0
 max_weight = 8
-output_size = 10
+layers = 1
 threshold_beta = 0.3
 ratio_of_LIF = 0.5
+output_size = 10
 forced_w_fb = False
+confusion_matrix_cutoff = 0.8
 
 
 pynn.setup(timestep=1, max_delay=1000)
@@ -145,9 +166,11 @@ neuron_params = {
     # "scalar": 1
     }
 if neuron_pop_size:
-    neuron = pynn.Population(neuron_pop_size,
-                             pynn.extra_models.EPropAdaptive(**neuron_params),
-                             label='eprop_pop')
+    neuron = []
+    for i in range(layers):
+        neuron.append(pynn.Population(neuron_pop_size,
+                                      pynn.extra_models.EPropAdaptive(**neuron_params),
+                                      label='eprop_pop{}'.format(i)))
 
 # Output population
 readout_pop = pynn.Population(output_size, # HARDCODED 1
@@ -175,7 +198,7 @@ if neuron_pop_size:
     else:
         print("max number of synapses per neuron:", max_syn_per_input)
     in_proj = pynn.Projection(input_pop,
-                              neuron,
+                              neuron[0],
                               pynn.FromListConnector(from_list_in),
                               synapse_type=eprop_learning_neuron,
                               label='input_connections',
@@ -188,21 +211,32 @@ if neuron_pop_size:
         Exception
     else:
         print("max number of synapses per readout:", max_syn_per_output)
-    out_proj = pynn.Projection(neuron,
+    out_proj = pynn.Projection(neuron[-1],
                                readout_pop,
                                # pynn.OneToOneConnector(),
                                pynn.FromListConnector(from_list_out),
                                synapse_type=eprop_learning_output,
                                label='input_connections',
                                receptor_type='input_connections')
-
-    learning_proj = pynn.Projection(readout_pop,
-                                    neuron,
-                                    # pynn.OneToOneConnector(),
-                                    # pynn.StaticSynapse(weight=[0.5], delay=[0]),
-                                    pynn.AllToAllConnector(),
-                                    pynn.StaticSynapse(weight=0.5, delay=0),
-                                    receptor_type='learning_signal')
+    for i in range(layers):
+        if i > 0:
+            from_list_l, max_syn_per_output = probability_connector(neuron_pop_size, neuron_pop_size, p_connect_rec,
+                                                                      base_weight=base_weight_in)
+            out_proj = pynn.Projection(neuron[i-1],
+                                       neuron[i],
+                                       # pynn.OneToOneConnector(),
+                                       pynn.FromListConnector(from_list_l),
+                                       synapse_type=eprop_learning_output,
+                                       label='input_connections',
+                                       receptor_type='input_connections')
+        neuron[i].record('all')
+        learning_proj = pynn.Projection(readout_pop,
+                                        neuron[i],
+                                        # pynn.OneToOneConnector(),
+                                        # pynn.StaticSynapse(weight=[0.5], delay=[0]),
+                                        pynn.AllToAllConnector(),
+                                        pynn.StaticSynapse(weight=0.5, delay=0),
+                                        receptor_type='learning_signal')
 else:
     from_list_out, max_syn_per_output = probability_connector(input_size, output_size, p_connect_out,
                                                               base_weight=base_weight_out)
@@ -238,25 +272,26 @@ if recurrent_connections:
                                      receptor_type='recurrent_connections')
 
 input_pop.record('spikes')
-if neuron_pop_size:
-    neuron.record('all')
 #     neuron.record('spikes')
 #     neuron.record(['gsyn_exc', 'v', 'gsyn_inh'], indexes=[0, 1, 9, 17, 25, 33])
 readout_pop.record('all')
 
 # experiment_label = "eta:{}/{} - size:{}/{} - reg_rate:{} - p_conn:{}/{}/{} - rec:{} - 10*{}hz all2all".format(
 #     readout_neuron_params["eta"], neuron_params["eta"], input_size, neuron_pop_size, reg_rate, p_connect_in, p_connect_rec, p_connect_out, recurrent_connections, input_split)
-experiment_label = "english training - base_w in{} out{} rec{}{} - eta h{}r{} - b{}-{} - w_fb{}".format(
+experiment_label = "base_w in{} out{} rec{}{} ({}x{}) eta h{}o{} - b{}-{} - w_fb{}".format(
     base_weight_in, base_weight_out, base_weight_rec, recurrent_connections,
-    neuron_params["eta"], readout_neuron_params["eta"],
+    layers, neuron_pop_size, neuron_params["eta"], readout_neuron_params["eta"],
     threshold_beta, ratio_of_LIF, forced_w_fb)
 print("\n", experiment_label, "\n")
 
 runtime = cycle_time * num_repeats
 pynn.run(runtime)
+# pynn.run(runtime/2)
 in_spikes = input_pop.get_data('spikes')
+neuron_res = []
 if neuron_pop_size:
-    neuron_res = neuron.get_data('all')
+    for i in range(layers):
+        neuron_res.append(neuron[i].get_data('all'))
 readout_res = readout_pop.get_data(['v', 'gsyn_exc', 'gsyn_inh'])  # ('all')
 
 total_error = 0.0
@@ -264,6 +299,7 @@ cycle_error = [0.0 for i in range(num_repeats)]
 cycle_classification = [-1 for i in range(cycle_time)]
 test_classification = []
 confusion_matrix = [[0. for i in range(output_size)] for i in range(output_size)]
+final_confusion_matrix = [[0. for i in range(output_size)] for i in range(output_size)]
 for cycle in range(num_repeats):
     for time_index in range(cycle_time):
         instantaneous_error = np.abs(float(
@@ -277,6 +313,8 @@ for cycle in range(num_repeats):
         cycle_classification[time_index] = voltages.index(max(voltages))
     test_classification.append([labels[cycle], max(set(cycle_classification), key=cycle_classification.count)])  # mode
     confusion_matrix[test_classification[-1][0]][test_classification[-1][1]] += 1
+    if cycle > num_repeats * confusion_matrix_cutoff:
+        final_confusion_matrix[test_classification[-1][0]][test_classification[-1][1]] += 1
 # for i in range(output_size):
 #     total_tests = sum(confusion_matrix[i])
 #     for j in range(output_size):
@@ -345,6 +383,18 @@ for test_label in confusion_matrix:
         print("{:5}\t|\t".format(round(choice, 3)), end="")
     print("")
     class_count += 1
+print("")
+print("\\", "|\t", end="")
+for i in range(output_size):
+    print("{:5}\t|\t".format(i), end="")
+print("")
+class_count = 0
+for test_label in final_confusion_matrix:
+    print(class_count, "|\t", end="")
+    for choice in test_label:
+        print("{:5}\t|\t".format(round(choice, 3)), end="")
+    print("")
+    class_count += 1
 print("average classification = ", np.average(correct_or_not))
 print("weighted average classification = ", np.average(correct_or_not, weights=[i for i in range(num_repeats)]))
 print(experiment_label)
@@ -353,17 +403,25 @@ print("weighted average", np.average(cycle_error, weights=[i for i in range(num_
 print("minimum error = ", np.min(cycle_error))
 print("minimum iteration = ", cycle_error.index(np.min(cycle_error)), "- with time stamp =", cycle_error.index(np.min(cycle_error)) * 1024)
 
-fig, axs = plt.subplots(2, 1)
+fig, axs = plt.subplots(2, 2)
 df_cm = pd.DataFrame(confusion_matrix, range(output_size), range(output_size))
-ave_corr10 = moving_average(cycle_error, 10)
-ave_corr60 = moving_average(cycle_error, 60)
-axs[0].scatter([i for i in range(num_repeats)], cycle_error)
-axs[0].plot([i + 5 for i in range(len(ave_corr10))], ave_corr10, 'r')
-axs[0].plot([i + 30 for i in range(len(ave_corr60))], ave_corr60, 'r')
-axs[0].set_title(experiment_label)
-axs[1] = sn.heatmap(df_cm, annot=True, annot_kws={"size": 8}) # font size
-# plt.figure()
-# plt.scatter([i for i in range(num_repeats)], cycle_error)
+f_df_cm = pd.DataFrame(final_confusion_matrix, range(output_size), range(output_size))
+ave_err10 = moving_average(cycle_error, 10)
+ave_err60 = moving_average(cycle_error, 60)
+axs[0][0].scatter([i for i in range(num_repeats)], cycle_error)
+axs[0][0].plot([i + 5 for i in range(len(ave_err10))], ave_err10, 'r')
+axs[0][0].plot([i + 30 for i in range(len(ave_err60))], ave_err60, 'b')
+axs[0][0].plot([0, num_repeats], [900, 900], 'g')
+axs[0][0].set_xlim([0, num_repeats])
+axs[0][0].set_title(experiment_label)
+ave_corr10 = moving_average(correct_or_not, 10)
+ave_corr60 = moving_average(correct_or_not, 60)
+axs[0][1].plot([i + 5 for i in range(len(ave_corr10))], ave_corr10, 'r')
+axs[0][1].plot([i + 30 for i in range(len(ave_corr60))], ave_corr60, 'b')
+axs[0][1].plot([0, num_repeats], [0.1, 0.1], 'g')
+axs[0][1].set_xlim([0, num_repeats])
+axs[1][0] = sn.heatmap(df_cm, annot=True, annot_kws={"size": 8}, ax=axs[1][0]) # font size
+axs[1][1] = sn.heatmap(f_df_cm, annot=True, annot_kws={"size": 8}, ax=axs[1][1]) # font size
 # plt.title(experiment_label)
 plt.show()
 
@@ -372,18 +430,18 @@ if neuron_pop_size:
     end_time = runtime
     plt.figure()
     Figure(
-        Panel(neuron_res.segments[0].filter(name='v')[0], ylabel='Membrane potential (mV)', yticks=True, xticks=True, xlim=(start_time, end_time)),
+        Panel(neuron_res[0].segments[0].filter(name='v')[0], ylabel='Membrane potential (mV)', yticks=True, xticks=True, xlim=(start_time, end_time)),
 
-        Panel(neuron_res.segments[0].filter(name='gsyn_exc')[0], ylabel='gsyn_exc', yticks=True, xticks=True, xlim=(start_time, end_time)),
+        Panel(neuron_res[0].segments[0].filter(name='gsyn_exc')[0], ylabel='gsyn_exc', yticks=True, xticks=True, xlim=(start_time, end_time)),
 
-        Panel(neuron_res.segments[0].filter(name='gsyn_inh')[0], ylabel='gsyn_inh', yticks=True, xticks=True, xlim=(start_time, end_time)),
+        Panel(neuron_res[0].segments[0].filter(name='gsyn_inh')[0], ylabel='gsyn_inh', yticks=True, xticks=True, xlim=(start_time, end_time)),
 
         Panel(in_spikes.segments[0].spiketrains, ylabel='in_spikes', xlabel='in_spikes', yticks=True, xticks=True, xlim=(start_time, end_time)),
 
-        Panel(neuron_res.segments[0].spiketrains, ylabel='neuron_spikes', xlabel='neuron_spikes', yticks=True,
+        Panel(neuron_res[0].segments[0].spiketrains, ylabel='neuron_spikes', xlabel='neuron_spikes', yticks=True,
               xticks=True, xlim=(0, runtime-start_time)),
 
-        Panel(neuron_res.segments[0].spiketrains, ylabel='neuron_spikes', xlabel='neuron_spikes', yticks=True,
+        Panel(neuron_res[0].segments[0].spiketrains, ylabel='neuron_spikes', xlabel='neuron_spikes', yticks=True,
               xticks=True, xlim=(start_time, end_time)),
 
         Panel(readout_res.segments[0].filter(name='v')[0], ylabel='Membrane potential (mV)', yticks=True, xticks=True, xlim=(start_time, end_time)),
