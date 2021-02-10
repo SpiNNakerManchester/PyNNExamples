@@ -17,7 +17,7 @@ import spynnaker8 as sim
 import numpy
 import os
 import matplotlib.pyplot as pylab
-from spynnaker8.utilities import neo_convertor
+from spynnaker.pyNN.utilities import neo_convertor
 
 # how much slowdown to put into the network to allow it to run without any
 # runtime errors
