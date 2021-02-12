@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# imports of both spynnaker and external device plugin.
 import random
 import spynnaker8 as Frontend
 import time
@@ -58,11 +57,11 @@ def send_input_backward(label, sender):
 
 
 # Create a receiver of live spikes
-def receive_spikes(label, time, neuron_ids):
+def receive_spikes(label, _time, neuron_ids):
     for neuron_id in neuron_ids:
         print_condition.acquire()
         print("Received spike at time {} from {} - {}".format(
-            time, label, neuron_id))
+            _time, label, neuron_id))
         print_condition.release()
 
 

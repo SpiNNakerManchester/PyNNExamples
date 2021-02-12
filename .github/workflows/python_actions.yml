@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [2.7, 3.6, 3.7, 3.8]
+        python-version: [3.6, 3.7, 3.8]
 
     steps:
     - name: Set up Python ${{ matrix.python-version }}
@@ -47,15 +47,12 @@ jobs:
           SpiNNUtils SpiNNMachine SpiNNMan PACMAN DataSpecification spalloc
           SpiNNFrontEndCommon sPyNNaker sPyNNaker8
         install: true
-        preinstall: ${{ matrix.python-version == 2.7 }}
     - name: Install Python validation tools
       run: pip install flake8
 
     - name: Lint with flake8
       run: flake8 examples
     - name: Lint with pylint
-      # Broken in 2.7 as it can not find data_specification.exceptions
-      if: matrix.python-version != 2.7
       uses: ./support/actions/pylint
       with:
         package: examples

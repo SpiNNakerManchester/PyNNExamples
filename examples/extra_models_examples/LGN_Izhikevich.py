@@ -40,6 +40,7 @@ SpiNNaker machine", Frontiers in Neuroscience, vol. 11 (454), 2017.
 Free online access:
 http://journal.frontiersin.org/article/10.3389/fnins.2017.00454/abstract
 """
+# pylint: disable=pointless-string-statement
 
 import spynnaker8 as p
 import numpy as np
