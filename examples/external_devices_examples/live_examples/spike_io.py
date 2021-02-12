@@ -29,8 +29,8 @@ print_condition = Condition()
 
 
 # Create an initialisation method
-def init_pop(label, _n_neurons, run_time_ms, machine_timestep_ms):
-    print("{} has {} neurons".format(label, _n_neurons))
+def init_pop(label, n_neurons, run_time_ms, machine_timestep_ms):
+    print("{} has {} neurons".format(label, n_neurons))
     print("Simulation will run for {}ms at {}ms timesteps".format(
         run_time_ms, machine_timestep_ms))
 
