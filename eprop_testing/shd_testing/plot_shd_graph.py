@@ -222,7 +222,10 @@ def plot_learning_curve(correct_or_not, cycle_error, confusion_matrix, final_con
     axs[0][1].scatter([i for i in range(len(correct_or_not))], correct_or_not)
     axs[0][1].plot([i + 5 for i in range(len(ave_corr10))], ave_corr10, 'r')
     axs[0][1].plot([i + 30 for i in range(len(ave_corr60))], ave_corr60, 'b')
-    axs[0][1].plot([0, len(correct_or_not)], [0.1, 0.1], 'g')
+    axs[0][1].plot([0, len(correct_or_not)], [0.5, 0.5], 'r')
+    axs[0][1].plot([0, len(correct_or_not)], [0.7, 0.7], 'g')
+    for iteration_break in cue_break:
+        axs[0][1].axvline(x=iteration_break, color='b')
     axs[0][1].set_xlim([0, len(correct_or_not)])
     axs[0][1].set_ylim([0, 1])
     axs[0][1].set_title("classification error")
