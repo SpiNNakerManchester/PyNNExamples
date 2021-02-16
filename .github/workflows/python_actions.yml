@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.6, 3.7, 3.8]
+        python-version: [3.6, 3.7, 3.8, 3.9]
 
     steps:
     - name: Checkout
@@ -67,5 +67,5 @@ jobs:
         repository: SpiNNakerManchester/SupportScripts
         path: support
     - name: Run rat copyright enforcement
-      if: matrix.python-version == 3.6
+      if: matrix.python-version == 3.8
       uses: ./support/actions/check-copyrights
