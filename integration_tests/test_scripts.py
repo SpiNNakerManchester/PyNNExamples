@@ -15,6 +15,8 @@
 
 from spinnaker_testbase import ScriptChecker
 
+remove_me_to_run = 1/0
+
 
 class TestScripts(ScriptChecker):
     """
