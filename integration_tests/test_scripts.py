@@ -15,8 +15,6 @@
 
 from spinnaker_testbase import ScriptChecker
 
-remove_me_to_run = 1/0
-
 
 class TestScripts(ScriptChecker):
     """
@@ -26,7 +24,7 @@ class TestScripts(ScriptChecker):
     It is rebuilt each time SpiNNakerManchester/IntegrationTests is run
 
     If it is out of date please edit and run script_builder.py
-    Then the new file can be added to githuib for reference only.
+    Then the new file can be added to github for reference only.
     """
     def test_balanced_random_balanced_random(self):
         self.check_script("balanced_random/balanced_random.py")
