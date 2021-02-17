@@ -73,16 +73,18 @@ def range_connector(pre_min, pre_max, post_min, post_max, weight=1.5, delay_offs
     return connections
 
 def collect_tests_and_labels(selected_classes):
-    new_labels = []
+    test_idx = [i for i in range(min(max_tests, 399*len(selected_classes)))]
     new_spikes = [[] for i in range(700)]
+    new_labels = [-1 for i in range(len(test_idx))]
+    np.random.shuffle(test_idx)
     count = -1
     for spike, label in zip(spike_times, labels):
         if label in selected_classes:
             count += 1
-            new_labels.append(label)
+            new_labels[test_idx[count]] = label
             for idx, neuron in enumerate(spike):
-                new_spikes[idx] = new_spikes[idx] + list(map(lambda x: x + (1000*count), neuron))
-        if count+1 >= max_tests:
+                new_spikes[idx] = new_spikes[idx] + list(map(lambda x: x + (1000*test_idx[count]), neuron))
+        if count+1 >= max_tests or count+1 >= len(test_idx):
             break
     return new_labels, new_spikes
 
@@ -421,22 +423,23 @@ def run_until(experiment_label, runtime, pynn, in_proj, recurrent_proj, layer_pr
               input_pop, neuron, readout_pop,
               from_list_in, from_list_rec, from_list_out,
               correct_or_not, cycle_error, confusion_matrix, new_labels,
-              threshold=0.95, cue_break=[]):
+              threshold=0.95, cue_break=[], final_class=False):
     good_performance = False
     current_window = 0
     current_iter = current_window * window_cycles
     # window_size = neuron_params["window_size"] * window_cycles
     runtime = cycle_time * len(readout_neuron_params["target_data"])
 
+    final_confusion_matrix = [[0. for i in range(output_size)] for j in range(output_size)]
     while (current_window+1) * cycle_time * window_cycles < runtime:
         print(experiment_label)
         pynn.run(cycle_time*window_cycles)
         readout_res = readout_pop.get_data(['gsyn_exc', 'v', 'gsyn_inh'])#, clear=True)
 
-        final_confusion_matrix = [[0. for i in range(output_size)] for i in range(output_size)]
         for i in range(len(confusion_matrix)):
             for j in range(len(confusion_matrix[0])):
-                confusion_matrix[i][j] *= confusion_decay
+                confusion_matrix[i][j] *= long_confusion_decay
+                final_confusion_matrix[i][j] *= short_confusion_decay
         test_classification = []
         for cycle in range(window_cycles):
             cycle_error.append(0.0)
@@ -468,15 +471,15 @@ def run_until(experiment_label, runtime, pynn, in_proj, recurrent_proj, layer_pr
         print_status(current_window, experiment_label, cycle_error, test_classification, correct_or_not,
                      confusion_matrix, final_confusion_matrix, new_labels, cue_break)
 
-        if len(correct_or_not) >= 50:
+        if current_iter >= 50:
             print(cue_break)
-        if len(correct_or_not) >= 100:
+        if current_iter >= 100:
             print(cue_break)
-        if len(correct_or_not) >= 200:
+        if current_iter >= 200:
             print(cue_break)
-        if len(correct_or_not) >= 300:
+        if current_iter >= 300:
             print(cue_break)
-        if len(correct_or_not) >= 400:
+        if current_iter >= 400:
             print(cue_break)
 
         if record_data and plot_membranes:
@@ -530,7 +533,7 @@ def run_until(experiment_label, runtime, pynn, in_proj, recurrent_proj, layer_pr
                                 plot_flag=False)
 
         if current_iter > 100 and \
-                np.average(correct_or_not[-100:]) > threshold:
+                np.average(correct_or_not[-100:]) > threshold and not final_class:
         # if current_iter > 0 and \
         #         np.average(correct_or_not[-10:]) > threshold:
             new_connections_in, new_connections_out, new_connections_rec, new_connections_layer = \

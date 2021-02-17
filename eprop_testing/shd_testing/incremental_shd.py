@@ -23,7 +23,8 @@ for number_of_classes in range(no_class_start, output_size+class_progress, class
                   from_list_in, from_list_rec, from_list_out,
                   correct_or_not_full_list, cycle_error_full_list, confusion_matrix, new_labels,
                   threshold=learning_threshold,
-                  cue_break=transiterations)
+                  cue_break=transiterations,
+                  final_class=(min(number_of_classes, 10) == 10))  # increase if increase classes
 
     if not final_iteration or number_of_classes >= output_size:
         print("Ending simulation")
@@ -37,7 +38,7 @@ for number_of_classes in range(no_class_start, output_size+class_progress, class
     from_list_in, from_list_rec, from_list_out, new_labels = \
         next_create_pops(new_connections_in, new_connections_rec,
                          new_connections_layer, new_connections_out,
-                         min(number_of_classes+class_progress, 10))
+                         min(number_of_classes+class_progress, 10))  # increase if increase classes
 
 print(experiment_label)
 print("cycle_error =", cycle_error_full_list)
@@ -70,6 +71,6 @@ print("minimum iteration = ", cycle_error_full_list.index(np.min(cycle_error_ful
 
 plot_learning_curve(correct_or_not_full_list, cycle_error_full_list,
                     confusion_matrix, confusion_matrix, './../shd_graphs',
-                    'full', save_flag=True, plot_flag=True)
+                    'full', save_flag=True, plot_flag=True, cue_break=transiterations)
 
 print("job done")

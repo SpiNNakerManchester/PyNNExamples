@@ -5,7 +5,7 @@ np.random.seed(272727)
 
 cycle_time = 1000
 num_repeats = 1000
-max_tests = 2100
+max_tests = 4011
 
 reg_rate = 0.0000
 p_connect_in = 1.
@@ -13,14 +13,14 @@ p_connect_rec = 1.
 p_connect_out = 1.
 recurrent_connections = False
 # recurrent_connections = True
-readout_eta = 0.0001
+readout_eta = 0.0012
 synapse_eta = 0.01
 batch_size = 1
 hidden_eta_modifier = -.0
 readout_eta_multiplier = 1
 firing_reg = True
 # firing_reg = False
-target_rate = 10
+target_rate = 95
 base_weight_in = 0.03
 base_weight_out = 0.
 base_weight_rec = 0.0
@@ -32,17 +32,18 @@ ratio_of_LIF = 0.5
 output_size = 10
 forced_w_fb = False
 confusion_matrix_cutoff = 0.8
-confusion_decay = 0.95
+long_confusion_decay = 0.95
+short_confusion_decay = 0.5
 
 window_cycles = 10
-learning_threshold = 0.75
+learning_threshold = 0.7
 no_class_start = 3
 class_progress = 1
-random_class_order = True
+random_class_order = False
 record_data = True
 plot_membranes = False
 
-class_order = [i for i in range(output_size)]
+class_order = [output_size-1-i for i in range(output_size)]
 if random_class_order:
     np.random.shuffle(class_order)
 
