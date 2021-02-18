@@ -22,6 +22,7 @@ class ScriptBuilder(RootScriptBuilder):
     """
 
     def build_intro_labs_scripts(self):
+        # create_test_scripts supports test that are too long or exceptions
         self.create_test_scripts(["balanced_random", "learning", "synfire"])
 
 
