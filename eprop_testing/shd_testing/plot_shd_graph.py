@@ -202,15 +202,15 @@ def moving_average(a, n=3):
 
 def plot_learning_curve(correct_or_not, cycle_error, confusion_matrix, final_confusion_matrix,
                         output_size,
-                        address_string, test_label, save_flag=False, cue_break=[], plot_flag=False):
+                        address_string, test_label, save_flag=False, cue_break=[], plot_flag=False, learning_threshold=0.75):
     fig, axs = plt.subplots(2, 2)
     df_cm = pd.DataFrame(confusion_matrix, range(output_size), range(output_size))
     f_df_cm = pd.DataFrame(final_confusion_matrix, range(output_size), range(output_size))
     ave_err10 = moving_average(cycle_error, 10)
-    ave_err60 = moving_average(cycle_error, 60)
+    ave_err100 = moving_average(cycle_error, 100)
     axs[0][0].scatter([i for i in range(len(cycle_error))], cycle_error)
     axs[0][0].plot([i + 5 for i in range(len(ave_err10))], ave_err10, 'r')
-    axs[0][0].plot([i + 30 for i in range(len(ave_err60))], ave_err60, 'b')
+    axs[0][0].plot([i + 50 for i in range(len(ave_err100))], ave_err100, 'b')
     axs[0][0].plot([0, len(cycle_error)], [900, 900], 'g')
     axs[0][0].set_xlim([0, len(cycle_error)])
     axs[0][0].set_ylim([0, 1000])
@@ -218,12 +218,12 @@ def plot_learning_curve(correct_or_not, cycle_error, confusion_matrix, final_con
     for iteration_break in cue_break:
         axs[0][0].axvline(x=iteration_break, color='b')
     ave_corr10 = moving_average(correct_or_not, 10)
-    ave_corr60 = moving_average(correct_or_not, 60)
+    ave_err100 = moving_average(correct_or_not, 100)
     axs[0][1].scatter([i for i in range(len(correct_or_not))], correct_or_not)
     axs[0][1].plot([i + 5 for i in range(len(ave_corr10))], ave_corr10, 'r')
-    axs[0][1].plot([i + 30 for i in range(len(ave_corr60))], ave_corr60, 'b')
+    axs[0][1].plot([i + 50 for i in range(len(ave_err100))], ave_err100, 'b')
     axs[0][1].plot([0, len(correct_or_not)], [0.5, 0.5], 'r')
-    axs[0][1].plot([0, len(correct_or_not)], [0.7, 0.7], 'g')
+    axs[0][1].plot([0, len(correct_or_not)], [learning_threshold, learning_threshold], 'g')
     for iteration_break in cue_break:
         axs[0][1].axvline(x=iteration_break, color='b')
     axs[0][1].set_xlim([0, len(correct_or_not)])

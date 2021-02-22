@@ -149,7 +149,6 @@ def print_status(current_window, experiment_label, cycle_error, test_classificat
     print(experiment_label)
     print(experiment_label)
     print("cycle_error =", cycle_error)
-    print("classification = ", test_classification)
     print("correct or not = ", correct_or_not)
     print("\\", "|\t", end="")
     for i in range(output_size):
@@ -188,6 +187,7 @@ def print_status(current_window, experiment_label, cycle_error, test_classificat
     print("average classification = ", np.average(correct_or_not))
     print("weighted average classification = ", np.average(correct_or_not,
                                                            weights=[i for i in range(len(correct_or_not))]))
+    print("classification = ", test_classification)
     print(experiment_label)
     print(cue_break)
     print("current classes = ", len(cue_break) + no_class_start)
@@ -445,21 +445,20 @@ def run_until(experiment_label, runtime, pynn, in_proj, recurrent_proj, layer_pr
             cycle_error.append(0.0)
             correct_or_not.append([])
             cycle_classification = [-1 for i in range(cycle_time)]
+            ce = [0.0 for i in range(output_size)]
             for time_index in range(cycle_time):
                 instantaneous_error = np.abs(float(
                     readout_res.segments[0].filter(name='gsyn_inh')[0][time_index + ((cycle+current_iter) * cycle_time)][0]))
                 cycle_error[-1] += instantaneous_error
                 softmaxes = [0.0 for i in range(output_size)]
-                ce = [0.0 for i in range(output_size)]
                 for n_out in range(output_size):
-                    v_mem = np.abs(
-                        float(readout_res.segments[0].filter(name='v')[0][time_index + ((cycle+current_iter) * cycle_time)][n_out]))
-                    ce[n_out] = np.exp(min(8.75, v_mem))
-                ce_sum = sum(ce)
-                for i in range(len(ce)):
-                    softmaxes[i] += ce[i] / ce_sum
+                    ce[n_out] += float(readout_res.segments[0].filter(name='v')[0][time_index + ((cycle+current_iter) * cycle_time)][n_out])
+                    # ce[n_out] = np.exp(max(min(8.75, v_mem), -8.75))
+                # ce_sum = sum(ce)
+                # for i in range(len(ce)):
+                #     softmaxes[i] += ce[i] / ce_sum
             test_classification.append(
-                [new_labels[cycle+(current_window*window_cycles)], softmaxes.index(max(softmaxes))])  # mode
+                [new_labels[cycle+(current_window*window_cycles)], ce.index(max(ce))])  # mode
             # print("current label = ", cycle+(current_window*window_cycles))
             confusion_matrix[test_classification[-1][0]][test_classification[-1][1]] += 1
             final_confusion_matrix[test_classification[-1][0]][test_classification[-1][1]] += 1
@@ -471,7 +470,7 @@ def run_until(experiment_label, runtime, pynn, in_proj, recurrent_proj, layer_pr
         print_status(current_window, experiment_label, cycle_error, test_classification, correct_or_not,
                      confusion_matrix, final_confusion_matrix, new_labels, cue_break)
 
-        if current_iter >= 50:
+        if current_iter >= 40:
             print(cue_break)
         if current_iter >= 100:
             print(cue_break)
@@ -530,10 +529,10 @@ def run_until(experiment_label, runtime, pynn, in_proj, recurrent_proj, layer_pr
                                 graph_directory, experiment_label + ' {}'.format(current_window),
                                 save_flag=False,
                                 cue_break=cue_break,
-                                plot_flag=False)
+                                plot_flag=False,
+                                learning_threshold=learning_threshold)
 
-        if current_iter > 100 and \
-                np.average(correct_or_not[-100:]) > threshold and not final_class:
+        if np.sum(correct_or_not[-min(100, current_iter):]) > threshold * 100 and not final_class:
         # if current_iter > 0 and \
         #         np.average(correct_or_not[-10:]) > threshold:
             new_connections_in, new_connections_out, new_connections_rec, new_connections_layer = \
@@ -541,6 +540,15 @@ def run_until(experiment_label, runtime, pynn, in_proj, recurrent_proj, layer_pr
                                 recurrent_proj, from_list_rec, layer_proj)
             print_status(current_window, experiment_label, cycle_error, test_classification, correct_or_not,
                          confusion_matrix, final_confusion_matrix, new_labels, cue_break)
+            graph_directory = './../shd_graphs/'
+            plot_learning_curve(correct_or_not, cycle_error, confusion_matrix, final_confusion_matrix,
+                                output_size,
+                                graph_directory, experiment_label + ' {}'.format(current_window),
+                                save_flag=True,
+                                cue_break=cue_break,
+                                plot_flag=False,
+                                learning_threshold=learning_threshold)
+
             pynn.end()
             print(cycle_error)
             print_status(current_window, experiment_label, cycle_error, test_classification, correct_or_not,
@@ -549,13 +557,6 @@ def run_until(experiment_label, runtime, pynn, in_proj, recurrent_proj, layer_pr
             print("this corresponds to itertation:", current_iter)
             print(experiment_label)
             good_performance = len(correct_or_not)
-            graph_directory = './../shd_graphs/'
-            plot_learning_curve(correct_or_not, cycle_error, confusion_matrix, final_confusion_matrix,
-                                output_size,
-                                graph_directory, experiment_label + ' {}'.format(current_window),
-                                save_flag=True,
-                                cue_break=cue_break,
-                                plot_flag=False)
             return new_connections_in, new_connections_rec, new_connections_layer, new_connections_out, \
                    correct_or_not, cycle_error, good_performance
 
@@ -570,7 +571,8 @@ def run_until(experiment_label, runtime, pynn, in_proj, recurrent_proj, layer_pr
                         graph_directory, experiment_label + ' {}'.format(current_window),
                         save_flag=True,
                         cue_break=cue_break,
-                        plot_flag=False)
+                        plot_flag=False,
+                        learning_threshold=learning_threshold)
     pynn.end()
     print("Learning has failed to achieve threshold performance in runtime")
     return new_connections_in, new_connections_rec, new_connections_layer, new_connections_out, \

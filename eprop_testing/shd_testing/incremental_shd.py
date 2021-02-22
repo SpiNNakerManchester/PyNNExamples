@@ -13,7 +13,8 @@ cycle_error_full_list = []
 transiterations = []
 confusion_matrix = [[0. for i in range(output_size)] for i in range(output_size)]
 
-for number_of_classes in range(no_class_start, output_size+class_progress, class_progress):
+number_of_classes = no_class_start
+while number_of_classes <= output_size:#in range(no_class_start, output_size+class_progress, class_progress):
     # run until learning threshold criteria met
     new_connections_in, new_connections_rec, new_connections_layer, new_connections_out, \
     correct_or_not_full_list, cycle_error_full_list, final_iteration = \
@@ -24,12 +25,21 @@ for number_of_classes in range(no_class_start, output_size+class_progress, class
                   correct_or_not_full_list, cycle_error_full_list, confusion_matrix, new_labels,
                   threshold=learning_threshold,
                   cue_break=transiterations,
-                  final_class=(min(number_of_classes, 10) == 10))  # increase if increase classes
+                  final_class=(number_of_classes == 10))  # increase if increase classes
 
-    if not final_iteration or number_of_classes >= output_size:
+    if (not final_iteration and not repeat_on_fail) or number_of_classes >= output_size:
         print("Ending simulation")
         break
-    transiterations.append(final_iteration)
+    if final_iteration:
+        if number_of_classes >= 10:
+            print("Termination: Training has finished")
+            break
+        else:
+            number_of_classes += class_progress
+            number_of_classes = min(number_of_classes, 10)
+        transiterations.append(final_iteration)
+    else:
+        print("Simulation is repeating previous number of classes")
 
     # create pops for next run
     experiment_label, runtime, pynn, \
@@ -38,7 +48,7 @@ for number_of_classes in range(no_class_start, output_size+class_progress, class
     from_list_in, from_list_rec, from_list_out, new_labels = \
         next_create_pops(new_connections_in, new_connections_rec,
                          new_connections_layer, new_connections_out,
-                         min(number_of_classes+class_progress, 10))  # increase if increase classes
+                         number_of_classes)  # increase if increase classes
 
 print(experiment_label)
 print("cycle_error =", cycle_error_full_list)

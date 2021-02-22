@@ -13,8 +13,8 @@ p_connect_rec = 1.
 p_connect_out = 1.
 recurrent_connections = False
 # recurrent_connections = True
-readout_eta = 0.0012
-synapse_eta = 0.01
+readout_eta = 0.02
+synapse_eta = 0.005
 batch_size = 1
 hidden_eta_modifier = -.0
 readout_eta_multiplier = 1
@@ -27,7 +27,7 @@ base_weight_rec = 0.0
 max_weight = 8
 neuron_pop_size = 256
 layers = 1
-threshold_beta = 0.3
+threshold_beta = .3
 ratio_of_LIF = 0.5
 output_size = 10
 forced_w_fb = False
@@ -36,8 +36,9 @@ long_confusion_decay = 0.95
 short_confusion_decay = 0.5
 
 window_cycles = 10
-learning_threshold = 0.7
-no_class_start = 3
+learning_threshold = 0.75
+repeat_on_fail = True
+no_class_start = 10
 class_progress = 1
 random_class_order = False
 record_data = True
@@ -74,8 +75,9 @@ for i in range(neuron_pop_size):
         feedback_weights = [0. for j in range(output_size)]
         feedback_weights[np.random.choice([2, 5])] = 1.
     else:
-        feedback_weights = [np.random.random() for j in range(output_size)]
+        # feedback_weights = [np.random.random() for j in range(output_size)]
         # feedback_weights = [(np.random.random()*2)-1 for j in range(output_size)]
+        feedback_weights = [np.random.randn() / np.sqrt(neuron_pop_size) for j in range(output_size)]
     w_fb.append(feedback_weights)
 w_fb = np.array(w_fb).T.tolist()
 
