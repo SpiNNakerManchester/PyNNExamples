@@ -41,12 +41,16 @@ jobs:
 
     - name: Install pip, etc
       uses: ./support/actions/python-tools
+      
+    - name: Install matplotlib
+      uses: ./support/actions/install-matplotlib
+      
     - name: Checkout SpiNNaker Dependencies
       uses: ./support/actions/checkout-spinn-deps
       with:
         repositories: >
           SpiNNUtils SpiNNMachine SpiNNMan PACMAN DataSpecification spalloc
-          SpiNNFrontEndCommon sPyNNaker sPyNNaker8
+          SpiNNFrontEndCommon sPyNNaker
         install: true
 
     - name: Install Python validation tools
