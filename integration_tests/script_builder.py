@@ -23,7 +23,7 @@ class ScriptBuilder(RootScriptBuilder):
     To skip the too_long scripts run this script with a parameter
     """
 
-    def build_intro_labs_scripts(self):
+    def build_scripts(self):
         # These scripts raise a SkipTest with the reasons given
         exceptions = {}
         exceptions["pushbot_ethernet_example.py"] = "Needs a physical pushbot"
@@ -42,4 +42,4 @@ class ScriptBuilder(RootScriptBuilder):
 
 if __name__ == '__main__':
     builder = ScriptBuilder()
-    builder.build_intro_labs_scripts()
+    builder.build_scripts()

@@ -41,10 +41,8 @@ jobs:
 
     - name: Install pip, etc
       uses: ./support/actions/python-tools
-      
     - name: Install matplotlib
       uses: ./support/actions/install-matplotlib
-      
     - name: Checkout SpiNNaker Dependencies
       uses: ./support/actions/checkout-spinn-deps
       with:
