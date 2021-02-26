@@ -138,10 +138,10 @@ if simulator_Name == "spiNNaker":
     pynn.set_number_of_neurons_per_core(pynn.IF_curr_exp, 100)
     pynn.set_number_of_neurons_per_core(pynn.SpikeSourcePoisson, 100)
 
-rng = NumpyRNG(seed=1)
+_rng = NumpyRNG(seed=1)
 
-v_distr_exc = RandomDistribution('uniform', low=-10.0, high=0.0, rng=rng)
-v_distr_inh = RandomDistribution('uniform', low=-10.0, high=0.0, rng=rng)
+v_distr_exc = RandomDistribution('uniform', low=-10.0, high=0.0, rng=_rng)
+v_distr_inh = RandomDistribution('uniform', low=-10.0, high=0.0, rng=_rng)
 
 exc_cell_params = {
     'cm': 1.0,  # pf
@@ -186,11 +186,11 @@ I_conn = pynn.FixedProbabilityConnector(epsilon)
 # Use random delays for the external noise and
 # set the inital membrance voltage below the resting potential
 # to avoid the overshoot of activity in the beginning of the simulation
-rng = NumpyRNG(seed=1)
-delay_distr = RandomDistribution('uniform', low=1.0, high=16.0, rng=rng)
+_rng = NumpyRNG(seed=1)
+delay_distr = RandomDistribution('uniform', low=1.0, high=16.0, rng=_rng)
 Ext_conn = pynn.OneToOneConnector()
 
-uniformDistr = RandomDistribution('uniform', low=-10, high=0, rng=rng)
+uniformDistr = RandomDistribution('uniform', low=-10, high=0, rng=_rng)
 E_pop.initialize(v=uniformDistr)
 I_pop.initialize(v=uniformDistr)
 

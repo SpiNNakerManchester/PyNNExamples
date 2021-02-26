@@ -17,7 +17,7 @@ import spynnaker8 as sim
 import numpy
 import os
 import matplotlib.pyplot as pylab
-from spynnaker8.utilities import neo_convertor
+from spynnaker.pyNN.utilities import neo_convertor
 
 # how much slowdown to put into the network to allow it to run without any
 # runtime errors
@@ -323,7 +323,7 @@ class Vogels2011(object):
             print("Mean learnt ie weight:%f" % mean_weight)
 
         # Create plot
-        fig, axes = pylab.subplots(3)
+        _fig, axes = pylab.subplots(3)
 
         # Plot last 200ms of static spikes (to match Brian script)
         if static_spikes_numpy is not None:

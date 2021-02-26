@@ -13,20 +13,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# This workflow will install Python dependencies, run tests, lint and rat with a variety of Python versions
+# This workflow will install Python dependencies, run lint and rat with a variety of Python versions
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
 
 name: Python Actions
-
 on: [push]
-
 jobs:
   build:
-
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [2.7, 3.6, 3.7, 3.8]
+        python-version: [3.6, 3.7, 3.8, 3.9]
 
     steps:
     - name: Set up Python ${{ matrix.python-version }}
@@ -42,92 +39,29 @@ jobs:
         repository: SpiNNakerManchester/SupportScripts
         path: support
 
-    - name: Checkout Spinnaker Dependencies
-      run: |
-        support/gitclone2.sh https://github.com/SpiNNakerManchester/SpiNNUtils.git
-        support/gitclone2.sh https://github.com/SpiNNakerManchester/SpiNNMachine.git
-        support/gitclone2.sh https://github.com/SpiNNakerManchester/SpiNNMan.git
-        support/gitclone2.sh https://github.com/SpiNNakerManchester/PACMAN.git
-        support/gitclone2.sh https://github.com/SpiNNakerManchester/DataSpecification.git
-        support/gitclone2.sh https://github.com/SpiNNakerManchester/spalloc.git
-        support/gitclone2.sh git://github.com/SpiNNakerManchester/SpiNNFrontEndCommon.git
-        support/gitclone2.sh https://github.com/SpiNNakerManchester/sPyNNaker.git
-        support/gitclone2.sh https://github.com/SpiNNakerManchester/sPyNNaker8.git
+    - name: Install pip, etc
+      uses: ./support/actions/python-tools
+    - name: Install matplotlib
+      uses: ./support/actions/install-matplotlib
+    - name: Checkout SpiNNaker Dependencies
+      uses: ./support/actions/checkout-spinn-deps
+      with:
+        repositories: >
+          SpiNNUtils SpiNNMachine SpiNNMan PACMAN DataSpecification spalloc
+          SpiNNFrontEndCommon sPyNNaker
+        install: true
 
-    - name: Install -pip
-      run: |
-        python -m pip install --upgrade pip
-        pip install 'pylint<2.5' flake8
-
-    - name: Install SpiNNUtils
-      run: python setup.py install
-      working-directory: SpiNNUtils
-
-    - name: Install SpiNNMachine
-      run: python setup.py install
-      working-directory: SpiNNMachine
-
-    - name: Install SpiNNMan
-      run: python setup.py install
-      working-directory: SpiNNMan
-
-    - name: Preinstall pacman requirements (2.7 Only)
-      if: matrix.python-version == 2.7
-      run: pip install -r requirements.txt
-      working-directory: PACMAN
-
-    - name: Install PACMAN
-      run: python setup.py install
-      working-directory: PACMAN
-
-    - name: Install DataSpecification
-      run: python setup.py install
-      working-directory: DataSpecification
-
-    - name: Install spalloc
-      run: python setup.py install
-      working-directory: spalloc
-
-    - name: Preinstall SpiNNFrontEndCommon requirements (2.7 Only)
-      if: matrix.python-version == 2.7
-      run: pip install -r requirements.txt
-      working-directory: SpiNNFrontEndCommon
-
-    - name: Install SpiNNFrontEndCommon
-      run: python setup.py install
-      working-directory: SpiNNFrontEndCommon
-
-    - name: Preinstall sPyNNaker requirements (2.7 Only)
-      if: matrix.python-version == 2.7
-      run: pip install -r requirements.txt
-      working-directory: sPyNNaker
-
-    - name: Install sPyNNaker
-      run: python setup.py install
-      working-directory: sPyNNaker
-
-    - name: Preinstall sPyNNaker8 requirements (2.7 Only)
-      if: matrix.python-version == 2.7
-      run: pip install -r requirements.txt
-      working-directory: sPyNNaker8
-
-    - name: Install sPyNNaker8
-      run: python setup.py install
-      working-directory: sPyNNaker8
+    - name: Install Python validation tools
+      run: pip install flake8
 
     - name: Lint with flake8
-      run: |
-        # run flake8
-        flake8 examples
+      run: flake8 examples
+
     - name: Lint with pylint
-      # Broken in 2.7 as it can not find data_specification.exceptions
-      if: matrix.python-version != 2.7
-      # Note that there's special conditioning of the return code of pylint
-      run: |
-        pylint --output-format=colorized --disable=R,C examples || exit $(($? & 35))
+      uses: ./support/actions/pylint
+      with:
+        package: examples
 
     - name: Run rat copyright enforcement
-      if: matrix.python-version == 3.6
-      run: |
-        support/rat.sh download
-        support/rat.sh run
+      if: matrix.python-version == 3.8
+      uses: ./support/actions/check-copyrights
