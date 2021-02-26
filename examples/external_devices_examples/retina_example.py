@@ -19,7 +19,7 @@ intermediate population
 """
 try:
     import pyNN.spiNNaker as p
-except Exception:
+except ImportError:
     import spynnaker8 as p
 
 connected_chip_details = {

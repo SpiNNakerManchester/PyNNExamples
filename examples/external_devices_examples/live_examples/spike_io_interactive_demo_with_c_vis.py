@@ -13,11 +13,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# imports of both spynnaker and external device plugin.
 import tkinter as tk
 import spynnaker8 as Frontend
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
+import multiprocessing
 
 
 class PyNNScript(object):
@@ -42,11 +42,10 @@ class PyNNScript(object):
         p = None
         sender_port = None
         if use_spike_injector:
-            from multiprocessing import Process
-            from multiprocessing import Value, Event
-            port = Value('i', 0)
-            event = Event()
-            p = Process(target=GUI, args=[self.n_neurons, event, port])
+            port = multiprocessing.Value('i', 0)
+            event = multiprocessing.Event()
+            p = multiprocessing.Process(
+                target=GUI, args=[self.n_neurons, event, port])
             p.start()
             event.wait()
             sender_port = port.value
@@ -233,11 +232,10 @@ def receive_spikes(label, time, neuron_ids):
 
 
 class GUI(object):
-    """ Simple gui to demostrate live inejction of the spike io script.
+    """ Simple GUI to demonstrate live injection of the spike io script.
     """
 
     def __init__(self, n_neurons, ready, port):
-        import spynnaker8 as Frontend
         self._n_neurons = n_neurons
 
         # Set up the live connection for sending and receiving spikes
@@ -254,18 +252,19 @@ class GUI(object):
 
         self._root = tk.Tk()
         self._root.title("Injecting Spikes GUI")
-        label = tk.Label(self._root, fg="dark green")
-        label.pack()
-        neuron_id_value = tk.IntVar()
-        self._neuron_id = tk.Spinbox(
+        tk.Label(self._root, fg="dark green").pack()
+
+        self._neuron_id = tk.IntVar()
+        tk.Spinbox(
             self._root, from_=0, to=self._n_neurons - 1,
-            textvariable=neuron_id_value)
-        self._neuron_id.pack()
-        pop_label_value = tk.StringVar()
-        self._pop_label = tk.Spinbox(
-            self._root, textvariable=pop_label_value,
-            values=("spike_injector_forward", "spike_injector_backward"))
-        self._pop_label.pack()
+            textvariable=self._neuron_id).pack()
+
+        self._pop_label = tk.StringVar()
+        tk.Spinbox(
+            self._root, textvariable=self._pop_label,
+            values=("spike_injector_forward", "spike_injector_backward")
+            ).pack()
+
         self._button = tk.Button(
             self._root, text='Inject', width=25, command=self.inject_spike,
             state="disabled")
@@ -276,17 +275,17 @@ class GUI(object):
         self._root.mainloop()
 
     def start(self, pop_label, connection):
+        # pylint: disable=unused-argument
         self._button["state"] = "normal"
 
     def inject_spike(self):
-        neuron_id = int(self._neuron_id.get())
-        label = str(self._pop_label.get())
+        neuron_id = self._neuron_id.get()
+        label = self._pop_label.get()
         print("injecting with neuron_id {} to pop {}".format(neuron_id, label))
         self._live_spikes_connection.send_spike(label, neuron_id)
 
 
 # set up the initial script
 if __name__ == '__main__':
-    from multiprocessing import freeze_support
-    freeze_support()
+    multiprocessing.freeze_support()
     script = PyNNScript()

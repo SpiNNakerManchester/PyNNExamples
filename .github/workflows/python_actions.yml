@@ -23,13 +23,14 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [2.7, 3.6, 3.7, 3.8]
+        python-version: [3.6, 3.7, 3.8, 3.9]
 
     steps:
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
+
     - name: Checkout
       uses: actions/checkout@v2
     - name: Checkout SupportScripts
@@ -40,25 +41,27 @@ jobs:
 
     - name: Install pip, etc
       uses: ./support/actions/python-tools
+    - name: Install matplotlib
+      uses: ./support/actions/install-matplotlib
     - name: Checkout SpiNNaker Dependencies
       uses: ./support/actions/checkout-spinn-deps
       with:
         repositories: >
           SpiNNUtils SpiNNMachine SpiNNMan PACMAN DataSpecification spalloc
-          SpiNNFrontEndCommon sPyNNaker sPyNNaker8
+          SpiNNFrontEndCommon sPyNNaker
         install: true
-        preinstall: ${{ matrix.python-version == 2.7 }}
+
     - name: Install Python validation tools
       run: pip install flake8
 
     - name: Lint with flake8
       run: flake8 examples
+
     - name: Lint with pylint
-      # Broken in 2.7 as it can not find data_specification.exceptions
-      if: matrix.python-version != 2.7
       uses: ./support/actions/pylint
       with:
         package: examples
 
     - name: Run rat copyright enforcement
+      if: matrix.python-version == 3.8
       uses: ./support/actions/check-copyrights

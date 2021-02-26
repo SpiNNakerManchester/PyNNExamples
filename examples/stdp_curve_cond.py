@@ -16,7 +16,7 @@
 import matplotlib.pyplot as pylab
 try:
     import pyNN.spiNNaker as sim
-except Exception:
+except ImportError:
     import spynnaker8 as sim
 
 # ------------------------------------------------------------------
