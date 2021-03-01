@@ -54,7 +54,7 @@ delay = 3.0              # (ms) synaptic time delay
 
 # === Set up the simulator ==================================================
 
-sim.setup(timestep=0.05, min_delay=delay, max_delay=delay)
+sim.setup(timestep=0.1, min_delay=delay, max_delay=delay)
 
 # === Build the network =====================================================
 
@@ -94,18 +94,16 @@ p3 = sim.Population(
 # we set the initial weights to be small, to avoid perturbing the firing
 # times of the postsynaptic neurons
 stdp_model = sim.STDPMechanism(
-                timing_dependence=sim.SpikePairRule(
-                    tau_plus=20.0, tau_minus=20.0, A_plus=0.05, A_minus=0.06),
-                weight_dependence=sim.AdditiveWeightDependence(w_min=0,
-                                                               w_max=1.0),
-                weight=0.5,
-                delay=delay)
+    timing_dependence=sim.SpikePairRule(
+        tau_plus=20.0, tau_minus=20.0, A_plus=0.05, A_minus=0.06),
+    weight_dependence=sim.AdditiveWeightDependence(w_min=0, w_max=1.0),
+    weight=0.5, delay=delay)
 connections = sim.Projection(p1, p2, sim.AllToAllConnector(), stdp_model)
 
 # the connection weight from the driver neuron is very strong, to ensure the
 # postsynaptic neuron fires at the correct times
 driver_connection = sim.Projection(p3, p2, sim.OneToOneConnector(),
-                                   sim.StaticSynapse(weight=15.0, delay=delay))
+                                   sim.StaticSynapse(weight=10.0, delay=delay))
 
 # === Instrument the network =================================================
 
