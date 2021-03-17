@@ -46,14 +46,14 @@ def weight_distribution(pop_size):
     # base_weight = 0
     return base_weight
 
-def probability_connector(pre_pop_size, post_pop_size, prob, offset=0, base_weight=0.0):
+def probability_connector(pre_pop_size, post_pop_size, prob, offset=0, base_weight=0.0, rec_conn=False):
     connections = []
     max_syn_per_neuron = 0
     for j in range(post_pop_size):
         neuron_syn_count = 0
         delay_count = offset
         for i in range(pre_pop_size):
-            if np.random.random() < prob:
+            if np.random.random() < prob and not (rec_conn and i == j):
                 neuron_syn_count += 1
                 conn = [i, j, weight_distribution(pre_pop_size)+base_weight, delay_count]
                 delay_count += 1
@@ -144,11 +144,11 @@ def get_all_weights(in_proj, from_list_in, out_proj, from_list_out,
     return new_connections_in, new_connections_out, new_connections_rec, new_connections_layer
 
 def print_status(current_window, experiment_label, cycle_error, test_classification, correct_or_not,
-                 confusion_matrix, final_confusion_matrix, new_labels, cue_break):
-    print(cycle_error)
+                 confusion_matrix, final_confusion_matrix, new_labels, cue_break, repeat=0):
+    # print(cycle_error)
     print(experiment_label)
     print(experiment_label)
-    print("cycle_error =", cycle_error)
+    # print("cycle_error =", cycle_error)
     print("correct or not = ", correct_or_not)
     print("\\", "|\t", end="")
     for i in range(output_size):
@@ -180,10 +180,11 @@ def print_status(current_window, experiment_label, cycle_error, test_classificat
         print("")
         class_count += 1
     for i in range(int(len(correct_or_not)/window_cycles)):
-        if i*10 in cue_break:
+        if i*window_cycles in cue_break:
             print("increased classes")
         print(correct_or_not[i * window_cycles:(i + 1) * window_cycles],
-              np.average(correct_or_not[i * window_cycles:(i + 1) * window_cycles]))
+              np.average(correct_or_not[i * window_cycles:(i + 1) * window_cycles]),
+              '({})'.format(np.average(correct_or_not[max(((i + 1) * window_cycles)-100, 0):(i + 1) * window_cycles])))
     print("average classification = ", np.average(correct_or_not))
     print("weighted average classification = ", np.average(correct_or_not,
                                                            weights=[i for i in range(len(correct_or_not))]))
@@ -196,7 +197,7 @@ def print_status(current_window, experiment_label, cycle_error, test_classificat
     print("minimum error = ", np.min(cycle_error))
     print("minimum iteration = ", cycle_error.index(np.min(cycle_error)), "- with time stamp =",
           cycle_error.index(np.min(cycle_error)) * 1024)
-    print("iteration: ", current_window*window_cycles, "/", len(new_labels))
+    print("iteration: ", current_window*window_cycles, "/", len(new_labels), " - repeat #", repeat)
 
 def first_create_pops():
     new_labels, new_spikes = collect_tests_and_labels(class_order[:no_class_start])
@@ -257,7 +258,8 @@ def first_create_pops():
     for i in range(layers):
         if i > 0:
             from_list_l, max_syn_per_output = probability_connector(neuron_pop_size, neuron_pop_size, p_connect_rec,
-                                                                    base_weight=base_weight_in*(700/neuron_pop_size))
+                                                                    base_weight=base_weight_in*(700/neuron_pop_size),
+                                                                    rec_conn=True)
             layer_proj.append(pynn.Projection(neuron[i - 1],
                                               neuron[i],
                                               # pynn.OneToOneConnector(),
@@ -304,11 +306,10 @@ def first_create_pops():
 
     runtime = cycle_time * num_repeats
 
-    experiment_label = "base_w in{} out{} rec{}{} ({}x{}) eta({}) h{}o{} - b{}-{} - tr{}".format(
-        base_weight_in, base_weight_out, base_weight_rec, recurrent_connections,
-        layers, neuron_pop_size, batch_size,
-        neuron_params["eta"], readout_neuron_params["eta"],
-        threshold_beta, ratio_of_LIF, neuron_params["target_rate"])
+    experiment_label = "{}eta({}) h{}o{} - b{}-{} - tr{}-{} - vmem{} - fb{} - in{} out{} rec{}{} ({}x{})".format(
+        free_label, batch_size, neuron_params["eta"], readout_neuron_params["eta"], threshold_beta, ratio_of_LIF,
+        neuron_params["target_rate"], neuron_params["firing_lr"], neuron_params["v_mem_lr"], w_fb_type,
+        base_weight_in, base_weight_out, base_weight_rec, recurrent_connections, layers, neuron_pop_size)
     print("\n", experiment_label, "\n")
 
     return experiment_label, runtime, pynn, in_proj, recurrent_proj, layer_proj, out_proj, \
@@ -409,11 +410,10 @@ def next_create_pops(from_list_in, from_list_rec, from_list_lay, from_list_out, 
 
     runtime = cycle_time * num_repeats
 
-    experiment_label = "base_w in{} out{} rec{}{} ({}x{}) eta({}) h{}o{} - b{}-{} - tr{}".format(
-        base_weight_in, base_weight_out, base_weight_rec, recurrent_connections,
-        layers, neuron_pop_size, batch_size,
-        neuron_params["eta"], readout_neuron_params["eta"],
-        threshold_beta, ratio_of_LIF, neuron_params["target_rate"])
+    experiment_label = "{}eta({}) h{}o{} - b{}-{} - tr{}-{} - vmem{} - fb{} - in{} out{} rec{}{} ({}x{})".format(
+        free_label, batch_size, neuron_params["eta"], readout_neuron_params["eta"], threshold_beta, ratio_of_LIF,
+        neuron_params["target_rate"], neuron_params["firing_lr"], neuron_params["v_mem_lr"], w_fb_type,
+        base_weight_in, base_weight_out, base_weight_rec, recurrent_connections, layers, neuron_pop_size)
     print("\n", experiment_label, "\n")
 
     return experiment_label, runtime, pynn, in_proj, recurrent_proj, layer_proj, out_proj, \
@@ -423,7 +423,7 @@ def run_until(experiment_label, runtime, pynn, in_proj, recurrent_proj, layer_pr
               input_pop, neuron, readout_pop,
               from_list_in, from_list_rec, from_list_out,
               correct_or_not, cycle_error, confusion_matrix, new_labels,
-              threshold=0.95, cue_break=[], final_class=False):
+              threshold=0.95, cue_break=[], final_class=False, repeating=0):
     good_performance = False
     current_window = 0
     current_iter = current_window * window_cycles
@@ -468,7 +468,7 @@ def run_until(experiment_label, runtime, pynn, in_proj, recurrent_proj, layer_pr
         current_iter = current_window * window_cycles
 
         print_status(current_window, experiment_label, cycle_error, test_classification, correct_or_not,
-                     confusion_matrix, final_confusion_matrix, new_labels, cue_break)
+                     confusion_matrix, final_confusion_matrix, new_labels, cue_break, repeating)
 
         if current_iter >= 40:
             print(cue_break)
@@ -476,19 +476,39 @@ def run_until(experiment_label, runtime, pynn, in_proj, recurrent_proj, layer_pr
             print(cue_break)
         if current_iter >= 200:
             print(cue_break)
-        if current_iter >= 300:
-            print(cue_break)
         if current_iter >= 400:
             print(cue_break)
+        if current_iter >= 40 and repeating == 1:
+            print(cue_break)
+        if current_iter >= 40 and repeating == 2:
+            print(cue_break)
+        if current_iter >= 40 and repeating == 3:
+            print(cue_break)
+        if current_iter >= 40 and repeating == 5:
+            print(cue_break)
+        if current_iter >= 40 and current_iter <= 100:
+            print(cue_break)
+        if current_iter >= 100 and repeating:
+            print(cue_break)
+        if current_iter >= 200 and repeating:
+            print(cue_break)
+        if current_iter >= 400 and repeating:
+            print(cue_break)
+        if current_iter >= 2360:
+            print(cue_break)
 
-        if record_data and plot_membranes:
+        if record_data and current_window == 1:
             in_spikes = input_pop.get_data('spikes')  # , clear=True)
-            neuron_res = neuron[0].get_data('all')  # , clear=True)
+            neuron_res = neuron[0].get_data(['spikes', 'gsyn_inh', 'gsyn_exc', 'v'])  # , clear=True)
             plot_time = current_iter * cycle_time
-            start_time = plot_time - cycle_time * 10
+            start_time = max(plot_time - cycle_time * 3, 0)
             end_time = plot_time
-            plt.figure()
+            # plt.figure()
             Figure(
+
+                Panel(in_spikes.segments[0].spiketrains, ylabel='in_spikes', xlabel='in_spikes', yticks=True,
+                      xticks=True, xlim=(start_time, end_time)),
+
                 Panel(neuron_res.segments[0].filter(name='v')[0], ylabel='Membrane potential (mV)', yticks=True,
                       xticks=True, xlim=(start_time, end_time)),
 
@@ -498,12 +518,9 @@ def run_until(experiment_label, runtime, pynn, in_proj, recurrent_proj, layer_pr
                 Panel(neuron_res.segments[0].filter(name='gsyn_inh')[0], ylabel='gsyn_inh', yticks=True, xticks=True,
                       xlim=(start_time, end_time)),
 
-                Panel(in_spikes.segments[0].spiketrains, ylabel='in_spikes', xlabel='in_spikes', yticks=True,
-                      xticks=True, xlim=(start_time, end_time)),
-
-                # Panel(neuron_res.segments[0].spiketrains, ylabel='neuron_spikes', xlabel='neuron_spikes',
-                #       yticks=True,
-                #       xticks=True, xlim=(0, plot_time - start_time)),
+                Panel(neuron_res.segments[0].spiketrains, ylabel='early neuron_spikes', xlabel='early neuron_spikes',
+                      yticks=True,
+                      xticks=True, xlim=(0, plot_time - start_time)),
 
                 Panel(neuron_res.segments[0].spiketrains, ylabel='neuron_spikes', xlabel='neuron_spikes',
                       yticks=True,
@@ -520,39 +537,49 @@ def run_until(experiment_label, runtime, pynn, in_proj, recurrent_proj, layer_pr
 
                 title="neuron data for {}".format(experiment_label)
             )
-            plt.show()
+            # plt.show()
+            figure = plt.gcf()  # get current figure
+            figure.set_size_inches(16, 9)
+            plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+            plt.savefig('./../shd_graphs/neuron data ' + experiment_label + " {} {}.png".format(cue_break, repeating))
+                        # , bbox_inches='tight')
 
         if plot_membranes:
-            graph_directory = './../shd_graphs/'
+            # graph_directory = './../shd_graphs/'
+            graph_directory = '/data/mbaxrap7/shd_graphs/'
             plot_learning_curve(correct_or_not, cycle_error, confusion_matrix, final_confusion_matrix,
                                 output_size,
-                                graph_directory, experiment_label + ' {}'.format(current_window),
-                                save_flag=False,
+                                graph_directory, 'lc ' + experiment_label + ' {}'.format(int(len(correct_or_not) / window_cycles)),
+                                save_flag=True,
                                 cue_break=cue_break,
                                 plot_flag=False,
-                                learning_threshold=learning_threshold)
+                                learning_threshold=learning_threshold,
+                                no_classes=no_class_start + (len(cue_break) * class_progress))
 
-        if np.sum(correct_or_not[-min(100, current_iter):]) > threshold * 100 and not final_class:
+        if np.sum(correct_or_not[-min(100, current_iter+(repeating*len(new_labels))):]) > threshold * 100 \
+                and not final_class:
         # if current_iter > 0 and \
         #         np.average(correct_or_not[-10:]) > threshold:
             new_connections_in, new_connections_out, new_connections_rec, new_connections_layer = \
                 get_all_weights(in_proj, from_list_in, out_proj, from_list_out,
                                 recurrent_proj, from_list_rec, layer_proj)
             print_status(current_window, experiment_label, cycle_error, test_classification, correct_or_not,
-                         confusion_matrix, final_confusion_matrix, new_labels, cue_break)
+                         confusion_matrix, final_confusion_matrix, new_labels, cue_break, repeating)
             graph_directory = './../shd_graphs/'
+            # graph_directory = '/data/mbaxrap7/shd_graphs/'
             plot_learning_curve(correct_or_not, cycle_error, confusion_matrix, final_confusion_matrix,
                                 output_size,
-                                graph_directory, experiment_label + ' {}'.format(current_window),
+                                graph_directory, 'pass ' + experiment_label + ' {}'.format(current_window),
                                 save_flag=True,
                                 cue_break=cue_break,
                                 plot_flag=False,
-                                learning_threshold=learning_threshold)
+                                learning_threshold=learning_threshold,
+                                no_classes=no_class_start + (len(cue_break) * class_progress))
 
             pynn.end()
             print(cycle_error)
             print_status(current_window, experiment_label, cycle_error, test_classification, correct_or_not,
-                         confusion_matrix, final_confusion_matrix, new_labels, cue_break)
+                         confusion_matrix, final_confusion_matrix, new_labels, cue_break, repeating)
             print("Simulation has achieved threshold performance at window:", current_window)
             print("this corresponds to itertation:", current_iter)
             print(experiment_label)
@@ -564,15 +591,16 @@ def run_until(experiment_label, runtime, pynn, in_proj, recurrent_proj, layer_pr
         get_all_weights(in_proj, from_list_in, out_proj, from_list_out,
                         recurrent_proj, from_list_rec, layer_proj)
     print_status(current_window, experiment_label, cycle_error, test_classification, correct_or_not,
-                 confusion_matrix, final_confusion_matrix, new_labels, cue_break)
+                 confusion_matrix, final_confusion_matrix, new_labels, cue_break, repeating)
     graph_directory = './../shd_graphs/'
     plot_learning_curve(correct_or_not, cycle_error, confusion_matrix, final_confusion_matrix,
                         output_size,
-                        graph_directory, experiment_label + ' {}'.format(current_window),
+                        graph_directory, 'fail ' + experiment_label + ' {}'.format(current_window),
                         save_flag=True,
                         cue_break=cue_break,
                         plot_flag=False,
-                        learning_threshold=learning_threshold)
+                        learning_threshold=learning_threshold,
+                        no_classes=no_class_start + (len(cue_break) * class_progress))
     pynn.end()
     print("Learning has failed to achieve threshold performance in runtime")
     return new_connections_in, new_connections_rec, new_connections_layer, new_connections_out, \

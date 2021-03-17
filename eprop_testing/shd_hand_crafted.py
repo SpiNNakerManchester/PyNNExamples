@@ -258,7 +258,8 @@ if recurrent_connections:
         weight_dependence=pynn.extra_models.WeightDependenceEpropReg(
             w_min=-max_weight, w_max=max_weight, reg_rate=reg_rate))
 
-    from_list_rec, max_syn_per_rec = probability_connector(neuron_pop_size, neuron_pop_size, p_connect_rec, offset=0,
+    from_list_rec, max_syn_per_rec = probability_connector(neuron_pop_size, neuron_pop_size, p_connect_rec,
+                                                           offset=input_size,
                                                            base_weight=base_weight_rec)
     if max_syn_per_rec > 150:
         Exception

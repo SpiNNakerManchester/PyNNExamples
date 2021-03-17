@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
@@ -202,15 +204,18 @@ def moving_average(a, n=3):
 
 def plot_learning_curve(correct_or_not, cycle_error, confusion_matrix, final_confusion_matrix,
                         output_size,
-                        address_string, test_label, save_flag=False, cue_break=[], plot_flag=False, learning_threshold=0.75):
+                        address_string, test_label, save_flag=False, cue_break=[], plot_flag=False,
+                        learning_threshold=0.75, no_classes=10):
     fig, axs = plt.subplots(2, 2)
     df_cm = pd.DataFrame(confusion_matrix, range(output_size), range(output_size))
     f_df_cm = pd.DataFrame(final_confusion_matrix, range(output_size), range(output_size))
     ave_err10 = moving_average(cycle_error, 10)
     ave_err100 = moving_average(cycle_error, 100)
+    ave_err1000 = moving_average(cycle_error, 1000)
     axs[0][0].scatter([i for i in range(len(cycle_error))], cycle_error)
     axs[0][0].plot([i + 5 for i in range(len(ave_err10))], ave_err10, 'r')
     axs[0][0].plot([i + 50 for i in range(len(ave_err100))], ave_err100, 'b')
+    axs[0][0].plot([i + 500 for i in range(len(ave_err1000))], ave_err1000, 'g')
     axs[0][0].plot([0, len(cycle_error)], [900, 900], 'g')
     axs[0][0].set_xlim([0, len(cycle_error)])
     axs[0][0].set_ylim([0, 1000])
@@ -219,10 +224,14 @@ def plot_learning_curve(correct_or_not, cycle_error, confusion_matrix, final_con
         axs[0][0].axvline(x=iteration_break, color='b')
     ave_corr10 = moving_average(correct_or_not, 10)
     ave_err100 = moving_average(correct_or_not, 100)
+    ave_err1000 = moving_average(correct_or_not, 1000)
     axs[0][1].scatter([i for i in range(len(correct_or_not))], correct_or_not)
     axs[0][1].plot([i + 5 for i in range(len(ave_corr10))], ave_corr10, 'r')
     axs[0][1].plot([i + 50 for i in range(len(ave_err100))], ave_err100, 'b')
+    axs[0][1].plot([i + 500 for i in range(len(ave_err1000))], ave_err1000, 'g')
     axs[0][1].plot([0, len(correct_or_not)], [0.5, 0.5], 'r')
+    random_chance = 1. / float(no_classes)
+    axs[0][1].plot([0, len(correct_or_not)], [random_chance, random_chance], 'r')
     axs[0][1].plot([0, len(correct_or_not)], [learning_threshold, learning_threshold], 'g')
     for iteration_break in cue_break:
         axs[0][1].axvline(x=iteration_break, color='b')
@@ -250,69 +259,79 @@ def plot_learning_curve(correct_or_not, cycle_error, confusion_matrix, final_con
     # plt.tight_layout()
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])
     if save_flag:
-        plt.savefig(address_string + test_label + " learning curve.png", bbox_inches='tight')
+        plt.savefig(address_string + test_label + " learning curve.png", bbox_inches='tight', dpi=200)
     # plt.show()
     plt.close()
 
 
-def create_video(top_directory, base_label, string_end=' SNN.png'):
-    files_for_video = [[], [], [], []]
-    for root, dirs, files in os.walk(top_directory):
+def create_video(graph_directory, gif_directory, base_label, string_match=' SNN.png', repeat_best=20, not_match='empty'):
+    print("\nStarting video creation of ", base_label)
+    files_for_video = []
+    for root, dirs, files in os.walk(graph_directory):
         for filename in files:
-            if base_label in filename and string_end in filename:
-                if 'c-1' in filename:
-                    iteration = filename.replace(string_end, '')
-                    for i in range(2, 5, 1):
-                        if iteration[-i] == ' ':
-                            break
-                    iteration = int(iteration[-i + 1:])
-                    files_for_video[0].append([filename, iteration])
-                elif 'c-3' in filename:
-                    iteration = filename.replace(string_end, '')
-                    for i in range(2, 5, 1):
-                        if iteration[-i] == ' ':
-                            break
-                    iteration = int(iteration[-i + 1:])
-                    files_for_video[1].append([filename, iteration])
-                elif 'c-5' in filename:
-                    iteration = filename.replace(string_end, '')
-                    for i in range(2, 5, 1):
-                        if iteration[-i] == ' ':
-                            break
-                    iteration = int(iteration[-i + 1:])
-                    files_for_video[2].append([filename, iteration])
-                elif 'c-7' in filename:
-                    iteration = filename.replace(string_end, '')
-                    for i in range(2, 5, 1):
-                        if iteration[-i] == ' ':
-                            break
-                    iteration = int(iteration[-i + 1:])
-                    files_for_video[3].append([filename, iteration])
-                else:
-                    print("incorrect file name", filename)
-    files_for_video[0] = sorted(files_for_video[0], key=lambda l: l[1])
-    files_for_video[1] = sorted(files_for_video[1], key=lambda l: l[1])
-    files_for_video[2] = sorted(files_for_video[2], key=lambda l: l[1])
-    files_for_video[3] = sorted(files_for_video[3], key=lambda l: l[1])
+            if base_label in filename and string_match in filename and not_match not in filename:
+                iteration = filename.replace(string_match, '')
+                iteration = iteration.replace(base_label, '')
+                files_for_video.append([filename, int(iteration)])
+    files_for_video = sorted(files_for_video, key=lambda l: l[1])
+    corrupt = True
+    invalid_count = 0
+    while corrupt and len(files_for_video) > 0:
+        try:
+            test = imageio.imread(graph_directory + '/' + files_for_video[-1][0])
+            files_for_video.append([files_for_video[-1][0], files_for_video[-1][1]])
+            corrupt = False
+        except:
+            print("invalid final file - deleting and repeating", invalid_count)
+            del files_for_video[-1]
 
-    print("creating video")
+    if not len(files_for_video):
+        print("no files for video creation of", base_label)
+        return 0
+
+    files_for_video[-1][1] = 0
+    for i in range(repeat_best):
+        files_for_video.append(files_for_video[-1])
+    files_for_video = sorted(files_for_video, key=lambda l: l[1])
+
+    print("creating video of length", files_for_video[-1][1])
+
+    # with imageio.get_writer(gif_directory + '/gifs/' + base_label + '.gif', mode='I') as writer:
+    #     for filename in files_for_video:
+    #         image = imageio.imread(graph_directory + '/' + filename[0])
+    #         writer.append_data(image)
+
     images = []
-    for filenames in files_for_video:
-        for filename in filenames:
-            images.append(imageio.imread(top_directory + '/' + filename[0]))
-    imageio.mimsave(top_directory + '/videos/' + base_label + string_end + '.gif', images)
+    for filename in files_for_video:
+        images.append(imageio.imread(graph_directory + '/' + filename[0]))
+    imageio.mimsave(gif_directory + '/gifs/' + base_label + '.gif', images)
+    print("Finished", base_label)
 
 
 if __name__ == '__main__':
-    directory = '/localhome/mbaxrap7/eprop_python3/PyNN8Examples/eprop_testing/big_with_labels'
-    # label = 'eta-0.1_0.05 - size-40_100 - rec-False'
-    # label = 'eta-0.03_0.015 - size-40_100 - rec-False'
-    label = 't35 eta-0.03_0.015 - size-40_100 - rec-False'
-    create_video(directory, label,
-                 # string_end=' learning curve.png')
-                 string_end=' SNN.png')
-    create_video(directory, label,
-                 string_end=' learning curve.png')
-    # string_end=' SNN.png')
+    gif_directory = '/localhome/mbaxrap7/eprop_python3/PyNN8Examples/eprop_testing/shd_graphs'
+    graph_directory = '/data/mbaxrap7/shd_graphs'
+
+    h_eta = [1.]
+    r_eta = [0.0003, 0.0006]
+    var_v = [0.]
+    var_f = [0.001]
+    w_fb = [0, 1, 2, 3, 4]
+
+    processes = []
+    logs = []
+    for h in h_eta:
+        for r in r_eta:
+            for vf in var_f:
+                for vv in var_v:
+                    for fb in w_fb:
+                        # label = 'lc reg-L eta(32) h{}o{} - b{}-0.5 - tr95-0.001 - vmem0.0' \
+                        #         ' - in0.0 out0.0 rec0.0False (1x256)'.format(h, r, v)
+                        # 'lc reg-Lfb eta(3) h1.0o0.0003 - b0.3-0.5 - tr95-0.001 - vmem0.0 - fb4 - in0.0 out0.0 rec0.0False (1x256) 290 learning curve.png'
+                        label = 'lc reg-Lfb eta(3) h{}o{} - b0.3-0.5 - tr95-{} - vmem{} - fb{}' \
+                                ' - in0.0 out0.0 rec0.0True (1x256)'.format(h, r, vf, vv, fb)
+                        create_video(graph_directory, gif_directory, label,
+                                     string_match=' learning curve.png',
+                                     not_match='shd_graphs')
 
     print("done")

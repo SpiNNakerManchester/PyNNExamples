@@ -3,10 +3,10 @@ import matplotlib.pyplot as plt
 
 
 def frozen_poisson_variable_hz(num_repeats, cycle_time, split, speed_up, pop_size):
-    pattern = np.load('1000 neurons - 10Hz - 100*1024s.npy').tolist()
+    pattern = np.load("./1000 neurons - 10Hz - 100*1024s.npy", allow_pickle=True).tolist()
 
     if split > pop_size:
-        print "Cannot split population into sizes smaller than 1 i.e. split > population size"
+        print("Cannot split population into sizes smaller than 1 i.e. split > population size")
         raise Exception
 
     spikes = []
@@ -36,7 +36,7 @@ def frozen_poisson_variable_hz(num_repeats, cycle_time, split, speed_up, pop_siz
 
 
 cycle_time = 2200
-repeats = 5
+repeats = 15
 pop_size = 8
 spike_times = frozen_poisson_variable_hz(repeats, cycle_time, 8, 10, pop_size)
 
@@ -49,7 +49,7 @@ for neuron in range(len(spike_times)):
 
 instantaneous_rate = 0
 rate_decay_over_time = []
-decay = np.exp(-1./1000.)
+decay = np.exp(-1./10000.)
 total_spikes = 0
 running_average = []
 reset_time = cycle_time
