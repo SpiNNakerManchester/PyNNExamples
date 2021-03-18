@@ -45,7 +45,7 @@ April 2013
 """
 try:
     import pyNN.spiNNaker as sim
-except Exception:
+except ImportError:
     import spynnaker8 as sim
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt

@@ -15,13 +15,11 @@
 import spynnaker8 as p
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
-
-from pacman.model.partitioner_splitters import SplitterOneToOneLegacy
+from pacman.model.partitioner_splitters import (
+    SplitterOneToOneLegacy as OneToOneSplitter)
 from spynnaker.pyNN.extra_algorithms.splitter_components import (
-    SplitterAbstractPopulationVertexSlice)
-from spynnaker.pyNN.extra_algorithms.splitter_components.\
-    spynnaker_splitter_slice_legacy import (
-        SpynnakerSplitterSliceLegacy)
+    SplitterAbstractPopulationVertexSlice,
+    SpynnakerSplitterSliceLegacy as LegacySplitter)
 
 runtime = 1000
 n_neurons = 100  # number of neurons in each population
@@ -48,14 +46,14 @@ neuron4 = p.Population(
     int(n_neurons / 3), p.IF_curr_exp(), label='pop_1',
     additional_parameters={
         "splitter_object": SplitterAbstractPopulationVertexSlice()})
-input = p.Population(
+input1 = p.Population(
     n_neurons, p.SpikeSourcePoisson(), label='inputSpikes_1',
     additional_parameters={
-        "splitter_object": SpynnakerSplitterSliceLegacy()})
+        "splitter_object": LegacySplitter()})
 input2 = p.Population(
     n_neurons, p.SpikeSourcePoisson(), label='inputSpikes_2',
     additional_parameters={
-        "splitter_object": SplitterOneToOneLegacy()})
+        "splitter_object": OneToOneSplitter()})
 
 for pop in [neuron, neuron2, neuron3, neuron4]:
     for pop2 in [neuron, neuron2, neuron3, neuron4]:
@@ -63,7 +61,7 @@ for pop in [neuron, neuron2, neuron3, neuron4]:
             pop, pop2, p.FixedProbabilityConnector(p_connect=0.1),
             p.StaticSynapse(weight=weight_to_spike, delay=delay))
 p.Projection(
-    input, neuron, p.OneToOneConnector(),
+    input1, neuron, p.OneToOneConnector(),
     p.StaticSynapse(weight=weight_to_spike, delay=delay))
 p.Projection(
     input2, neuron, p.OneToOneConnector(),

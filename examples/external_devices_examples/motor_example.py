@@ -20,7 +20,7 @@ going forward
 
 try:
     import pyNN.spiNNaker as p
-except Exception:
+except ImportError:
     import spynnaker8 as p
 
 # set up the tools

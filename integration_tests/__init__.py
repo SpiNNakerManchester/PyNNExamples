@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017-2020 The University of Manchester
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -12,30 +12,3 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-language: python
-dist: focal
-python:
-  - 2.7
-  - 3.6
-  - 3.7
-  - 3.8
-cache: pip
-addons:
-  apt:
-    packages:
-      - openjdk-8-jre-headless
-      - ant
-
-before_script:
-  # Work around ludicrous Travis bug
-  - git clone https://github.com/SpiNNakerManchester/SupportScripts.git support
-  - python support/travis_blocking_stdout.py
-  - support/rat.sh download
-  - pip install flake8
-script:
-  # Code quality check
-  - flake8
-  # Copyright check
-  - support/rat.sh run
-  

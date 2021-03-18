@@ -43,7 +43,8 @@ cell_params_semd = {'cm': 0.25,
                     'tau_syn_I': 20,  # inhibitory current time constant
                     'v_reset': -85,  # reset potential
                     'v_rest': -60,  # resting potential
-                    'v_thresh': -50  # spiking threshold
+                    'v_thresh': -50,  # spiking threshold
+                    'scaling_factor': 100.0  # scaling factor for 2nd response
                     }
 
 # neuron populations
