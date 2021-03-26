@@ -90,7 +90,7 @@ def test(g_D=2, g_L=0.1, E_E=4.667, E_I=-0.333, exc_times=[1, 2, 5, 6], inh_time
         V_exp = float(Idnd)
         num = float(v[i])
         if (float(int(num * 1000)) / 1000 != float(int(V_exp * 1000)) / 1000) and (round(num, 3) != round(V_exp, 3)):
-            print "Dendritic voltage " + str(float(v[i])) + " != " + str(V_exp)
+            print("Dendritic voltage " + str(float(v[i])) + " != " + str(V_exp))
             return False
 
     j = 0
@@ -128,7 +128,7 @@ def test(g_D=2, g_L=0.1, E_E=4.667, E_I=-0.333, exc_times=[1, 2, 5, 6], inh_time
         U_exp = float((weight_to_spike * E_E * r_E) + (weight_to_spike * E_I * r_I) + (g_D * float(Idnd))) \
                     / (g_D + g_L + (r_E * weight_to_spike) + (r_I * weight_to_spike))
         if (float(int(num * 1000)) / 1000 != float(int(U_exp * 1000)) / 1000) and (round(num, 3) != round(U_exp, 3)):
-            print "Somatic voltage " + str(float(u[i])) + " != " + str(U_exp)
+            print("Somatic voltage " + str(float(u[i])) + " != " + str(U_exp))
             return False
 
 
@@ -142,6 +142,6 @@ def failure_desc():
 
 if __name__ == "__main__":
     if test():
-        print success_desc()
+        print(success_desc())
     else:
-        print failure_desc()
+        print(failure_desc())

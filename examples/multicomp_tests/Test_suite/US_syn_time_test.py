@@ -61,6 +61,6 @@ def failure_desc():
 if __name__ == "__main__":
 
     if test():
-        print success_desc()
+        print(success_desc())
     else:
-        print failure_desc()
+        print(failure_desc())

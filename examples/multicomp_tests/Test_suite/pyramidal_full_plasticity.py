@@ -162,17 +162,17 @@ def test(apical_learning_rate = 0.5, basal_learning_rate=0.25 , g_A=0.8, g_B=1, 
 
         num = float(va[i])
         if (float(int(num * 100)) / 100 != float(int(Va[i] * 100)) / 100) and (round(num, 2) != round(Va[i], 2)):
-            print "Apical voltage " + str(float(va[i])) + " != " + str(Va[i]) + " time " + str(i)
+            print("Apical voltage " + str(float(va[i])) + " != " + str(Va[i]) + " time " + str(i))
             return False
 
         num = float(vb[i])
         if (float(int(num * 100)) / 100 != float(int(Vb[i] * 100)) / 100) and (round(num, 2) != round(Vb[i], 2)):
-            print "Basal voltage " + str(float(vb[i])) + " != " + str(Vb[i]) + " time " + str(i)
+            print("Basal voltage " + str(float(vb[i])) + " != " + str(Vb[i]) + " time " + str(i))
             return False
 
         num = float(u[i])
         if (float(int(num * 100)) / 100 != float(int(U[i] * 100)) / 100) and (round(num, 2) != round(U[i], 2)):
-            print "Somatic voltage " + str(float(u[i])) + " != " + str(U[i]) + " time " + str(i)
+            print("Somatic voltage " + str(float(u[i])) + " != " + str(U[i]) + " time " + str(i))
             return False
 
     return True
@@ -189,6 +189,6 @@ def failure_desc():
 if __name__ == "__main__":
 
     if test():
-        print success_desc()
+        print(success_desc())
     else:
-        print failure_desc()
+        print(failure_desc())

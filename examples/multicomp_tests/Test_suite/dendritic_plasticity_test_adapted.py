@@ -14,15 +14,15 @@ def test(g_D=2, g_L=0.1, exc_times=[1, 2, 5, 6], inh_times=[3, 4, 5, 6], exc_r_d
 
     population = p.Population(1, p.extra_models.IFExpRateTwoComp(g_D=g_D, g_L=g_L, g_som=g_som,
                                                                  rate_update_threshold=update_thresh),
-                              label='population_1')
-    input = p.Population(1, p.RateSourceArray(rate_times=exc_times, rate_values=exc_r_diff, looping=4),
+                              label='population_1', in_partitions=[0, 1, 0, 1], out_partitions=1)
+    input = p.Population(1, p.RateSourceArray(rate_times=exc_times, rate_values=exc_r_diff, looping=4, partitions=1),
                          label='exc_input')
-    input2 = p.Population(1, p.RateSourceArray(rate_times=inh_times, rate_values=inh_r_diff, looping=4),
+    input2 = p.Population(1, p.RateSourceArray(rate_times=inh_times, rate_values=inh_r_diff, looping=4, partitions=1),
                           label='inh_input')
 
     plasticity = p.STDPMechanism(
         timing_dependence=p.extra_models.TimingDependenceMulticompBern(
-            tau_plus=20., tau_minus=20.0),
+            tau_plus=20.0, tau_minus=20.0),
         weight_dependence=p.extra_models.WeightDependenceMultiplicativeMulticompBern(w_min=0, w_max=10,
                                                                                      learning_rate=learning_rate),
         weight=weight_to_spike)
@@ -91,8 +91,8 @@ def test(g_D=2, g_L=0.1, exc_times=[1, 2, 5, 6], inh_times=[3, 4, 5, 6], exc_r_d
                 weight_exc = 10
             elif weight_exc < -10:
                 weight_exc = -10
-            Idnd += ((dend_exc[j] * weight_exc) if dend_exc[j] > 0 else 0)
-            irate_exc = dend_exc[j]
+            irate_exc = dend_exc[j] if (dend_exc[j] > 0 and dend_exc[j] < 2) else 0 if dend_exc[j] <= 0 else 2
+            Idnd += (irate_exc * weight_exc)
             j += 1
         if i in ext_times:
             weight_inh += delta_inh
@@ -100,8 +100,8 @@ def test(g_D=2, g_L=0.1, exc_times=[1, 2, 5, 6], inh_times=[3, 4, 5, 6], exc_r_d
                 weight_inh = 10
             elif weight_inh < -10:
                 weight_inh = -10
-            Idnd -= ((dend_inh[k] * weight_inh) if dend_inh[k] > 0 else 0)
-            irate_inh = dend_inh[k]
+            irate_inh = dend_inh[k] if (dend_inh[k] > 0 and dend_inh[k] < 2) else 0 if dend_inh[k] <= 0 else 2
+            Idnd -= ((irate_inh * weight_inh) if irate_inh > 0 else 0)
             k += 1
 
         Vdnd = float(Idnd)
@@ -109,7 +109,7 @@ def test(g_D=2, g_L=0.1, exc_times=[1, 2, 5, 6], inh_times=[3, 4, 5, 6], exc_r_d
         num = float(v[i])
         if (float(int(num * 100)) / 100 != float(int(Vdnd * 100)) / 100) and (round(num, 2) != round(Vdnd, 2)):
             for z in range(len(V_vals)):
-                print "Dendritic voltage " + str(float(v[z])) + " expected " + str(V_vals[z]) + " index " + str(z)
+                print("Dendritic voltage " + str(float(v[z])) + " expected " + str(V_vals[z]) + " index " + str(z))
             return False
 
         U = float((g_D * Vdnd)) \
@@ -118,7 +118,7 @@ def test(g_D=2, g_L=0.1, exc_times=[1, 2, 5, 6], inh_times=[3, 4, 5, 6], exc_r_d
         num = float(u[i])
         if (float(int(num * 100)) / 100 != float(int(U * 100)) / 100) and (round(num, 2) != round(U, 2)):
             for z in range(len(U_vals)):
-                print "Somatic voltage " + str(float(u[z])) + " expected " + str(U_vals[z]) + " index " + str(z)
+                print("Somatic voltage " + str(float(u[z])) + " expected " + str(U_vals[z]) + " index " + str(z))
             return False
 
         out_rate = _compute_rate(U)
@@ -134,7 +134,7 @@ def test(g_D=2, g_L=0.1, exc_times=[1, 2, 5, 6], inh_times=[3, 4, 5, 6], exc_r_d
 
 def _compute_rate(voltage):
 
-    tmp_rate = voltage if voltage > 0 else 0
+    tmp_rate = voltage if (voltage > 0 and voltage < 2) else 0 if voltage <= 0 else 2
 
     return tmp_rate
 
@@ -148,6 +148,6 @@ def failure_desc():
 if __name__ == "__main__":
 
     if test():
-        print success_desc()
+        print(success_desc())
     else:
-        print failure_desc()
+        print(failure_desc())

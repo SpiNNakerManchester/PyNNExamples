@@ -94,7 +94,7 @@ def test(g_D=2, g_L=0.1, E_E=4.667, E_I=-0.333, exc_times=[1, 2, 5, 6], inh_time
         V_exp = float(Idnd)
         num = float(v[i])
         if float(int(num * 1000)) / 1000 != float(int(V_exp * 1000)) / 1000:
-            print "Dendritic voltage " + str(float(v[i])) + " != " + str(V_exp)
+            print("Dendritic voltage " + str(float(v[i])) + " != " + str(V_exp))
             return False
 
     j = 0
@@ -131,13 +131,13 @@ def test(g_D=2, g_L=0.1, E_E=4.667, E_I=-0.333, exc_times=[1, 2, 5, 6], inh_time
                     / (g_D + g_L + (r_E * weight_to_spike) + (r_I * weight_to_spike))
         U_vals.append(U_exp)
         if float(int(num * 1000)) / 1000 != float(int(U_exp * 1000)) / 1000:
-            print "Somatic voltage " + str(float(u[i])) + " != " + str(U_exp)
+            print("Somatic voltage " + str(float(u[i])) + " != " + str(U_exp))
             return False
 
     for i in range(len(U_vals)):
         expected_rate = U_vals[i] if U_vals[i] > 0 else 0
         if float(int(rate[i] *1000)) / 1000 != float(int(expected_rate * 1000)) / 1000:
-            print "Rate " + str(float(rate[i])) + " != " + str(expected_rate)
+            print("Rate " + str(float(rate[i])) + " != " + str(expected_rate))
             return False
 
 
@@ -151,6 +151,6 @@ def failure_desc():
 
 if __name__ == "__main__":
     if test():
-        print success_desc()
+        print(success_desc())
     else:
-        print failure_desc()
+        print(failure_desc())

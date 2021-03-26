@@ -3,7 +3,7 @@ from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 
 
-def test(apical_learning_rate=0.01, basal_learning_rate=0.02375, sst_learning_rate=0.02375, top_down_learning_rate=0.01,
+def test(apical_learning_rate=0.05, basal_learning_rate=0.11875, sst_learning_rate=0.11875, top_down_learning_rate=0.05,
          g_A=0.8, g_B=1, g_L=0.1, g_D=1.0, gsom=0.8,
          top_down_times=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
          bottom_up_times=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
@@ -15,49 +15,52 @@ def test(apical_learning_rate=0.01, basal_learning_rate=0.02375, sst_learning_ra
     p.setup(timestep=1)
 
     exc_apical_weight = 1
-    inh_apical_weight = 0.25
-    basal_weight = 0.125
-    sst_dend_weight = 0.5
+    inh_apical_weight = 0.3
+    basal_weight = 0.11
+    sst_dend_weight = 0.4
     sst_soma_weight = 0
 
-    top_down = p.Population(1, p.RateSourceArray(rate_times=[i for i in range(5000)], rate_values=[0 if i < 200 else 1 for i in range(5000)], looping=4),
-                            label='top_down_input')
-    bottom_up = p.Population(1, p.RateSourceArray(rate_times=[i for i in range(5000)], rate_values=[0.5 for _ in range(5000)], looping=4),
-                             label='bottom_up_input')
+    top_down = p.Population(1, p.RateSourceArray(rate_times=[i for i in range(5000)], rate_values=[0 if i < 200 else 1 for i in range(5000)], looping=4,
+                                                    partitions=1), label='top_down_input')
+    bottom_up = p.Population(1, p.RateSourceArray(rate_times=[i for i in range(5000)], rate_values=[0.5 for _ in range(5000)], looping=4,
+                                                    partitions=1), label='bottom_up_input')
 
-    pyramidal = p.Population(1, p.extra_models.PyramidalRate(g_A=g_A, g_B=g_B, g_L=g_L), label='pyramidal')
-    interneuron = p.Population(1, p.extra_models.IFExpRateTwoComp(g_L=g_L, g_D=g_D), label='interneuron')
-    top_down_neuron = p.Population(1, p.extra_models.IFExpRateTwoComp(g_L=g_L, g_D=g_D), label='top_down_neuron')
+    pyramidal = p.Population(1, p.extra_models.PyramidalRate(g_A=g_A, g_B=g_B, g_L=g_L),
+                                label='pyramidal', in_partitions=[1, 1, 1, 0], out_partitions=1)
+    interneuron = p.Population(1, p.extra_models.IFExpRateTwoComp(g_L=g_L, g_D=g_D),
+                                label='interneuron', in_partitions=[1, 1, 0, 0], out_partitions=1)
+    top_down_neuron = p.Population(1, p.extra_models.IFExpRateTwoComp(g_L=g_L, g_D=g_D),
+                                label='top_down_neuron', in_partitions=[1, 1, 0, 0], out_partitions=1)
 
     basal_plasticity = p.STDPMechanism(
         timing_dependence=p.extra_models.TimingDependenceMulticompBern(),
-        weight_dependence=p.extra_models.WeightDependencePyramidal(w_min=-10, w_max=10,
-                                                                   learning_rates=(0, basal_learning_rate,
-                                                                                   apical_learning_rate, 0)),
+        weight_dependence=p.extra_models.WeightDependencePyramidal(w_min=-10000, w_max=10000,
+                                                                   learning_rates=(basal_learning_rate, 0,
+                                                                                   0, 0)),
         weight=basal_weight)
 
     apical_plasticity = p.STDPMechanism(
         timing_dependence=p.extra_models.TimingDependenceMulticompBern(),
-        weight_dependence=p.extra_models.WeightDependencePyramidal(w_min=-10, w_max=10,
-                                                                   learning_rates=(0, basal_learning_rate,
-                                                                                   apical_learning_rate, 0)),
+        weight_dependence=p.extra_models.WeightDependencePyramidal(w_min=-10000, w_max=10000,
+                                                                   learning_rates=(apical_learning_rate, 0,
+                                                                                   0, 0)),
         weight=inh_apical_weight)
 
     sst_plasticity = p.STDPMechanism(
         timing_dependence=p.extra_models.TimingDependenceMulticompBern(),
-        weight_dependence=p.extra_models.WeightDependenceMultiplicativeMulticompBern(w_min=-10, w_max=10,
+        weight_dependence=p.extra_models.WeightDependenceMultiplicativeMulticompBern(w_min=-10000, w_max=10000,
                                                                                      learning_rate=sst_learning_rate),
         weight=sst_dend_weight)
 
     upper_plasticity = p.STDPMechanism(
         timing_dependence=p.extra_models.TimingDependenceMulticompBern(),
-        weight_dependence=p.extra_models.WeightDependenceMultiplicativeMulticompBern(w_min=-10, w_max=10,
+        weight_dependence=p.extra_models.WeightDependenceMultiplicativeMulticompBern(w_min=-10000, w_max=10000,
                                                                                      learning_rate=top_down_learning_rate),
         weight=sst_dend_weight)
 
     p.Projection(top_down_neuron, pyramidal, p.AllToAllConnector(), p.StaticSynapse(weight=exc_apical_weight),
                  receptor_type="apical_exc")
-    p.Projection(top_down_neuron, interneuron, p.AllToAllConnector(), p.StaticSynapse(weight=sst_soma_weight),
+    p.Projection(top_down_neuron, interneuron, p.OneToOneConnector(), p.StaticSynapse(weight=sst_soma_weight),
                  receptor_type='soma_exc')
 
     p.Projection(interneuron, pyramidal, p.AllToAllConnector(), synapse_type=apical_plasticity,
@@ -147,6 +150,6 @@ def failure_desc():
 if __name__ == "__main__":
 
     if test():
-        print success_desc()
+        print(success_desc())
     else:
-        print failure_desc()
+        print(failure_desc())

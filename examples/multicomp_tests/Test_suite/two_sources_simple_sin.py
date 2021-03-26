@@ -146,13 +146,13 @@ def test(g_D=2, g_L=0.1, exc_times=[1, 2, 5, 6], inh_times=[3, 4, 5, 6], exc_r_d
         num = float(v_vals[i])
         if (float(int(num * 10)) / 10 != float(int(V[i] * 10)) / 10) and (
                 round(num, 1) != round(V[i], 1)):
-            print "Dendritic voltage " + str(float(v_vals[i])) + " expected " + str(V[i]) + " index " + str(i)
+            print("Dendritic voltage " + str(float(v_vals[i])) + " expected " + str(V[i]) + " index " + str(i))
             return False
 
         num = float(u_vals[i])
         if (float(int(num * 10)) / 10 != float(int(U[i] * 10)) / 10) and (
                 round(num, 1) != round(U[i], 1)):
-            print "Somatic voltage " + str(float(u_vals[i])) + " expected " + str(U[i]) + " index " + str(i)
+            print("Somatic voltage " + str(float(u_vals[i])) + " expected " + str(U[i]) + " index " + str(i))
             return False
 
     if graphic:
@@ -181,6 +181,6 @@ def failure_desc():
 if __name__ == "__main__":
 
     if test():
-        print success_desc()
+        print(success_desc())
     else:
-        print failure_desc()
+        print(failure_desc())

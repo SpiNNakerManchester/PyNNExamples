@@ -2,7 +2,7 @@ import spynnaker8 as p
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 
-# This test provides a fixed teaching current with the dendrite trying to follow it
+# This test provides an oscillatory teaching current with the dendrite trying to follow it
 
 
 def test(g_D=2, g_L=0.1, exc_times=[1, 2, 5, 6], inh_times=[3, 4, 5, 6], exc_r_diff=[1, 1.3, 3.3, 1.5], g_som=0.8):
@@ -36,11 +36,12 @@ def test(g_D=2, g_L=0.1, exc_times=[1, 2, 5, 6], inh_times=[3, 4, 5, 6], exc_r_d
     soma_inh_vals = [-2 for i in range(runtime)]
 
     population = p.Population(1, p.extra_models.IFExpRateTwoComp(g_D=g_D, g_L=g_L, g_som=g_som,
-                                                                 rate_update_threshold=0), label='population_1')
-    input = p.Population(1, p.RateSourceArray(rate_times=[0], rate_values=[2.5]), label='exc_input')
-    input2 = p.Population(1, p.RateSourceArray(rate_times=[_ for _ in range(100)], rate_values=exc_som_val, looping=1),
+                                                                 rate_update_threshold=0), label='population_1',
+                                                                 in_partitions=[1, 1, 0, 0], out_partitions=1)
+    input = p.Population(1, p.RateSourceArray(rate_times=[0], rate_values=[2.5], partitions=1), label='exc_input')
+    input2 = p.Population(1, p.RateSourceArray(rate_times=[_ for _ in range(100)], rate_values=exc_som_val, looping=1, partitions=1),
                           label='soma_exc_input')
-    input3 = p.Population(1, p.RateSourceArray(rate_times=[0], rate_values=[-2]), label='soma_exc_input')
+    input3 = p.Population(1, p.RateSourceArray(rate_times=[0], rate_values=[-2], partitions=1), label='soma_exc_input')
 
     plasticity = p.STDPMechanism(
         timing_dependence=p.extra_models.TimingDependenceMulticompBern(),
@@ -85,7 +86,7 @@ def test(g_D=2, g_L=0.1, exc_times=[1, 2, 5, 6], inh_times=[3, 4, 5, 6], exc_r_d
 
         exp_weights.append(dend_weight)
 
-        incoming_rate = exc_vals[i] if exc_vals[i] > 0 else 0
+        incoming_rate = exc_vals[i] if (exc_vals[i] > 0 and exc_vals[i] < 2) else 0 if exc_vals[i] <= 0 else 2
 
         dend_curr = incoming_rate * dend_weight
         V.append(dend_curr)
@@ -101,8 +102,8 @@ def test(g_D=2, g_L=0.1, exc_times=[1, 2, 5, 6], inh_times=[3, 4, 5, 6], exc_r_d
 
         U.append(som_voltage)
 
-        Vrate = (dend_curr if (dend_curr > 0) else 0)
-        Urate = (float((som_voltage if (som_voltage > 0) else 0) * (g_L + g_D)) / g_D)
+        Vrate = _compute_rate(dend_curr)
+        Urate = _compute_rate((float(g_L + g_D) * som_voltage) / g_D)
 
     U.insert(0, 0)
     U.pop()
@@ -115,17 +116,23 @@ def test(g_D=2, g_L=0.1, exc_times=[1, 2, 5, 6], inh_times=[3, 4, 5, 6], exc_r_d
         num = float(v_vals[i])
         if (float(int(num * 10)) / 10 != float(int(V[i] * 10)) / 10) and (
                 round(num, 1) != round(V[i], 1)):
-            print "Dendritic voltage " + str(float(v_vals[i])) + " expected " + str(V[i]) + " index " + str(i)
+            print("Dendritic voltage " + str(float(v_vals[i])) + " expected " + str(V[i]) + " index " + str(i))
             return False
 
         num = float(u_vals[i])
         if (float(int(num * 10)) / 10 != float(int(U[i] * 10)) / 10) and (
                 round(num, 1) != round(U[i], 1)):
-            print "Somatic voltage " + str(float(u_vals[i])) + " expected " + str(U[i]) + " index " + str(i)
+            print("Somatic voltage " + str(float(u_vals[i])) + " expected " + str(U[i]) + " index " + str(i))
             return False
 
 
     return True
+
+def _compute_rate(voltage):
+
+    tmp_rate = voltage if (voltage > 0 and voltage < 2) else 0 if voltage <= 0 else 2
+
+    return tmp_rate
 
 def success_desc():
     return "Dendritic prediction of oscillating somatic voltage test adapted (microcircuit enabled) PASSED"
@@ -136,6 +143,6 @@ def failure_desc():
 
 if __name__ == "__main__":
     if test():
-        print success_desc()
+        print(success_desc())
     else:
-        print failure_desc()
+        print(failure_desc())

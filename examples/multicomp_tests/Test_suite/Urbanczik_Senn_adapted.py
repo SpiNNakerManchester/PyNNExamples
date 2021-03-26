@@ -3,16 +3,20 @@ from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 import numpy as np
 
-# This test replicates the Urbanczik-Senn experiment in the 2014 paper.
+# This test replicates the Urbanczik-Senn experiment from the 2014 paper, but using the somatic conductances described
+# by the paper from Sacramento 2018.
 # It runs the simulation on SpiNNaker, then computes the expected values in floating point on Host side and compares
 # them by plotting both.
 
 
 def test(g_D=2, g_L=0.1, exc_times=[1, 2, 5, 6], inh_times=[3, 4, 5, 6], exc_r_diff=[1, 1.3, 3.3, 1.5] ,
-         Ee=4.667, Ei=-0.333, graphic=False):
+         Ee=4.667, Ei=-0.333, g_som=1.0, graphic=False):
 
     # Run for 22 ms
     runtime = 22000
+
+    # Duration of teching inputs
+    teaching_time = 20000
 
     p.setup(timestep=1)
 
@@ -76,24 +80,81 @@ def test(g_D=2, g_L=0.1, exc_times=[1, 2, 5, 6], inh_times=[3, 4, 5, 6], exc_r_d
 
 
     # Generating somatic input for the Host side to check correctness of SpiNNaker execution
-    exc_vals = [2.5 for i in range(runtime)]
-    soma_vals = [exc_som_val[i % len(exc_som_val)] if i >= 1000 and i < 20000 else 0 for i in range(runtime)]
-    soma_inh_vals = [2 if i >= 1000 and i < 20000 else 0 for i in range(runtime)]
+    soma_vals = [exc_som_val[i % len(exc_som_val)] if i >= 1000 and i < teaching_time else 0 for i in range(runtime)]
+    soma_inh_vals = [2 if i >= 1000 and i < teaching_time else 0 for i in range(runtime)]
+    U_m = [(soma_vals[i] * Ee + soma_inh_vals[i] * Ei) / (soma_vals[i] + soma_inh_vals[i]) 
+                if soma_vals[i] + soma_inh_vals[i] != 0 else 0  for i in range(teaching_time)]
 
-    # Somatic ecitatory values to be sent to SpiNNaker
-    exc_som_val_to_spinnaker = np.array(exc_som_val) / som_weight
+
+    # !-------------------------------------------------------------------------------!
+    # Host side simulation
+
+    # Parameters for Host side simulation
+    V = []
+    U = []
+    Vrate = 0
+    Urate = 0
+    incoming_rates = [0 for _ in range(len(exp_dend_input))]
+
+    # Run the simulation Host side to compare values extracted from SpiNNaker.
+    for i in range(runtime):
+
+        dend_curr = 0
+
+        for z in range(len(exp_dend_input)):
+
+            weights_val[z] += (learning_rate * incoming_rates[z] * (Urate - Vrate))
+
+            irate = exp_dend_input[z][i] if (exp_dend_input[z][i] > 0 and exp_dend_input[z][i] < 2) else 0 if exp_dend_input[z][i] <= 0 else 2
+            
+            incoming_rates[z] = irate
+            
+            dend_curr += irate * weights_val[z]
+
+        V.append(dend_curr)
+
+        if i == 0:
+            som_curr = 0
+        elif i < teaching_time:
+            som_curr = (soma_vals[i] * Ee + soma_inh_vals[i] * Ei) / (soma_vals[i] + soma_inh_vals[i]) if soma_vals[i] + soma_inh_vals[i] != 0 else 0
+        else:
+            som_curr = ((g_D * g_som * V[i]) / (g_D + g_L))
+            # This value is for SpiNNaker, to simulate the absence of teaching input, since it is not possible
+            # to explicitly do it using the Sacramento formulation.
+            U_m.append(som_curr)
+
+        gtot = g_D + g_L + g_som
+
+        som_voltage = float((dend_curr * g_D) + som_curr * g_som) / gtot
+
+        U.append(som_voltage)
+
+        Vrate = _compute_rate(dend_curr)
+        Urate = _compute_rate(float((som_voltage if (som_voltage > 0) else 0) * (g_L + g_D)) / g_D)
+
+
+    U.insert(0, 0)
+    U.pop()
+
+    V.insert(0, 0)
+    V.pop()
+
+    # !-------------------------------------------------------------------------------!
+    # SpiNNaker side simulation
 
     # Urbanczik-Senn population
-    population = p.Population(1, p.extra_models.IFExpRateTwoComp(g_D=g_D, g_L=g_L, rate_update_threshold=0), label='population_1')
+    population = p.Population(
+        1, p.extra_models.IFExpRateTwoComp(g_D=g_D, g_L=g_L, rate_update_threshold=0, g_som=g_som),
+        label='population_1', in_partitions=[1, 1, 0, 0], out_partitions=1)
     input = []
 
     # Dendritic Inputs
     for i in range(100):
-        input.append(p.Population(1, p.RateSourceArray(rate_times=dend_times[i], rate_values=dend_input[i], looping=1), label='exc_input_'+str(i)))
+        input.append(p.Population(1, p.RateSourceArray(rate_times=[i for i in range(runtime)], rate_values=exp_dend_input[i], looping=4,
+            partitions=1), label='exc_input_'+str(i)))
 
     # Somatic Inputs
-    input2 = p.Population(1, p.RateSourceArray(rate_times=[_ for _ in range(1000, 1100)], rate_values=exc_som_val_to_spinnaker, looping=2), label='soma_exc_input')
-    input3 = p.Population(1, p.RateSourceArray(rate_times=[1000, 20000], rate_values=[2/som_weight, 0]), label='soma_inh_input')
+    input2 = p.Population(1, p.RateSourceArray(rate_times=[_ for _ in range(runtime)], rate_values=U_m, looping=4, partitions=1), label='soma_exc_input')
 
     plasticity = p.STDPMechanism(
         timing_dependence=p.extra_models.TimingDependenceMulticompBern(),
@@ -109,8 +170,6 @@ def test(g_D=2, g_L=0.1, exc_times=[1, 2, 5, 6], inh_times=[3, 4, 5, 6], exc_r_d
     # Somatic Connections
     p.Projection(input2, population, p.OneToOneConnector(), p.StaticSynapse(weight=som_weight),
                  receptor_type="soma_exc")
-    p.Projection(input3, population, p.OneToOneConnector(), p.StaticSynapse(weight=som_weight),
-                 receptor_type="soma_inh")
 
     population.record(['v', 'gsyn_exc', 'gsyn_inh'])
 
@@ -121,10 +180,6 @@ def test(g_D=2, g_L=0.1, exc_times=[1, 2, 5, 6], inh_times=[3, 4, 5, 6], exc_r_d
     u = population.get_data('v')
     v = population.get_data('gsyn_exc')
     rate = population.get_data('gsyn_inh')
-
-    # Idnd = v.segments[0].filter(name='gsyn_exc')[0]
-
-    # weights = [Idnd[i]/exc_vals[0] for i in range(len(Idnd))]
 
 
     # Plot values from SpiNNaker
@@ -155,62 +210,9 @@ def test(g_D=2, g_L=0.1, exc_times=[1, 2, 5, 6], inh_times=[3, 4, 5, 6], exc_r_d
     u_vals = u.segments[0].filter(name='v')[0]
     v_vals = v.segments[0].filter(name='gsyn_exc')[0]
     um_vals = rate.segments[0].filter(name='gsyn_inh')[0]
-    x = [_ for _ in range(runtime)]
 
-    # Parameters for Host side simulation
-    ge = 0
-    gi = 0
-    Um = []
-    V = []
-    U = []
-    dend_weight = weight_to_spike
-    somatic_weight = som_weight
-    Vrate = 0
-    Urate = 0
-    incoming_rates = [0 for _ in range(len(exp_dend_input))]
-
-    # Run the simulation Host side to compare values extracted from SpiNNaker. Ignore this.
-    for i in range(runtime):
-
-        dend_curr = 0
-
-        for z in range(len(exp_dend_input)):
-
-            weights_val[z] += (learning_rate * incoming_rates[z] * (Urate - Vrate))
-
-            incoming_rates[z] = exp_dend_input[z][i]
-
-            dend_curr += incoming_rates[z] * weights_val[z]
-
-        V.append(dend_curr)
-
-        ge = soma_vals[i]
-        gi = soma_inh_vals[i]
-
-        som_curr = (ge * Ee) + (gi * Ei)
-
-        gtot = g_D + g_L + (ge) + (gi)
-
-        som_voltage = float((dend_curr * g_D) + som_curr) / gtot
-
-        U.append(som_voltage)
-
-        Vrate = (dend_curr if (dend_curr > 0) else 0)
-        Urate = (float((som_voltage if (som_voltage > 0) else 0) * (g_L + g_D)) / g_D)
-
-        if ge + gi != 0:
-            Um.append(float((ge * Ee) + (gi * Ei)) / (ge + gi))
-        else:
-            Um.append(0)
-
-    Um.insert(0, 0)
-    Um.pop()
-
-    U.insert(0, 0)
-    U.pop()
-
-    V.insert(0, 0)
-    V.pop()
+    # !-------------------------------------------------------------------------------!
+    # Results checking
 
     for i in range(runtime):
 
@@ -226,20 +228,10 @@ def test(g_D=2, g_L=0.1, exc_times=[1, 2, 5, 6], inh_times=[3, 4, 5, 6], exc_r_d
             print("Somatic voltage " + str(float(u_vals[i])) + " expected " + str(U[i]) + " index " + str(i))
             return False
 
-    with open("/localhome/g90604lp/um.txt", "w") as fp:
-        for U in Um:
-            fp.write(str(float(U)) + "\n")
-
-    with open("/localhome/g90604lp/u.txt", "w") as fp:
-        for U in u_vals:
-            fp.writelines(str(float(U)) + "\n")
-
-    with open("/localhome/g90604lp/v.txt", "w") as fp:
-        for V in v_vals:
-            fp.writelines(str(float(V)) + "\n")
-
+    x = [ _ for _ in range(runtime)]
+    
     if graphic:
-        plt.plot(x, Um, "--", color="red", linewidth=2, label="U_m")
+        plt.plot(x, U_m, "--", color="red", linewidth=2, label="U_m")
         plt.plot(x, u_vals, color="blue", linewidth=1.5, label="U")
         plt.plot(x, v_vals, color="green", linewidth=1.5, label="V")
         #plt.plot(x, U, "--", color="aqua", linewidth=1.5, label="U expected")
@@ -252,13 +244,19 @@ def test(g_D=2, g_L=0.1, exc_times=[1, 2, 5, 6], inh_times=[3, 4, 5, 6], exc_r_d
 
     return True
 
+def _compute_rate(voltage):
+
+    tmp_rate = voltage if (voltage > 0 and voltage < 2) else 0 if voltage <= 0 else 2
+
+    return tmp_rate
+
 
 def success_desc():
-    return "Urbanczik-Senn test PASSED"
+    return "Urbanczik-Senn test adapted (microcircuit enabled) PASSED"
 
 
 def failure_desc():
-    return "Urbanczik-Senn test FAILED"
+    return "Urbanczik-Senn test adapted (microcircuit enabled) FAILED"
 
 
 if __name__ == "__main__":

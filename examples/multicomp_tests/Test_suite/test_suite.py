@@ -16,6 +16,10 @@ import pyramidal_basal_plasticity_adapted as t15
 import pyramidal_full_plasticity_adapted as t16
 import dendritic_plasticity_test_adapted as t17
 import dendritic_prediction_sin_soma_adapted as t18
+import MNIST_static_injector as t19
+import MNIST_plastic_injector as t20
+import teaching_signals_injector as t21
+import Urbanczik_Senn_adapted as t22
 
 from termcolor import colored
 
@@ -40,17 +44,18 @@ def run_test(obj, to_print, graphic):
 
 def print_choice():
 
-    print "\n"
-    print colored("Select one option:", "green")
-    print colored("    1 - Full test suite (Original)", "green")
-    print colored("    2 - Static US model tests", "green")
-    print colored("    3 - Static pyramidal model test", "green")
-    print colored("    4 - Static + plastic US model tests", "green")
-    print colored("    5 - Static + plastic pyramidal model tests", "green")
-    print colored("    6 - Advanced tests only", "green")
-    print colored("    7 - Full test suite (Adapted)", "green")
-    print colored("    8 - Plastic US model tests adapted", "green")
-    print colored("    9 - Static + plastic pyramidal model tests adapted", "green")
+    print("\n")
+    print(colored("Select one option:", "green"))
+    print(colored("    1 - Full test suite (Original)", "green"))
+    print(colored("    2 - Static US model tests", "green"))
+    print(colored("    3 - Static pyramidal model test", "green"))
+    print(colored("    4 - Static + plastic US model tests", "green"))
+    print(colored("    5 - Static + plastic pyramidal model tests", "green"))
+    print(colored("    6 - Advanced tests only", "green"))
+    print(colored("    7 - Full test suite (Adapted)", "green"))
+    print(colored("    8 - Plastic US model tests adapted", "green"))
+    print(colored("    9 - Static + plastic pyramidal model tests adapted", "green"))
+    print(colored("   10 - MNIST tests", "green"))
 
 
 if __name__ == "__main__":
@@ -65,119 +70,120 @@ if __name__ == "__main__":
         4: [t1, t2, t3, t4, t5, t6, t7, t11, t12],
         5: [t8, t9, t10],
         6: [t11, t12],
-        7: [t13, t17, t18, t14, t15, t16],
-        8: [t13, t17, t18],
-        9: [t14, t15, t16]
+        7: [t17, t18, t14, t15, t16, t19, t21, t20, t21, t22],
+        8: [t13, t17, t18, t22],
+        9: [t14, t15, t16],
+        10: [t19, t20, t21]
     }
 
-    print "\n\n\n\n"
-    print colored("Multicompartment models Base Test", "green")
-    print colored("Author Luca Peres, The Univerity of Manchester, 2020", "green")
-    print "----------------------------------------------------------\n"
+    print("\n\n\n\n")
+    print(colored("Multicompartment models Base Test", "green"))
+    print(colored("Author Luca Peres, The Univerity of Manchester, 2020", "green"))
+    print("----------------------------------------------------------\n")
 
     print_choice()
 
-    val = int(raw_input())
+    val = int(input())
 
 
     while val not in options.keys():
-        print colored("Not a valid choice, please choose one of the following.", "red")
+        print(colored("Not a valid choice, please choose one of the following.", "red"))
 
         print_choice()
 
-        val = int(raw_input())
+        val = int(input())
 
     cont = False
 
     while not cont:
 
         if val < 7:
-            print colored("Warning: Your choice contains tests for the models which do not include the adaptation" +
+            print(colored("Warning: Your choice contains tests for the models which do not include the adaptation" +
                           " to fit the learning rule to the network, therefore if you are using the adapted models" +
-                          " tests will fail, \ndo you wish to continue anyway? [Y/N]", "yellow")
+                          " tests will fail, \ndo you wish to continue anyway? [Y/N]", "yellow"))
 
-            ans = raw_input()
+            ans = input()
 
             if ans == "Y" or ans == "y":
-                print colored(
+                print(colored(
                     "Running tests...",
-                    "green")
+                    "green"))
                 cont = True
             elif ans == "N" or ans == "n":
-                print colored(
+                print(colored(
                     "Please, choose one option:",
-                    "green")
+                    "green"))
                 cont = False
             else:
-                print colored(
+                print(colored(
                     "Not a valid choice",
-                    "red")
+                    "red"))
                 cont = False
 
         else:
-            print colored("Warning: Your choice contains tests for the models which include the adaptation to fit the" +
+            print(colored("Warning: Your choice contains tests for the models which include the adaptation to fit the" +
                           " learning rule to the network, therefore if you are using the original models tests will" +
                           " fail. \nBeing this an adaptation for the Sacramento learning rule, it is not possible to" +
                           " test the US model with static dendritic synapses, as this case does not exist" +
                           " in the context" +
-                          "\ndo you wish to continue anyway? [Y/N]", "yellow")
+                          "\ndo you wish to continue anyway? [Y/N]", "yellow"))
 
-            ans = raw_input()
+            ans = input()
 
             if ans == "Y" or ans == "y":
-                print colored(
+                print(colored(
                     "Running tests...",
-                    "green")
+                    "green"))
                 cont = True
             elif ans == "N" or ans == "n":
-                print colored(
+                print(colored(
                     "Please, choose one option:",
-                    "green")
+                    "green"))
                 cont = False
             else:
-                print colored(
+                print(colored(
                     "Not a valid choice",
-                    "red")
+                    "red"))
                 cont = False
 
         if not cont:
 
             print_choice()
 
-            val = int(raw_input())
+            val = int(input())
 
             while val not in options.keys():
-                print colored("Not a valid choice, please choose one of the following.", "red")
+                print(colored("Not a valid choice, please choose one of the following.", "red"))
 
                 print_choice()
 
-                val = int(raw_input())
+                val = int(input())
 
 
     test_list = options[val]
 
     graphic = False
 
-    if t12 in test_list:
-        print colored(
-            "Some of the tests in your selection have graphic options, do you want to enable these? [Y/N]", "green")
-        print colored(
-            "    If you decide to enable them the output will take longer to be generated", "green")
-        graphics = raw_input()
+    if t12 in test_list or t22 in test_list:
+        print(colored(
+            "Some of the tests in your selection have graphic options, do you want to enable these? [Y/N]", "green"))
+        print(colored(
+            "    If you decide to enable them the output will take longer to be generated", "green"))
+        graphics = input()
         if graphics == "Y" or graphics == "y":
-            print colored(
+            print(colored(
                 "Graphic features enabled",
-                "green")
+                "green"))
             graphic = True
         elif graphics == "N" or graphics == "n":
-            print colored(
+            print(colored(
                 "Graphic features disabled",
-                "green")
+                "green"))
             graphic = False
         else:
-            print colored(
+            print(colored(
                 "Not a valid choice, graphic features disabled by default",
-                "green")
+                "green"))
             graphic = False
 
     for test in test_list:
@@ -188,10 +194,10 @@ if __name__ == "__main__":
 
     for v in to_print[:-1]:
 
-        print colored(v, "green")
+        print(colored(v, "green"))
 
     if failed:
-        print colored(to_print[-1], "red")
+        print(colored(to_print[-1], "red"))
     else:
-        print colored(to_print[-1], "green")
-        print colored("All tests PASSED!", "green")
+        print(colored(to_print[-1], "green"))
+        print(colored("All tests PASSED!", "green"))

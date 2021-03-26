@@ -83,13 +83,13 @@ def test(g_D=2, g_L=0.1, exc_times=[1, 2, 5, 6], inh_times=[3, 4, 5, 6], exc_r_d
         Vdnd = float(Idnd)
         num = float(v[i])
         if (float(int(num * 100)) / 100 != float(int(Vdnd * 100)) / 100) and (round(num, 2) != round(Vdnd, 2)):
-            print "Dendritic voltage " + str(float(v[i])) + " != " + str(Vdnd)
+            print("Dendritic voltage " + str(float(v[i])) + " != " + str(Vdnd))
             return False
 
         U = (float(g_D * Vdnd) / (g_L + g_D))
         num =float(u[i])
         if (float(int(num * 100)) / 100 != float(int(U * 100)) / 100) and (round(num, 2) != round(U, 2)):
-            print "Somatic voltage " + str(float(u[i])) + " != " + str(U)
+            print("Somatic voltage " + str(float(u[i])) + " != " + str(U))
             return False
 
         out_rate = _compute_rate(U)
@@ -121,6 +121,6 @@ def failure_desc():
 if __name__ == "__main__":
 
     if test():
-        print success_desc()
+        print(success_desc())
     else:
-        print failure_desc()
+        print(failure_desc())

@@ -81,17 +81,17 @@ def test(g_A=0.8, g_B=1, g_L=0.1, exc_times=[1, 2, 7, 8, 9, 10, 13, 14], inh_tim
 
         num = float(va[i])
         if (float(int(num * 1000)) / 1000 != float(int(Va[i] * 1000)) / 1000) and (round(num, 3) != round(Va[i], 3)):
-            print "Apical voltage " + str(float(va[i])) + " != " + str(Va[i])
+            print("Apical voltage " + str(float(va[i])) + " != " + str(Va[i]))
             return False
 
         num = float(vb[i])
         if (float(int(num * 1000)) / 1000 != float(int(Vb[i] * 1000)) / 1000) and (round(num, 3) != round(Vb[i], 3)):
-            print "Basal voltage " + str(float(vb[i])) + " != " + str(Vb[i])
+            print("Basal voltage " + str(float(vb[i])) + " != " + str(Vb[i]))
             return False
 
         num = float(u[i])
         if (float(int(num * 1000)) / 1000 != float(int(U[i] * 1000)) / 1000) and (round(num, 3) != round(U[i], 3)):
-            print "Somatic voltage " + str(float(u[i])) + " != " + str(U[i])
+            print("Somatic voltage " + str(float(u[i])) + " != " + str(U[i]))
             return False
 
     return True
@@ -108,6 +108,6 @@ def failure_desc():
 if __name__ == "__main__":
 
     if test():
-        print success_desc()
+        print(success_desc())
     else:
-        print failure_desc()
+        print(failure_desc())
