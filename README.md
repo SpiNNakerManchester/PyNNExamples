@@ -8,4 +8,6 @@ This repository holds miscellaneous examples of using sPyNNaker for PyNN 0.9
 See Also
 --------
  * [SpiNNaker online documentation](http://spinnakermanchester.github.io/)
- * [sPyNNaker8](/SpiNNakerManchester/sPyNNaker8) for the implementation
+ * [sPyNNakerGithub](/SpiNNakerManchester/sPyNNaker) for the implementation
+ * [Combined python documentation](http://spinnaker8manchester.readthedocs.io)
+ * [PyNN documentation](http://neuralensemble.org/docs/PyNN)
