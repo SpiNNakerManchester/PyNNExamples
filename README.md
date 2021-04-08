@@ -3,7 +3,7 @@
 Examples for PyNN 0.9
 =====================
 
-This repository holds miscellaneous examples of using sPyNNaker for PyNN 0.9 (and PyNN 0.8 too; the differences are comparatively small).
+This repository holds miscellaneous examples of using sPyNNaker for PyNN 0.9
 
 See Also
 --------
