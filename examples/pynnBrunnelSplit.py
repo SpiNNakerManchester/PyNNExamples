@@ -94,7 +94,7 @@ def poisson_generator(rate, rng, t_start=0.0, t_stop=1000.0, array=True,
 
 
 # Total number of neurons
-Neurons = 1000
+Neurons = 500
 sim_time = 1000.0
 g = 5.0
 eta = 2.0
@@ -132,13 +132,13 @@ p_rate = 1000.0 * nu_ex * C_E
 print("Rate is: %f HZ" % (p_rate / 1000))
 
 # Neural Parameters
-pynn.setup(timestep=1.0, min_delay=1.0, max_delay=16.0)
+pynn.setup(timestep=0.1, time_scale_factor=1, min_delay=0.1, max_delay=12.8)
 
 if simulator_Name == "spiNNaker":
 
     # Makes it easy to scale up the number of cores
-    pynn.set_number_of_neurons_per_core(pynn.IF_curr_exp, 128)
-    pynn.set_number_of_neurons_per_core(pynn.SpikeSourcePoisson, 128)
+    pynn.set_number_of_neurons_per_core(pynn.IF_curr_exp, 64)
+    pynn.set_number_of_neurons_per_core(pynn.SpikeSourcePoisson, 64)
 
 rng = NumpyRNG(seed=1)
 
@@ -167,12 +167,12 @@ inh_cell_params = {
 }
 
 # Set-up pynn Populations
-E_pop_splitter = SplitterAbstractPopulationVertexNeuronsSynapses(2, 64, False)
+E_pop_splitter = SplitterAbstractPopulationVertexNeuronsSynapses(3, 128, False)
 E_pop = pynn.Population(
     N_E, pynn.IF_curr_exp(**exc_cell_params), label="E_pop",
     additional_parameters={"splitter": E_pop_splitter})
 
-I_pop_splitter = SplitterAbstractPopulationVertexNeuronsSynapses(2, 64, False)
+I_pop_splitter = SplitterAbstractPopulationVertexNeuronsSynapses(3, 128, False)
 I_pop = pynn.Population(
     N_I, pynn.IF_curr_exp(**inh_cell_params), label="I_pop",
     additional_parameters={"splitter": I_pop_splitter})
@@ -195,7 +195,7 @@ I_conn = pynn.FixedProbabilityConnector(epsilon, rng=rng)
 # Use random delays for the external noise and
 # set the inital membrance voltage below the resting potential
 # to avoid the overshoot of activity in the beginning of the simulation
-delay_distr = RandomDistribution('uniform', low=1.0, high=16.0, rng=rng)
+delay_distr = RandomDistribution('uniform', low=0.1, high=12.8, rng=rng)
 Ext_conn = pynn.OneToOneConnector()
 
 uniformDistr = RandomDistribution('uniform', low=-10, high=0, rng=rng)

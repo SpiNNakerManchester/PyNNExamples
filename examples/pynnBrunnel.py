@@ -135,8 +135,8 @@ pynn.setup(timestep=1.0, min_delay=1.0, max_delay=16.0)
 if simulator_Name == "spiNNaker":
 
     # Makes it easy to scale up the number of cores
-    pynn.set_number_of_neurons_per_core(pynn.IF_curr_exp, 128)
-    pynn.set_number_of_neurons_per_core(pynn.SpikeSourcePoisson, 128)
+    pynn.set_number_of_neurons_per_core(pynn.IF_curr_exp, 64)
+    pynn.set_number_of_neurons_per_core(pynn.SpikeSourcePoisson, 64)
 
 rng = NumpyRNG(seed=1)
 
