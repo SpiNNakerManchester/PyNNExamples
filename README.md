@@ -1,3 +1,5 @@
+This is the state at the time of the April 2021 release
+
 [![Build Status](https://travis-ci.org/SpiNNakerManchester/PyNN8Examples.svg?branch=master)](https://travis-ci.org/SpiNNakerManchester/PyNN8Examples)
 
 Examples for PyNN 0.9
