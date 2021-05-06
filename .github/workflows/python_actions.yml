@@ -50,7 +50,8 @@ jobs:
           SpiNNUtils SpiNNMachine SpiNNMan PACMAN DataSpecification spalloc
           SpiNNFrontEndCommon sPyNNaker
         install: true
-
+    - name: install test requirements as no setup
+      run: pip install -r requirements-test.txt
     - name: Test with pytest
       uses: ./support/actions/pytest
       with:
