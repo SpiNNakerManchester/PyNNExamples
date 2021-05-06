@@ -13,17 +13,24 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
 import unittest
 from spinn_utilities.config_holder import run_config_checks
+# This imports AbstractSpiNNakerCommon which calls set_cfg_files
+import spynnaker8  # noqa: F401
 
 
 class TestCfgChecker(unittest.TestCase):
 
     def test_config_checks(self):
-        # This imports AbstractSpiNNakerCommon which calls set_cfg_files
-        module = __import__("spynnaker8")
-        run_config_checks("examples", repeaters=[
+        unittests = os.path.dirname(__file__)
+        parent = os.path.dirname(unittests)
+        examples = os.path.join(parent, "examples")
+        integration_tests = os.path.join(parent, "integration_tests")
+        repeaters = [
             "application_to_machine_graph_algorithms",
             "machine_graph_to_machine_algorithms",
             "machine_graph_to_virtual_machine_algorithms",
-            "loading_algorithms"])
+            "loading_algorithms"]
+        run_config_checks(directories=[
+            examples, integration_tests, unittests], repeaters=repeaters)
