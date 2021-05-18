@@ -30,11 +30,11 @@ def test():
     source = p.Population(neurons, p.RateLiveTeacher(
         neurons, refresh_rate, data_under_test, partitions=partitions_involved), label='input_source')
 
-    population = p.Population(neurons, p.extra_models.PyramidalRate(),
+    population = p.Population(neurons, p.extra_models.IFExpRateTwoComp(),
         label='population_1', in_partitions=[partitions_involved, 0, 0, 0], out_partitions=1)
 
     p.Projection(source, population, p.OneToOneConnector(), p.StaticSynapse(weight=1),
-                 receptor_type="apical_exc")
+                 receptor_type="soma_exc")
 
     
     population.record(['v', 'gsyn_exc', 'gsyn_inh'])

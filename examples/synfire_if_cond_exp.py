@@ -77,9 +77,6 @@ Figure(
     annotations="Simulated with {}".format(p.name())
 )
 
-for n in range(len(spikes.segments[0].spiketrains)):
-    print "Neuron: " + str(n) + " spiked at timestep: " + str(spikes.segments[0].spiketrains[n])
-
 
 #ind = 0
 #for elem in v.segments[0].filter(name='v')[0]:

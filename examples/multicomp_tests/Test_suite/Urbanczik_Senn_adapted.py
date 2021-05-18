@@ -96,6 +96,8 @@ def test(g_D=2, g_L=0.1, exc_times=[1, 2, 5, 6], inh_times=[3, 4, 5, 6], exc_r_d
     Urate = 0
     incoming_rates = [0 for _ in range(len(exp_dend_input))]
 
+    rec_weights = [[] for _ in range(len(exp_dend_input))]
+
     # Run the simulation Host side to compare values extracted from SpiNNaker.
     for i in range(runtime):
 
@@ -104,6 +106,8 @@ def test(g_D=2, g_L=0.1, exc_times=[1, 2, 5, 6], inh_times=[3, 4, 5, 6], exc_r_d
         for z in range(len(exp_dend_input)):
 
             weights_val[z] += (learning_rate * incoming_rates[z] * (Urate - Vrate))
+
+            rec_weights[z].append(weights_val[z])
 
             irate = exp_dend_input[z][i] if (exp_dend_input[z][i] > 0 and exp_dend_input[z][i] < 2) else 0 if exp_dend_input[z][i] <= 0 else 2
             
@@ -131,7 +135,6 @@ def test(g_D=2, g_L=0.1, exc_times=[1, 2, 5, 6], inh_times=[3, 4, 5, 6], exc_r_d
 
         Vrate = _compute_rate(dend_curr)
         Urate = _compute_rate(float((som_voltage if (som_voltage > 0) else 0) * (g_L + g_D)) / g_D)
-
 
     U.insert(0, 0)
     U.pop()

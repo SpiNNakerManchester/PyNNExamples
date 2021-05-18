@@ -8,13 +8,13 @@ import random
 
 def test(g_A=0.8, g_B=1, g_L=0.1, g_D=1.0, gsom=0.8):
 
-    runtime = 6000
+    runtime = 400
 
     data = MNIST('./datasets')
 
     images, labels = data.load_training()
 
-    refresh_rate = 30
+    refresh_rate = 300
 
     n_images = int(math.ceil(runtime / (refresh_rate + 1))) + 2
 
@@ -44,34 +44,34 @@ def test(g_A=0.8, g_B=1, g_L=0.1, g_D=1.0, gsom=0.8):
 
 
     pyramidalL1 = p.Population(500, p.extra_models.PyramidalRate(g_A=g_A, g_B=g_B, g_L=g_L),
-        label='pyramidalL1', in_partitions=[1, 7, 1, 0], out_partitions=7, packet_compressor=[False, True, False, False],)
+        label='pyramidalL1', in_partitions=[1, 7, 1, 0], out_partitions=7, packet_compressor=[False, True, False, False], atoms_per_core=4)
     interneuronL1 = p.Population(10, p.extra_models.IFExpRateTwoComp(g_L=g_L, g_D=g_D, g_som=gsom),
-        label='interneuronL1', in_partitions=[1, 7, 0, 0], out_partitions=1)
+        label='interneuronL1', in_partitions=[1, 7, 0, 0], out_partitions=1, atoms_per_core=10)
 
     output_neurons = p.Population(10, p.extra_models.IFExpRateTwoComp(g_L=g_L, g_D=g_D, g_som=gsom),
-        label='top_down_neurons', in_partitions=[1, 7, 0, 0], out_partitions=1)
+        label='top_down_neurons', in_partitions=[1, 7, 0, 0], out_partitions=1, atoms_per_core=10)
 
     basal_plasticityL1 = p.STDPMechanism(
         timing_dependence=p.extra_models.TimingDependenceMulticompBern(),
-        weight_dependence=p.extra_models.WeightDependencePyramidal(w_min=-10, w_max=10,
+        weight_dependence=p.extra_models.WeightDependencePyramidal(w_min=-1000, w_max=1000,
                                                                    learning_rates=(lPP10, 0, 0, 0)),
         weight=random.uniform(-1, 1)) #basal_weight
 
     apical_plasticityL1 = p.STDPMechanism(
         timing_dependence=p.extra_models.TimingDependenceMulticompBern(),
-        weight_dependence=p.extra_models.WeightDependencePyramidal(w_min=-10, w_max=10,
+        weight_dependence=p.extra_models.WeightDependencePyramidal(w_min=-1000, w_max=1000,
                                                                    learning_rates=(lPI11, 0, 0, 0)),
         weight=random.uniform(-1, 1)) #inh_apical_weight
 
     sst_plasticityL1 = p.STDPMechanism(
         timing_dependence=p.extra_models.TimingDependenceMulticompBern(),
-        weight_dependence=p.extra_models.WeightDependenceMultiplicativeMulticompBern(w_min=-10, w_max=10,
+        weight_dependence=p.extra_models.WeightDependenceMultiplicativeMulticompBern(w_min=-1000, w_max=1000,
                                                                                      learning_rate=lIP11),
         weight=random.uniform(-1, 1)) #sst_dend_weight
 
     basal_plasticityOUT = p.STDPMechanism(
         timing_dependence=p.extra_models.TimingDependenceMulticompBern(),
-        weight_dependence=p.extra_models.WeightDependenceMultiplicativeMulticompBern(w_min=-10, w_max=10,
+        weight_dependence=p.extra_models.WeightDependenceMultiplicativeMulticompBern(w_min=-1000, w_max=1000,
                                                                                      learning_rate=lPP32),
         weight=random.uniform(-1, 1)) #basal_weight
 
@@ -109,6 +109,7 @@ def test(g_A=0.8, g_B=1, g_L=0.1, g_D=1.0, gsom=0.8):
 
     out_rate = output_neurons.get_data('gsyn_inh').segments[0].filter(name='gsyn_inh')[0]
 
+    print(labels[:n_images])
 
     # Plot values from SpiNNaker
     Figure(

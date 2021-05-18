@@ -55,6 +55,8 @@ def test(g_A=0.8, g_B=1, g_L=0.1, exc_times=[1, 2, 7, 8, 9, 10, 13, 14], inh_tim
     Vb = []
     U = []
 
+    U_pyral = []
+
     for i in range(runtime):
 
         Iapical = 0
@@ -77,6 +79,19 @@ def test(g_A=0.8, g_B=1, g_L=0.1, exc_times=[1, 2, 7, 8, 9, 10, 13, 14], inh_tim
         Vb.append(Ibasal)
         U.append(float(g_B * Ibasal + g_A * Iapical)/(g_L + g_B + g_A))
 
+        
+        # These checks are for comparison with PyraLNet from Laura, to verify that the
+        # Solution to the differential equations they used is the same as ours.
+        # To verify it compare U_pyral with U
+        som = U_pyral[i-1] if i >= 3 else U[i-1] if i < 3 else 0
+        ub = Vb[i-1] if i > 0 else 0
+        ua = Va[i-1] if i > 0 else 0
+
+        du = (-g_L * som + g_B * (Vb[i-1] - som) + g_A * (Va[i-1] - som))
+
+        U_pyral.append(som + du)
+
+
     U.insert(0, 0)
     U.pop()
 
@@ -85,6 +100,10 @@ def test(g_A=0.8, g_B=1, g_L=0.1, exc_times=[1, 2, 7, 8, 9, 10, 13, 14], inh_tim
 
     Vb.insert(0, 0)
     Vb.pop()
+
+    print(u)
+    print(U)
+    print(U_pyral)
 
     for i in range(runtime):
 

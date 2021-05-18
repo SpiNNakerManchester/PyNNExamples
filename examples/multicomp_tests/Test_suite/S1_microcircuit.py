@@ -9,7 +9,7 @@ import random
 def test(pyramidal_inter_learning_rate = 0.0002375, inter_pyramidal_lerning_rate=0.0005,
             g_A=0.8, g_B=1, g_L=0.1, g_D=1.0, gsom=0.8):
 
-    runtime = 105000
+    runtime = 1050
 
     p.setup(timestep=1)
 
@@ -24,10 +24,10 @@ def test(pyramidal_inter_learning_rate = 0.0002375, inter_pyramidal_lerning_rate
     pyramidal_pop_size = 20
     top_down_pop_size = 10
 
-    values = [0.2 if i < 1000 else 0.4 if i >= 1000 and i < 2000 else 0.6 for i in range(3000)]
+    values = [0.2 if i < 333 else 0.4 if i >= 333 and i < 666 else 0.6 for i in range(1000)]
     rate_vals = []
 
-    for _ in range(35):
+    for _ in range(105):
         rate_vals.extend(values)
 
     input_population = [p.Population(1, p.RateSourceArray(rate_times=[_ for _ in range(len(rate_vals))], rate_values=rate_vals, looping=4,
@@ -37,6 +37,7 @@ def test(pyramidal_inter_learning_rate = 0.0002375, inter_pyramidal_lerning_rate
                                 label='pyramidal', in_partitions=[1, 1, 1, 0], out_partitions=1)
     interneuron = p.Population(top_down_pop_size, p.extra_models.IFExpRateTwoComp(g_L=g_L, g_D=g_D),
                                 label='interneuron', in_partitions=[1, 1, 0, 0], out_partitions=1)
+    # Slightly better results using a two-comp as top-down pop
     top_down = p.Population(top_down_pop_size, p.extra_models.PyramidalRate(g_A=g_A, g_B=g_B, g_L=g_L),
                                 label='top_down_population', in_partitions=[0, 1, 0, 0], out_partitions=1)
 
@@ -74,7 +75,7 @@ def test(pyramidal_inter_learning_rate = 0.0002375, inter_pyramidal_lerning_rate
     
 
     pyramidal.record(['v', 'gsyn_exc', 'gsyn_inh'])
-    interneuron.record(['v', 'gsyn_exc'])
+    interneuron.record(['v', 'gsyn_exc', 'synapse'])
     top_down.record(['v', 'gsyn_inh'])
 
     p.run(runtime)
@@ -93,17 +94,19 @@ def test(pyramidal_inter_learning_rate = 0.0002375, inter_pyramidal_lerning_rate
 
     vbtop = top_down.get_data('gsyn_inh').segments[0].filter(name='gsyn_inh')[0]
 
+    weights = interneuron.get_data('synapse')
+
     # Plot values from SpiNNaker
     Figure(
         # membrane potential of the postsynaptic neuron
         Panel(utop, ylabel="Top-down somatic potential",
-              data_labels=[interneuron.label], yticks=True, xlim=(0, runtime)),
-        Panel(vbtop, ylabel="Top-down dendritic potential",
-              data_labels=[interneuron.label], yticks=True, xlim=(0, runtime)),
+              data_labels=[top_down.label], yticks=True, xlim=(0, runtime)),
         Panel(usst, ylabel="SST somatic potential",
               data_labels=[interneuron.label], yticks=True, xlim=(0, runtime)),
-        Panel(vsst, ylabel="SST dendritic potential",
+        Panel(vbtop, ylabel="Top-down dendritic potential",
               data_labels=[top_down.label], yticks=True, xlim=(0, runtime)),
+        Panel(vsst, ylabel="SST dendritic potential",
+              data_labels=[interneuron.label], yticks=True, xlim=(0, runtime)),
         title="Top-Down + SST neurons",
         annotations="Simulated with {}".format(p.name()),
     )
@@ -124,7 +127,7 @@ def test(pyramidal_inter_learning_rate = 0.0002375, inter_pyramidal_lerning_rate
         Panel(usst, ylabel="SST somatic potential",
               data_labels=[interneuron.label], yticks=True, xlim=(0, runtime)),
         Panel(utop, ylabel="Top-down somatic potential",
-              data_labels=[interneuron.label], yticks=True, xlim=(0, runtime)),
+              data_labels=[top_down.label], yticks=True, xlim=(0, runtime)),
         title="Pyramidal + SST neurons",
         annotations="Simulated with {}".format(p.name())
     )
