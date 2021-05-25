@@ -1,5 +1,6 @@
 # coding: utf-8
-from spynnaker.pyNN.extra_algorithms.splitter_components.splitter_abstract_pop_vertex_neurons_synapses import SplitterAbstractPopulationVertexNeuronsSynapses
+from spynnaker.pyNN.extra_algorithms.splitter_components import (
+    SplitterAbstractPopulationVertexNeuronsSynapses)
 
 # Copyright (c) 2017-2019 The University of Manchester
 #
