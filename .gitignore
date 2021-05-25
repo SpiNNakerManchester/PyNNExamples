@@ -2,3 +2,6 @@
 /.pydevproject
 **/application_generated_data_files/
 **/reports/
+.cache/
+.coverage
+.pytest_cache/

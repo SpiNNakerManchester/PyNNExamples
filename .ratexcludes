@@ -1,0 +1,16 @@
+**/*.dll
+**/*.exe
+**/*.png
+**/*linux
+**/*osx
+**/*.exe
+**/SpiNNUtils/**
+**/SpiNNMachine/**
+**/SpiNNMan/**
+**/PACMAN/**
+**/DataSpecification/**
+**/spalloc/**
+**/SpiNNFrontEndCommon/**
+**/sPyNNaker/**
+**/sPyNNaker8/**
+**/.pylintrc
