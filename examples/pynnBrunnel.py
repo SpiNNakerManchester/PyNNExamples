@@ -130,7 +130,7 @@ p_rate = 1000.0 * nu_ex * C_E
 print("Rate is: %f HZ" % (p_rate / 1000))
 
 # Neural Parameters
-pynn.setup(timestep=1.0, min_delay=1.0, max_delay=16.0)
+pynn.setup(timestep=0.1, min_delay=0.1, max_delay=12.8)
 
 if simulator_Name == "spiNNaker":
 
@@ -185,7 +185,7 @@ I_conn = pynn.FixedProbabilityConnector(epsilon, rng=rng)
 # Use random delays for the external noise and
 # set the inital membrance voltage below the resting potential
 # to avoid the overshoot of activity in the beginning of the simulation
-delay_distr = RandomDistribution('uniform', low=1.0, high=16.0, rng=rng)
+delay_distr = RandomDistribution('uniform', low=0.1, high=12.8, rng=rng)
 Ext_conn = pynn.OneToOneConnector()
 
 uniformDistr = RandomDistribution('uniform', low=-10, high=0, rng=rng)

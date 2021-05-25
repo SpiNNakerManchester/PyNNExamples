@@ -94,7 +94,7 @@ def poisson_generator(rate, rng, t_start=0.0, t_stop=1000.0, array=True,
 
 
 # Total number of neurons
-Neurons = 500
+Neurons = 1000
 sim_time = 1000.0
 g = 5.0
 eta = 2.0
