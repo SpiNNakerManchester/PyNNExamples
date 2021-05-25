@@ -15,7 +15,6 @@
 
 from spynnaker.pyNN.protocols import MUNICH_MODES
 import spynnaker8 as p
-from spynnaker.pyNN.protocols import MUNICH_MODES
 
 p.setup(1.0)
 
