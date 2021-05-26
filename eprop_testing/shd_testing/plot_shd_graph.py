@@ -201,14 +201,40 @@ def moving_average(a, n=3):
     ret[n:] = ret[n:] - ret[:-n]
     return ret[n - 1:] / n
 
+def graph_weights(all_weights, address_string, test_label, max_weight, plot_flag=False):
+    print("processing weights")
+    all_weight_list = []
+    for weights in all_weights:
+        weight_list = []
+        for conn in weights:
+            if conn:
+                weight_list.append(conn[2])
+        all_weight_list.append(weight_list)
+    fig, axs = plt.subplots(1, len(all_weight_list))
+    for idx, weights in enumerate(all_weight_list):
+        axs[idx].scatter([i for i in range(len(weights))], weights, s=2)
+        axs[idx].set_ylim([-max_weight, max_weight])
+
+    plt.suptitle(test_label, fontsize=16)
+    print("plotting weights")
+    figure = plt.gcf()  # get current figure
+    figure.set_size_inches(16, 9)
+    # print(manager.window.maxsize())
+    # plt.tight_layout()
+    plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+    plt.savefig(address_string + "weights " + test_label + ".png", bbox_inches='tight', dpi=200)
+    if plot_flag:
+        plt.show()
+    print("weights plotted")
+    plt.close()
 
 def plot_learning_curve(correct_or_not, cycle_error, confusion_matrix, final_confusion_matrix,
                         output_size,
                         address_string, test_label, save_flag=False, cue_break=[], plot_flag=False,
                         learning_threshold=0.75, no_classes=10):
     fig, axs = plt.subplots(2, 2)
-    df_cm = pd.DataFrame(confusion_matrix, range(output_size), range(output_size))
-    f_df_cm = pd.DataFrame(final_confusion_matrix, range(output_size), range(output_size))
+    df_cm = pd.DataFrame(confusion_matrix, range(output_size+1), range(output_size+1))
+    f_df_cm = pd.DataFrame(final_confusion_matrix, range(output_size+1), range(output_size+1))
     ave_err10 = moving_average(cycle_error, 10)
     ave_err100 = moving_average(cycle_error, 100)
     ave_err1000 = moving_average(cycle_error, 1000)
@@ -233,6 +259,8 @@ def plot_learning_curve(correct_or_not, cycle_error, confusion_matrix, final_con
     random_chance = 1. / float(no_classes)
     axs[0][1].plot([0, len(correct_or_not)], [random_chance, random_chance], 'r')
     axs[0][1].plot([0, len(correct_or_not)], [learning_threshold, learning_threshold], 'g')
+    if len(ave_err1000) > 0:
+        axs[0][1].plot([0, len(correct_or_not)], [ave_err1000[-1], ave_err1000[-1]], 'b')
     for iteration_break in cue_break:
         axs[0][1].axvline(x=iteration_break, color='b')
     axs[0][1].set_xlim([0, len(correct_or_not)])
@@ -312,11 +340,12 @@ if __name__ == '__main__':
     gif_directory = '/localhome/mbaxrap7/eprop_python3/PyNN8Examples/eprop_testing/shd_graphs'
     graph_directory = '/data/mbaxrap7/shd_graphs'
 
-    h_eta = [1.]
-    r_eta = [0.0003, 0.0006]
+    h_eta = [0.03]
+    r_eta = [0.001, 0.0006, 0.0004, 0.0002]
     var_v = [0.]
-    var_f = [0.001]
-    w_fb = [0, 1, 2, 3, 4]
+    var_f = [0.01]
+    w_fb = [3]
+    fb_m = [30., 100., 300., 1000.]
 
     processes = []
     logs = []
@@ -325,13 +354,17 @@ if __name__ == '__main__':
             for vf in var_f:
                 for vv in var_v:
                     for fb in w_fb:
-                        # label = 'lc reg-L eta(32) h{}o{} - b{}-0.5 - tr95-0.001 - vmem0.0' \
-                        #         ' - in0.0 out0.0 rec0.0False (1x256)'.format(h, r, v)
-                        # 'lc reg-Lfb eta(3) h1.0o0.0003 - b0.3-0.5 - tr95-0.001 - vmem0.0 - fb4 - in0.0 out0.0 rec0.0False (1x256) 290 learning curve.png'
-                        label = 'lc reg-Lfb eta(3) h{}o{} - b0.3-0.5 - tr95-{} - vmem{} - fb{}' \
-                                ' - in0.0 out0.0 rec0.0True (1x256)'.format(h, r, vf, vv, fb)
-                        create_video(graph_directory, gif_directory, label,
-                                     string_match=' learning curve.png',
-                                     not_match='shd_graphs')
+                        for m in fb_m:
+                            h = r
+                            # label = 'lc norm8 eta(1) h{}o{} - b0.3-0.5 - tr10-{} - vmem{} - fb{}x{}' \
+                            #         ' - in0.0 out0.0 rec0.0False (1x256)'.format(h, r, vf, vv, fb, m)
+                            # 'lc reg-Lfb eta(3) h1.0o0.0003 - b0.3-0.5 - tr95-0.001 - vmem0.0 - fb4 - in0.0 out0.0 rec0.0False (1x256) 290 learning curve.png'
+                            # lc norm8 eta(1) h0.0006o0.0006 - b0.3-0.5 - tr10-0.0 - vmem0.6 - fb3x3.0 - in0.0 out0.0 rec0.0False (1x256)
+                            label = 'lc no rec10 eta(1) h{}o{} - b0.3-0.5 - tr5-{} - vmem{} - fb{}x{}' \
+                                    ' - in0.0 out0.0 rec0.0False (1x256)'.format(h, r, vf, vv, fb, m)
+                            create_video(graph_directory, gif_directory, label,
+                                         # string_match='learning curve.png',
+                                         string_match='.png',
+                                         not_match='shd_graphs')
 
     print("done")

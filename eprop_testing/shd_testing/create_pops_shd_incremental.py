@@ -1,6 +1,6 @@
 import spynnaker8 as pynn
 # from spynnaker.pyNN.spynnaker_external_device_plugin_manager import SpynnakerExternalDevicePluginManager
-from eprop_testing.shd_testing.plot_shd_graph import draw_graph_from_list, plot_learning_curve
+from eprop_testing.shd_testing.plot_shd_graph import draw_graph_from_list, plot_learning_curve, graph_weights
 from eprop_testing.shd_testing.incremental_shd_config import *
 import matplotlib.pyplot as plt
 from pyNN.utility.plotting import Figure, Panel
@@ -46,6 +46,18 @@ def weight_distribution(pop_size):
     # base_weight = 0
     return base_weight
 
+def max_syn_connector(pre_pop_size, post_pop_size, max_syn, base_weight=0.0):
+    connections = []
+    for i in range(post_pop_size):
+        select_from = [j for j in range(pre_pop_size)]
+        delay_index = 0
+        for k in range(max_syn):
+            syndex = np.random.choice(select_from)
+            del select_from[select_from.index(syndex)]
+            connections.append([syndex, i, weight_distribution(pre_pop_size)+base_weight, delay_index])
+            delay_index += 1
+    return connections
+
 def probability_connector(pre_pop_size, post_pop_size, prob, offset=0, base_weight=0.0, rec_conn=False):
     connections = []
     max_syn_per_neuron = 0
@@ -71,6 +83,23 @@ def range_connector(pre_min, pre_max, post_min, post_max, weight=1.5, delay_offs
             connections.append([i, j, weight+nd_weight, i+delay_offset])
             # delay += 1
     return connections
+
+def create_tests_and_labels(selected_classes):
+    test_idx = [i for i in range(min(max_tests, 399*len(selected_classes)))]
+    new_spikes = [[] for i in range(700)]
+    new_labels = [-1 for i in range(len(test_idx))]
+    np.random.shuffle(test_idx)
+    count = -1
+    for spike, label in zip(spike_times, labels):
+        if label in selected_classes:
+            count += 1
+            new_labels[test_idx[count]] = label
+            for idx, neuron in enumerate(spike):
+                if label in class_idx[idx]:
+                    new_spikes[idx] = new_spikes[idx] + list(map(lambda x: x + (1000*test_idx[count]), neuron))
+        if count+1 >= max_tests or count+1 >= len(test_idx):
+            break
+    return new_labels, new_spikes
 
 def collect_tests_and_labels(selected_classes):
     test_idx = [i for i in range(min(max_tests, 399*len(selected_classes)))]
@@ -200,7 +229,8 @@ def print_status(current_window, experiment_label, cycle_error, test_classificat
     print("iteration: ", current_window*window_cycles, "/", len(new_labels), " - repeat #", repeat)
 
 def first_create_pops():
-    new_labels, new_spikes = collect_tests_and_labels(class_order[:no_class_start])
+    # new_labels, new_spikes = collect_tests_and_labels(class_order[:no_class_start])
+    new_labels, new_spikes = create_tests_and_labels(class_order[:no_class_start])
 
     pynn.setup(timestep=1)
     input_pop = pynn.Population(input_size,
@@ -232,12 +262,22 @@ def first_create_pops():
 
     from_list_in, max_syn_per_input = probability_connector(input_size, neuron_pop_size, p_connect_in,
                                                             base_weight=base_weight_in)
-    in_proj = pynn.Projection(input_pop,
-                              neuron[0],
-                              pynn.FromListConnector(from_list_in),
-                              synapse_type=eprop_learning_neuron,
-                              label='input_connections',
-                              receptor_type='input_connections')
+
+    if not layers:
+        from_list_max = max_syn_connector(input_size, output_size, 256)
+        in_proj = pynn.Projection(input_pop,
+                                  readout_pop,
+                                  pynn.FromListConnector(from_list_max),
+                                  synapse_type=eprop_learning_output,
+                                  label='input_connections',
+                                  receptor_type='input_connections')
+    else:
+        in_proj = pynn.Projection(input_pop,
+                                  neuron[0],
+                                  pynn.FromListConnector(from_list_in),
+                                  synapse_type=eprop_learning_neuron,
+                                  label='input_connections',
+                                  receptor_type='input_connections')
 
     # from_list_out = [[i, 0, weight_distribution(input_size), i] for i in range(input_size)]
     from_list_out, max_syn_per_output = probability_connector(neuron_pop_size, output_size, p_connect_out,
@@ -246,13 +286,17 @@ def first_create_pops():
         Exception
     else:
         print("max number of synapses per readout:", max_syn_per_output)
-    out_proj = pynn.Projection(neuron[-1],
-                               readout_pop,
-                               # pynn.OneToOneConnector(),
-                               pynn.FromListConnector(from_list_out),
-                               synapse_type=eprop_learning_output,
-                               label='input_connections',
-                               receptor_type='input_connections')
+
+    if layers:
+        out_proj = pynn.Projection(neuron[-1],
+                                   readout_pop,
+                                   # pynn.OneToOneConnector(),
+                                   pynn.FromListConnector(from_list_out),
+                                   synapse_type=eprop_learning_output,
+                                   label='input_connections',
+                                   receptor_type='input_connections')
+    else:
+        out_proj = []
     learning_proj = []
     layer_proj = []
     for i in range(layers):
@@ -306,9 +350,9 @@ def first_create_pops():
 
     runtime = cycle_time * num_repeats
 
-    experiment_label = "{}eta({}) h{}o{} - b{}-{} - tr{}-{} - vmem{} - fb{} - in{} out{} rec{}{} ({}x{})".format(
-        free_label, batch_size, neuron_params["eta"], readout_neuron_params["eta"], threshold_beta, ratio_of_LIF,
-        neuron_params["target_rate"], neuron_params["firing_lr"], neuron_params["v_mem_lr"], w_fb_type,
+    experiment_label = "{}eta({}) h{}o{} - b{}-{} - tr{}-{} - vmem{} - fb{}x{} - in{} out{} rec{}{} ({}x{})".format(
+        free_label, batch_size, synapse_eta, readout_eta, threshold_beta, ratio_of_LIF,
+        neuron_params["target_rate"], neuron_params["firing_lr"], neuron_params["v_mem_lr"], w_fb_type, fb_multiplier,
         base_weight_in, base_weight_out, base_weight_rec, recurrent_connections, layers, neuron_pop_size)
     print("\n", experiment_label, "\n")
 
@@ -317,7 +361,11 @@ def first_create_pops():
 
 
 def next_create_pops(from_list_in, from_list_rec, from_list_lay, from_list_out, no_classes):
-    new_labels, new_spikes = collect_tests_and_labels(class_order[:no_classes])
+    # new_labels, new_spikes = collect_tests_and_labels(class_order[:no_classes])
+    new_labels, new_spikes = create_tests_and_labels(class_order[:no_classes])
+
+    neuron_params['eta'] = neuron_params['eta'] * lr_decay
+    readout_neuron_params['eta'] = readout_neuron_params['eta'] * lr_decay
 
     from_list_in, from_list_rec, from_list_out = \
         load_connections(None, neuron_pop_size,
@@ -352,20 +400,31 @@ def next_create_pops(from_list_in, from_list_rec, from_list_lay, from_list_out, 
         weight_dependence=pynn.extra_models.WeightDependenceEpropReg(
             w_min=-max_weight, w_max=max_weight, reg_rate=reg_rate))
 
-    in_proj = pynn.Projection(input_pop,
-                              neuron[0],
-                              pynn.FromListConnector(from_list_in),
-                              synapse_type=eprop_learning_neuron,
-                              label='input_connections',
-                              receptor_type='input_connections')
 
-    out_proj = pynn.Projection(neuron[-1],
-                               readout_pop,
-                               # pynn.OneToOneConnector(),
-                               pynn.FromListConnector(from_list_out),
-                               synapse_type=eprop_learning_output,
-                               label='input_connections',
-                               receptor_type='input_connections')
+    if not layers:
+        in_proj = pynn.Projection(input_pop,
+                                  readout_pop,
+                                  pynn.FromListConnector(from_list_in),
+                                  synapse_type=eprop_learning_output,
+                                  label='input_connections',
+                                  receptor_type='input_connections')
+    else:
+        in_proj = pynn.Projection(input_pop,
+                                  neuron[0],
+                                  pynn.FromListConnector(from_list_in),
+                                  synapse_type=eprop_learning_neuron,
+                                  label='input_connections',
+                                  receptor_type='input_connections')
+    if layers:
+        out_proj = pynn.Projection(neuron[-1],
+                                   readout_pop,
+                                   # pynn.OneToOneConnector(),
+                                   pynn.FromListConnector(from_list_out),
+                                   synapse_type=eprop_learning_output,
+                                   label='input_connections',
+                                   receptor_type='input_connections')
+    else:
+        out_proj = []
     learning_proj = []
     layer_proj = []
     for i in range(layers):
@@ -410,9 +469,9 @@ def next_create_pops(from_list_in, from_list_rec, from_list_lay, from_list_out, 
 
     runtime = cycle_time * num_repeats
 
-    experiment_label = "{}eta({}) h{}o{} - b{}-{} - tr{}-{} - vmem{} - fb{} - in{} out{} rec{}{} ({}x{})".format(
-        free_label, batch_size, neuron_params["eta"], readout_neuron_params["eta"], threshold_beta, ratio_of_LIF,
-        neuron_params["target_rate"], neuron_params["firing_lr"], neuron_params["v_mem_lr"], w_fb_type,
+    experiment_label = "{}eta({}) h{}o{} - b{}-{} - tr{}-{} - vmem{} - fb{}x{} - in{} out{} rec{}{} ({}x{})".format(
+        free_label, batch_size, synapse_eta, readout_eta, threshold_beta, ratio_of_LIF,
+        neuron_params["target_rate"], neuron_params["firing_lr"], neuron_params["v_mem_lr"], w_fb_type, fb_multiplier,
         base_weight_in, base_weight_out, base_weight_rec, recurrent_connections, layers, neuron_pop_size)
     print("\n", experiment_label, "\n")
 
@@ -430,7 +489,7 @@ def run_until(experiment_label, runtime, pynn, in_proj, recurrent_proj, layer_pr
     # window_size = neuron_params["window_size"] * window_cycles
     runtime = cycle_time * len(readout_neuron_params["target_data"])
 
-    final_confusion_matrix = [[0. for i in range(output_size)] for j in range(output_size)]
+    final_confusion_matrix = [[0. for i in range(output_size+1)] for j in range(output_size+1)]
     while (current_window+1) * cycle_time * window_cycles < runtime:
         print(experiment_label)
         pynn.run(cycle_time*window_cycles)
@@ -444,21 +503,25 @@ def run_until(experiment_label, runtime, pynn, in_proj, recurrent_proj, layer_pr
         for cycle in range(window_cycles):
             cycle_error.append(0.0)
             correct_or_not.append([])
-            cycle_classification = [-1 for i in range(cycle_time)]
+            # cycle_classification = [-1 for i in range(cycle_time)]
             ce = [0.0 for i in range(output_size)]
             for time_index in range(cycle_time):
                 instantaneous_error = np.abs(float(
                     readout_res.segments[0].filter(name='gsyn_inh')[0][time_index + ((cycle+current_iter) * cycle_time)][0]))
                 cycle_error[-1] += instantaneous_error
-                softmaxes = [0.0 for i in range(output_size)]
+                # softmaxes = [0.0 for i in range(output_size)]
                 for n_out in range(output_size):
                     ce[n_out] += float(readout_res.segments[0].filter(name='v')[0][time_index + ((cycle+current_iter) * cycle_time)][n_out])
                     # ce[n_out] = np.exp(max(min(8.75, v_mem), -8.75))
                 # ce_sum = sum(ce)
                 # for i in range(len(ce)):
                 #     softmaxes[i] += ce[i] / ce_sum
+            if sum(ce) == 0:
+                choice = output_size
+            else:
+                choice = ce.index(max(ce))
             test_classification.append(
-                [new_labels[cycle+(current_window*window_cycles)], ce.index(max(ce))])  # mode
+                [new_labels[cycle+(current_window*window_cycles)], choice])  # mode
             # print("current label = ", cycle+(current_window*window_cycles))
             confusion_matrix[test_classification[-1][0]][test_classification[-1][1]] += 1
             final_confusion_matrix[test_classification[-1][0]][test_classification[-1][1]] += 1
@@ -503,6 +566,14 @@ def run_until(experiment_label, runtime, pynn, in_proj, recurrent_proj, layer_pr
             plot_time = current_iter * cycle_time
             start_time = max(plot_time - cycle_time * 3, 0)
             end_time = plot_time
+
+            # all_psi = [[] for k in range(neuron_pop_size)]
+            # neuron_v = neuron_res.segments[0].filter(name='v')[0]
+            # for time_step in neuron_v:
+            #     for idx, v in enumerate(time_step):
+            #         p = 0.3 * max(0., 1 - abs((float(v) - 10.) / 10.))
+            #         all_psi[idx].append(p)
+
             # plt.figure()
             Figure(
 
@@ -544,7 +615,7 @@ def run_until(experiment_label, runtime, pynn, in_proj, recurrent_proj, layer_pr
             plt.savefig('./../shd_graphs/neuron data ' + experiment_label + " {} {}.png".format(cue_break, repeating))
                         # , bbox_inches='tight')
 
-        if plot_membranes:
+        if plot_lc_per_iteration:
             # graph_directory = './../shd_graphs/'
             graph_directory = '/data/mbaxrap7/shd_graphs/'
             plot_learning_curve(correct_or_not, cycle_error, confusion_matrix, final_confusion_matrix,
@@ -555,6 +626,16 @@ def run_until(experiment_label, runtime, pynn, in_proj, recurrent_proj, layer_pr
                                 plot_flag=False,
                                 learning_threshold=learning_threshold,
                                 no_classes=no_class_start + (len(cue_break) * class_progress))
+        if plot_weights:
+            new_connections_in, new_connections_out, new_connections_rec, new_connections_layer = \
+                get_all_weights(in_proj, from_list_in, out_proj, from_list_out,
+                                recurrent_proj, from_list_rec, layer_proj)
+            graph_directory = '/data/mbaxrap7/shd_graphs/'
+            if recurrent_connections:
+                all_weights = [new_connections_in, new_connections_out, new_connections_rec]
+            else:
+                all_weights = [new_connections_in, new_connections_out]
+            graph_weights(all_weights, graph_directory, experiment_label + ' {}'.format(int(len(correct_or_not) / window_cycles)), max_weight)
 
         if np.sum(correct_or_not[-min(100, current_iter+(repeating*len(new_labels))):]) > threshold * 100 \
                 and not final_class:

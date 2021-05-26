@@ -6,7 +6,7 @@ from pyNN.random import NumpyRNG, RandomDistribution
 from pyNN.utility.plotting import Figure, Panel
 
 def weight_distribution(pop_size):
-    base_weight = np.random.randn() / np.sqrt(pop_size)
+    base_weight = np.random.randn() #/ np.sqrt(pop_size)
     # base_weight = 0
     return base_weight
 
@@ -29,7 +29,7 @@ def probability_connector(pre_pop_size, post_pop_size, prob, offset=0, base_weig
 np.random.seed(272727)
 
 cycle_time = 1024
-num_repeats = 100
+num_repeats = 300
 pynn.setup(1.0)
 
 target_data = []
@@ -40,15 +40,15 @@ for i in range(1024):
                 )
 
 
-reg_rate = 0.00001
+reg_rate = 0.0000
 p_connect_in = 1.
 p_connect_rec = 1.
 p_connect_out = 1.
 recurrent_connections = False
-synapse_eta = 0.001
+synapse_eta = 0.00001
 input_split = 20
 input_speed_up = 1.
-base_weight = 0.55
+base_weight = 0.35
 
 pynn.setup(timestep=1)
 
@@ -58,13 +58,13 @@ readout_neuron_params = {
     "v": 0,
     "v_thresh": 30, # controls firing rate of error neurons
     "target_data": target_data,
-    "eta": synapse_eta + 0.0,
+    "eta": 0.001, #synapse_eta + 0.0,
     "update_ready": cycle_time
     }
 input_pop = pynn.Population(input_size,
                             pynn.SpikeSourceArray,
-                            # {'spike_times': build_input_spike_train(num_repeats, cycle_time, input_size)},
-                            {'spike_times': frozen_poisson_variable_hz(num_repeats, cycle_time, input_split, input_speed_up, input_size, use_old=False)},
+                            {'spike_times': build_input_spike_train(num_repeats, cycle_time, input_size, use_old=True)},
+                            # {'spike_times': frozen_poisson_variable_hz(num_repeats, cycle_time, input_split, input_speed_up, input_size, use_old=False)},
                             label='input_pop')
 
 neuron_pop_size = 100
@@ -76,9 +76,12 @@ neuron_params = {
     # "w_fb": [(np.random.random() * 2) - 1. for i in range(neuron_pop_size)],
     # "B": 0.0,
     "beta": 0.0,
-    "target_rate": 10,#[10 + np.random.randn() for i in range(neuron_pop_size)],
-    "eta": synapse_eta, #/ 4.
-    "window_size": 1
+    "target_rate": 70,#[10 + np.random.randn() for i in range(neuron_pop_size)],
+    "eta": synapse_eta / 4.,
+    "tau_err": 1000*1.,
+    "window_size": cycle_time,
+    "input_synapses": input_size,
+    "rec_synapses": recurrent_connections * neuron_pop_size
     }
 if neuron_pop_size:
     neuron = pynn.Population(neuron_pop_size,
@@ -255,9 +258,13 @@ if neuron_pop_size:
 
         Panel(neuron_res.segments[0].filter(name='gsyn_inh')[0], ylabel='gsyn_inh', yticks=True, xticks=True, xlim=(0, runtime)),
 
-        Panel(in_spikes.segments[0].spiketrains, ylabel='in_spikes', xlabel='in_spikes', yticks=True, xticks=True, xlim=(0, runtime)),
+        Panel(in_spikes.segments[0].spiketrains, ylabel='in_spikes', xlabel='in_spikes', yticks=True, xticks=True, xlim=(runtime-cycle_time*3, runtime)),
 
-        Panel(neuron_res.segments[0].spiketrains, ylabel='neuron_spikes', xlabel='neuron_spikes', yticks=True, xticks=True, xlim=(0, runtime)),
+        Panel(neuron_res.segments[0].spiketrains, ylabel='neuron_spikes', xlabel='neuron_spikes', yticks=True,
+              xticks=True, xlim=(0, cycle_time * 3)),
+
+        Panel(neuron_res.segments[0].spiketrains, ylabel='neuron_spikes', xlabel='neuron_spikes', yticks=True,
+              xticks=True, xlim=(runtime - cycle_time * 3, runtime)),
 
         Panel(readout_res.segments[0].filter(name='v')[0], ylabel='Membrane potential (mV)', yticks=True, xticks=True, xlim=(runtime-cycle_time*3, runtime)),
 
@@ -271,7 +278,7 @@ if neuron_pop_size:
 else:
     plt.figure()
     Figure(
-        Panel(in_spikes.segments[0].spiketrains, ylabel='in_spikes', xlabel='in_spikes', yticks=True, xticks=True, xlim=(0, runtime)),
+        Panel(in_spikes.segments[0].spiketrains, ylabel='in_spikes', xlabel='in_spikes', yticks=True, xticks=True, xlim=(runtime-cycle_time*3, runtime)),
 
         Panel(readout_res.segments[0].filter(name='v')[0], ylabel='Membrane potential (mV)', yticks=True, xticks=True,
               xlim=(runtime-cycle_time*3, runtime)),

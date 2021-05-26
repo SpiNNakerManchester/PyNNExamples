@@ -14,7 +14,7 @@ from_list_in, from_list_rec, from_list_out, new_labels = first_create_pops()
 correct_or_not_full_list = []
 cycle_error_full_list = []
 transiterations = []
-confusion_matrix = [[0. for i in range(output_size)] for i in range(output_size)]
+confusion_matrix = [[0. for i in range(output_size+1)] for i in range(output_size+1)]
 
 number_of_classes = no_class_start
 while number_of_classes <= output_size:#in range(no_class_start, output_size+class_progress, class_progress):

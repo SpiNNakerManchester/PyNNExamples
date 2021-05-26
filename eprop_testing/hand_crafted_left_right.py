@@ -40,18 +40,18 @@ def range_connector(pre_min, pre_max, post_min, post_max, weight=1.5, delay_offs
 
 np.random.seed(2727)
 
-number_of_cues = 7
+number_of_cues = 1
 cycle_time = (number_of_cues*150)+1000+150
-num_repeats = 2000
+num_repeats = 10
 pynn.setup(1.0)
 
-reg_rate = 0.000
+reg_rate = 0.00
 p_connect_in = 1.
 p_connect_rec = 1.
 p_connect_out = 1.
 recurrent_connections = False
 
-synapse_eta = 0.01
+synapse_eta = 0.0001
 tau_a = 6500  #[cycle_time - 150 + (np.random.randn() * 200) for i in range(100)]
 input_split = 100
 window_cycles = 2
