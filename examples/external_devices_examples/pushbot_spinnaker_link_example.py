@@ -13,14 +13,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from spynnaker.pyNN.protocols import MUNICH_MODES
 import spynnaker8 as p
 
 p.setup(1.0)
 
 # Set up the PushBot devices
 pushbot_protocol = p.external_devices.MunichIoSpiNNakerLinkProtocol(
-    mode=p.external_devices.MunichIoSpiNNakerLinkProtocol.MODES.PUSH_BOT,
-    uart_id=0)
+    mode=MUNICH_MODES.PUSH_BOT, uart_id=0)
 spinnaker_link = 0
 board_address = None
 motor_0 = p.external_devices.PushBotSpiNNakerLinkMotorDevice(
