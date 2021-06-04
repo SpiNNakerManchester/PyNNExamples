@@ -8,9 +8,9 @@ import random
 
 def test(g_A=0.8, g_B=1, g_L=0.1, g_D=1.0, gsom=0.8):
 
-    runtime = 400
+    runtime = 10000
 
-    data = MNIST('./datasets')
+    data = MNIST('/localhome/g90604lp/datasets')
 
     images, labels = data.load_training()
 
@@ -42,14 +42,14 @@ def test(g_A=0.8, g_B=1, g_L=0.1, g_D=1.0, gsom=0.8):
 
     source = p.Population(784, p.RateSourceLive(784, refresh_rate, images[:n_images], partitions=7, packet_compressor=True), label='input_source')
 
-
     pyramidalL1 = p.Population(500, p.extra_models.PyramidalRate(g_A=g_A, g_B=g_B, g_L=g_L),
-        label='pyramidalL1', in_partitions=[1, 7, 1, 0], out_partitions=7, packet_compressor=[False, True, False, False], atoms_per_core=4)
+        label='pyramidalL1', in_partitions=[1, 7, 1, 0], out_partitions=10, packet_compressor=[False, True, False, False],
+                               atoms_per_core=4, input_pop=True)
     interneuronL1 = p.Population(10, p.extra_models.IFExpRateTwoComp(g_L=g_L, g_D=g_D, g_som=gsom),
-        label='interneuronL1', in_partitions=[1, 7, 0, 0], out_partitions=1, atoms_per_core=10)
+        label='interneuronL1', in_partitions=[1, 10, 0, 0], out_partitions=1, atoms_per_core=10)
 
     output_neurons = p.Population(10, p.extra_models.IFExpRateTwoComp(g_L=g_L, g_D=g_D, g_som=gsom),
-        label='top_down_neurons', in_partitions=[1, 7, 0, 0], out_partitions=1, atoms_per_core=10)
+        label='top_down_neurons', in_partitions=[1, 10, 0, 0], out_partitions=1, atoms_per_core=10)
 
     basal_plasticityL1 = p.STDPMechanism(
         timing_dependence=p.extra_models.TimingDependenceMulticompBern(),
@@ -100,6 +100,7 @@ def test(g_A=0.8, g_B=1, g_L=0.1, g_D=1.0, gsom=0.8):
                  receptor_type='soma_exc')
 
     output_neurons.record(['v', 'gsyn_exc', 'gsyn_inh'])
+    interneuronL1.record(['v'])
 
     p.run(runtime)
 
@@ -108,6 +109,8 @@ def test(g_A=0.8, g_B=1, g_L=0.1, g_D=1.0, gsom=0.8):
     v = output_neurons.get_data('gsyn_exc').segments[0].filter(name='gsyn_exc')[0]
 
     out_rate = output_neurons.get_data('gsyn_inh').segments[0].filter(name='gsyn_inh')[0]
+
+    uint = interneuronL1.get_data('v').segments[0].filter(name='v')[0]
 
     print(labels[:n_images])
 
@@ -125,6 +128,19 @@ def test(g_A=0.8, g_B=1, g_L=0.1, g_D=1.0, gsom=0.8):
     )
 
     plt.grid(True)
+
+    plt.show()
+
+    # Plot values from SpiNNaker
+    Figure(
+        # membrane potential of the postsynaptic neuron
+        Panel(uint, ylabel="somatic potential interneurons",
+              data_labels=[interneuronL1.label], yticks=True, xlim=(0, runtime)),
+        Panel(u, ylabel="somatic potential output neurons",
+              data_labels=[output_neurons.label], yticks=True, xlim=(0, runtime)),
+        title="MNIST output",
+        annotations="Simulated with {}".format(p.name())
+    )
 
     plt.show()
 

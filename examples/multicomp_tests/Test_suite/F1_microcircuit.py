@@ -34,9 +34,9 @@ def test(pyramidal_inter_learning_rate = 0.0011875, inter_pyramidal_lerning_rate
 
     pyramidal = p.Population(pyramidal_pop_size, p.extra_models.PyramidalRate(g_A=g_A, g_B=g_B, g_L=g_L),
                                 label='pyramidal', in_partitions=[1, 1, 1, 0], out_partitions=1)
-    interneuron = p.Population(top_down_pop_size, p.extra_models.IFExpRateTwoComp(g_L=g_L, g_D=g_D),
+    interneuron = p.Population(top_down_pop_size, p.extra_models.IFExpRateTwoComp(g_L=g_L, g_D=g_D, g_som=gsom),
                                 label='interneuron', in_partitions=[1, 1, 0, 0], out_partitions=1)
-    top_down = p.Population(top_down_pop_size, p.extra_models.IFExpRateTwoComp(g_L=g_L, g_D=g_D),
+    top_down = p.Population(top_down_pop_size, p.extra_models.IFExpRateTwoComp(g_L=g_L, g_D=g_D, g_som=gsom),
                                 label='top_down_population', in_partitions=[1, 1, 0, 0], out_partitions=1)
 
 

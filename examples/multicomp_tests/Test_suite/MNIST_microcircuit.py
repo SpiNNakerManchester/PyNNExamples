@@ -8,9 +8,9 @@ import random
 
 def test(g_A=0.8, g_B=1, g_L=0.1, g_D=1.0, gsom=0.8):
 
-    runtime = 6000
+    runtime = 100000
 
-    data = MNIST('./datasets')
+    data = MNIST('/localhome/g90604lp/datasets')
 
     images, labels = data.load_training()
 
@@ -44,15 +44,17 @@ def test(g_A=0.8, g_B=1, g_L=0.1, g_D=1.0, gsom=0.8):
 
 
     pyramidalL1 = p.Population(500, p.extra_models.PyramidalRate(g_A=g_A, g_B=g_B, g_L=g_L),
-        label='pyramidalL1', in_partitions=[3, 7, 4, 0], out_partitions=7, packet_compressor=[False, True, False, False])
+        label='pyramidalL1', in_partitions=[3, 7, 4, 0], out_partitions=12,
+                               packet_compressor=[False, True, False, False], atoms_per_core=4,
+                               input_pop=True)
     interneuronL1 = p.Population(500, p.extra_models.IFExpRateTwoComp(g_L=g_L, g_D=g_D, g_som=gsom),
-        label='interneuronL1', in_partitions=[3, 7, 0, 0], out_partitions=4)
+        label='interneuronL1', in_partitions=[1, 12, 0, 0], out_partitions=4, atoms_per_core=16)
     pyramidalL2 = p.Population(500, p.extra_models.PyramidalRate(g_A=g_A, g_B=g_B, g_L=g_L),
-        label='pyramidalL2', in_partitions=[1, 7, 1, 0], out_partitions=3)
+        label='pyramidalL2', in_partitions=[1, 12, 1, 0], out_partitions=12, atoms_per_core=8)
     interneuronL2 = p.Population(10, p.extra_models.IFExpRateTwoComp(g_L=g_L, g_D=g_D, g_som=gsom),
-        label='interneuronL2', in_partitions=[1, 3, 0, 0], out_partitions=1)
+        label='interneuronL2', in_partitions=[1, 12, 0, 0], out_partitions=1, atoms_per_core=10)
     output_neurons = p.Population(10, p.extra_models.IFExpRateTwoComp(g_L=g_L, g_D=g_D, g_som=gsom),
-        label='top_down_neurons', in_partitions=[1, 3, 0, 0], out_partitions=1)
+        label='top_down_neurons', in_partitions=[1, 12, 0, 0], out_partitions=1, atoms_per_core=10)
 
     basal_plasticityL1 = p.STDPMechanism(
         timing_dependence=p.extra_models.TimingDependenceMulticompBern(),

@@ -38,7 +38,7 @@ def test(pyramidal_inter_learning_rate = 0.0002375, inter_pyramidal_lerning_rate
     interneuron = p.Population(top_down_pop_size, p.extra_models.IFExpRateTwoComp(g_L=g_L, g_D=g_D),
                                 label='interneuron', in_partitions=[1, 1, 0, 0], out_partitions=1)
     # Slightly better results using a two-comp as top-down pop
-    top_down = p.Population(top_down_pop_size, p.extra_models.PyramidalRate(g_A=g_A, g_B=g_B, g_L=g_L),
+    top_down = p.Population(top_down_pop_size, p.extra_models.IFExpRateTwoComp(g_L=g_L, g_D=g_D, teach=False),
                                 label='top_down_population', in_partitions=[0, 1, 0, 0], out_partitions=1)
 
 
@@ -67,7 +67,7 @@ def test(pyramidal_inter_learning_rate = 0.0002375, inter_pyramidal_lerning_rate
                  receptor_type='dendrite_exc')
 
     p.Projection(pyramidal, top_down, p.AllToAllConnector(random_weight_matrix=True), p.StaticSynapse(weight=top_down_basal_weight),
-                 receptor_type='basal_exc')
+                 receptor_type='dendrite_exc')
 
     for i in range(input_pop_size):
         p.Projection(input_population[i], pyramidal, p.AllToAllConnector(random_weight_matrix=True), p.StaticSynapse(weight=random.uniform(-1,1)),

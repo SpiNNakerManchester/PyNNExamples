@@ -132,8 +132,8 @@ def test(learning_rate=0.25 , g_A=0.8, g_B=1, g_L=0.1, exc_times=[1, 2, 7, 8, 9,
         Vb.append(Ibasal)
         U.append(som_voltage)
 
-        Vb_rate = (Ibasal if (Ibasal > 0 and Ibasal < 2) else 0 if Ibasal <= 0 else 2)
-        som_voltage = float(som_voltage * (g_L + g_B + g_A)) / g_B
+        dend_voltage = float(Ibasal * (g_B /(g_L + g_B + g_A)))
+        Vb_rate = (dend_voltage if (dend_voltage > 0 and dend_voltage < 2) else 0 if dend_voltage <= 0 else 2)
         Urate = (som_voltage if (som_voltage > 0 and som_voltage < 2) else 0 if som_voltage <= 0 else 2)
 
 

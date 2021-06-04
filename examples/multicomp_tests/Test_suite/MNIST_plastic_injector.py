@@ -4,7 +4,7 @@ import numpy as np
 
 def test():
 
-    data = MNIST('./datasets')
+    data = MNIST('/localhome/g90604lp/datasets')
 
     images, labels = data.load_training()
 
@@ -95,8 +95,8 @@ def test():
         VB.append(Ibasal)
         U.append(som_voltage)
 
-        VBrate = (Ibasal if (Ibasal > 0 and Ibasal < 2) else 0 if Ibasal <= 0 else 2)
-        som_voltage = float(som_voltage * (g_L + g_B + g_A)) / g_B
+        dend_voltage = float(Ibasal * (g_B / (g_L + g_B + g_A)))
+        VBrate = (dend_voltage if (dend_voltage > 0 and dend_voltage < 2) else 0 if dend_voltage <= 0 else 2)
         Urate = (som_voltage if (som_voltage > 0 and som_voltage < 2) else 0 if som_voltage <= 0 else 2)
 
         if refresh > refresh_rate:

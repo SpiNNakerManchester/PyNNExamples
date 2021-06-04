@@ -123,8 +123,8 @@ def test(g_D=2, g_L=0.1, exc_times=[1, 2, 5, 6], inh_times=[3, 4, 5, 6], exc_r_d
 
         out_rate = _compute_rate(U)
 
-        V_rate = _compute_rate(Vdnd)
-        U_rate = _compute_rate((float(g_L + g_D) * U) / g_D)
+        V_rate = _compute_rate(float(Vdnd * (g_D / (g_L + g_D))))
+        U_rate = _compute_rate(U)
 
         delta_exc = learning_rate * (U_rate - V_rate) * irate_exc
         delta_inh = learning_rate * (U_rate - V_rate) * irate_inh

@@ -5,7 +5,7 @@ import math
 
 def test():
 
-    data = MNIST('./datasets')
+    data = MNIST('/localhome/g90604lp/datasets')
 
     images, labels = data.load_training()
 

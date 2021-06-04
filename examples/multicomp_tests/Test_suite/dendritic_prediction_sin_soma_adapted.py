@@ -102,8 +102,8 @@ def test(g_D=2, g_L=0.1, exc_times=[1, 2, 5, 6], inh_times=[3, 4, 5, 6], exc_r_d
 
         U.append(som_voltage)
 
-        Vrate = _compute_rate(dend_curr)
-        Urate = _compute_rate((float(g_L + g_D) * som_voltage) / g_D)
+        Vrate = _compute_rate(float(dend_curr * (g_D / (g_L + g_D))))
+        Urate = _compute_rate(som_voltage)
 
     U.insert(0, 0)
     U.pop()

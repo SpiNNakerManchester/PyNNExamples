@@ -10,7 +10,7 @@ import math
 
 def test():
 
-    data = MNIST('./datasets')
+    data = MNIST('/localhome/g90604lp/datasets')
 
     images, labels = data.load_training()
 
@@ -30,10 +30,10 @@ def test():
     source = p.Population(neurons, p.RateLiveTeacher(
         neurons, refresh_rate, data_under_test, partitions=partitions_involved), label='input_source')
 
-    population = p.Population(neurons, p.extra_models.IFExpRateTwoComp(),
+    population = p.Population(neurons, p.extra_models.IFExpRateTwoComp(g_som=1, g_D=0.000000000001, g_L=0),
         label='population_1', in_partitions=[partitions_involved, 0, 0, 0], out_partitions=1)
 
-    p.Projection(source, population, p.OneToOneConnector(), p.StaticSynapse(weight=1),
+    p.Projection(source, population, p.OneToOneConnector(), p.StaticSynapse(weight=0),
                  receptor_type="soma_exc")
 
     
@@ -63,16 +63,16 @@ def test():
             j += 1
     
     for i in range(1, runtime):
-        for j in range(len(va[i])):
+        for j in range(len(u[i])):
             if j == VA[i]:
-                if va[i][j] != 1:
+                if u[i][j] != 32:
                     print("neuron " + str(j))
-                    print("expected 1.0, got " + str(va[i][j]) + " time " + str(i))
+                    print("expected 1.0, got " + str(u[i][j]) + " time " + str(i))
                     return False
             else:
-                if va[i][j] != 0:
+                if u[i][j] != -32:
                     print("neuron " + str(j))
-                    print("expected 0.0, got " + str(va[i][j]) + " time " + str(i))
+                    print("expected 0.0, got " + str(u[i][j]) + " time " + str(i))
                     return False
     
     
