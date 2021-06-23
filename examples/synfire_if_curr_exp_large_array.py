@@ -21,7 +21,7 @@ from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 
 run_time = 6000
-p.setup(timestep=1.0, min_delay=1.0, max_delay=144.0)
+p.setup(timestep=1.0, min_delay=1.00)
 nNeurons = 10  # number of neurons in each population
 
 cell_params_lif = {'cm': 0.25,

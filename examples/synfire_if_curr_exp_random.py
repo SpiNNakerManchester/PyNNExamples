@@ -22,7 +22,7 @@ import matplotlib.pyplot as plt
 
 from pyNN.random import RandomDistribution
 
-p.setup(timestep=1.0, min_delay=1.0, max_delay=144.0)
+p.setup(timestep=1.0, min_delay=1.0)
 nNeurons = 200  # number of neurons in each population
 max_delay = 50
 run_time = max_delay * nNeurons
