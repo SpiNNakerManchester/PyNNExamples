@@ -19,6 +19,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pyNN.random import NumpyRNG, RandomDistribution
 from pyNN.utility.plotting import Figure, Panel
+from spynnaker.pyNN.extra_algorithms.splitter_components import (
+    SplitterAbstractPopulationVertexNeuronsSynapses, SplitterPoissonDelegate)
 
 simulator_Name = 'spiNNaker'
 # exec('import pyNN.%s as pynn' % simulator_Name)
@@ -130,7 +132,7 @@ p_rate = 1000.0 * nu_ex * C_E
 print("Rate is: %f HZ" % (p_rate / 1000))
 
 # Neural Parameters
-pynn.setup(timestep=0.1, min_delay=0.1, max_delay=12.8)
+pynn.setup(timestep=0.1, time_scale_factor=1, min_delay=0.1, max_delay=12.8)
 
 if simulator_Name == "spiNNaker":
 
@@ -165,18 +167,26 @@ inh_cell_params = {
 }
 
 # Set-up pynn Populations
+E_pop_splitter = SplitterAbstractPopulationVertexNeuronsSynapses(3, 128, False)
 E_pop = pynn.Population(
-    N_E, pynn.IF_curr_exp(**exc_cell_params), label="E_pop")
+    N_E, pynn.IF_curr_exp(**exc_cell_params), label="E_pop",
+    additional_parameters={"splitter": E_pop_splitter})
 
+I_pop_splitter = SplitterAbstractPopulationVertexNeuronsSynapses(3, 128, False)
 I_pop = pynn.Population(
-    N_I, pynn.IF_curr_exp(**inh_cell_params), label="I_pop")
+    N_I, pynn.IF_curr_exp(**inh_cell_params), label="I_pop",
+    additional_parameters={"splitter": I_pop_splitter})
 
+Poiss_ext_E_splitter = SplitterPoissonDelegate()
 Poiss_ext_E = pynn.Population(
     N_E, pynn.SpikeSourcePoisson(rate=10.0), label="Poisson_pop_E",
-    additional_parameters={"seed": int(rng.next() * 0xFFFFFFFF)})
+    additional_parameters={"seed": int(rng.next() * 0xFFFFFFFF),
+                           "splitter": Poiss_ext_E_splitter})
+Poiss_ext_I_splitter = SplitterPoissonDelegate()
 Poiss_ext_I = pynn.Population(
     N_I, pynn.SpikeSourcePoisson(rate=10.0), label="Poisson_pop_I",
-    additional_parameters={"seed": int(rng.next() * 0xFFFFFFFF)})
+    additional_parameters={"seed": int(rng.next() * 0xFFFFFFFF),
+                           "splitter": Poiss_ext_I_splitter})
 
 # Connectors
 E_conn = pynn.FixedProbabilityConnector(epsilon, rng=rng)
