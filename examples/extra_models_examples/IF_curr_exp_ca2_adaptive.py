@@ -38,7 +38,7 @@ N = 300
 T = 250
 
 # Setup simulator
-sim.setup(timestep=dt, min_delay=1.0, max_delay=4.0)
+sim.setup(timestep=dt, min_delay=1.0)
 
 # Create population of neurons
 cell = sim.Population(N, sim.extra_models.IFCurrExpCa2Adaptive(**{

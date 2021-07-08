@@ -122,8 +122,7 @@ if simulator_name == "neuroml":
     extra["file"] = "VAbenchmarks.xml"
 
 node_id = p.setup(
-    timestep=dt, min_delay=delay, max_delay=delay,
-    db_name='va_benchmark.sqlite', **extra)
+    timestep=dt, min_delay=delay, db_name='va_benchmark.sqlite', **extra)
 
 if simulator_name == 'spiNNaker':
     p.set_number_of_neurons_per_core(p.IF_curr_exp, 100)      # this will set

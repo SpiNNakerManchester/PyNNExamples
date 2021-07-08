@@ -49,7 +49,7 @@ cell_params = {'cm': 0.25,  # nF
                }
 
 # SpiNNaker setup
-sim.setup(timestep=1.0, min_delay=1.0, max_delay=10.0)
+sim.setup(timestep=1.0, min_delay=1.0)
 
 # -------------------------------------------------------------------
 # Experiment loop

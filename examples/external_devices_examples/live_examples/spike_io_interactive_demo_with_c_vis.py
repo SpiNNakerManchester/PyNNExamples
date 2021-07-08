@@ -28,7 +28,7 @@ class PyNNScript(object):
     def __init__(self):
 
         # initial call to set up the front end (pynn requirement)
-        Frontend.setup(timestep=1.0, min_delay=1.0, max_delay=144.0)
+        Frontend.setup(timestep=1.0, min_delay=1.0)
 
         use_c_visualiser = False
         visualiser_port = 19996

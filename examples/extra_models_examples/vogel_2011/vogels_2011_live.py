@@ -40,7 +40,7 @@ cell_params = {
 NUM_EXCITATORY = 2000
 
 # SpiNNaker setup
-sim.setup(timestep=1.0, min_delay=1.0, max_delay=10.0, time_scale_factor=6)
+sim.setup(timestep=1.0, min_delay=1.0, time_scale_factor=6)
 
 # Reduce number of neurons to simulate on each core
 sim.set_number_of_neurons_per_core(sim.IF_curr_exp, 100)

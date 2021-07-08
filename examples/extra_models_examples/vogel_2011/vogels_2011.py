@@ -133,7 +133,7 @@ class Vogels2011(object):
 
         # SpiNNaker setup
         sim.setup(
-            timestep=1.0, min_delay=1.0, max_delay=10.0,
+            timestep=1.0, min_delay=1.0,
             time_scale_factor=slow_down, n_boards_required=N_BOARDS)
 
         # Reduce number of neurons to simulate on each core

@@ -26,7 +26,7 @@ n_neurons = 100  # number of neurons in each population
 weight_to_spike = 2.0  # weight to spike
 delay = 17  # delay (above delay extension point)
 
-p.setup(timestep=1.0, min_delay=1.0, max_delay=1.0)
+p.setup(timestep=1.0, min_delay=1.0)
 p.set_number_of_neurons_per_core(p.IF_curr_exp, int(n_neurons / 2))
 
 neuron = p.Population(
