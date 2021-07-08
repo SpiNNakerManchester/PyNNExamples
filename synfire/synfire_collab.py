@@ -27,7 +27,7 @@ weights = 0.5
 delays = 17.0
 simtime = 1000
 
-sim.setup(timestep=1.0, min_delay=1.0, max_delay=144.0)
+sim.setup(timestep=1.0, min_delay=1.0)
 
 spikeArray = {'spike_times': [[0]]}
 stimulus = sim.Population(1, sim.SpikeSourceArray, spikeArray,
