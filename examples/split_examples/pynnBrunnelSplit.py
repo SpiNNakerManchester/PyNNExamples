@@ -132,7 +132,7 @@ p_rate = 1000.0 * nu_ex * C_E
 print("Rate is: %f HZ" % (p_rate / 1000))
 
 # Neural Parameters
-pynn.setup(timestep=0.1, time_scale_factor=1, min_delay=0.1, max_delay=12.8)
+pynn.setup(timestep=0.1, time_scale_factor=1, min_delay=0.1)
 
 if simulator_Name == "spiNNaker":
 
