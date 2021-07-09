@@ -16,7 +16,7 @@
 import spynnaker8 as sim
 
 # SpiNNaker setup
-sim.setup(timestep=1.0, min_delay=1.0, max_delay=10.0)
+sim.setup(timestep=1.0, min_delay=1.0)
 
 # +-------------------------------------------------------------------+
 # | General Parameters                                                |

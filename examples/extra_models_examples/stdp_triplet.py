@@ -55,7 +55,7 @@ cell_params = {'cm': 0.25, 'i_offset': 0.0, 'tau_m': 10.0, 'tau_refrac': 2.0,
                'v_rest': -65.0, 'v_thresh': -55.4}
 
 # SpiNNaker setup
-sim.setup(timestep=1.0, min_delay=1.0, max_delay=10.0)
+sim.setup(timestep=1.0, min_delay=1.0)
 
 # Sweep times and frequencies
 projections = []

@@ -36,7 +36,7 @@ import spynnaker8 as sim
 from pyNN.utility.plotting import Figure, Panel
 
 # SpiNNaker setup
-sim.setup(timestep=1.0, min_delay=1.0, max_delay=14)
+sim.setup(timestep=1.0, min_delay=1.0)
 # +---------------------------------------------------------------------------+
 # | General Parameters                                                        |
 # +---------------------------------------------------------------------------+
