@@ -83,20 +83,19 @@ stim_projections = []
 for i in range(n_pops):
     stimulation.append(sim.Population(n_neurons, sim.SpikeSourcePoisson,
                        {'rate': stim_rate, 'duration': duration}, label="pre"))
-    post_splitters.append(SplitterAbstractPopulationVertexNeuronsSynapses(1))
+    post_splitters.append(SplitterAbstractPopulationVertexNeuronsSynapses(2))
     post_pops.append(sim.Population(
         n_neurons, sim.extra_models.IF_curr_exp_izhikevich_neuromodulation,
         cell_params, label='post',
         additional_parameters={"splitter": post_splitters[i]}))
-    reward_projections.append(sim.Projection(reward_pop, post_pops[i],
-                              sim.OneToOneConnector(),
-                              synapse_type=sim.StaticSynapse(weight=0.05),
-                              receptor_type='reward', label='reward synapses'))
-    punishment_projections.append(sim.Projection(punishment_pop, post_pops[i],
-                                  sim.OneToOneConnector(),
-                                  synapse_type=sim.StaticSynapse(weight=0.05),
-                                  receptor_type='punishment',
-                                  label='punishment synapses'))
+    reward_projections.append(sim.Projection(
+        reward_pop, post_pops[i], sim.OneToOneConnector(),
+        synapse_type=sim.StaticSynapse(weight=0.05),
+        receptor_type='reward', label='reward synapses'))
+    punishment_projections.append(sim.Projection(
+        punishment_pop, post_pops[i], sim.OneToOneConnector(),
+        synapse_type=sim.StaticSynapse(weight=0.05),
+        receptor_type='punishment', label='punishment synapses'))
 
 # Create synapse dynamics with neuromodulated STDP.
 # Note: this is the only currently implemented combination of weight and
