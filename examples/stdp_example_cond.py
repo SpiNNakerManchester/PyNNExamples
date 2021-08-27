@@ -51,7 +51,7 @@ from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 
 # SpiNNaker setup
-sim.setup(timestep=1.0, min_delay=1.0, max_delay=10.0)
+sim.setup(timestep=1.0, min_delay=1.0)
 
 # +-------------------------------------------------------------------+
 # | General Parameters                                                |

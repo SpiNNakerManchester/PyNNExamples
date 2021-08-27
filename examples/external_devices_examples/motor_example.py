@@ -24,7 +24,7 @@ except ImportError:
     import spynnaker8 as p
 
 # set up the tools
-p.setup(timestep=1.0, min_delay=1.0, max_delay=32.0)
+p.setup(timestep=1.0, min_delay=1.0)
 
 # set up the virtual chip coordinates for the motor
 connected_chip_coords = {'x': 0, 'y': 0}

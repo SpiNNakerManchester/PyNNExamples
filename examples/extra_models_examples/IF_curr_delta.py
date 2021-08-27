@@ -22,7 +22,7 @@ import spynnaker8 as sim
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 
-sim.setup(timestep=0.1, min_delay=0.1, max_delay=4.0)
+sim.setup(timestep=0.1, min_delay=0.1)
 
 delta_cell = sim.Population(1, sim.extra_models.IFCurDelta(**{
     'i_offset': 0.1,

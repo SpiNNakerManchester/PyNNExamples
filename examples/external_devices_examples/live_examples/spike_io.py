@@ -102,7 +102,7 @@ live_spikes_connection_receive.add_receive_callback(
 ############################################################
 
 # initial call to set up the front end (pynn requirement)
-Frontend.setup(timestep=1.0, min_delay=1.0, max_delay=144.0)
+Frontend.setup(timestep=1.0, min_delay=1.0)
 
 
 # neurons per population and the length of runtime in ms for the simulation,

@@ -54,7 +54,7 @@ delay = 3.0              # (ms) synaptic time delay
 
 # === Set up the simulator ==================================================
 
-sim.setup(timestep=0.1, min_delay=delay, max_delay=delay)
+sim.setup(timestep=0.1, min_delay=delay)
 
 # === Build the network =====================================================
 
