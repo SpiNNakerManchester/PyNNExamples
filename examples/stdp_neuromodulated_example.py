@@ -77,13 +77,11 @@ plastic_projections = []
 stim_projections = []
 
 # Create synapse dynamics with neuromodulated STDP.
-# Note: this is the only currently implemented combination of weight and
-# timing rules when using neuromodulation
 synapse_dynamics = sim.STDPMechanism(
     timing_dependence=sim.SpikePairRule(
         tau_plus=2, tau_minus=1,
         A_plus=1, A_minus=1),
-    weight_dependence=sim.MultiplicativeWeightDependence(w_min=0, w_max=20),
+    weight_dependence=sim.AdditiveWeightDependence(w_min=0, w_max=20),
     weight=plastic_weights)
 
 for i in range(n_pops):
@@ -91,13 +89,13 @@ for i in range(n_pops):
                        {'rate': stim_rate, 'duration': duration}, label="pre"))
     post_pops.append(sim.Population(
         n_neurons, sim.IF_curr_exp, cell_params, label='post'))
-    post_pops[i].record('spikes')
     plastic_projections.append(
         sim.Projection(stimulation[i], post_pops[i],
                        sim.OneToOneConnector(),
                        synapse_type=synapse_dynamics,
                        receptor_type='excitatory',
                        label='Pre-post projection'))
+    post_pops[i].record('spikes')
     reward_projections.append(sim.Projection(
         reward_pop, post_pops[i], sim.OneToOneConnector(),
         synapse_type=sim.extra_models.Neuromodulation(
