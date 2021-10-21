@@ -90,21 +90,6 @@ punishment_projections = []
 plastic_projections = []
 stim_projections = []
 
-for i in range(n_pops):
-    stimulation.append(sim.Population(n_neurons, sim.SpikeSourcePoisson,
-                       {'rate': stim_rate, 'duration': duration}, label="pre"))
-    post_pops.append(sim.Population(
-        n_neurons, sim.extra_models.IF_curr_exp_izhikevich_neuromodulation,
-        cell_params, label='post'))
-    reward_projections.append(sim.Projection(reward_pop, post_pops[i],
-                              sim.OneToOneConnector(),
-                              synapse_type=sim.StaticSynapse(weight=0.05),
-                              receptor_type='reward', label='reward synapses'))
-    punishment_projections.append(sim.Projection(punishment_pop, post_pops[i],
-                                  sim.OneToOneConnector(),
-                                  synapse_type=sim.StaticSynapse(weight=0.05),
-                                  receptor_type='punishment',
-                                  label='punishment synapses'))
 
 # Create synapse dynamics with neuromodulated STDP and structural plasticity
 # Structurally plastic connection between pre_pop and post_pop
@@ -135,18 +120,16 @@ synapse_dynamics = sim.StructuralMechanismSTDP(
     # Frequency of rewiring in Hz
     f_rew=10 ** 4,
     # timing and weight as required for neuromodulation
-    # (note that this is the only currently implemented combination)
-    timing_dependence=sim.extra_models.TimingIzhikevichNeuromodulation(
+    timing_dependence=sim.SpikePairRule(
         tau_plus=2, tau_minus=1,
-        A_plus=1, A_minus=1,
-        tau_c=100.0, tau_d=5.0),
-    weight_dependence=sim.MultiplicativeWeightDependence(w_min=0, w_max=20),
-    # Turn on neuromodulation
-    neuromodulation=True)
+        A_plus=1, A_minus=1),
+    weight_dependence=sim.AdditiveWeightDependence(w_min=0, w_max=20))
 
-# Create plastic connections between stimulation populations and observed
-# neurons
 for i in range(n_pops):
+    stimulation.append(sim.Population(n_neurons, sim.SpikeSourcePoisson,
+                       {'rate': stim_rate, 'duration': duration}, label="pre"))
+    post_pops.append(sim.Population(
+        n_neurons, sim.IF_curr_exp, cell_params, label='post'))
     plastic_projections.append(
         sim.Projection(stimulation[i], post_pops[i],
                        sim.FixedProbabilityConnector(0.),  # no initial conns
@@ -154,6 +137,16 @@ for i in range(n_pops):
                        receptor_type='excitatory',
                        label='Pre-post projection'))
     post_pops[i].record('spikes')
+    reward_projections.append(sim.Projection(
+        reward_pop, post_pops[i], sim.OneToOneConnector(),
+        synapse_type=sim.extra_models.Neuromodulation(
+            weight=0.05, tau_c=100.0, tau_d=5.0, w_max=20.0),
+        receptor_type='reward', label='reward synapses'))
+    punishment_projections.append(sim.Projection(
+        punishment_pop, post_pops[i], sim.OneToOneConnector(),
+        synapse_type=sim.extra_models.Neuromodulation(
+            weight=0.05, tau_c=100.0, tau_d=5.0, w_max=20.0),
+        receptor_type='punishment', label='punishment synapses'))
 
 sim.run(duration)
 
