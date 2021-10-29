@@ -28,17 +28,12 @@ post-synaptic neurons to the same stimuli.
 At the same time we implement a straightforward creation/elimination structural
 method (similar to that used in the other structural plasticity examples).
 
-Please note: the binary required for this example may not be automatically
-built as it is very close to the ITCM limit; you need to (a) have a recent
-version of arm-none-eabi-gcc (we have tested with v9.2.0 and it works), and
-(b) you either need to (1) uncomment the line
-# IF_curr_exp_stdp_izhikevich_neuromodulation_structural_random_distance_weight
-in sPyNNaker/neural_modelling/makefiles/neuron/Makefile
-and run the automatic_make script, or (2) go to the directory
-sPyNNaker/neural_modelling/makefiles/neuron/
-IF_curr_exp_stdp_izhikevich_neuromodulation_structural_random_distance_weight
-and run make directly there.
+This uses the split neuron-synapse modelling as otherwise the neuromodulated
+STDP, structural plasticity and neuron instructions would not fit on one core
 """
+
+from spynnaker.pyNN.extra_algorithms.splitter_components import (
+    SplitterAbstractPopulationVertexNeuronsSynapses)
 
 try:
     import pyNN.spiNNaker as sim
@@ -85,6 +80,7 @@ punishment_pop = sim.Population(n_neurons, sim.SpikeSourceArray,
 pre_pops = []
 stimulation = []
 post_pops = []
+post_splitters = []
 reward_projections = []
 punishment_projections = []
 plastic_projections = []
@@ -128,8 +124,10 @@ synapse_dynamics = sim.StructuralMechanismSTDP(
 for i in range(n_pops):
     stimulation.append(sim.Population(n_neurons, sim.SpikeSourcePoisson,
                        {'rate': stim_rate, 'duration': duration}, label="pre"))
+    post_splitters.append(SplitterAbstractPopulationVertexNeuronsSynapses(1))
     post_pops.append(sim.Population(
-        n_neurons, sim.IF_curr_exp, cell_params, label='post'))
+        n_neurons, sim.IF_curr_exp, cell_params, label='post',
+        additional_parameters={"splitter": post_splitters[i]}))
     plastic_projections.append(
         sim.Projection(stimulation[i], post_pops[i],
                        sim.FixedProbabilityConnector(0.),  # no initial conns
