@@ -15,8 +15,8 @@
 
 """
 Simple test for neuromodulated-STDP with structural plasticity
-We take 10 populations of 5 stimuli neurons and connect to each
-10 post-synaptic populations of 5 neurons. The spiking of stimuli causes some
+We take 10 populations of 49 stimuli neurons and connect to each
+10 post-synaptic populations of 49 neurons. The spiking of stimuli causes some
 spikes in post-synaptic neurons initially.
 We then inject reward signals from dopaminergic neurons
 periodically to reinforce synapses that are active. This
@@ -95,9 +95,9 @@ formation_distance = sim.DistanceDependentFormation(
     sigma_form_forward=0.5  # spread of feed-forward connections
 )
 elimination_weight = sim.RandomByWeightElimination(
-    prob_elim_potentiated=0,  # no eliminations for potentiated synapses
-    prob_elim_depressed=0,  # no elimination for depressed synapses
-    threshold=0.5  # Use same weight as initial weight for static connections
+    prob_elim_potentiated=0.2,  # no eliminations for potentiated synapses
+    prob_elim_depressed=0.2,  # no elimination for depressed synapses
+    threshold=plastic_weights  # Use same weight as initial weight for static
 )
 
 synapse_dynamics = sim.StructuralMechanismSTDP(
@@ -119,7 +119,7 @@ synapse_dynamics = sim.StructuralMechanismSTDP(
     timing_dependence=sim.SpikePairRule(
         tau_plus=2, tau_minus=1,
         A_plus=1, A_minus=1),
-    weight_dependence=sim.AdditiveWeightDependence(w_min=0, w_max=20))
+    weight_dependence=sim.AdditiveWeightDependence(w_min=0, w_max=5.0))
 
 for i in range(n_pops):
     stimulation.append(sim.Population(n_neurons, sim.SpikeSourcePoisson,
@@ -138,12 +138,12 @@ for i in range(n_pops):
     reward_projections.append(sim.Projection(
         reward_pop, post_pops[i], sim.OneToOneConnector(),
         synapse_type=sim.extra_models.Neuromodulation(
-            weight=0.05, tau_c=100.0, tau_d=5.0, w_max=20.0),
+            weight=0.05, tau_c=100.0, tau_d=5.0, w_max=5.0),
         receptor_type='reward', label='reward synapses'))
     punishment_projections.append(sim.Projection(
         punishment_pop, post_pops[i], sim.OneToOneConnector(),
         synapse_type=sim.extra_models.Neuromodulation(
-            weight=0.05, tau_c=100.0, tau_d=5.0, w_max=20.0),
+            weight=0.05, tau_c=100.0, tau_d=5.0, w_max=5.0),
         receptor_type='punishment', label='punishment synapses'))
 
 sim.run(duration)

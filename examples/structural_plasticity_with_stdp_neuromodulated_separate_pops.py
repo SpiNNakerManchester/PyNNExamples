@@ -42,7 +42,8 @@ import numpy as np
 timestep = 1.0
 stim_rate = 100
 duration = 12000
-plastic_weights = 2.0
+plastic_weights = 3.5
+struct_pl_weights = 0.5
 n_neurons = 7**2
 n_pops = 10
 
@@ -89,21 +90,21 @@ stim_projections = []
 partner_selection_last_neuron = sim.RandomSelection()
 formation_distance = sim.DistanceDependentFormation(
     grid=[np.sqrt(n_neurons), np.sqrt(n_neurons)],  # spatial org of neurons
-    sigma_form_forward=1.5  # spread of feed-forward connections
+    sigma_form_forward=1.0  # spread of feed-forward connections
 )
 elimination_weight = sim.RandomByWeightElimination(
-    prob_elim_potentiated=0.8,  # eliminations for potentiated synapses
-    prob_elim_depressed=0.8,  # eliminations for depressed synapses
-    threshold=0.5  # Use same weight as initial weight for static connections
+    prob_elim_potentiated=0.4,
+    prob_elim_depressed=0.4,
+    threshold=struct_pl_weights  # Use same weight as initial weight for static
 )
 
-structure_model_with_stdp = sim.StructuralMechanismSTDP(
+structure_model_with_stdp = sim.StructuralMechanismStatic(
     # Partner selection, formation and elimination rules from above
     partner_selection_last_neuron, formation_distance, elimination_weight,
     # Use this weight when creating a new synapse
-    initial_weight=0.2,
+    initial_weight=struct_pl_weights,
     # Use this weight for synapses at start of simulation
-    weight=0.2,
+    weight=struct_pl_weights,
     # Use this delay when creating a new synapse
     initial_delay=10,
     # Use this weight for synapses at the start of simulation
@@ -111,18 +112,14 @@ structure_model_with_stdp = sim.StructuralMechanismSTDP(
     # Maximum allowed fan-in per target-layer neuron
     s_max=32,
     # Frequency of rewiring in Hz
-    f_rew=10 ** 4,
-    # STDP rules
-    timing_dependence=sim.SpikePairRule(
-        tau_plus=20., tau_minus=20.0, A_plus=0.1, A_minus=0.02),
-    weight_dependence=sim.AdditiveWeightDependence(w_min=0, w_max=1.)
+    f_rew=10 ** 4
 )
 
 synapse_dynamics_neuromod = sim.STDPMechanism(
     timing_dependence=sim.SpikePairRule(
         tau_plus=2, tau_minus=1,
         A_plus=1, A_minus=1),
-    weight_dependence=sim.AdditiveWeightDependence(w_min=0, w_max=20),
+    weight_dependence=sim.AdditiveWeightDependence(w_min=0, w_max=5.0),
     weight=plastic_weights)
 
 
@@ -136,7 +133,7 @@ for i in range(n_pops):
         cell_params, label='post'))
     mid_projections.append(sim.Projection(
         stimulation[i], mid_pops[i],
-        sim.FixedProbabilityConnector(0.05),  # small number of initial conns
+        sim.FixedProbabilityConnector(0.0),  # small number of initial conns
         synapse_type=structure_model_with_stdp,
         label="stim-mid projection"))
     plastic_projections.append(
@@ -150,12 +147,12 @@ for i in range(n_pops):
     reward_projections.append(sim.Projection(
         reward_pop, post_pops[i], sim.OneToOneConnector(),
         synapse_type=sim.extra_models.Neuromodulation(
-            weight=0.05, tau_c=100.0, tau_d=5.0, w_max=20.0),
+            weight=0.05, tau_c=100.0, tau_d=5.0, w_max=5.0),
         receptor_type='reward', label='reward synapses'))
     punishment_projections.append(sim.Projection(
         punishment_pop, post_pops[i], sim.OneToOneConnector(),
         synapse_type=sim.extra_models.Neuromodulation(
-            weight=0.05, tau_c=100.0, tau_d=5.0, w_max=20.0),
+            weight=0.05, tau_c=100.0, tau_d=5.0, w_max=5.0),
         receptor_type='punishment', label='punishment synapses'))
 
 sim.run(duration)
