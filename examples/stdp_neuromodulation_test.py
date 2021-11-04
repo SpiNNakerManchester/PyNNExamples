@@ -22,7 +22,7 @@ STDP. Dopamine neuron spikes at 1600+1ms (Also added dendritic delay).
 Calculating weight change in this scenario, according to equations in the
 Izhikevich 2007 paper*, gives us the weight change of 10.0552710...
 *https://www.ncbi.nlm.nih.gov/pubmed/17220510
-Simulation from SpiNNaker gives us the weight change of 10.0087890625.
+Simulation from SpiNNaker gives us the weight change of 10.0654296875.
 Some inaccuracy occurs due to precision loss in s5.11 fixed point format
 used in STDP traces and exp LUTs. Also, due to long timing constants, exp
 LUTs are discretized further by TAU_C_SHIFT and TAU_D_SHIFT to be able to
@@ -90,7 +90,7 @@ synapse_dynamics = sim.STDPMechanism(
     timing_dependence=sim.SpikePairRule(
         tau_plus=10, tau_minus=12,
         A_plus=1, A_minus=1),
-    weight_dependence=sim.MultiplicativeWeightDependence(
+    weight_dependence=sim.AdditiveWeightDependence(
         w_min=0, w_max=20),
     weight=0.0)
 
