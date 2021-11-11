@@ -173,7 +173,7 @@ stdp_model = sim.STDPMechanism(
     weight_dependence=sim.AdditiveWeightDependence(w_min=0, w_max=0.1))
 
 plastic_projection = sim.Projection(
-    pre_pop, post_pop, sim.FixedProbabilityConnector(p_connect=1.0),  # 0.5
+    pre_pop, post_pop, sim.FixedProbabilityConnector(p_connect=0.5),  # 0.5
     synapse_type=stdp_model)
 
 # Record neurons' potentials

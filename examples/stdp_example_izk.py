@@ -166,7 +166,7 @@ for i in range(len(IAddPost)):
 # Plastic Connections between pre_pop and post_pop
 stdp_model = sim.STDPMechanism(
     timing_dependence=sim.SpikePairRule(
-        tau_plus=20.0, tau_minus=20.0, A_plus=0.045, A_minus=0.045),
+        tau_plus=20.0, tau_minus=20.0, A_plus=0.45, A_minus=0.45),
     weight_dependence=sim.AdditiveWeightDependence(w_min=0, w_max=10))
 
 plastic_projection = sim.Projection(
