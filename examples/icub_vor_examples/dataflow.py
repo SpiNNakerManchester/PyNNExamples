@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from pacman.model.constraints.key_allocator_constraints import FixedKeyAndMaskConstraint
 from pacman.model.graphs.application import ApplicationSpiNNakerLinkVertex
 from pacman.model.routing_info import BaseKeyAndMask
-from spinn_front_end_common.abstract_models.abstract_provides_n_keys_for_partition import AbstractProvidesNKeysForPartition
+# from spinn_front_end_common.abstract_models.abstract_provides_n_keys_for_partition import AbstractProvidesNKeysForPartition
 from spinn_front_end_common.abstract_models.abstract_provides_outgoing_partition_constraints import AbstractProvidesOutgoingPartitionConstraints
 from spinn_utilities.overrides import overrides
 from spinn_front_end_common.abstract_models.abstract_provides_incoming_partition_constraints import AbstractProvidesIncomingPartitionConstraints
@@ -25,7 +25,7 @@ from pyNN.utility import Timer
 from pyNN.utility.plotting import Figure, Panel
 from pyNN.random import RandomDistribution, NumpyRNG
 
-from spynnaker.pyNN.models.neuron.plasticity.stdp.common import plasticity_helpers
+# from spynnaker.pyNN.models.neuron.plasticity.stdp.common import plasticity_helpers
 
 NUM_NEUR_IN = 1024 #1024 # 2x240x304 mask -> 0xFFFE0000
 MASK_IN = 0xFFFFFC00 #0xFFFFFC00
@@ -45,7 +45,7 @@ class ICUBInputVertex(
             self, n_atoms=NUM_NEUR_IN, spinnaker_link_id=spinnaker_link_id,
             board_address=board_address, label=label)
 
-        AbstractProvidesNKeysForPartition.__init__(self)
+        # AbstractProvidesNKeysForPartition.__init__(self)
         AbstractProvidesOutgoingPartitionConstraints.__init__(self)
         AbstractSendMeMulticastCommandsVertex.__init__(self)
 
@@ -58,15 +58,15 @@ class ICUBInputVertex(
                 mask=MASK_IN)])]
                 #keys, i.e. neuron addresses of the input population that sits in the ICUB vertex,
 
-    @inject_items({"graph_mapper": "MemoryGraphMapper"})
     @overrides(AbstractProvidesIncomingPartitionConstraints.
-               get_incoming_partition_constraints,
-               additional_arguments=["graph_mapper"])
-    def get_incoming_partition_constraints(self, partition, graph_mapper):
+               get_incoming_partition_constraints)
+    def get_incoming_partition_constraints(self, partition):
         if isinstance(partition.pre_vertex, CommandSenderMachineVertex):
             return []
-        index = graph_mapper.get_machine_vertex_index(partition.pre_vertex)
-        vertex_slice = graph_mapper.get_slice(partition.pre_vertex)
+        # index = graph_mapper.get_machine_vertex_index(partition.pre_vertex)
+        # vertex_slice = graph_mapper.get_slice(partition.pre_vertex)
+        index = partition.pre_vertex.index
+        vertex_slice = partition.pre_vertex.vertex_slice
         mask = get_possible_masks(vertex_slice.n_atoms)[0]
         key = (0x1000 + index) << 16
         return [FixedKeyAndMaskConstraint(
