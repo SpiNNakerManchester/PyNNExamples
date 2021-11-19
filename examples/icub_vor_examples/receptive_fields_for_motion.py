@@ -1,12 +1,27 @@
 #!usr/bin/python
 
+# Copyright (c) 2019-2021 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import socket
 import spynnaker8 as sim
 import numpy as np
 #import logging
 import matplotlib.pyplot as plt
-from decode_events import*
-from functions import*
+from decode_events import *
+from functions import *
 import yarp
 
 from pacman.model.constraints.key_allocator_constraints import FixedKeyAndMaskConstraint
@@ -177,7 +192,7 @@ def map_neurons_to_field(length, x_segments, y_segments, scale_down, layers, x_s
     #         # print x, y
     #     print "finished layer", layer, "with border", x_border, y_border
 
-    print "done mapping"
+    print("done mapping")
     return pixel_mapping, field_size
 
 def convert_xy_field_to_id(field_x, field_y, width, length):
@@ -189,7 +204,7 @@ def map_to_from_list(mapping, width, length, scale_down, pixel_weight=5, x_size=
     # motor_weight *= width * length
     mapping, field_size = mapping
     layers = len(mapping)
-    print "layer", layers, "width", width, "length", length
+    print("layer", layers, "width", width, "length", length)
     from_list_connections = [[] for i in range(layers)]
     motor_conn = []
     for layer in range(layers):
@@ -208,9 +223,9 @@ def map_to_from_list(mapping, width, length, scale_down, pixel_weight=5, x_size=
                                   1]
                     if connection not in from_list_connections:
                         from_list_connections[layer].append(connection)
-                    print x, y, x + (304 * y), convert_pixel_mapping(x + (304 * y), width, length), convert_xy_field_to_id(mapping[layer][x][y][0], mapping[layer][x][y][1], width, length)
+                    print(x, y, x + (304 * y), convert_pixel_mapping(x + (304 * y), width, length), convert_xy_field_to_id(mapping[layer][x][y][0], mapping[layer][x][y][1], width, length))
                     if convert_pixel_mapping(x + (304 * y), width, length) >= 304*240 or convert_xy_field_to_id(mapping[layer][x][y][0], mapping[layer][x][y][1], width, length) >= width*length:
-                        print "fucked"
+                        print("oops")
         for connection in from_list_connections[layer]:
             if connection[1] % width < width / 2:
                 if [connection[1], 0, motor_weight, 1] not in motor_control_e:
@@ -229,7 +244,7 @@ def map_to_from_list(mapping, width, length, scale_down, pixel_weight=5, x_size=
                     motor_control_e.append([connection[1], 3, motor_weight, 1])
                     motor_control_i.append([connection[1], 2, motor_weight, 1])
         motor_conn.append([motor_control_e, motor_control_i])
-    print "created connections"
+    print("created connections")
     return from_list_connections, motor_conn
 
 def split_the_from_list(input, output, from_list, receptor_type="excitatory", max_conn=255):
@@ -286,7 +301,7 @@ def connect_it_up(visual_input, motor_output, connections, width, length):
         # split_the_from_list(hidden_pop, motor_output, motor_conn_e)
         # split_the_from_list(hidden_pops[layer], motor_output, motor_conn_i, receptor_type="inhibitory")
         all_pops.append(hidden_pops)
-    print "finished connecting"
+    print("finished connecting")
     return all_pops
 
 simulate = True
@@ -302,13 +317,13 @@ mapping_2 = map_neurons_to_field(20, width, length, 0.9, 0)
 # mapping_3 = map_neurons_to_field(50, 19, 15, 0.9, 2)
 # mapping_4 = map_neurons_to_field(128, 2, 2, 0.9, 5)
 # mapping_5 = map_neurons_to_field(128, 2, 2, 0.9, 7)
-print "created mapping"
+print("created mapping")
 # connections_1 = map_to_from_list(mapping_1, 19, 15, 0.9)
 connections_2 = map_to_from_list(mapping_2, width, length, 0.9)
 # connections_3 = map_to_from_list(mapping_3, 19, 15, 0.9)
 # connections_4 = map_to_from_list(mapping_4, 2, 2, 0.9)
 # connections_5 = map_to_from_list(mapping_5, 2, 2, 0.9)
-print "created all connections"
+print("created all connections")
 
 
 sim.setup(timestep=1.0)

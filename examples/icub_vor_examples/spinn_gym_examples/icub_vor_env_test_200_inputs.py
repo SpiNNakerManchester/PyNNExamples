@@ -1,12 +1,31 @@
+# Copyright (c) 2019-2021 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import spynnaker8 as p
 import spinn_gym as gym
 
-from pyNN.utility.plotting import Figure, Panel
-import matplotlib.pyplot as plt
+# from pyNN.utility.plotting import Figure, Panel
+# import matplotlib.pyplot as plt
 import numpy as np
-import os
+# import os
 from spinn_front_end_common.utilities.globals_variables import get_simulator
-from icub_utilities import *
+from icub_utilities import (
+    generate_head_position_and_velocity, retrieve_and_package_results,
+    remap_odd_even, remap_second_half_descending, ICUB_VOR_VENV_POP_SIZE,
+    plot_results)
+
 
 # Parameter definition
 runtime = 5000
@@ -29,15 +48,19 @@ for i in range(5):
     input_spike_times[i * 2] = [250 + (10 * 2 * i) for _ in range(1)]
     input_spike_times[2 * i + 1] = [500 + (10 * (2 * i + 1)) for _ in range(1)]
     input_spike_times[50 + i * 2] = [750 + (10 * 2 * i) for _ in range(10 + i)]
-    input_spike_times[100 + 2 * i + 1] = [1000 + (10 * (2 * i + 1)) for _ in range(10 + i)]
-    input_spike_times[150 + i * 2] = [1250 + (10 * 2 * i) for _ in range(100 + i)]
-    input_spike_times[150 + 2 * i + 1] = [1500 + (10 * (2 * i + 1)) for _ in range(100 + i)]
+    input_spike_times[100 + 2 * i + 1] = [
+        1000 + (10 * (2 * i + 1)) for _ in range(10 + i)]
+    input_spike_times[150 + i * 2] = [
+        1250 + (10 * 2 * i) for _ in range(100 + i)]
+    input_spike_times[150 + 2 * i + 1] = [
+        1500 + (10 * (2 * i + 1)) for _ in range(100 + i)]
 
 # Setup
 p.setup(timestep=1.0)
 p.set_number_of_neurons_per_core(p.SpikeSourcePoisson, 50)
 p.set_number_of_neurons_per_core(p.SpikeSourceArray, npc_limit)
-input_pop = p.Population(input_size, p.SpikeSourceArray(spike_times=input_spike_times))
+input_pop = p.Population(input_size,
+                         p.SpikeSourceArray(spike_times=input_spike_times))
 
 output_pop = p.Population(output_size, p.SpikeSourcePoisson(rate=0))
 

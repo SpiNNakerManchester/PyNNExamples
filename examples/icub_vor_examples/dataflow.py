@@ -1,34 +1,51 @@
-import socket
+# Copyright (c) 2019-2021 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# import socket
 import spynnaker8 as sim
-import numpy as np
-#import logging
+# import numpy as np
+# import logging
 import matplotlib.pyplot as plt
 
-from pacman.model.constraints.key_allocator_constraints import FixedKeyAndMaskConstraint
+from pacman.model.constraints.key_allocator_constraints import (
+    FixedKeyAndMaskConstraint)
 from pacman.model.graphs.application import ApplicationSpiNNakerLinkVertex
 from pacman.model.routing_info import BaseKeyAndMask
-# from spinn_front_end_common.abstract_models.abstract_provides_n_keys_for_partition import AbstractProvidesNKeysForPartition
-from spinn_front_end_common.abstract_models.abstract_provides_outgoing_partition_constraints import AbstractProvidesOutgoingPartitionConstraints
+from spinn_front_end_common.abstract_models.\
+    abstract_provides_outgoing_partition_constraints import (
+        AbstractProvidesOutgoingPartitionConstraints)
 from spinn_utilities.overrides import overrides
-from spinn_front_end_common.abstract_models.abstract_provides_incoming_partition_constraints import AbstractProvidesIncomingPartitionConstraints
-from pacman.executor.injection_decorator import inject_items
-from pacman.operations.routing_info_allocator_algorithms.malloc_based_routing_allocator.utils import get_possible_masks
-from spinn_front_end_common.utility_models.command_sender_machine_vertex import CommandSenderMachineVertex
+from spinn_front_end_common.abstract_models.\
+    abstract_provides_incoming_partition_constraints import (
+        AbstractProvidesIncomingPartitionConstraints)
+from pacman.operations.routing_info_allocator_algorithms.\
+    malloc_based_routing_allocator.utils import get_possible_masks
+from spinn_front_end_common.utility_models.command_sender_machine_vertex \
+    import CommandSenderMachineVertex
 
 from spinn_front_end_common.abstract_models \
     import AbstractSendMeMulticastCommandsVertex
 from spinn_front_end_common.utility_models.multi_cast_command \
     import MultiCastCommand
 
-
 from pyNN.utility import Timer
 from pyNN.utility.plotting import Figure, Panel
 from pyNN.random import RandomDistribution, NumpyRNG
 
-# from spynnaker.pyNN.models.neuron.plasticity.stdp.common import plasticity_helpers
-
-NUM_NEUR_IN = 1024 #1024 # 2x240x304 mask -> 0xFFFE0000
-MASK_IN = 0xFFFFFC00 #0xFFFFFC00
+NUM_NEUR_IN = 1024  # 1024 # 2x240x304 mask -> 0xFFFE0000
+MASK_IN = 0xFFFFFC00  # 0xFFFFFC00
 NUM_NEUR_OUT = 1024
 #MASK_OUT =0xFFFFFC00
 
@@ -54,9 +71,8 @@ class ICUBInputVertex(
     def get_outgoing_partition_constraints(self, partition):
         return [FixedKeyAndMaskConstraint(
             keys_and_masks=[BaseKeyAndMask(
-                base_key=0, #upper part of the key,
+                base_key=0,  # upper part of the key,
                 mask=MASK_IN)])]
-                #keys, i.e. neuron addresses of the input population that sits in the ICUB vertex,
 
     @overrides(AbstractProvidesIncomingPartitionConstraints.
                get_incoming_partition_constraints)
@@ -94,18 +110,22 @@ sim.setup(timestep=1.0)
 # sim.set_number_of_neurons_per_core(sim.IF_curr_exp, 32)
 
 # set up populations,
-pop = sim.Population(None, ICUBInputVertex(spinnaker_link_id=0), label='pop_in')
+pop = sim.Population(None, ICUBInputVertex(spinnaker_link_id=0),
+                     label='pop_in')
 
 #neural population    ,
-neuron_pop = sim.Population(NUM_NEUR_OUT, sim.IF_curr_exp(), label='neuron_pop')
+neuron_pop = sim.Population(NUM_NEUR_OUT, sim.IF_curr_exp(),
+                            label='neuron_pop')
 
-sim.Projection(pop, neuron_pop, sim.OneToOneConnector(), sim.StaticSynapse(weight=20.0))
+sim.Projection(pop, neuron_pop, sim.OneToOneConnector(),
+               sim.StaticSynapse(weight=20.0))
 
-#pop_out = sim.Population(None, ICUBOutputVertex(spinnaker_link_id=0), label='pop_out')
+# pop_out = sim.Population(None, ICUBOutputVertex(spinnaker_link_id=0),
+#                          label='pop_out')
 
 sim.external_devices.activate_live_output_to(neuron_pop,pop)
 
-#recordings and simulations,
+# recordings and simulations
 # neuron_pop.record("spikes")
 
 # simtime = 30000 #ms,
@@ -114,7 +134,7 @@ sim.external_devices.activate_live_output_to(neuron_pop,pop)
 # continuous run until key press
 # remember: do NOT record when running in this mode
 sim.external_devices.run_forever()
-raw_input('Press enter to stop')
+input('Press enter to stop')
 
 # exc_spikes = neuron_pop.get_data("spikes")
 #

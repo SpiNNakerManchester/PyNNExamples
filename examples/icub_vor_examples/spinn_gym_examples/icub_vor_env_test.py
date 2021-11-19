@@ -1,3 +1,18 @@
+# Copyright (c) 2019-2021 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import spynnaker8 as p
 import spinn_gym as gym
 
@@ -81,8 +96,10 @@ perfect_eye_vel = np.concatenate((head_vel[500:], head_vel[:500]))
 
 # Report 4 points:
 for i in [0, 250, 500, 750]:
-    print("At {}: head pos {:4.6f}, head vel {:4.6f}, eye pos {:4.6f}, eye vel {:4.6f}".format(
-        i, head_pos[i], head_vel[i], perfect_eye_pos[i], perfect_eye_vel[i]))
+    print("At {}: head pos {:4.6f}, head vel {:4.6f}, eye pos {:4.6f}, "
+          "eye vel {:4.6f}".format(
+              i, head_pos[i], head_vel[i], perfect_eye_pos[i],
+              perfect_eye_vel[i]))
 
 # build ICubVorEnv model pop
 error_window_size = 10

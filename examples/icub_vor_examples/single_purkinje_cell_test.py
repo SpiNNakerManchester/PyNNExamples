@@ -1,12 +1,27 @@
+# Copyright (c) 2019-2021 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from __future__ import print_function
 import spynnaker8 as p
-import numpy
-import math
-import unittest
+# import numpy
+# import math
+# import unittest
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 
-p.setup(1) # simulation timestep (ms)
+p.setup(1)  # simulation timestep (ms)
 runtime = 500
 
 # Post-synapse population
@@ -14,39 +29,41 @@ neuron_params = {
     "v_thresh": -50,
     "v_reset": -70,
     "v_rest": -65,
-    "i_offset": 0 # DC input
+    "i_offset": 0  # DC input
                  }
 
 # Learning parameters
 min_weight = 0
 max_weight = 0.1
-pot_alpha=0.01
-t_peak=100
+pot_alpha = 0.01
+t_peak = 100
 initial_weight = 0.05
 plastic_delay = 4
 
-purkinje_cell = p.Population(1, # number of neurons
-                       p.extra_models.IFCondExpCerebellum(**neuron_params),  # Neuron model
-                       label="Purkinje Cell" # identifier
-                       )
-
+purkinje_cell = p.Population(
+    1,  # number of neurons
+    p.extra_models.IFCondExpCerebellum(**neuron_params),  # Neuron model
+    label="Purkinje Cell" # identifier
+    )
 
 # Spike source to send spike via synapse
 spike_times = [50, 150, 270]
 
-granular_cell = p.Population(1, # number of sources
-                        p.SpikeSourceArray, # source type
-                        {'spike_times': spike_times}, # source spike times
-                        label="src1" # identifier
-                        )
+granular_cell = p.Population(
+    1,  # number of sources
+    p.SpikeSourceArray,  # source type
+    {'spike_times': spike_times},  # source spike times
+    label="src1"  # identifier
+    )
 
 # Spike source to send spike via synapse from climbing fibre
 spike_times_2 = [100, 104, 107, 246]
-climbing_fibre = p.Population(1, # number of sources
-                        p.SpikeSourceArray, # source type
-                        {'spike_times': spike_times_2}, # source spike times
-                        label="src2" # identifier
-                        )
+climbing_fibre = p.Population(
+    1,  # number of sources
+    p.SpikeSourceArray, # source type
+    {'spike_times': spike_times_2},  # source spike times
+    label="src2"  # identifier
+    )
 
 # Create projection from GC to PC
 pfpc_plas = p.STDPMechanism(
@@ -60,12 +77,10 @@ synapse_pfpc = p.Projection(
     granular_cell, purkinje_cell, p.AllToAllConnector(),
     synapse_type=pfpc_plas, receptor_type="excitatory")
 
-
 # Create projection from CF to PC
 synapse = p.Projection(
     climbing_fibre, purkinje_cell, p.OneToOneConnector(),
     p.StaticSynapse(weight=0.0, delay=1), receptor_type="excitatory")
-
 
 granular_cell.record('spikes')
 climbing_fibre.record('spikes')
@@ -102,5 +117,3 @@ F = Figure(
 plt.savefig("single_pc_test.png", dpi=600)
 plt.show()
 p.end()
-
-

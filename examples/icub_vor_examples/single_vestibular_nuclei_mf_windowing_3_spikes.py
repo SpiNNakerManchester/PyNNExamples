@@ -1,12 +1,27 @@
+# Copyright (c) 2019-2021 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from __future__ import print_function
 import spynnaker8 as p
-import numpy
-import math
-import unittest
+# import numpy
+# import math
+# import unittest
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 
-p.setup(1) # simulation timestep (ms)
+p.setup(1)  # simulation timestep (ms)
 runtime = 500
 
 # Post-synapse population
@@ -14,7 +29,7 @@ neuron_params = {
     "v_thresh": -50,
     "v_reset": -70,
     "v_rest": -65,
-    "i_offset": 0 # DC input
+    "i_offset": 0  # DC input
                  }
 
 # Learning parameters
@@ -29,29 +44,33 @@ max_weight = 0.1
 initial_weight = 0.01
 plastic_delay = 4
 
-vestibular_nuclei = p.Population(1, # number of neurons
-                       p.extra_models.IFCondExpCerebellum(**neuron_params),  # Neuron model
-                       label="Vestibular Nuclei" # identifier
-                       )
+vestibular_nuclei = p.Population(
+    1,  # number of neurons
+    p.extra_models.IFCondExpCerebellum(**neuron_params),  # Neuron model
+    label="Vestibular Nuclei"  # identifier
+    )
 
 
 # Spike source to send spike via synapse
-mf_spike_times = [50, 60, 65]#, 150, 175, 180, 190, 240, 250, 255,
-#                270, 300, 345, 350, 360, 370, 400, 422, 425, 427, 429]
+mf_spike_times = [50, 60, 65]
+# 150, 175, 180, 190, 240, 250, 255,
+# 270, 300, 345, 350, 360, 370, 400, 422, 425, 427, 429]
 
-mossy_fibre_src = p.Population(1, # number of sources
-                        p.SpikeSourceArray, # source type
-                        {'spike_times': mf_spike_times}, # source spike times
-                        label="src1" # identifier
-                        )
+mossy_fibre_src = p.Population(
+    1,  # number of sources
+    p.SpikeSourceArray,  # source type
+    {'spike_times': mf_spike_times},  # source spike times
+    label="src1"  # identifier
+    )
 
 # Spike source to send spike via synapse from climbing fibre
-pc_spike_times = [60]#, 104, 107, 246]
-purkinje_cell_src = p.Population(1, # number of sources
-                        p.SpikeSourceArray, # source type
-                        {'spike_times': pc_spike_times}, # source spike times
-                        label="purkinje_cell_src" # identifier
-                        )
+pc_spike_times = [60]  # 104, 107, 246]
+purkinje_cell_src = p.Population(
+    1,  # number of sources
+    p.SpikeSourceArray,  # source type
+    {'spike_times': pc_spike_times},  # source spike times
+    label="purkinje_cell_src"  # identifier
+    )
 
 # Create projection from GC to PC
 mfvn_plas = p.STDPMechanism(
@@ -66,12 +85,10 @@ synapse_mfvn = p.Projection(
     mossy_fibre_src, vestibular_nuclei, p.AllToAllConnector(),
     synapse_type=mfvn_plas, receptor_type="excitatory")
 
-
 # Create projection from PC to VN
 synapse = p.Projection(
     purkinje_cell_src, vestibular_nuclei, p.OneToOneConnector(),
     p.StaticSynapse(weight=0.0, delay=1), receptor_type="excitatory")
-
 
 mossy_fibre_src.record('spikes')
 purkinje_cell_src.record('spikes')
@@ -81,7 +98,8 @@ p.run(runtime)
 
 mossy_fibre_src_spikes = mossy_fibre_src.get_data('spikes')
 purkinje_cell_src_spikes = purkinje_cell_src.get_data('spikes')
-vestibular_nuclei_data = vestibular_nuclei.get_data(['v', 'gsyn_exc', 'spikes'])
+vestibular_nuclei_data = vestibular_nuclei.get_data(
+    ['v', 'gsyn_exc', 'spikes'])
 
 mf_weights = synapse_mfvn.get('weight', 'list', with_address=False)
 print("\n {}".format(mf_weights))
@@ -95,17 +113,16 @@ F = Figure(
           yticks=True, markersize=2, xlim=(0, runtime)),
     Panel(vestibular_nuclei_data.segments[0].filter(name='v')[0],
           ylabel="Membrane potential (mV)",
-          data_labels=[vestibular_nuclei.label], yticks=True, xlim=(0, runtime)),
+          data_labels=[vestibular_nuclei.label], yticks=True, xlim=(0,
+                                                                    runtime)),
     Panel(vestibular_nuclei_data.segments[0].filter(name='gsyn_exc')[0],
           ylabel="gsyn excitatory (mV)",
-          data_labels=[vestibular_nuclei.label], yticks=True, xlim=(0, runtime)),
+          data_labels=[vestibular_nuclei.label], yticks=True, xlim=(0,
+                                                                    runtime)),
     Panel(vestibular_nuclei_data.segments[0].spiketrains,
           yticks=True, markersize=2, xlim=(0, runtime)),
     )
 
-
 plt.show()
 p.end()
 print("Job Complete")
-
-

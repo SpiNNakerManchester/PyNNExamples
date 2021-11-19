@@ -1,3 +1,18 @@
+# Copyright (c) 2019-2021 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import numpy as np
 import pylab as plt
 import matplotlib as mlib
@@ -67,9 +82,12 @@ def generate_head_position_and_velocity(time, dt=0.001):
 
 def retrieve_and_package_results(icub_vor_env_pop, simulator):
     # Get the data from the ICubVorEnv pop
-    errors = np.asarray(get_error(icub_vor_env_pop=icub_vor_env_pop, simulator=simulator)).ravel()
-    l_counts = get_l_count(icub_vor_env_pop=icub_vor_env_pop, simulator=simulator)
-    r_counts = get_r_count(icub_vor_env_pop=icub_vor_env_pop, simulator=simulator)
+    errors = np.asarray(get_error(
+        icub_vor_env_pop=icub_vor_env_pop, simulator=simulator)).ravel()
+    l_counts = get_l_count(icub_vor_env_pop=icub_vor_env_pop,
+                           simulator=simulator)
+    r_counts = get_r_count(icub_vor_env_pop=icub_vor_env_pop,
+                           simulator=simulator)
     rec_eye_pos = np.asarray(get_eye_pos(
         icub_vor_env_pop=icub_vor_env_pop, simulator=simulator)).ravel()
     rec_eye_vel = np.asarray(get_eye_vel(
@@ -136,19 +154,26 @@ def plot_results(results_dict, simulation_parameters, name):
     plt.subplot(5, 1, 3)
     plt.plot(x_plot, rec_eye_pos, label="rec. eye position")
     plt.plot(x_plot, rec_eye_vel, label="rec. eye velocity")
-    plt.plot(np.tile(perfect_eye_pos, runtime // 1000), label="eye position", ls=':')
-    plt.plot(np.tile(perfect_eye_vel, runtime // 1000), label="eye velocity", ls=':')
+    plt.plot(np.tile(perfect_eye_pos, runtime // 1000), label="eye position",
+             ls=':')
+    plt.plot(np.tile(perfect_eye_vel, runtime // 1000), label="eye velocity",
+             ls=':')
     plt.legend(loc="best")
     plt.xlim([0, runtime])
     # Errors
     plt.subplot(5, 1, 4)
     plt.plot(x_plot, errors, label="recorded error")
 
-    eye_pos_diff = np.tile(perfect_eye_pos[::error_window_size], runtime // 1000) - rec_eye_pos.ravel()
-    eye_vel_diff = np.tile(perfect_eye_vel[::error_window_size], runtime // 1000) - rec_eye_vel.ravel()
+    eye_pos_diff = np.tile(
+        perfect_eye_pos[::error_window_size],
+        runtime // 1000) - rec_eye_pos.ravel()
+    eye_vel_diff = np.tile(
+        perfect_eye_vel[::error_window_size],
+        runtime // 1000) - rec_eye_vel.ravel()
     reconstructed_error = eye_pos_diff + eye_vel_diff
 
-    plt.plot(x_plot, reconstructed_error, color='k', ls=":", label="reconstructed error")
+    plt.plot(x_plot, reconstructed_error, color='k', ls=":",
+             label="reconstructed error")
     plt.plot(x_plot, eye_pos_diff,
              label="eye position diff")
     plt.plot(x_plot, eye_vel_diff,
