@@ -15,9 +15,9 @@
 
 from __future__ import print_function
 import spynnaker8 as p
-import numpy
-import math
-import unittest
+# import numpy
+# import math
+# import unittest
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 

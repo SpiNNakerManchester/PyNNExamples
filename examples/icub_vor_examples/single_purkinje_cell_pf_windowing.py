@@ -21,7 +21,7 @@ import spynnaker8 as p
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 
-p.setup(1) # simulation timestep (ms)
+p.setup(1)  # simulation timestep (ms)
 runtime = 500
 
 # Post-synapse population

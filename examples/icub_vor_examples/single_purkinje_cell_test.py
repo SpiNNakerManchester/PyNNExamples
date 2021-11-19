@@ -43,7 +43,7 @@ plastic_delay = 4
 purkinje_cell = p.Population(
     1,  # number of neurons
     p.extra_models.IFCondExpCerebellum(**neuron_params),  # Neuron model
-    label="Purkinje Cell" # identifier
+    label="Purkinje Cell"  # identifier
     )
 
 # Spike source to send spike via synapse
@@ -60,7 +60,7 @@ granular_cell = p.Population(
 spike_times_2 = [100, 104, 107, 246]
 climbing_fibre = p.Population(
     1,  # number of sources
-    p.SpikeSourceArray, # source type
+    p.SpikeSourceArray,  # source type
     {'spike_times': spike_times_2},  # source spike times
     label="src2"  # identifier
     )

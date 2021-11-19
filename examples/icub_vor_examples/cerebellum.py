@@ -19,18 +19,18 @@ import numpy as np
 # import logging
 import matplotlib.pyplot as plt
 
-#from spynnaker8.utilities import DataHolder
-from pacman.model.constraints.key_allocator_constraints import (
-    FixedKeyAndMaskConstraint)
-from pacman.model.graphs.application import ApplicationSpiNNakerLinkVertex
-from pacman.model.routing_info import BaseKeyAndMask
-from spinn_front_end_common.abstract_models.\
-    abstract_provides_outgoing_partition_constraints import (
-        AbstractProvidesOutgoingPartitionConstraints)
-from spinn_utilities.overrides import overrides
-from pyNN.utility import Timer
-from pyNN.utility.plotting import Figure, Panel
-from pyNN.random import RandomDistribution, NumpyRNG
+# from spynnaker8.utilities import DataHolder
+# from pacman.model.constraints.key_allocator_constraints import (
+#     FixedKeyAndMaskConstraint)
+# from pacman.model.graphs.application import ApplicationSpiNNakerLinkVertex
+# from pacman.model.routing_info import BaseKeyAndMask
+# from spinn_front_end_common.abstract_models.\
+#     abstract_provides_outgoing_partition_constraints import (
+#         AbstractProvidesOutgoingPartitionConstraints)
+# from spinn_utilities.overrides import overrides
+# from pyNN.utility import Timer
+# from pyNN.utility.plotting import Figure, Panel
+# from pyNN.random import RandomDistribution, NumpyRNG
 
 # cerebellum with simulated input
 RETINA_X_SIZE = 304
@@ -49,7 +49,8 @@ RETINA_Y_BIT_SHIFT = 9
 #
 #         ApplicationSpiNNakerLinkVertex.__init__(
 #             self, n_neurons, spinnaker_link_id=spinnaker_link_id,
-#             board_address=board_address, label=label, constraints=constraints)
+#             board_address=board_address, label=label,
+#             constraints=constraints)
 #         #AbstractProvidesNKeysForPartition.__init__(self)
 #         AbstractProvidesOutgoingPartitionConstraints.__init__(self)
 #
@@ -64,15 +65,18 @@ RETINA_Y_BIT_SHIFT = 9
 #             keys_and_masks=[BaseKeyAndMask(
 #                 base_key=0, #upper part of the key
 #                 mask=0xFFFFFC00)])]
-#                 #keys, i.e. neuron addresses of the input population that sits in the ICUB vertex
-#                 # this mask removes all spikes that have a "1" in the MSB and lets the spikes go only if the MSB are at "0"
-#                 # it must have enough keys to host the input addressing space and the output (with the same keys)
+#     # keys, i.e. neuron addresses of the input population that sits in
+#     # the ICUB vertex: this mask removes all spikes that have a "1" in
+#     # the MSB and lets the spikes go only if the MSB are at "0"
+#     # it must have enough keys to host the input addressing space and
+#     # the output (with the same keys)
 # class ICUBInputVertexDataHolder(DataHolder):
 #
 #     def __init__(self, spinnaker_link_id, board_address=None,
 #                  constraints=None, label=None):
 #         DataHolder.__init__(
-#             self, {"spinnaker_link_id": spinnaker_link_id,"board_address": board_address, "label": label})
+#             self, {"spinnaker_link_id": spinnaker_link_id,
+#                    "board_address": board_address, "label": label})
 #
 #     @staticmethod
 #     def build_model():
@@ -128,18 +132,19 @@ plastic_delay_c = 4
 # Learning parameters sin rule (GrC to PC)
 min_weight_s = 0
 max_weight_s = 0.1
-pot_alpha_s =0.01
-t_peak_s =100
+pot_alpha_s = 0.01
+t_peak_s = 100
 initial_weight_s = 0.05
 plastic_delay_s = 4
 
 sim.setup(timestep=1.)
-#sim.set_number_of_neurons_per_core(sim.IF_curr_exp, 255)
+# sim.set_number_of_neurons_per_core(sim.IF_curr_exp, 255)
 
 # set up input populations
 # num_pxl = 304 * 240;
 # retina_pop = sim.Population(
 #     1024, ICUBInputVertexDataHolder(spinnaker_link_id=0), label='pop_retina')
+
 
 # Sensorial Activity: input activity from vestibulus (will come from the head
 # IMU, now it is a test bench)
@@ -149,11 +154,11 @@ def sensorial_activity(pt):
     _head_pos = []
     _head_vel = []
 
-    i = np.arange(0,2,0.01)
+    i = np.arange(0, 2, 0.01)
     for t in i:
         desired_speed=-np.cos(
-            t*2*np.pi)*MAX_AMPLITUDE*RELATIVE_AMPLITUDE*2.0*np.pi
-        desired_pos=-np.sin(t*2*np.pi)*MAX_AMPLITUDE*RELATIVE_AMPLITUDE
+            t * 2 * np.pi) * MAX_AMPLITUDE * RELATIVE_AMPLITUDE * 2.0 *np.pi
+        desired_pos=-np.sin(t * 2 * np.pi) * MAX_AMPLITUDE * RELATIVE_AMPLITUDE
         _head_pos.append(desired_pos)
         _head_vel.append(desired_speed)
 
@@ -191,10 +196,11 @@ def sensorial_activity(pt):
             -((head_vel - mean) * (head_vel - mean))/(2.0 * sigma * sigma))
         MF_vel_activity[i] = min_rate + gaussian * (max_rate - min_rate)
 
-    #sa_mean_freq = np.arange(0,1000,10)
+    # sa_mean_freq = np.arange(0,1000,10)
     sa_mean_freq = np.concatenate((MF_pos_activity, MF_vel_activity))
-    out = [sa_mean_freq,head_pos,head_vel]
+    out = [sa_mean_freq, head_pos, head_vel]
     return out
+
 
 # Error Activity: error from eye and head encoders
 def error_activity(pt):
@@ -208,19 +214,19 @@ def error_activity(pt):
     MAX_AMPLITUDE = 0.8
     MAX_AMPLITUDE_EYE = 0.35
     RELATIVE_AMPLITUDE_EYE = 1.0
-    phaseShift  = 1.0*np.pi
+    phaseShift  = 1.0 * np.pi
     # simulated error between eye and head signals, error is zero if the waves
     # are in opposite phase
     _eye_pos = []
     _eye_vel = []
     ea_rate = []
-    i = np.arange(0,2,0.01)
+    i = np.arange(0, 2, 0.01)
     for t_eye in i:
         desired_speed = -np.cos(
-            t_eye*2*np.pi+phaseShift) * MAX_AMPLITUDE_EYE * \
+            t_eye * 2 * np.pi+phaseShift) * MAX_AMPLITUDE_EYE * \
             RELATIVE_AMPLITUDE_EYE * 2.0 * np.pi
         desired_pos = -np.sin(
-            t_eye*2*np.pi+phaseShift) * MAX_AMPLITUDE_EYE * \
+            t_eye * 2 * np.pi + phaseShift) * MAX_AMPLITUDE_EYE * \
             RELATIVE_AMPLITUDE_EYE
         _eye_pos.append(desired_pos)
         _eye_vel.append(desired_speed)
@@ -228,7 +234,7 @@ def error_activity(pt):
     # single point over time
     eye_pos = _eye_pos[pt]
     eye_vel = _eye_vel[pt]
-    #print 'eye_pos ea',eye_pos
+    # print 'eye_pos ea',eye_pos
 
     head = sensorial_activity(pt)
     head_pos = head[1]
@@ -241,7 +247,7 @@ def error_activity(pt):
     velocity_error = compute_D_error(kd, head_vel, eye_vel)
 
     error=(position_error * 0.1 + (
-        velocity_error/(2.0*np.pi)) * 0.9)/(MAX_AMPLITUDE*5)
+        velocity_error / (2.0 * np.pi)) * 0.9)/(MAX_AMPLITUDE * 5)
 
     # print(position_error, velocity_error, error)
 
@@ -262,7 +268,7 @@ def error_activity(pt):
             if(i < up_neuron_ID_threshold):
                 rate.append(max_rate)
             elif(i<low_neuron_ID_threshold):
-                aux_rate=max_rate - (max_rate-min_rate)*(
+                aux_rate=max_rate - (max_rate - min_rate)*(
                     (i - up_neuron_ID_threshold)/(
                         low_neuron_ID_threshold - up_neuron_ID_threshold))
                 rate.append(aux_rate)
@@ -293,7 +299,7 @@ def error_activity(pt):
         if(i < up_neuron_ID_threshold):
             rate.append(max_rate)
         elif(i<low_neuron_ID_threshold):
-            aux_rate=max_rate - (max_rate-min_rate)*(
+            aux_rate=max_rate - (max_rate - min_rate)*(
                 (i - up_neuron_ID_threshold)/(
                     low_neuron_ID_threshold - up_neuron_ID_threshold))
             rate.append(aux_rate)

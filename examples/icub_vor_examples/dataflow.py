@@ -17,7 +17,7 @@
 import spynnaker8 as sim
 # import numpy as np
 # import logging
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 from pacman.model.constraints.key_allocator_constraints import (
     FixedKeyAndMaskConstraint)
@@ -40,14 +40,15 @@ from spinn_front_end_common.abstract_models \
 from spinn_front_end_common.utility_models.multi_cast_command \
     import MultiCastCommand
 
-from pyNN.utility import Timer
-from pyNN.utility.plotting import Figure, Panel
-from pyNN.random import RandomDistribution, NumpyRNG
+# from pyNN.utility import Timer
+# from pyNN.utility.plotting import Figure, Panel
+# from pyNN.random import RandomDistribution, NumpyRNG
 
 NUM_NEUR_IN = 1024  # 1024 # 2x240x304 mask -> 0xFFFE0000
 MASK_IN = 0xFFFFFC00  # 0xFFFFFC00
 NUM_NEUR_OUT = 1024
-#MASK_OUT =0xFFFFFC00
+# MASK_OUT =0xFFFFFC00
+
 
 class ICUBInputVertex(
         ApplicationSpiNNakerLinkVertex,
@@ -113,7 +114,7 @@ sim.setup(timestep=1.0)
 pop = sim.Population(None, ICUBInputVertex(spinnaker_link_id=0),
                      label='pop_in')
 
-#neural population    ,
+# neural population    ,
 neuron_pop = sim.Population(NUM_NEUR_OUT, sim.IF_curr_exp(),
                             label='neuron_pop')
 
@@ -123,7 +124,7 @@ sim.Projection(pop, neuron_pop, sim.OneToOneConnector(),
 # pop_out = sim.Population(None, ICUBOutputVertex(spinnaker_link_id=0),
 #                          label='pop_out')
 
-sim.external_devices.activate_live_output_to(neuron_pop,pop)
+sim.external_devices.activate_live_output_to(neuron_pop, pop)
 
 # recordings and simulations
 # neuron_pop.record("spikes")
