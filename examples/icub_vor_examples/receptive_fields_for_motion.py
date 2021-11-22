@@ -142,6 +142,7 @@ def convert_pixel_mapping(pixel, down_sample_x, down_sample_y):
         address = (y << 12) + (x << 1) + 1
     return address
 
+
 def map_neurons_to_field(
         length, x_segments, y_segments, scale_down, layers,
         x_size=304, y_size=240, central_x=304, central_y=240):
@@ -171,7 +172,7 @@ def map_neurons_to_field(
         for y in range(central_y / 2):
             x_segment = int(x / ((x_size - (x_border)) / x_segments))
             y_segment = int(y / ((y_size - (y_border)) / y_segments))
-            pixel_mapping[layers][(x_size - (x_border / 2)) - x -1][
+            pixel_mapping[layers][(x_size - (x_border / 2)) - x - 1][
                 y + y_border] = [(x_segments - 1) - x_segment, y_segment]
             pixel_mapping[layers][x + x_border][
                 (y_size - (y_border / 2)) - y - 1] = [
@@ -247,7 +248,7 @@ def map_to_from_list(
                             field_size[layer][mapping[layer][x][y][0]][
                                 mapping[layer][x][y][1]])
                     else:
-                        weight = pixel_weight #/ 16.
+                        weight = pixel_weight  # / 16.
                     connection = [
                         convert_pixel_mapping(x + (304 * y), width, length),
                         convert_xy_field_to_id(
@@ -312,7 +313,7 @@ def split_the_from_list(
 
 
 def segment_hidden_pop(from_list, width, length, pre):
-    hidden_pops = []
+    # hidden_pops = []
     list_of_lists = [[] for i in range(width*length)]
     for connection in from_list:
         if pre:
@@ -360,6 +361,7 @@ def connect_it_up(visual_input, motor_output, connections, width, length):
         all_pops.append(hidden_pops)
     print("finished connecting")
     return all_pops
+
 
 simulate = True
 
@@ -412,7 +414,8 @@ else:
     vis_pop = sim.Population(None, ICUBInputVertex(spinnaker_link_id=0),
                              label='pop_in')
 
-pop_out = sim.Population(4, sim.IF_curr_exp(tau_refrac=3), label="motor_control")
+pop_out = sim.Population(4, sim.IF_curr_exp(tau_refrac=3),
+                         label="motor_control")
 if simulate:
     pop_out.record(['spikes', 'v'])
 
@@ -449,10 +452,10 @@ sim.external_devices.activate_live_output_to(pop_out, vis_pop)
 #     bottle.addInt32(2)
 #     out_port.write()
 
-#recordings and simulations,
-#neuron_pop.record("spikes")
+# recordings and simulations,
+# neuron_pop.record("spikes")
 
-simtime = 30000 # ms
+simtime = 30000  # ms
 if simulate:
     sim.run(simtime)
 else:

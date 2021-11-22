@@ -301,27 +301,24 @@ for i in range(num_MF_neurons):
     elif(GC_upper_index > num_GC_neurons):
         GC_upper_index = num_GC_neurons
 
-    for j in range (GC_medium_index - GC_lower_index):
+    for j in range(GC_medium_index - GC_lower_index):
         list_GOC_GC.append(
-            (i, GC_lower_index + j,
-#                  go_gc_weights, 1)
-            weight_distr_GO.next(), delay_distr.next()))
+            (i, GC_lower_index + j,  # go_gc_weights, 1)
+             weight_distr_GO.next(), delay_distr.next()))
 
     for j in range(GC_medium_index + 20 - GC_medium_index):
         list_MF_GC.append(
-            (i, GC_medium_index + j,
-#                  mf_gc_weights, 1)
-            weight_distr_MF.next(), delay_distr.next()))
+            (i, GC_medium_index + j,  # mf_gc_weights, 1)
+             weight_distr_MF.next(), delay_distr.next()))
 
     for j in range(GC_upper_index - GC_medium_index - 20):
         list_GOC_GC_2.append(
-            (i, GC_medium_index + 20 + j,
-#                  go_gc_weights, 1)
-            weight_distr_GO.next(), delay_distr.next()))
+            (i, GC_medium_index + 20 + j,  # go_gc_weights, 1)
+             weight_distr_GO.next(), delay_distr.next()))
 
 GO_GC_con1 = sim.Projection(
     GOC_population, GC_population, sim.FromListConnector(list_GOC_GC),
-    receptor_type='inhibitory') # this should be inhibitory
+    receptor_type='inhibitory')  # this should be inhibitory
 
 MF_GC_con2 = sim.Projection(
     MF_population, GC_population, sim.FromListConnector(list_MF_GC),
@@ -396,25 +393,25 @@ cf_pc_connections = sim.Projection(
 # sim.external_devices.activate_live_output_to(out_pop,retina_pop)
 #
 #
-#recordings and simulations
+# recordings and simulations
 # lif_pop.record(["spikes"])
 #
 # out_pop.record(["spikes"])
 #
 #
 #
-#sim.run(10)
+# sim.run(10)
 #
-#sim.end()
+# sim.end()
 
 MF_population.record(['spikes'])
 CF_population.record(['spikes'])
 GC_population.record('all')
 GOC_population.record(['spikes'])
-VN_population.record('all') # VN_population.record(['spikes'])
+VN_population.record('all')  # VN_population.record(['spikes'])
 PC_population.record(['spikes'])
 
-samples_in_repeat= 99
+samples_in_repeat = 99
 sample_time = 10
 repeats = 1
 total_runtime = 0
@@ -493,7 +490,7 @@ F = Figure(
           xlabel='VN_spikes'),
     Panel(VN_spikes.segments[0].filter(name='gsyn_inh')[0],
           ylabel="Membrane potential (mV)", yticks=True,
-          xlim=(0,total_runtime))
+          xlim=(0, total_runtime))
     )
 plt.show(block=False)
 

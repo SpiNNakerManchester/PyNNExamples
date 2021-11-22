@@ -729,7 +729,7 @@ try:
 
         conn = np.array(conn.tolist())
         final_connectivity[label] = conn
-except Exception as e:
+except Exception:
     # This simulator might not support the way this is done
     final_connectivity = []
     traceback.print_exc()
@@ -781,7 +781,7 @@ for key in final_connectivity:
         try:
             x = np.concatenate(conn)
             conn = x
-        except Exception as e:
+        except Exception:
             traceback.print_exc()
         names = [('source', 'int_'),
                  ('target', 'int_'),

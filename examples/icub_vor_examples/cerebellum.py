@@ -266,10 +266,10 @@ def error_activity(pt):
         IO_antagonist = np.zeros((100))
 
         rate = []
-        for i in range (100):
-            if(i < up_neuron_ID_threshold):
+        for i in range(100):
+            if (i < up_neuron_ID_threshold):
                 rate.append(max_rate)
-            elif(i<low_neuron_ID_threshold):
+            elif (i < low_neuron_ID_threshold):
                 aux_rate = max_rate - (max_rate - min_rate) * (
                     (i - up_neuron_ID_threshold)/(
                         low_neuron_ID_threshold - up_neuron_ID_threshold))
@@ -278,11 +278,11 @@ def error_activity(pt):
                 rate.append(min_rate)
 
             if error_ >= 0.0:
-                IO_agonist[0:100]=min_rate
-                IO_antagonist=rate
+                IO_agonist[0:100] = min_rate
+                IO_antagonist = rate
             else:
-                IO_antagonist[0:100]=min_rate
-                IO_agonist=rate
+                IO_antagonist[0:100] = min_rate
+                IO_agonist = rate
 
             ea_rate = np.concatenate((IO_agonist, IO_antagonist))
         # print(j)
@@ -298,9 +298,9 @@ def error_activity(pt):
 
     rate = []
     for i in range(100):
-        if(i < up_neuron_ID_threshold):
+        if (i < up_neuron_ID_threshold):
             rate.append(max_rate)
-        elif(i<low_neuron_ID_threshold):
+        elif (i < low_neuron_ID_threshold):
             aux_rate = max_rate - (max_rate - min_rate) * (
                 (i - up_neuron_ID_threshold)/(
                     low_neuron_ID_threshold - up_neuron_ID_threshold))
@@ -308,12 +308,12 @@ def error_activity(pt):
         else:
             rate.append(min_rate)
 
-        if error>=0.0:
-            IO_agonist[0:100]=min_rate
-            IO_antagonist=rate
+        if error >= 0.0:
+            IO_agonist[0:100] = min_rate
+            IO_antagonist = rate
         else:
-            IO_antagonist[0:100]=min_rate
-            IO_agonist=rate
+            IO_antagonist[0:100] = min_rate
+            IO_agonist = rate
 
         ea_rate = np.concatenate((IO_agonist, IO_antagonist))
 
@@ -321,6 +321,7 @@ def error_activity(pt):
 #     plt.show()
 
     return ea_rate
+
 
 for j in range(200):
     x = error_activity(j)
@@ -331,7 +332,7 @@ plt.show()
 SA_population = sim.Population(
     num_MF_neurons,  # number of sources
     sim.SpikeSourcePoisson,  # source type
-    #{'rate': sa_mean_freq},  # source spike times
+    # {'rate': sa_mean_freq},  # source spike times
     {'rate': sensorial_activity(10)[0]},  # source spike times
     label="sa_population"  # identifier
     )
@@ -351,7 +352,7 @@ mf_go_connections = sim.Projection(
     sim.StaticSynapse(delay=1.0, weight=mf_go_weights))
 
 # Create GrC population
-GC_population = sim.Population(num_GC_neurons,sim.IF_curr_exp(),
+GC_population = sim.Population(num_GC_neurons, sim.IF_curr_exp(),
                                label='GCLayer')
 
 # create PC population
@@ -382,9 +383,9 @@ list_MF_GC = []
 list_GOC_GC_2 = []
 # projections to subpopulations
 # https://github.com/SpiNNakerManchester/sPyNNaker8/issues/168)
-for i in range (num_MF_neurons):
+for i in range(num_MF_neurons):
     GC_medium_index = int(
-        round((i / float_num_MF_neurons ) * num_GC_neurons))
+        round((i / float_num_MF_neurons) * num_GC_neurons))
     GC_lower_index = GC_medium_index - 40
     GC_upper_index = GC_medium_index + 60
 
@@ -394,7 +395,7 @@ for i in range (num_MF_neurons):
     elif(GC_upper_index > num_GC_neurons):
         GC_upper_index = num_GC_neurons
 
-    for j in range (GC_medium_index - GC_lower_index):
+    for j in range(GC_medium_index - GC_lower_index):
         list_GOC_GC.append((i, GC_lower_index + j))
 
     for j in range(GC_medium_index + 20 - GC_medium_index):
@@ -404,7 +405,7 @@ for i in range (num_MF_neurons):
         list_GOC_GC_2.append((i, GC_medium_index + 20 + j))
 
 GO_GC_con1 = sim.Projection(
-    GOC_population,GC_population,
+    GOC_population, GC_population,
     sim.FromListConnector(list_GOC_GC, weight_distr_GO, delay_distr))
 
 MF_GC_con2 = sim.Projection(
@@ -418,7 +419,7 @@ GO_GC_con3 = sim.Projection(
 # Create PC-VN connections
 pc_vn_connections = sim.Projection(
     PC_population, VN_population, sim.OneToOneConnector(),
-    #receptor_type='GABA',
+    # receptor_type='GABA',
     synapse_type=sim.StaticSynapse(delay=1.0, weight=pc_vn_weights))
 
 # Create MF-VN learning rule - cos
