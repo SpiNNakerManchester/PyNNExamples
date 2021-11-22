@@ -17,11 +17,13 @@
 
 # import socket
 import spynnaker8 as sim
-import numpy as np
+# import numpy as np
 # import logging
 import matplotlib.pyplot as plt
-from decode_events import *
-from functions import *
+
+# (the files for these imports don't appear to be on the icub_vor branch)
+# from decode_events import *
+# from functions import *
 # import yarp
 
 from pacman.model.constraints.key_allocator_constraints import (
@@ -35,7 +37,6 @@ from spinn_utilities.overrides import overrides
 from spinn_front_end_common.abstract_models.\
     abstract_provides_incoming_partition_constraints import (
         AbstractProvidesIncomingPartitionConstraints)
-from pacman.executor.injection_decorator import inject_items
 from pacman.operations.routing_info_allocator_algorithms.\
     malloc_based_routing_allocator.utils import get_possible_masks
 from spinn_front_end_common.utility_models.command_sender_machine_vertex \
@@ -168,17 +169,17 @@ def map_neurons_to_field(
                   for k in range(layers+1)]
     x_border = int(x_size - central_x)  # / 2
     y_border = int(y_size - central_y)  # / 2
-    for x in range(central_x / 2):
-        for y in range(central_y / 2):
+    for x in range(int(central_x / 2)):
+        for y in range(int(central_y / 2)):
             x_segment = int(x / ((x_size - (x_border)) / x_segments))
             y_segment = int(y / ((y_size - (y_border)) / y_segments))
-            pixel_mapping[layers][(x_size - (x_border / 2)) - x - 1][
+            pixel_mapping[layers][(x_size - (x_border // 2)) - x - 1][
                 y + y_border] = [(x_segments - 1) - x_segment, y_segment]
             pixel_mapping[layers][x + x_border][
-                (y_size - (y_border / 2)) - y - 1] = [
+                (y_size - (y_border // 2)) - y - 1] = [
                     x_segment, (y_segments - 1) - y_segment]
-            pixel_mapping[layers][(x_size - (x_border / 2)) - x - 1][
-                (y_size - (y_border / 2)) - y - 1] = [
+            pixel_mapping[layers][(x_size - (x_border // 2)) - x - 1][
+                (y_size - (y_border // 2)) - y - 1] = [
                     (x_segments - 1) - x_segment, (y_segments - 1) - y_segment]
             pixel_mapping[layers][x + x_border][y + y_border] = [
                 x_segment, y_segment]
@@ -392,14 +393,16 @@ sim.setup(timestep=1.0)
 if simulate:
     # Assuming channel 0 as left camera and channel 1 as right camera
     # Import data.log and Decode events
-    dm = DataManager()
-    dm.load_AE_from_yarp('acquisitions10042019/circle10042019')
-
-    # Loading decoded events; data(timestamp, channel, x, y, polarity)
-    stereo_data = np.loadtxt(
-        'acquisitions10042019/circle10042019/decoded_events.txt',
-        delimiter=',')
-    [left_data, right_data] = split_stereo_data(stereo_data)
+    # (the files for these imports don't appear to be on the icub_vor branch)
+    # dm = DataManager()
+    # dm.load_AE_from_yarp('acquisitions10042019/circle10042019')
+    #
+    # # Loading decoded events; data(timestamp, channel, x, y, polarity)
+    # stereo_data = np.loadtxt(
+    #     'acquisitions10042019/circle10042019/decoded_events.txt',
+    #     delimiter=',')
+    # [left_data, right_data] = split_stereo_data(stereo_data)
+    [left_data, right_data] = [[], []]
     # left_data.tolist()
     # right_data.tolist()
 
@@ -408,6 +411,8 @@ if simulate:
 
     print('ATIS data processing ended')
 
+    # This currently crashes because width*length=4 is not the same as the
+    # value used in convert_data (304*240)
     vis_pop = sim.Population(width*length, sim.SpikeSourceArray(new_left),
                              label='pop_in')
 else:
