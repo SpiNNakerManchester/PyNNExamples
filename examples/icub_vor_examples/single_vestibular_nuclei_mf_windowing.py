@@ -63,7 +63,7 @@ mossy_fibre_src = p.Population(
     )
 
 # Spike source to send spike via synapse from climbing fibre
-pc_spike_times = [55, 80, 90, 95, 96, 201]  #, 104, 107, 246]
+pc_spike_times = [55, 80, 90, 95, 96, 201]  # 104, 107, 246]
 purkinje_cell_src = p.Population(
     1,  # number of sources
     p.SpikeSourceArray,  # source type

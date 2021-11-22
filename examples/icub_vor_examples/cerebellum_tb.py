@@ -23,7 +23,7 @@ import matplotlib.pyplot as plt
 # from spynnaker8.utilities import DataHolder
 # from pacman.model.constraints.key_allocator_constraints import (
 #     FixedKeyAndMaskConstraint)
-from pacman.model.graphs.application import ApplicationSpiNNakerLinkVertex
+# from pacman.model.graphs.application import ApplicationSpiNNakerLinkVertex
 # from pacman.model.routing_info import BaseKeyAndMask
 # from spinn_front_end_common.abstract_models.\
 #     abstract_provides_n_keys_for_partition import (
@@ -92,8 +92,8 @@ plastic_delay_c = 4
 # Learning parameters sin rule (GrC to PC)
 min_weight_s = 0
 max_weight_s = 0.01
-pot_alpha_s =0.01
-t_peak_s =100
+pot_alpha_s = 0.01
+t_peak_s = 100
 initial_weight_s = max_weight_s  # 0.0001
 plastic_delay_s = 4
 weight_dist_pfpc = RandomDistribution('uniform',
@@ -118,10 +118,12 @@ RELATIVE_AMPLITUDE = 1.0
 _head_pos = []
 _head_vel = []
 
-i = np.arange(0,1000,0.001)
+i = np.arange(0, 1000, 0.001)
 for t in i:
-    desired_speed=-np.cos(t*2*np.pi)*MAX_AMPLITUDE*RELATIVE_AMPLITUDE*2.0*np.pi
-    desired_pos=-np.sin(t*2*np.pi)*MAX_AMPLITUDE*RELATIVE_AMPLITUDE
+    desired_speed = -np.cos(
+        t * 2 * np.pi) * MAX_AMPLITUDE * RELATIVE_AMPLITUDE * 2.0 * np.pi
+    desired_pos = -np.sin(
+        t * 2 * np.pi) * MAX_AMPLITUDE * RELATIVE_AMPLITUDE
     _head_pos.append(desired_pos)
     _head_vel.append(desired_speed)
 
@@ -165,8 +167,9 @@ def sensorial_activity(pt):
         MF_vel_activity[i] = min_rate + gaussian * (max_rate - min_rate)
 
     sa_mean_freq = np.concatenate((MF_pos_activity, MF_vel_activity))
-    out = [sa_mean_freq,head_pos,head_vel]
+    out = [sa_mean_freq, head_pos, head_vel]
     return out
+
 
 # Error Activity: error from eye and head encoders
 def error_activity(error_):
@@ -200,9 +203,10 @@ def error_activity(error_):
     IO_agonist[:] = H_RATE
     IO_antagonist[:] = L_RATE
 
-    ea_rate = np.concatenate((IO_agonist,IO_antagonist))
+    ea_rate = np.concatenate((IO_agonist, IO_antagonist))
 
     return ea_rate
+
 
 def process_VN_spiketrains(VN_spikes, t_start):
     total_spikes = 0
@@ -278,68 +282,61 @@ mf_go_connections = sim.Projection(MF_population,
                                    receptor_type='excitatory')
 
 # Create MF-GC and GO-GC connections
-float_num_MF_neurons = float (num_MF_neurons)
+float_num_MF_neurons = float(num_MF_neurons)
 
 list_GOC_GC = []
 list_MF_GC = []
 list_GOC_GC_2 = []
 # projections to subpopulations
 # https://github.com/SpiNNakerManchester/sPyNNaker8/issues/168)
-for i in range (num_MF_neurons):
-        GC_medium_index = int(
-            round((i / float_num_MF_neurons ) * num_GC_neurons))
-        GC_lower_index = GC_medium_index - 40
-        GC_upper_index = GC_medium_index + 60
+for i in range(num_MF_neurons):
+    GC_medium_index = int(
+        round((i / float_num_MF_neurons) * num_GC_neurons))
+    GC_lower_index = GC_medium_index - 40
+    GC_upper_index = GC_medium_index + 60
 
-        if(GC_lower_index < 0):
-                GC_lower_index = 0
+    if(GC_lower_index < 0):
+        GC_lower_index = 0
 
-        elif(GC_upper_index > num_GC_neurons):
-                GC_upper_index = num_GC_neurons
+    elif(GC_upper_index > num_GC_neurons):
+        GC_upper_index = num_GC_neurons
 
-        for j in range (GC_medium_index - GC_lower_index):
-            list_GOC_GC.append(
-                (i, GC_lower_index + j,
+    for j in range (GC_medium_index - GC_lower_index):
+        list_GOC_GC.append(
+            (i, GC_lower_index + j,
 #                  go_gc_weights, 1)
-                weight_distr_GO.next(), delay_distr.next())
-                )
+            weight_distr_GO.next(), delay_distr.next()))
 
-        for j in range(GC_medium_index + 20 - GC_medium_index):
-            list_MF_GC.append(
-                (i, GC_medium_index + j,
+    for j in range(GC_medium_index + 20 - GC_medium_index):
+        list_MF_GC.append(
+            (i, GC_medium_index + j,
 #                  mf_gc_weights, 1)
-                weight_distr_MF.next(), delay_distr.next())
-                )
+            weight_distr_MF.next(), delay_distr.next()))
 
-
-        for j in range(GC_upper_index - GC_medium_index - 20):
-            list_GOC_GC_2.append(
-                (i, GC_medium_index + 20 + j,
+    for j in range(GC_upper_index - GC_medium_index - 20):
+        list_GOC_GC_2.append(
+            (i, GC_medium_index + 20 + j,
 #                  go_gc_weights, 1)
-                weight_distr_GO.next(), delay_distr.next())
-                                 )
+            weight_distr_GO.next(), delay_distr.next()))
 
-GO_GC_con1 = sim.Projection(GOC_population,
-              GC_population,
-              sim.FromListConnector(list_GOC_GC),
-              receptor_type='inhibitory') # this should be inhibitory
+GO_GC_con1 = sim.Projection(
+    GOC_population, GC_population, sim.FromListConnector(list_GOC_GC),
+    receptor_type='inhibitory') # this should be inhibitory
 
-MF_GC_con2 = sim.Projection(MF_population,
-              GC_population,
-              sim.FromListConnector(list_MF_GC),
-              receptor_type='excitatory')
+MF_GC_con2 = sim.Projection(
+    MF_population, GC_population, sim.FromListConnector(list_MF_GC),
+    receptor_type='excitatory')
 
-GO_GC_con3 = sim.Projection(GOC_population,
-              GC_population,
-              sim.FromListConnector(list_GOC_GC_2),
-              receptor_type='inhibitory')
+GO_GC_con3 = sim.Projection(
+    GOC_population, GC_population, sim.FromListConnector(list_GOC_GC_2),
+    receptor_type='inhibitory')
 
 
 # Create PC-VN connections
 pc_vn_connections = sim.Projection(
     PC_population, VN_population, sim.OneToOneConnector(),
     # receptor_type='GABA', # Should these be inhibitory?
-    synapse_type = sim.StaticSynapse(delay=delay_distr, weight=pc_vn_weights),
+    synapse_type=sim.StaticSynapse(delay=delay_distr, weight=pc_vn_weights),
     receptor_type='inhibitory')
 
 # Create MF-VN learning rule - cos
@@ -354,8 +351,7 @@ mfvn_plas = sim.STDPMechanism(
 mf_vn_connections = sim.Projection(
     MF_population, VN_population, sim.AllToAllConnector(),
     # Needs mapping as FromListConnector to make efficient
-    synapse_type=mfvn_plas,
-    receptor_type="excitatory")
+    synapse_type=mfvn_plas, receptor_type="excitatory")
 
 # Create projection from PC to VN -- replaces "TEACHING SIGNAL"
 pc_vn_connections = sim.Projection(
@@ -368,15 +364,13 @@ pfpc_plas = sim.STDPMechanism(
     timing_dependence=sim.extra_models.TimingDependencePFPC(t_peak=t_peak_s),
     weight_dependence=sim.extra_models.WeightDependencePFPC(
         w_min=min_weight_s, w_max=max_weight_s, pot_alpha=pot_alpha_s),
-    weight=initial_weight_s,
-    delay=delay_distr
+    weight=initial_weight_s, delay=delay_distr
     )
 
 # Create PF-PC connections
 pf_pc_connections = sim.Projection(
     GC_population, PC_population, sim.AllToAllConnector(),
-    synapse_type=pfpc_plas,
-    receptor_type="excitatory")
+    synapse_type=pfpc_plas, receptor_type="excitatory")
 
 # Create IO-PC connections. This synapse with "receptor_type=COMPLEX_SPIKE"
 # propagates the learning signals that drive the plasticity mechanisms in
@@ -384,7 +378,7 @@ pf_pc_connections = sim.Projection(
 cf_pc_connections = sim.Projection(
     CF_population, PC_population, sim.OneToOneConnector(),
     # receptor_type='COMPLEX_SPIKE',
-    synapse_type = sim.StaticSynapse(delay=1.0, weight=cf_pc_weights),
+    synapse_type=sim.StaticSynapse(delay=1.0, weight=cf_pc_weights),
     receptor_type='excitatory')
 
 # lif_pop = sim.Population(1024, sim.IF_curr_exp(), label='pop_lif')
@@ -427,13 +421,12 @@ total_runtime = 0
 VN_transfer_func = []
 
 for i in range(samples_in_repeat):
-
     sim.run(sample_time)
 
     VN_spikes = VN_population.get_data('spikes')
     VN_transfer_func.append(process_VN_spiketrains(VN_spikes, total_runtime))
 
-    total_runtime +=sample_time
+    total_runtime += sample_time
 
     print(total_runtime)
 
@@ -499,7 +492,8 @@ F = Figure(
           yticks=True, markersize=2, xlim=(0, total_runtime),
           xlabel='VN_spikes'),
     Panel(VN_spikes.segments[0].filter(name='gsyn_inh')[0],
-          ylabel="Membrane potential (mV)", yticks=True, xlim=(0, total_runtime))
+          ylabel="Membrane potential (mV)", yticks=True,
+          xlim=(0,total_runtime))
     )
 plt.show(block=False)
 

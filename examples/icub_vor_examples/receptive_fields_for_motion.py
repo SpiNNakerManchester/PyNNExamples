@@ -15,44 +15,46 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import socket
+# import socket
 import spynnaker8 as sim
 import numpy as np
-#import logging
+# import logging
 import matplotlib.pyplot as plt
 from decode_events import *
 from functions import *
-import yarp
+# import yarp
 
-from pacman.model.constraints.key_allocator_constraints import FixedKeyAndMaskConstraint
+from pacman.model.constraints.key_allocator_constraints import (
+    FixedKeyAndMaskConstraint)
 from pacman.model.graphs.application import ApplicationSpiNNakerLinkVertex
 from pacman.model.routing_info import BaseKeyAndMask
-from spinn_front_end_common.abstract_models.abstract_provides_n_keys_for_partition import AbstractProvidesNKeysForPartition
-from spinn_front_end_common.abstract_models.abstract_provides_outgoing_partition_constraints import AbstractProvidesOutgoingPartitionConstraints
+from spinn_front_end_common.abstract_models.\
+    abstract_provides_outgoing_partition_constraints import (
+        AbstractProvidesOutgoingPartitionConstraints)
 from spinn_utilities.overrides import overrides
-from spinn_front_end_common.abstract_models.abstract_provides_incoming_partition_constraints import AbstractProvidesIncomingPartitionConstraints
+from spinn_front_end_common.abstract_models.\
+    abstract_provides_incoming_partition_constraints import (
+        AbstractProvidesIncomingPartitionConstraints)
 from pacman.executor.injection_decorator import inject_items
-from pacman.operations.routing_info_allocator_algorithms.malloc_based_routing_allocator.utils import get_possible_masks
-from spinn_front_end_common.utility_models.command_sender_machine_vertex import CommandSenderMachineVertex
+from pacman.operations.routing_info_allocator_algorithms.\
+    malloc_based_routing_allocator.utils import get_possible_masks
+from spinn_front_end_common.utility_models.command_sender_machine_vertex \
+    import CommandSenderMachineVertex
 
 from spinn_front_end_common.abstract_models \
     import AbstractSendMeMulticastCommandsVertex
 from spinn_front_end_common.utility_models.multi_cast_command \
     import MultiCastCommand
 
-
-from pyNN.utility import Timer
 from pyNN.utility.plotting import Figure, Panel
-from pyNN.random import RandomDistribution, NumpyRNG
-
-from spynnaker.pyNN.models.neuron.plasticity.stdp.common import plasticity_helpers
 
 # yarp.Network.init()
 
-NUM_NEUR_IN = 1024 #1024 # 2x240x304 mask -> 0xFFFE0000
-MASK_IN = 0xFFFFFC00 #0xFFFFFC00
+NUM_NEUR_IN = 1024  # 1024 # 2x240x304 mask -> 0xFFFE0000
+MASK_IN = 0xFFFFFC00  # 0xFFFFFC00
 NUM_NEUR_OUT = 1024
-MASK_OUT =0xFFFFFFFC
+MASK_OUT = 0xFFFFFFFC
+
 
 class ICUBInputVertex(
         ApplicationSpiNNakerLinkVertex,
@@ -67,7 +69,7 @@ class ICUBInputVertex(
             self, n_atoms=NUM_NEUR_IN, spinnaker_link_id=spinnaker_link_id,
             board_address=board_address, label=label)
 
-        AbstractProvidesNKeysForPartition.__init__(self)
+        # AbstractProvidesNKeysForPartition.__init__(self)
         AbstractProvidesOutgoingPartitionConstraints.__init__(self)
         AbstractSendMeMulticastCommandsVertex.__init__(self)
 
@@ -76,19 +78,18 @@ class ICUBInputVertex(
     def get_outgoing_partition_constraints(self, partition):
         return [FixedKeyAndMaskConstraint(
             keys_and_masks=[BaseKeyAndMask(
-                base_key=0, #upper part of the key,
+                base_key=0,  # upper part of the key,
                 mask=MASK_IN)])]
-                #keys, i.e. neuron addresses of the input population that sits in the ICUB vertex,
 
-    @inject_items({"graph_mapper": "MemoryGraphMapper"})
     @overrides(AbstractProvidesIncomingPartitionConstraints.
-               get_incoming_partition_constraints,
-               additional_arguments=["graph_mapper"])
-    def get_incoming_partition_constraints(self, partition, graph_mapper):
+               get_incoming_partition_constraints)
+    def get_incoming_partition_constraints(self, partition):
         if isinstance(partition.pre_vertex, CommandSenderMachineVertex):
             return []
-        index = graph_mapper.get_machine_vertex_index(partition.pre_vertex)
-        vertex_slice = graph_mapper.get_slice(partition.pre_vertex)
+        # index = graph_mapper.get_machine_vertex_index(partition.pre_vertex)
+        # vertex_slice = graph_mapper.get_slice(partition.pre_vertex)
+        index = partition.pre_vertex.index
+        vertex_slice = partition.pre_vertex.vertex_slice
         mask = get_possible_masks(vertex_slice.n_atoms)[0]
         key = (0x1000 + index) << 16
         return [FixedKeyAndMaskConstraint(
@@ -111,6 +112,7 @@ class ICUBInputVertex(
     def timed_commands(self):
         return []
 
+
 def convert_data_mapping(x, y, down_sample_x, down_sample_y):
     if simulate:
         x /= (304 / down_sample_x)
@@ -120,11 +122,14 @@ def convert_data_mapping(x, y, down_sample_x, down_sample_y):
         address = (int(y) << 12) + (int(x) << 1) + 1
     return int(address)
 
+
 def convert_data(data):
     converted_data = [[] for i in range(304*240)]
     for item in data:
-        converted_data[convert_data_mapping(item[2], item[3], width, length)].append(item[0]*1000)
+        converted_data[convert_data_mapping(
+            item[2], item[3], width, length)].append(item[0]*1000)
     return converted_data
+
 
 def convert_pixel_mapping(pixel, down_sample_x, down_sample_y):
     x = pixel % 304
@@ -137,8 +142,9 @@ def convert_pixel_mapping(pixel, down_sample_x, down_sample_y):
         address = (y << 12) + (x << 1) + 1
     return address
 
-def map_neurons_to_field(length, x_segments, y_segments, scale_down, layers, x_size=304, y_size=240, central_x=304,
-                         central_y=240):
+def map_neurons_to_field(
+        length, x_segments, y_segments, scale_down, layers,
+        x_size=304, y_size=240, central_x=304, central_y=240):
     # base-filter = width x (dimension / segments)
     # Y*8 E*2 X*9 P*1
     # x_segments /= 2
@@ -155,52 +161,75 @@ def map_neurons_to_field(length, x_segments, y_segments, scale_down, layers, x_s
         field_size_y.append([field_size_length_y, field_size_width_y])
 
     # map the field size to real pixels
-    pixel_mapping = [[[[-1, -1] for x in range(y_size)] for y in range(x_size)] for i in range(layers + 1)]
-    field_size = [[[0 for i in range(y_segments)] for j in range(x_segments)] for k in range(layers+1)]
+    pixel_mapping = [[[[-1, -1] for x in range(y_size)] for y in range(x_size)]
+                     for i in range(layers + 1)]
+    field_size = [[[0 for i in range(y_segments)] for j in range(x_segments)]
+                  for k in range(layers+1)]
     x_border = int(x_size - central_x)  # / 2
     y_border = int(y_size - central_y)  # / 2
     for x in range(central_x / 2):
         for y in range(central_y / 2):
             x_segment = int(x / ((x_size - (x_border)) / x_segments))
             y_segment = int(y / ((y_size - (y_border)) / y_segments))
-            pixel_mapping[layers][(x_size - (x_border / 2)) - x -1][y + y_border] = [(x_segments - 1) - x_segment, y_segment]
-            pixel_mapping[layers][x + x_border][(y_size - (y_border / 2)) - y - 1] = [x_segment, (y_segments - 1) - y_segment]
-            pixel_mapping[layers][(x_size - (x_border / 2)) - x - 1][(y_size - (y_border / 2)) - y - 1] = [(x_segments - 1) - x_segment, (y_segments - 1) - y_segment]
-            pixel_mapping[layers][x + x_border][y + y_border] = [x_segment, y_segment]
+            pixel_mapping[layers][(x_size - (x_border / 2)) - x -1][
+                y + y_border] = [(x_segments - 1) - x_segment, y_segment]
+            pixel_mapping[layers][x + x_border][
+                (y_size - (y_border / 2)) - y - 1] = [
+                    x_segment, (y_segments - 1) - y_segment]
+            pixel_mapping[layers][(x_size - (x_border / 2)) - x - 1][
+                (y_size - (y_border / 2)) - y - 1] = [
+                    (x_segments - 1) - x_segment, (y_segments - 1) - y_segment]
+            pixel_mapping[layers][x + x_border][y + y_border] = [
+                x_segment, y_segment]
     # for layer in range(layers):
     #     x_border = int(x_size - (x_size * (scale_down ** layer)))  # / 2
     #     y_border = int(y_size - (y_size * (scale_down ** layer)))  # / 2
+    #     scale_val = scale_down ** layer
     #     if x_border < x_size / 2 or y_border < y_size / 2:
     #         for x in range(0, (x_size / 2) - x_border):
     #             for y in range(0, (y_size / 2) - y_border):
-    #                 if x < length * (scale_down ** layer) or y < length * (scale_down ** layer):
-    #                     x_segment = int(x / ((x_size - (x_border * 2)) / x_segments))
-    #                     y_segment = int(y / ((y_size - (y_border * 2)) / y_segments))
+    #                 if x < length * (scale_val) or y < length * (scale_val):
+    #                     x_segment = int(
+    #                         x / ((x_size - (x_border * 2)) / x_segments))
+    #                     y_segment = int(
+    #                         y / ((y_size - (y_border * 2)) / y_segments))
     #                     pixel_mapping[layer][x + x_border][y + y_border] = \
     #                         [x_segment, y_segment]
     #                     field_size[layer][x_segment][y_segment] += 1
-    #                     pixel_mapping[layer][((x_size - 1) - x_border) - x][((y_size - 1) - y_border) - y] = \
-    #                         [(x_segments - 1) - x_segment, (y_segments - 1) - y_segment]
-    #                     field_size[layer][(x_segments - 1) - x_segment][(y_segments - 1) - y_segment] += 1
-    #                     pixel_mapping[layer][x + x_border][((y_size - 1) - y_border) - y] = \
-    #                         [x_segment, (y_segments - 1) - y_segment]
-    #                     field_size[layer][x_segment][(y_segments - 1) - y_segment] += 1
-    #                     pixel_mapping[layer][((x_size - 1) - x_border) - x][y + y_border] = \
-    #                         [(x_segments - 1) - x_segment, y_segment]
-    #                     field_size[layer][(x_segments - 1) - x_segment][y_segment] += 1
-    #                     # print x, x_segment, x_segments, y, y_segment, y_segments
-    #         # print x, y
-    #     print "finished layer", layer, "with border", x_border, y_border
+    #                     pixel_mapping[layer][((x_size - 1) - x_border) - x][
+    #                         ((y_size - 1) - y_border) - y] = [
+    #                             (x_segments - 1) - x_segment,
+    #                             (y_segments - 1) - y_segment]
+    #                     field_size[layer][(x_segments - 1) - x_segment][
+    #                         (y_segments - 1) - y_segment] += 1
+    #                     pixel_mapping[layer][x + x_border][
+    #                         ((y_size - 1) - y_border) - y] = [
+    #                             x_segment, (y_segments - 1) - y_segment]
+    #                     field_size[layer][x_segment][
+    #                         (y_segments - 1) - y_segment] += 1
+    #                     pixel_mapping[layer][((x_size - 1) - x_border) - x][
+    #                         y + y_border] = [
+    #                             (x_segments - 1) - x_segment, y_segment]
+    #                     field_size[layer][(x_segments - 1) - x_segment][
+    #                         y_segment] += 1
+    #                     # (print x, x_segment, x_segments, y, y_segment,
+    #                     # y_segments)
+    #         # print(x, y)
+    #     print("finished layer", layer, "with border", x_border, y_border)
 
     print("done mapping")
     return pixel_mapping, field_size
 
+
 def convert_xy_field_to_id(field_x, field_y, width, length):
     # receptive_fields = width * 2 + length * 2 - 2
-    id = (field_y * width) + field_x
-    return id
+    id_val = (field_y * width) + field_x
+    return id_val
 
-def map_to_from_list(mapping, width, length, scale_down, pixel_weight=5, x_size=304, y_size=240, motor_weight=1.5):
+
+def map_to_from_list(
+        mapping, width, length, scale_down, pixel_weight=5, x_size=304,
+        y_size=240, motor_weight=1.5):
     # motor_weight *= width * length
     mapping, field_size = mapping
     layers = len(mapping)
@@ -214,17 +243,28 @@ def map_to_from_list(mapping, width, length, scale_down, pixel_weight=5, x_size=
             for y in range(y_size):
                 if mapping[layer][x][y][0] != -1:
                     if layer < layers - 1:
-                        weight = pixel_weight / float(field_size[layer][mapping[layer][x][y][0]][mapping[layer][x][y][1]])
+                        weight = pixel_weight / float(
+                            field_size[layer][mapping[layer][x][y][0]][
+                                mapping[layer][x][y][1]])
                     else:
                         weight = pixel_weight #/ 16.
-                    connection = [convert_pixel_mapping(x + (304 * y), width, length),
-                                  convert_xy_field_to_id(mapping[layer][x][y][0], mapping[layer][x][y][1], width, length),
-                                  weight,
-                                  1]
+                    connection = [
+                        convert_pixel_mapping(x + (304 * y), width, length),
+                        convert_xy_field_to_id(
+                            mapping[layer][x][y][0], mapping[layer][x][y][1],
+                            width, length),
+                        weight, 1]
                     if connection not in from_list_connections:
                         from_list_connections[layer].append(connection)
-                    print(x, y, x + (304 * y), convert_pixel_mapping(x + (304 * y), width, length), convert_xy_field_to_id(mapping[layer][x][y][0], mapping[layer][x][y][1], width, length))
-                    if convert_pixel_mapping(x + (304 * y), width, length) >= 304*240 or convert_xy_field_to_id(mapping[layer][x][y][0], mapping[layer][x][y][1], width, length) >= width*length:
+                    print(x, y, x + (304 * y), convert_pixel_mapping(
+                        x + (304 * y), width, length), convert_xy_field_to_id(
+                            mapping[layer][x][y][0], mapping[layer][x][y][1],
+                            width, length))
+                    if convert_pixel_mapping(
+                        x + (304 * y), width, length) >= 304*240 or \
+                        convert_xy_field_to_id(
+                            mapping[layer][x][y][0], mapping[layer][x][y][1],
+                            width, length) >= width*length:
                         print("oops")
         for connection in from_list_connections[layer]:
             if connection[1] % width < width / 2:
@@ -247,8 +287,11 @@ def map_to_from_list(mapping, width, length, scale_down, pixel_weight=5, x_size=
     print("created connections")
     return from_list_connections, motor_conn
 
-def split_the_from_list(input, output, from_list, receptor_type="excitatory", max_conn=255):
-    # from_list_segments = [from_list[x:x + max_conn] for x in xrange(0, len(from_list), max_conn)]
+
+def split_the_from_list(
+        input, output, from_list, receptor_type="excitatory", max_conn=255):
+    # from_list_segments = [from_list[x:x + max_conn] for x in xrange(
+    #     0, len(from_list), max_conn)]
     # file_name = "connections.txt"
     # with open(file_name, 'w') as f:
     #     for segment in from_list_segments:
@@ -258,21 +301,28 @@ def split_the_from_list(input, output, from_list, receptor_type="excitatory", ma
     #                 f.write("%s " % item)
     #             f.write("\n")
     #         connections_file.close()
-    #         sim.Projection(input, output, sim.FromFileConnector(file_name), receptor_type=receptor_type)
+    #         sim.Projection(input, output, sim.FromFileConnector(file_name),
+    #                        receptor_type=receptor_type)
 
-    from_list_segments = [from_list[x:x + max_conn] for x in xrange(0, len(from_list), max_conn)]
+    from_list_segments = [from_list[x:x + max_conn] for x in range(
+        0, len(from_list), max_conn)]
     for connection in from_list_segments:
-        sim.Projection(input, output, sim.FromListConnector(connection), receptor_type=receptor_type)
+        sim.Projection(input, output, sim.FromListConnector(connection),
+                       receptor_type=receptor_type)
+
 
 def segment_hidden_pop(from_list, width, length, pre):
     hidden_pops = []
     list_of_lists = [[] for i in range(width*length)]
     for connection in from_list:
         if pre:
-            list_of_lists[connection[0]].append([0, connection[1], connection[2], connection[3]])
+            list_of_lists[connection[0]].append(
+                [0, connection[1], connection[2], connection[3]])
         else:
-            list_of_lists[connection[1]].append([connection[0], 0, connection[2], connection[3]])
+            list_of_lists[connection[1]].append(
+                [connection[0], 0, connection[2], connection[3]])
     return list_of_lists
+
 
 def connect_it_up(visual_input, motor_output, connections, width, length):
     visual_connections, motor_conn = connections
@@ -281,14 +331,18 @@ def connect_it_up(visual_input, motor_output, connections, width, length):
     hidden_pops = []
     for layer in range(layers):
         motor_conn_e, motor_conn_i = motor_conn[layer]
-        # hidden_pop = sim.Population(width * length, sim.IF_curr_exp(), label="hidden_pop_{}".format(layer))
+        # hidden_pop = sim.Population(width * length, sim.IF_curr_exp(),
+        #                             label="hidden_pop_{}".format(layer))
         # hidden_pops.append(hidden_pop)
         for i in range(width*length):
-            hidden_pop = sim.Population(1, sim.IF_curr_exp(tau_refrac=3), label="hidden_pop_{}_{}".format(layer, i))
+            hidden_pop = sim.Population(
+                1, sim.IF_curr_exp(tau_refrac=3),
+                label="hidden_pop_{}_{}".format(layer, i))
             if simulate:
                 hidden_pop.record(["spikes", "v"])
             hidden_pops.append(hidden_pop)
-        list_of_lists = segment_hidden_pop(visual_connections[layer], width, length, False)
+        list_of_lists = segment_hidden_pop(
+            visual_connections[layer], width, length, False)
         for i in range(len(list_of_lists)):
             split_the_from_list(visual_input, hidden_pops[i], list_of_lists[i])
         list_of_lists = segment_hidden_pop(motor_conn_e, width, length, True)
@@ -296,10 +350,13 @@ def connect_it_up(visual_input, motor_output, connections, width, length):
             split_the_from_list(hidden_pops[i], motor_output, list_of_lists[i])
         list_of_lists = segment_hidden_pop(motor_conn_i, width, length, True)
         for i in range(len(list_of_lists)):
-            split_the_from_list(hidden_pops[i], motor_output, list_of_lists[i], receptor_type="inhibitory")
-        # split_the_from_list(visual_input, hidden_pop, visual_connections[layer])
+            split_the_from_list(hidden_pops[i], motor_output, list_of_lists[i],
+                                receptor_type="inhibitory")
+        # split_the_from_list(visual_input, hidden_pop,
+        #                     visual_connections[layer])
         # split_the_from_list(hidden_pop, motor_output, motor_conn_e)
-        # split_the_from_list(hidden_pops[layer], motor_output, motor_conn_i, receptor_type="inhibitory")
+        # split_the_from_list(hidden_pops[layer], motor_output, motor_conn_i,
+        #                     receptor_type="inhibitory")
         all_pops.append(hidden_pops)
     print("finished connecting")
     return all_pops
@@ -337,7 +394,9 @@ if simulate:
     dm.load_AE_from_yarp('acquisitions10042019/circle10042019')
 
     # Loading decoded events; data(timestamp, channel, x, y, polarity)
-    stereo_data = np.loadtxt('acquisitions10042019/circle10042019/decoded_events.txt', delimiter=',')
+    stereo_data = np.loadtxt(
+        'acquisitions10042019/circle10042019/decoded_events.txt',
+        delimiter=',')
     [left_data, right_data] = split_stereo_data(stereo_data)
     # left_data.tolist()
     # right_data.tolist()
@@ -347,15 +406,18 @@ if simulate:
 
     print('ATIS data processing ended')
 
-    vis_pop = sim.Population(width*length, sim.SpikeSourceArray(new_left), label='pop_in')
+    vis_pop = sim.Population(width*length, sim.SpikeSourceArray(new_left),
+                             label='pop_in')
 else:
-    vis_pop = sim.Population(None, ICUBInputVertex(spinnaker_link_id=0), label='pop_in')
+    vis_pop = sim.Population(None, ICUBInputVertex(spinnaker_link_id=0),
+                             label='pop_in')
 
 pop_out = sim.Population(4, sim.IF_curr_exp(tau_refrac=3), label="motor_control")
 if simulate:
     pop_out.record(['spikes', 'v'])
 
-# pop_out = sim.Population(None, ICUBOutputVertex(spinnaker_link_id=0), label='pop_out')
+# pop_out = sim.Population(None, ICUBOutputVertex(spinnaker_link_id=0),
+#                          label='pop_out')
 
 # hidden_pops = connect_it_up(vis_pop, pop_out, connections_1, 19, 15)
 hidden_pops = connect_it_up(vis_pop, pop_out, connections_2, width, length)
@@ -365,9 +427,11 @@ hidden_pops = connect_it_up(vis_pop, pop_out, connections_2, width, length)
 
 # test_input = sim.Population(304*240, sim.IF_curr_exp(), label="readout")
 # test_input.record(['spikes', 'v'])
-# sim.Projection(vis_pop, test_input, sim.OneToOneConnector(), sim.StaticSynapse(weight=0.1))
+# sim.Projection(vis_pop, test_input, sim.OneToOneConnector(),
+#                sim.StaticSynapse(weight=0.1))
 
-# sim.Projection(pop, neuron_pop, sim.OneToOneConnector(), sim.StaticSynapse(weight=20.0))
+# sim.Projection(pop, neuron_pop, sim.OneToOneConnector(),
+#                sim.StaticSynapse(weight=20.0))
 
 sim.external_devices.activate_live_output_to(pop_out, vis_pop)
 
@@ -388,12 +452,12 @@ sim.external_devices.activate_live_output_to(pop_out, vis_pop)
 #recordings and simulations,
 #neuron_pop.record("spikes")
 
-simtime = 30000 #ms,
+simtime = 30000 # ms
 if simulate:
     sim.run(simtime)
 else:
     sim.external_devices.run_forever()
-    raw_input('Press enter to stop')
+    input('Press enter to stop')
 
 # continuous run until key press
 # remember: do NOT record when running in this mode
@@ -411,24 +475,30 @@ if simulate:
 
     Figure(
         # raster plot of the neuron_pop
-        Panel(exc_spikes.segments[0].spiketrains, xlabel="Time/ms", xticks=True,
-              yticks=True, markersize=0.2, xlim=(0, simtime)),
-        Panel(exc_v.segments[0].filter(name='v')[0], ylabel="Membrane potential (mV)", yticks=True),
-        Panel(hidden_spikes[0].segments[0].spiketrains, xlabel="Time/ms", xticks=True,
-              yticks=True, markersize=0.2, xlim=(0, simtime)),
-        Panel(hidden_v[0].segments[0].filter(name='v')[0], ylabel="Membrane potential (mV)", yticks=True),
-        Panel(hidden_spikes[1].segments[0].spiketrains, xlabel="Time/ms", xticks=True,
-              yticks=True, markersize=0.2, xlim=(0, simtime)),
-        Panel(hidden_v[1].segments[0].filter(name='v')[0], ylabel="Membrane potential (mV)", yticks=True),
-        Panel(hidden_spikes[2].segments[0].spiketrains, xlabel="Time/ms", xticks=True,
-              yticks=True, markersize=0.2, xlim=(0, simtime)),
-        Panel(hidden_v[2].segments[0].filter(name='v')[0], ylabel="Membrane potential (mV)", yticks=True),
-        Panel(hidden_spikes[3].segments[0].spiketrains, xlabel="Time/ms", xticks=True,
-              yticks=True, markersize=0.2, xlim=(0, simtime)),
-        Panel(hidden_v[3].segments[0].filter(name='v')[0], ylabel="Membrane potential (mV)", yticks=True),
-        # Panel(input_spikes.segments[0].spiketrains, xlabel="Time/ms", xticks=True,
-        #       yticks=True, markersize=0.2, xlim=(0, simtime)),
-        # Panel(input_v.segments[0].filter(name='v')[0], ylabel="Membrane potential (mV)", yticks=True),
+        Panel(exc_spikes.segments[0].spiketrains, xlabel="Time/ms",
+              xticks=True, yticks=True, markersize=0.2, xlim=(0, simtime)),
+        Panel(exc_v.segments[0].filter(name='v')[0],
+              ylabel="Membrane potential (mV)", yticks=True),
+        Panel(hidden_spikes[0].segments[0].spiketrains, xlabel="Time/ms",
+              xticks=True, yticks=True, markersize=0.2, xlim=(0, simtime)),
+        Panel(hidden_v[0].segments[0].filter(name='v')[0],
+              ylabel="Membrane potential (mV)", yticks=True),
+        Panel(hidden_spikes[1].segments[0].spiketrains, xlabel="Time/ms",
+              xticks=True, yticks=True, markersize=0.2, xlim=(0, simtime)),
+        Panel(hidden_v[1].segments[0].filter(name='v')[0],
+              ylabel="Membrane potential (mV)", yticks=True),
+        Panel(hidden_spikes[2].segments[0].spiketrains, xlabel="Time/ms",
+              xticks=True, yticks=True, markersize=0.2, xlim=(0, simtime)),
+        Panel(hidden_v[2].segments[0].filter(name='v')[0],
+              ylabel="Membrane potential (mV)", yticks=True),
+        Panel(hidden_spikes[3].segments[0].spiketrains, xlabel="Time/ms",
+              xticks=True, yticks=True, markersize=0.2, xlim=(0, simtime)),
+        Panel(hidden_v[3].segments[0].filter(name='v')[0],
+              ylabel="Membrane potential (mV)", yticks=True),
+        # Panel(input_spikes.segments[0].spiketrains, xlabel="Time/ms",
+        #       xticks=True, yticks=True, markersize=0.2, xlim=(0, simtime)),
+        # Panel(input_v.segments[0].filter(name='v')[0],
+        #       ylabel="Membrane potential (mV)", yticks=True),
         title="neuron_pop: spikes"
     )
     plt.show()

@@ -30,7 +30,7 @@ import matplotlib.pyplot as plt
 # from spinn_utilities.overrides import overrides
 # from pyNN.utility import Timer
 # from pyNN.utility.plotting import Figure, Panel
-# from pyNN.random import RandomDistribution, NumpyRNG
+from pyNN.random import RandomDistribution, NumpyRNG
 
 # cerebellum with simulated input
 RETINA_X_SIZE = 304
@@ -156,9 +156,10 @@ def sensorial_activity(pt):
 
     i = np.arange(0, 2, 0.01)
     for t in i:
-        desired_speed=-np.cos(
-            t * 2 * np.pi) * MAX_AMPLITUDE * RELATIVE_AMPLITUDE * 2.0 *np.pi
-        desired_pos=-np.sin(t * 2 * np.pi) * MAX_AMPLITUDE * RELATIVE_AMPLITUDE
+        desired_speed = -np.cos(
+            t * 2 * np.pi) * MAX_AMPLITUDE * RELATIVE_AMPLITUDE * 2.0 * np.pi
+        desired_pos = -np.sin(
+            t * 2 * np.pi) * MAX_AMPLITUDE * RELATIVE_AMPLITUDE
         _head_pos.append(desired_pos)
         _head_vel.append(desired_speed)
 
@@ -207,6 +208,7 @@ def error_activity(pt):
     def compute_P_error(kp, head_position, eye_position):
         error = kp * (head_position + eye_position)
         return error
+
     def compute_D_error(kd, head_velocity, eye_velocity):
         error = kd * (head_velocity + eye_velocity)
         return error
@@ -214,7 +216,7 @@ def error_activity(pt):
     MAX_AMPLITUDE = 0.8
     MAX_AMPLITUDE_EYE = 0.35
     RELATIVE_AMPLITUDE_EYE = 1.0
-    phaseShift  = 1.0 * np.pi
+    phaseShift = 1.0 * np.pi
     # simulated error between eye and head signals, error is zero if the waves
     # are in opposite phase
     _eye_pos = []
@@ -241,13 +243,13 @@ def error_activity(pt):
     head_vel = head[2]
 
     # print(head_pos, eye_pos)
-    kp=15.0
+    kp = 15.0
     position_error = compute_P_error(kp, head_pos, eye_pos)
-    kd=15.0
+    kd = 15.0
     velocity_error = compute_D_error(kd, head_vel, eye_vel)
 
-    error=(position_error * 0.1 + (
-        velocity_error / (2.0 * np.pi)) * 0.9)/(MAX_AMPLITUDE * 5)
+    error = (position_error * 0.1 + (
+        velocity_error / (2.0 * np.pi)) * 0.9) / (MAX_AMPLITUDE * 5)
 
     # print(position_error, velocity_error, error)
 
@@ -268,21 +270,21 @@ def error_activity(pt):
             if(i < up_neuron_ID_threshold):
                 rate.append(max_rate)
             elif(i<low_neuron_ID_threshold):
-                aux_rate=max_rate - (max_rate - min_rate)*(
+                aux_rate = max_rate - (max_rate - min_rate) * (
                     (i - up_neuron_ID_threshold)/(
                         low_neuron_ID_threshold - up_neuron_ID_threshold))
                 rate.append(aux_rate)
             else:
                 rate.append(min_rate)
 
-            if error_>=0.0:
+            if error_ >= 0.0:
                 IO_agonist[0:100]=min_rate
                 IO_antagonist=rate
             else:
                 IO_antagonist[0:100]=min_rate
                 IO_agonist=rate
 
-            ea_rate = np.concatenate((IO_agonist,IO_antagonist))
+            ea_rate = np.concatenate((IO_agonist, IO_antagonist))
         # print(j)
         # plt.plot(np.linspace(up_neuron_ID_threshold,
         #                      low_neuron_ID_threshold,200), ea_rate)
@@ -295,11 +297,11 @@ def error_activity(pt):
     IO_antagonist = np.zeros((100))
 
     rate = []
-    for i in range (100):
+    for i in range(100):
         if(i < up_neuron_ID_threshold):
             rate.append(max_rate)
         elif(i<low_neuron_ID_threshold):
-            aux_rate=max_rate - (max_rate - min_rate)*(
+            aux_rate = max_rate - (max_rate - min_rate) * (
                 (i - up_neuron_ID_threshold)/(
                     low_neuron_ID_threshold - up_neuron_ID_threshold))
             rate.append(aux_rate)
@@ -313,16 +315,14 @@ def error_activity(pt):
             IO_antagonist[0:100]=min_rate
             IO_agonist=rate
 
-        ea_rate = np.concatenate((IO_agonist,IO_antagonist))
+        ea_rate = np.concatenate((IO_agonist, IO_antagonist))
 
 #     plt.plot(ea_rate)
 #     plt.show()
 
     return ea_rate
 
-####
-
-for j in range (200):
+for j in range(200):
     x = error_activity(j)
     plt.plot(x)
 
@@ -383,46 +383,43 @@ list_GOC_GC_2 = []
 # projections to subpopulations
 # https://github.com/SpiNNakerManchester/sPyNNaker8/issues/168)
 for i in range (num_MF_neurons):
-        GC_medium_index = int(
-            round((i / float_num_MF_neurons ) * num_GC_neurons))
-        GC_lower_index = GC_medium_index - 40
-        GC_upper_index = GC_medium_index + 60
+    GC_medium_index = int(
+        round((i / float_num_MF_neurons ) * num_GC_neurons))
+    GC_lower_index = GC_medium_index - 40
+    GC_upper_index = GC_medium_index + 60
 
-        if(GC_lower_index < 0):
-                GC_lower_index = 0
+    if(GC_lower_index < 0):
+        GC_lower_index = 0
 
-        elif(GC_upper_index > num_GC_neurons):
-                GC_upper_index = num_GC_neurons
+    elif(GC_upper_index > num_GC_neurons):
+        GC_upper_index = num_GC_neurons
 
-        for j in range (GC_medium_index - GC_lower_index):
-            list_GOC_GC.append((i, GC_lower_index + j))
+    for j in range (GC_medium_index - GC_lower_index):
+        list_GOC_GC.append((i, GC_lower_index + j))
 
-        for j in range(GC_medium_index + 20 - GC_medium_index):
-            list_MF_GC.append((i, GC_medium_index + j))
+    for j in range(GC_medium_index + 20 - GC_medium_index):
+        list_MF_GC.append((i, GC_medium_index + j))
 
+    for j in range(GC_upper_index - GC_medium_index - 20):
+        list_GOC_GC_2.append((i, GC_medium_index + 20 + j))
 
-        for j in range(GC_upper_index - GC_medium_index - 20):
-            list_GOC_GC_2.append((i, GC_medium_index + 20 + j))
+GO_GC_con1 = sim.Projection(
+    GOC_population,GC_population,
+    sim.FromListConnector(list_GOC_GC, weight_distr_GO, delay_distr))
 
-GO_GC_con1 = sim.Projection(GOC_population,
-              GC_population,
-              sim.FromListConnector(list_GOC_GC, weight_distr_GO, delay_distr))
+MF_GC_con2 = sim.Projection(
+    MF_population, GC_population,
+    sim.FromListConnector(list_MF_GC, weight_distr_MF, delay_distr))
 
-MF_GC_con2 = sim.Projection(MF_population,
-              GC_population,
-              sim.FromListConnector(list_MF_GC, weight_distr_MF, delay_distr))
-
-GO_GC_con3 = sim.Projection(GOC_population,
-              GC_population,
-              sim.FromListConnector(
-                  list_GOC_GC_2, weight_distr_GO, delay_distr))
-
+GO_GC_con3 = sim.Projection(
+    GOC_population, GC_population,
+    sim.FromListConnector(list_GOC_GC_2, weight_distr_GO, delay_distr))
 
 # Create PC-VN connections
 pc_vn_connections = sim.Projection(
     PC_population, VN_population, sim.OneToOneConnector(),
     #receptor_type='GABA',
-    synapse_type = sim.StaticSynapse(delay=1.0, weight=pc_vn_weights))
+    synapse_type=sim.StaticSynapse(delay=1.0, weight=pc_vn_weights))
 
 # Create MF-VN learning rule - cos
 mfvn_plas = sim.STDPMechanism(
@@ -460,7 +457,7 @@ pf_pc_connections = sim.Projection(
 io_pc_connections = sim.Projection(
     IO_population, PC_population, sim.OneToOneConnector(),
     # receptor_type='COMPLEX_SPIKE',
-    synapse_type = sim.StaticSynapse(delay=1.0, weight=io_pc_weights))
+    synapse_type=sim.StaticSynapse(delay=1.0, weight=io_pc_weights))
 
 lif_pop = sim.Population(1024, sim.IF_curr_exp(), label='pop_lif')
 
