@@ -80,7 +80,7 @@ for i in range(len(spike_times)):
     pf_weights.append(synapse_pfpc.get('weight', 'list', with_address=False))
 
 granluar_cell_spikes = granular_cell.get_data('spikes')
-purkinje_data = purkinje_cell.get_data(['v', 'gsyn_exc', 'spikes'])
+purkinje_data = purkinje_cell.get_data()
 
 for i in pf_weights:
     print(i)

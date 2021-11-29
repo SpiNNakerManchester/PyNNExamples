@@ -97,8 +97,7 @@ p.run(runtime)
 
 mossy_fibre_src_spikes = mossy_fibre_src.get_data('spikes')
 purkinje_cell_src_spikes = purkinje_cell_src.get_data('spikes')
-vestibular_nuclei_data = vestibular_nuclei.get_data(
-    ['v', 'gsyn_exc', 'spikes'])
+vestibular_nuclei_data = vestibular_nuclei.get_data()
 
 mf_weights = synapse_mfvn.get('weight', 'list', with_address=False)
 print(mf_weights)

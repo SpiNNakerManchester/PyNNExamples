@@ -82,8 +82,7 @@ for i in range(len(spike_times)):
     mf_weights.append(synapse_mfvn.get('weight', 'list', with_address=False))
 
 mossy_fibre_src_spikes = mossy_fibre_src.get_data('spikes')
-vestibular_neuclei_data = vestibular_neuclei.get_data(
-    ['v', 'gsyn_exc', 'spikes'])
+vestibular_neuclei_data = vestibular_neuclei.get_data()
 
 # print weight history
 for i in mf_weights:

@@ -93,7 +93,7 @@ p.run(runtime)
 
 granluar_cell_spikes = granular_cell.get_data('spikes')
 climbing_fibre_spikes = climbing_fibre.get_data('spikes')
-purkinje_data = purkinje_cell.get_data(['v', 'gsyn_exc', 'spikes'])
+purkinje_data = purkinje_cell.get_data()
 
 pf_weights = synapse_pfpc.get('weight', 'list', with_address=False)
 print(pf_weights)

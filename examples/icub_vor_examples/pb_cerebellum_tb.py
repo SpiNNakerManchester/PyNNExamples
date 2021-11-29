@@ -679,11 +679,9 @@ total_runtime = runtime * repeats
 
 MF_spikes = MF_population.get_data('spikes')
 CF_spikes = CF_population.get_data('spikes')
-# GC_spikes = GC_population.get_data('all')
-GC_spikes = GC_population.get_data(['spikes', 'v', 'gsyn_exc', 'gsyn_inh'])
+GC_spikes = GC_population.get_data('all')
 GOC_spikes = GOC_population.get_data('spikes')
-# VN_spikes = VN_population.get_data('all')  # VN_population.get_data('spikes')
-VN_spikes = VN_population.get_data(['spikes', 'v', 'gsyn_exc', 'gsyn_inh'])
+VN_spikes = VN_population.get_data('all')  # VN_population.get_data('spikes')
 PC_spikes = PC_population.get_data('spikes')
 
 mfvn_weights = mf_vn_connections.get('weight', 'list', with_address=False)
