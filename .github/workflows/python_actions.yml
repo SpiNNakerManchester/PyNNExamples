@@ -41,8 +41,6 @@ jobs:
 
     - name: Install pip, etc
       uses: ./support/actions/python-tools
-    - name: Install matplotlib
-      uses: ./support/actions/install-matplotlib
     - name: Checkout SpiNNaker Dependencies
       uses: ./support/actions/checkout-spinn-deps
       with:
@@ -50,6 +48,8 @@ jobs:
           SpiNNUtils SpiNNMachine SpiNNMan PACMAN DataSpecification spalloc
           SpiNNFrontEndCommon sPyNNaker
         install: true
+    - name: Install matplotlib
+      uses: ./support/actions/install-matplotlib
     - name: install test requirements as no setup
       run: pip install -r requirements-test.txt
     - name: Test with pytest
