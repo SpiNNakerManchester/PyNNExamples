@@ -113,6 +113,7 @@ sim.setup(timestep=1.)
 # For each a gaussian is created centered on a specific neuron.
 
 # Prepare variables once at beginning
+MAX_RATE = 600.0
 MAX_AMPLITUDE = 0.8
 RELATIVE_AMPLITUDE = 1.0
 _head_pos = []
@@ -147,7 +148,7 @@ def sensorial_activity(pt):
         head_vel = 0.0
 
     min_rate = 0.0
-    max_rate = 600.0
+    max_rate = MAX_RATE
     sigma = 0.02
     MF_pos_activity = np.zeros((50))
     MF_vel_activity = np.zeros((50))
@@ -230,7 +231,8 @@ MF_population = sim.Population(
     sim.SpikeSourcePoisson,  # source type
     # {'rate': sa_mean_freq},  # source spike times
     {'rate': sensorial_activity(0)[0]},  # source spike times
-    label="MFLayer"  # identifier
+    label="MFLayer",  # identifier
+    additional_parameters={"max_rate": MAX_RATE}
     )
 
 # Create GOC population
@@ -266,7 +268,8 @@ CF_population = sim.Population(
     sim.SpikeSourcePoisson,  # source type
     # {'rate': sa_mean_freq},  # source spike times
     {'rate': error_activity(err)},  # source spike times
-    label="CFLayer"  # identifier
+    label="CFLayer",  # identifier
+    additional_parameters={"max_rate": MAX_RATE}
     )
 
 ###############################################################
