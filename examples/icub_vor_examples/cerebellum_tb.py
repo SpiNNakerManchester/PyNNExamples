@@ -495,7 +495,7 @@ F = Figure(
           ylabel="Membrane potential (mV)", yticks=True,
           xlim=(0, total_runtime))
     )
-plt.show(block=False)
+plt.show()
 
 plt.figure()
 plt.plot(mfvn_weights,
