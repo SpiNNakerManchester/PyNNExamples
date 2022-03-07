@@ -30,6 +30,8 @@ class ScriptBuilder(RootScriptBuilder):
         exceptions["dataflow.py"] = "Vertex tested elsewhere"
         exceptions["receptive_fields_for_motion.py"] = "Duplication"
         exceptions["cerebellum.py"] = "Script has no run stage"
+        exceptions["test_mfvn_lut.py"] = "Only a test (no machine needed)"
+        exceptions["test_pfpc_lut.py"] = "Only a test (no machine needed)"
 
         # For branches these raise a SkipTest quoting the time given
         # For cron and manual runs these just and a warning
