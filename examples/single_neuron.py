@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 def single_neuron():
 
     runtime = 100
-    nNeurons = 65
+    nNeurons = 129
     p.setup(timestep=1.0, min_delay=1.0, max_delay=144.0)
 
     cell_params_lif = {'cm': 0.25,
@@ -20,12 +20,15 @@ def single_neuron():
                        'v_thresh': -50.0,
                        }
 
-    weight_to_spike = 0.035
+    weight_to_spike = 2
 
-    population = p.Population(nNeurons, p.IF_cond_exp(**cell_params_lif), label='population_1')
+
+
+    population = p.Population(nNeurons, p.IF_curr_exp(**cell_params_lif), label='population_1', in_partitions=[1, 1], out_partitions=1, n_targets=3)
     input = p.Population(1, p.SpikeSourceArray(spike_times=[0, 8, 16, 50]), label='input')
 
-    p.Projection(input, population, p.FromListConnector([(0, 0)]), p.StaticSynapse(weight=weight_to_spike, delay=2))
+
+    p.Projection(input, population, p.FromListConnector([(0, 0), (0, 65), (0, 128)]), p.StaticSynapse(weight=weight_to_spike, delay=2))
 
     population.record(['v', 'spikes'])
 
@@ -36,16 +39,18 @@ def single_neuron():
 
     p.end()
 
-    if str(spikes.segments[0].spiketrains[0]) == "[ 4. 11. 18. 53.] ms":
+    if str(spikes.segments[0].spiketrains[0]) == "[ 4. 11. 18. 53.] ms"\
+            and str(spikes.segments[0].spiketrains[65]) == "[ 4. 11. 18. 53.] ms" \
+            and str(spikes.segments[0].spiketrains[128]) == "[ 4. 11. 18. 53.] ms":
         return True
     else:
+        print(str(spikes.segments[0].spiketrains[0]))
+        print(str(spikes.segments[0].spiketrains[65]))
+        print(str(spikes.segments[0].spiketrains[128]))
         return False
-
-
-    #plt.show()
 
 if __name__ == "__main__":
     if single_neuron():
-        print "PASSED!!!"
+        print("PASSED!!!")
     else:
-        print "FAILED"
+        print("FAILED")

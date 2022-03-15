@@ -22,7 +22,7 @@ with open("/localhome/g90604lp/out.txt", "r") as fp:
         j += 1
 
 for key in values.keys():
-    print sorted(values[key].values())
+    print(sorted(values[key].values()))
     plt.plot(sorted(values[key].keys()), sorted(values[key].values()), "-o", linewidth=2)
     plt.xlabel("Target neurons")
     plt.ylabel("Time (micros)")

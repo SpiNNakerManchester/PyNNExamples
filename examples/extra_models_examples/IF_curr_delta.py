@@ -4,7 +4,7 @@ spike sources.
 
 Run as:
 
-$ python IF_curr_exp.py <simulator>
+$ python IF_curr_exp_plastic.py <simulator>
 
 where <simulator> is 'neuron', 'nest', etc
 

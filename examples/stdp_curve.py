@@ -67,16 +67,16 @@ for t in delta_t:
     sim_time = max(sim_time, (num_pairs * time_between_pairs) + abs(t))
 
     # Neuron populations
-    pre_pop = sim.Population(1, model(**cell_params))
-    post_pop = sim.Population(1, model, cell_params)
+    pre_pop = sim.Population(1, model(**cell_params), label="pre_pop", in_partitions=[1, 1], out_partitions=1, n_targets=1)
+    post_pop = sim.Population(1, model(**cell_params), label="pre_pop", in_partitions=[1, 1], out_partitions=1, n_targets=1)
 
     # Stimulating populations
     pre_times = [i for i in range(pre_phase, sim_time, time_between_pairs)]
     post_times = [i for i in range(post_phase, sim_time, time_between_pairs)]
     pre_stim = sim.Population(
-        1, sim.SpikeSourceArray(spike_times=[pre_times]))
+        1, sim.SpikeSourceArray(spike_times=[pre_times]), label="pre_stim")
     post_stim = sim.Population(
-        1, sim.SpikeSourceArray(spike_times=[post_times]))
+        1, sim.SpikeSourceArray(spike_times=[post_times]), label="post_stim")
 
     weight = 2
 

@@ -5,10 +5,9 @@ import spynnaker8 as p
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 
-runtime = 1000
+runtime = 2000
 p.setup(timestep=1.0, min_delay=1.0, max_delay=144.0)
 nNeurons = 65  # number of neurons in each population
-p.set_number_of_neurons_per_core(p.IF_curr_exp, nNeurons / 2)
 
 cell_params_lif = {'cm': 0.25,
                    'i_offset': 0.0,
@@ -35,7 +34,7 @@ for i in range(0, nNeurons):
 injectionConnection = [(0, 0)]
 spikeArray = {'spike_times': [[0]]}
 populations.append(
-    p.Population(nNeurons, p.IF_curr_exp(**cell_params_lif), label='pop_1'))
+    p.Population(nNeurons, p.IF_curr_exp(**cell_params_lif), label='pop_1', in_partitions=[1, 1], out_partitions=1, n_targets=2))
 populations.append(
     p.Population(1, p.SpikeSourceArray(**spikeArray), label='inputSpikes_1'))
 
@@ -74,9 +73,6 @@ Figure(
     title="Simple synfire chain example",
     annotations="Simulated with {}".format(p.name())
 )
-
-for n in range(len(spikes.segments[0].spiketrains)):
-    print "Neuron: " + str(n) + " spiked at timestep: " + str(spikes.segments[0].spiketrains[n])
 
 plt.show()
 

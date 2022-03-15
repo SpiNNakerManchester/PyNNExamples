@@ -9,7 +9,7 @@ import random
 def test(pyramidal_inter_learning_rate = 0.0002375, inter_pyramidal_lerning_rate=0.0005,
             g_A=0.8, g_B=1, g_L=0.1, g_D=1.0, gsom=0.8):
 
-    runtime = 1050
+    runtime = 85000
 
     p.setup(timestep=1)
 
@@ -114,6 +114,22 @@ def test(pyramidal_inter_learning_rate = 0.0002375, inter_pyramidal_lerning_rate
     plt.grid(True)
 
     plt.show()
+
+    with open("/localhome/g90604lp/selfp/va.txt", "w") as fp:
+        for i in va:
+            fp.write(str(i))
+
+    with open("/localhome/g90604lp/selfp/vb.txt", "w") as fp:
+        for i in vb:
+            fp.write(str(i))
+
+    with open("/localhome/g90604lp/selfp/utop.txt", "w") as fp:
+        for i in utop:
+            fp.write(str(i))
+
+    with open("/localhome/g90604lp/selfp/usst.txt", "w") as fp:
+        for i in usst:
+            fp.write(str(i))
 
 
     Figure(

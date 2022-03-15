@@ -7,7 +7,6 @@ def mixed_signals():
     runtime = 100
     nNeurons = 2
     p.setup(timestep=1.0, min_delay=1.0, max_delay=144.0)
-    p.set_number_of_neurons_per_core(p.IF_curr_exp, nNeurons / 2)
 
     cell_params_lif = {'cm': 0.25,
                        'i_offset': 0.0,
@@ -26,8 +25,8 @@ def mixed_signals():
     weight_to_spike = 0.1
     delay = 3
 
-    exc_population = p.Population(nNeurons, p.IF_cond_exp(**cell_params_lif), label='exc_population')
-    inh_population = p.Population(nNeurons, p.IF_cond_exp(**cell_params_lif), label='inh_population')
+    exc_population = p.Population(nNeurons, p.IF_cond_exp(**cell_params_lif), label='exc_population', in_partitions=[1, 1], out_partitions=1, n_targets=1)
+    inh_population = p.Population(nNeurons, p.IF_cond_exp(**cell_params_lif), label='inh_population', in_partitions=[1, 1], out_partitions=1, n_targets=1)
     input = p.Population(1, p.SpikeSourceArray(spike_times=[1, 8, 16, 50]), label='input1')
     input2 = p.Population(1, p.SpikeSourceArray(spike_times=[3, 15, 49]), label='input2')
 
@@ -85,8 +84,8 @@ def mixed_signals():
     )
 
     for n in range(len(spikes.segments[0].spiketrains)):
-        print "Neuron: " + str(n) + " spiked at timestep: " + str(spikes.segments[0].spiketrains[n])
-        print "Neuron (inh): " + str(n) + " spiked at timestep: " + str(ispikes.segments[0].spiketrains[n])
+        print("Neuron: " + str(n) + " spiked at timestep: " + str(spikes.segments[0].spiketrains[n]))
+        print("Neuron (inh): " + str(n) + " spiked at timestep: " + str(ispikes.segments[0].spiketrains[n]))
 
     plt.show()
     print(figure_filename)
@@ -101,6 +100,6 @@ def mixed_signals():
 
 if __name__ == "__main__":
     if mixed_signals() is True:
-        print "PASSED!!!"
+        print("PASSED!!!")
     else:
-        print "FAILED"
+        print("FAILED")

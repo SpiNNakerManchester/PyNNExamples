@@ -8,7 +8,7 @@ def single_neuron_double_spikes():
     runtime = 10
     nNeurons = 70
     p.setup(timestep=1.0, min_delay=1.0, max_delay=144.0)
-    #p.set_number_of_neurons_per_core(p.IF_curr_exp, nNeurons / 2)
+    #p.set_number_of_neurons_per_core(p.IF_curr_exp_plastic, nNeurons / 2)
 
     cell_params_lif = {'cm': 0.25,
                        'i_offset': 0.0,
@@ -25,7 +25,7 @@ def single_neuron_double_spikes():
     weight_to_spike = 1
     delay = 3
 
-    population = p.Population(nNeurons, p.IF_curr_exp(**cell_params_lif), label='population')
+    population = p.Population(nNeurons, p.IF_curr_exp(**cell_params_lif), label='population', in_partitions=[2, 2], out_partitions=1, n_targets=2)
     input = p.Population(1, p.SpikeSourceArray(spike_times=[1, 5, 7]), label='input1')
 
     p.Projection(input, population, p.FixedProbabilityConnector(p_connect=0.99), p.StaticSynapse(weight=weight_to_spike, delay=2), receptor_type="excitatory")
@@ -54,10 +54,11 @@ def single_neuron_double_spikes():
             b = str(gi.segments[0].filter(name='gsyn_inh')[0][i][j])
             if golden_exc[t] != a or \
                golden_inh[t] != b:
-                print a
-                print b
-                print golden_exc[t]
-                print golden_inh[t]
+                print("time: " + str(t))
+                print(a)
+                print(b)
+                print(golden_exc[t])
+                print(golden_inh[t])
                 return False
         t += 1
 
@@ -68,6 +69,6 @@ def single_neuron_double_spikes():
 
 if __name__ == "__main__":
     if single_neuron_double_spikes() is True:
-        print "PASSED"
+        print("PASSED")
     else:
-        print "FAILED"
+        print("FAILED")

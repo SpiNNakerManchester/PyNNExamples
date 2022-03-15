@@ -7,7 +7,7 @@ runtime = 100
 value = 4
 nNeurons = 64*value
 p.setup(timestep=0.1)
-#p.set_number_of_neurons_per_core(p.IF_curr_exp, nNeurons / 2)
+#p.set_number_of_neurons_per_core(p.IF_curr_exp_plastic, nNeurons / 2)
 
 dest_params_lif = {'cm': 0.25,
                    'i_offset': 0.0,

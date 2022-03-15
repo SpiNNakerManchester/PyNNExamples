@@ -3,7 +3,7 @@ from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 
 
-def test(apical_learning_rate=0.05, basal_learning_rate=0.11875, sst_learning_rate=0.11875, top_down_learning_rate=0.05,
+def test(apical_learning_rate=0.01, basal_learning_rate=0.02375, sst_learning_rate=0.02375, top_down_learning_rate=0.01,
          g_A=0.8, g_B=1, g_L=0.1, g_D=1.0, gsom=0.8,
          top_down_times=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
          bottom_up_times=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
@@ -34,27 +34,27 @@ def test(apical_learning_rate=0.05, basal_learning_rate=0.11875, sst_learning_ra
 
     basal_plasticity = p.STDPMechanism(
         timing_dependence=p.extra_models.TimingDependenceMulticompBern(),
-        weight_dependence=p.extra_models.WeightDependencePyramidal(w_min=-10000, w_max=10000,
+        weight_dependence=p.extra_models.WeightDependencePyramidal(w_min=-100, w_max=100,
                                                                    learning_rates=(basal_learning_rate, 0,
                                                                                    0, 0)),
         weight=basal_weight)
 
     apical_plasticity = p.STDPMechanism(
         timing_dependence=p.extra_models.TimingDependenceMulticompBern(),
-        weight_dependence=p.extra_models.WeightDependencePyramidal(w_min=-10000, w_max=10000,
+        weight_dependence=p.extra_models.WeightDependencePyramidal(w_min=-100, w_max=100,
                                                                    learning_rates=(apical_learning_rate, 0,
                                                                                    0, 0)),
         weight=inh_apical_weight)
 
     sst_plasticity = p.STDPMechanism(
         timing_dependence=p.extra_models.TimingDependenceMulticompBern(),
-        weight_dependence=p.extra_models.WeightDependenceMultiplicativeMulticompBern(w_min=-10000, w_max=10000,
+        weight_dependence=p.extra_models.WeightDependenceMultiplicativeMulticompBern(w_min=-100, w_max=100,
                                                                                      learning_rate=sst_learning_rate),
         weight=sst_dend_weight)
 
     upper_plasticity = p.STDPMechanism(
         timing_dependence=p.extra_models.TimingDependenceMulticompBern(),
-        weight_dependence=p.extra_models.WeightDependenceMultiplicativeMulticompBern(w_min=-10000, w_max=10000,
+        weight_dependence=p.extra_models.WeightDependenceMultiplicativeMulticompBern(w_min=-100, w_max=100,
                                                                                      learning_rate=top_down_learning_rate),
         weight=sst_dend_weight)
 
@@ -135,6 +135,30 @@ def test(apical_learning_rate=0.05, basal_learning_rate=0.11875, sst_learning_ra
     plt.show()
 
     p.end()
+
+    with open("/localhome/g90604lp/selfpred.txt", "w") as fp:
+        for i in u:
+            fp.write(str(i))
+        fp.write("\n")
+        for i in va:
+            fp.write(str(i))
+        fp.write("\n")
+        for i in vb:
+            fp.write(str(i))
+        fp.write("\n")
+        for i in usst:
+            fp.write(str(i))
+        fp.write("\n")
+        for i in vsst:
+            fp.write(str(i))
+        fp.write("\n")
+        for i in utop:
+            fp.write(str(i))
+        fp.write("\n")
+        for i in vtop:
+            fp.write(str(i))
+        fp.write("\n")
+
 
     return True
 
