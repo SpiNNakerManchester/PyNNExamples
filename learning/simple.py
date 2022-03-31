@@ -13,9 +13,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import spynnaker8 as sim
 import pyNN.utility.plotting as plot
 import matplotlib.pyplot as plt
+import pyNN.spiNNaker as sim
 
 sim.setup(timestep=1.0)
 sim.set_number_of_neurons_per_core(sim.IF_curr_exp, 100)

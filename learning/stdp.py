@@ -16,6 +16,7 @@
 import spynnaker8 as sim
 import pyNN.utility.plotting as plot
 import matplotlib.pyplot as plt
+import pyNN.spiNNaker as sim
 
 n_neurons = 100
 simtime = 5000

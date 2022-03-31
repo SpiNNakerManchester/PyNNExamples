@@ -13,11 +13,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import spynnaker8 as p
-from pyNN.random import RandomDistribution
 import matplotlib.pyplot as pylab
 import numpy
+from pyNN.random import RandomDistribution
 from pyNN.utility.plotting import Figure, Panel
+import pyNN.spiNNaker as p
 
 p.setup(timestep=0.1)
 p.set_number_of_neurons_per_core(p.IF_curr_exp, 64)

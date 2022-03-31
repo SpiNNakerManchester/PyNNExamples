@@ -1,6 +1,6 @@
-import spynnaker8 as sim
 import pyNN.utility.plotting as plot
 import matplotlib.pyplot as plt
+import pyNN.spiNNaker as sim
 from spynnaker.pyNN.extra_algorithms.splitter_components import (
     SplitterAbstractPopulationVertexNeuronsSynapses, SplitterPoissonDelegate)
 
