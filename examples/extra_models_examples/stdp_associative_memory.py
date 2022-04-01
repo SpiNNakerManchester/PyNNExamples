@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017-2020 The University of Manchester
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
 Simple Associative Memory
 """
 from __future__ import division
-import spynnaker8 as p
+import pyNN.spiNNaker as p
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 from pyNN.random import NumpyRNG, RandomDistribution

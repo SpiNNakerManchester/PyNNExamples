@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017-2022 The University of Manchester
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@ A single LIF neuron with two exponential, current-based synapses,
 and two delta, current-based synapses, fed by two spike sources.
 """
 
-import spynnaker8 as sim
+import pyNN.spiNNaker as sim
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 

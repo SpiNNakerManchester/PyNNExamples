@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017-2022 The University of Manchester
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,10 +20,7 @@ A population of integrate-and-firing neurons with different input firing rates
 
 import numpy as np
 import matplotlib.pyplot as plt
-try:
-    import pyNN.spiNNaker as sim
-except ImportError:
-    import spynnaker8 as sim
+import pyNN.spiNNaker as sim
 
 sim.setup(timestep=1.0, min_delay=1.0)
 
