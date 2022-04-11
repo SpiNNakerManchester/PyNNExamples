@@ -16,7 +16,7 @@
 """
 Synfirechain-like example
 """
-import pyNN.spiNNaker as sim
+import pyNN.spiNNaker as p
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 
