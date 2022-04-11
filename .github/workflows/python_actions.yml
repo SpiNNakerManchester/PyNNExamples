@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.6, 3.7, 3.8, 3.9]
+        python-version: [3.7, 3.8, 3.9, "3.10"]
 
     steps:
     - name: Checkout
@@ -40,8 +40,6 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install pip, etc
       uses: ./support/actions/python-tools
-    - name: Install matplotlib
-      uses: ./support/actions/install-matplotlib
     - name: Install Spinnaker Dependencies
       uses: ./support/actions/checkout-spinn-deps
       with:
@@ -51,6 +49,8 @@ jobs:
         install: true
     - name: Setup PyNN
       uses: ./support/actions/pynn-setup
+    - name: Install matplotlib
+      uses: ./support/actions/install-matplotlib
 
     - name: Lint with flake8
       run: flake8 balanced_random learning sudoku synfire
