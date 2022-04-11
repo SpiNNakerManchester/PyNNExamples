@@ -49,6 +49,8 @@ jobs:
           SpiNNUtils SpiNNMachine SpiNNMan PACMAN DataSpecification spalloc
           SpiNNFrontEndCommon sPyNNaker sPyNNaker8
         install: true
+    - name: Setup PyNN
+      uses: ./support/actions/pynn-setup
 
     - name: Lint with flake8
       run: flake8 balanced_random learning sudoku synfire
