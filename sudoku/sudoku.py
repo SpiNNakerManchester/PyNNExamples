@@ -21,7 +21,9 @@
 #############################################################
 from pyNN.random import RandomDistribution
 import pyNN.spiNNaker as p
-import spynnaker.pyNN.external_devices as ext
+# TODO MOVE to
+# import spynnaker.pyNN.external_devices as ext
+import spynnaker8.external_devices as ext
 import subprocess
 import os
 import sys
