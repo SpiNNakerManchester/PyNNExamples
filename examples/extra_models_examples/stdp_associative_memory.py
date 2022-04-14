@@ -16,7 +16,6 @@
 """
 Simple Associative Memory
 """
-from __future__ import division
 import spynnaker8 as p
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
