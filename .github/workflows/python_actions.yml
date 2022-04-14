@@ -45,7 +45,7 @@ jobs:
       with:
         repositories: >
           SpiNNUtils SpiNNMachine SpiNNMan PACMAN DataSpecification spalloc
-          SpiNNFrontEndCommon sPyNNaker sPyNNaker8
+          SpiNNFrontEndCommon sPyNNaker
         install: true
 
     - name: Setup PyNN
