@@ -1,4 +1,4 @@
-# Copyright (c) 2020 The University of Manchester
+# Copyright (c) 2020-2022 The University of Manchester
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@ http://journal.frontiersin.org/article/10.3389/fnins.2017.00454/abstract
 """
 # pylint: disable=pointless-string-statement
 
-import spynnaker8 as p
+import pyNN.spiNNaker as p
 import numpy as np
 import math
 from pyNN.random import RandomDistribution, NumpyRNG

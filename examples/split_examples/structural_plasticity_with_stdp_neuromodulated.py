@@ -35,10 +35,7 @@ STDP, structural plasticity and neuron instructions would not fit on one core
 from spynnaker.pyNN.extra_algorithms.splitter_components import (
     SplitterAbstractPopulationVertexNeuronsSynapses)
 
-try:
-    import pyNN.spiNNaker as sim
-except Exception:
-    import spynnaker8 as sim
+import pyNN.spiNNaker as sim
 import pylab
 import numpy as np
 

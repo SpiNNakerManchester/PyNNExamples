@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017-2022 The University of Manchester
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,10 +17,7 @@
 retina example that just feeds data from a retina to live output via an
 intermediate population
 """
-try:
-    import pyNN.spiNNaker as p
-except ImportError:
-    import spynnaker8 as p
+import pyNN.spiNNaker as p
 
 connected_chip_details = {
     "spinnaker_link_id": 0,

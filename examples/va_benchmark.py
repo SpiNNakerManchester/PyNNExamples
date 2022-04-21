@@ -1,6 +1,6 @@
 # coding: utf-8
 
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017-2022 The University of Manchester
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@ Andrew Davison, UNIC, CNRS
 August 2006
 """
 import socket
-import spynnaker8 as p
+import pyNN.spiNNaker as p
 from pyNN.random import NumpyRNG, RandomDistribution
 from pyNN.utility import Timer
 from pyNN.utility.plotting import Figure, Panel
