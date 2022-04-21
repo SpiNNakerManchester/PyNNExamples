@@ -16,10 +16,10 @@
 """
 Simple Associative Memory
 """
-import spynnaker8 as p
-from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 from pyNN.random import NumpyRNG, RandomDistribution
+import pyNN.spiNNaker as p
+from pyNN.utility.plotting import Figure, Panel
 
 p.setup(timestep=1.0, min_delay=1.0)
 p.set_number_of_neurons_per_core(p.IF_curr_exp, 100)
