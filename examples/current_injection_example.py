@@ -29,10 +29,7 @@ Script from http://neuralensemble.org/docs/PyNN/examples/current_injection.html
 
 """
 
-try:
-    import pyNN.spiNNaker as sim
-except ImportError:
-    import spynnaker8 as sim
+import pyNN.spiNNaker as sim
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 from quantities import mV
