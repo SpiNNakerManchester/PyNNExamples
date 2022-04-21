@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017-2022 The University of Manchester
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -30,10 +30,7 @@ post-synaptic neurons to the same stimuli.
 from spynnaker.pyNN.extra_algorithms.splitter_components import (
     SplitterAbstractPopulationVertexNeuronsSynapses)
 
-try:
-    import pyNN.spiNNaker as sim
-except Exception:
-    import spynnaker8 as sim
+import pyNN.spiNNaker as sim
 import pylab
 
 timestep = 1.0
