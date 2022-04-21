@@ -19,8 +19,10 @@
 # Steve Furber, November 2015
 #
 #############################################################
-import spynnaker8 as p
 from pyNN.random import RandomDistribution
+import pyNN.spiNNaker as p
+# TODO MOVE to
+# import spynnaker.pyNN.external_devices as ext
 import spynnaker8.external_devices as ext
 import subprocess
 import os

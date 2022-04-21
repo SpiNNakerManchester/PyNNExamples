@@ -17,7 +17,7 @@
 Synfire chain example
 """
 import matplotlib.pyplot as plt
-import spynnaker8 as sim
+import pyNN.spiNNaker as sim
 from spynnaker.pyNN.utilities import neo_convertor
 
 # number of neurons in each population

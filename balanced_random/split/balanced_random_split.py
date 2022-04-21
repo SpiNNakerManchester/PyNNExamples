@@ -1,8 +1,8 @@
-import spynnaker8 as p
-from pyNN.random import RandomDistribution
 import pylab
 import numpy
+from pyNN.random import RandomDistribution
 from pyNN.utility.plotting import Figure, Panel
+import pyNN.spiNNaker as p
 from spynnaker.pyNN.extra_algorithms.splitter_components import (
     SplitterPoissonDelegate, SplitterAbstractPopulationVertexNeuronsSynapses)
 
