@@ -14,7 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
-import spynnaker8 as sim
+import pyNN.spiNNaker as sim
 import numpy as np
 # import logging
 import pylab as plt
