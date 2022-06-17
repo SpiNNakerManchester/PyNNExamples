@@ -24,7 +24,7 @@
 import math
 import numpy
 import matplotlib.pyplot as pylab
-import spynnaker8 as sim
+import pyNN.spiNNaker as sim
 
 # Timestep (ms)
 # **NOTE** the 2.5Khz input frequency is not going to work particularily well

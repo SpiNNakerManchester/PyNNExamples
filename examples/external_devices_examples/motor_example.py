@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017-202 The University of Manchester
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,10 +18,7 @@ motor example that just feeds data to the motor pop which starts the motor
 going forward
 """
 
-try:
-    import pyNN.spiNNaker as p
-except ImportError:
-    import spynnaker8 as p
+import pyNN.spiNNaker as p
 
 # set up the tools
 p.setup(timestep=1.0, min_delay=1.0)

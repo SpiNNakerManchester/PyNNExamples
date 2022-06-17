@@ -48,6 +48,8 @@ jobs:
           SpiNNUtils SpiNNMachine SpiNNMan PACMAN DataSpecification spalloc
           SpiNNFrontEndCommon sPyNNaker
         install: true
+    - name: Setup PyNN
+      uses: ./support/actions/pynn-setup
     - name: Install matplotlib
       uses: ./support/actions/install-matplotlib
     - name: install test requirements as no setup
