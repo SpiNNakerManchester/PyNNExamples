@@ -29,23 +29,18 @@ weight_exc = 0.1
 weight_inh = -5.0 * weight_exc
 weight_input = 0.001
 
-pop_input = p.Population(100, p.SpikeSourcePoisson(rate=0),
-                         additional_parameters={"seed": 0}, label="Input")
+pop_input = p.Population(100, p.SpikeSourcePoisson(rate=0), label="Input")
 
 pop_exc = p.Population(n_exc, p.IF_curr_exp, label="Excitatory",
-                       additional_parameters={"spikes_per_second": 100,
-                                              "seed": 1})
+                       additional_parameters={"spikes_per_second": 100})
 pop_inh = p.Population(n_inh, p.IF_curr_exp, label="Inhibitory",
-                       additional_parameters={"spikes_per_second": 100,
-                                              "seed": 2})
+                       additional_parameters={"spikes_per_second": 100})
 stim_exc = p.Population(
-    n_exc, p.SpikeSourcePoisson(rate=1000.0),
-    additional_parameters={"seed": 4}, label="Stim_Exc")
+    n_exc, p.SpikeSourcePoisson(rate=1000.0), label="Stim_Exc")
 stim_inh = p.Population(
-    n_inh, p.SpikeSourcePoisson(rate=1000.0),
-    additional_parameters={"seed": 5}, label="Stim_Inh")
+    n_inh, p.SpikeSourcePoisson(rate=1000.0), label="Stim_Inh")
 
-rng = p.NumpyRNG(seed=3)
+rng = p.NumpyRNG()
 delays_exc = RandomDistribution(
     "normal_clipped", mu=1.5, sigma=0.75, low=1.0, high=14.4, rng=rng)
 weights_exc = RandomDistribution(
