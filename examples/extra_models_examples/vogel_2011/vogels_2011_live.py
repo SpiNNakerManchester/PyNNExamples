@@ -14,6 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import pyNN.spiNNaker as sim
+from pyNN.random import NumpyRNG
 
 
 # -------------------------------------------------------------------
@@ -40,41 +41,43 @@ cell_params = {
 NUM_EXCITATORY = 2000
 
 # SpiNNaker setup
-sim.setup(timestep=1.0, min_delay=1.0, time_scale_factor=6)
+sim.setup(timestep=1.0, min_delay=1.0, time_scale_factor=10)
 
 # Reduce number of neurons to simulate on each core
 sim.set_number_of_neurons_per_core(sim.IF_curr_exp, 100)
 
+rng = NumpyRNG(seed=59)
+
 # Create excitatory and inhibitory populations of neurons
 ex_pop = sim.Population(NUM_EXCITATORY, model(**cell_params),
-                        label="Excitatory")
+                        label="Excitatory", additional_parameters={"seed": 2})
 in_pop = sim.Population(NUM_EXCITATORY / 4, model(**cell_params),
-                        label="Inhibitory")
+                        label="Inhibitory", additional_parameters={"seed": 9})
 
 # Record excitatory spikes
 ex_pop.record('spikes')
 
 # Make excitatory->inhibitory projections
-sim.Projection(ex_pop, in_pop, sim.FixedProbabilityConnector(0.02),
+sim.Projection(ex_pop, in_pop, sim.FixedProbabilityConnector(0.02, rng=rng),
                receptor_type='excitatory',
-               synapse_type=sim.StaticSynapse(weight=0.03))
-sim.Projection(ex_pop, ex_pop, sim.FixedProbabilityConnector(0.02),
+               synapse_type=sim.StaticSynapse(weight=0.029))
+sim.Projection(ex_pop, ex_pop, sim.FixedProbabilityConnector(0.02, rng=rng),
                receptor_type='excitatory',
-               synapse_type=sim.StaticSynapse(weight=0.03))
+               synapse_type=sim.StaticSynapse(weight=0.029))
 
 # Make inhibitory->inhibitory projections
-sim.Projection(in_pop, in_pop, sim.FixedProbabilityConnector(0.02),
+sim.Projection(in_pop, in_pop, sim.FixedProbabilityConnector(0.02, rng=rng),
                receptor_type='inhibitory',
-               synapse_type=sim.StaticSynapse(weight=-0.3))
+               synapse_type=sim.StaticSynapse(weight=-0.29))
 
 # Build inhibitory plasticity  model
 stdp_model = sim.STDPMechanism(
     timing_dependence=sim.extra_models.Vogels2011Rule(alpha=0.12, tau=20.0,
-                                                      A_plus=0.0005),
+                                                      A_plus=0.05),
     weight_dependence=sim.AdditiveWeightDependence(w_min=0.0, w_max=1.0))
 
 # Make inhibitory->excitatory projections
-sim.Projection(in_pop, ex_pop, sim.FixedProbabilityConnector(0.02),
+sim.Projection(in_pop, ex_pop, sim.FixedProbabilityConnector(0.02, rng=rng),
                receptor_type='inhibitory',
                synapse_type=stdp_model)
 
