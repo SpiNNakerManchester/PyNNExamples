@@ -122,12 +122,12 @@ if __name__ == "__main__":
     # combs = [[2, 2], [3, 3], [4, 2], [4, 4], [5, 5], [6, 3], [6, 6], [7, 7], [8, 2], [8, 4]]
     # combs_sing = [[1, 2], [1, 3], [2, 2], [1, 4], [1, 5], [2, 3], [1, 6], [1, 7], [4, 2], [2, 4]]
 
-    combs = [[2, 2], [3, 3], [4, 2], [4, 4], [5, 5], [6, 3], [6, 6], [7, 7], [8, 2], [8, 4], [10, 2], [12, 2]]
-    combs_sing = [[1, 2], [1, 3], [2, 2], [1, 4], [1, 5], [2, 3], [1, 6], [1, 7], [4, 2], [2, 4], [5, 2], [6, 2]]
+    combs = [[2, 2], [3, 3], [4, 2], [6, 3], [8, 2], [10, 2], [12, 2]]
+    combs_sing = [[1, 2], [1, 3], [2, 2], [2, 3], [4, 2], [5, 2], [6, 2]]
 
     #steps = [21, 12, 10, 10, 7, 6, 6, 5, 5, 5]
     #steps_sing = [42, 42, 21, 42, 42, 21, 42, 42, 10, 21, 7, 6]
-    steps = [21, 14, 13, 13, 13.5, 11, 12, 10, 7, 7, 6, 5]
+    steps = [21, 14, 13, 11, 7, 6, 5]
 
     #steps_micro = [21, 16, 13, 13, 10, 9, 9, 8, 7, 7]
     # steps_sing = [45, 45, 25, 45, 45, 25, 45, 45, 13, 25]
@@ -139,7 +139,7 @@ if __name__ == "__main__":
 
     timestep = 1
 
-    p_conn = [0.001, 0.01, 0.05, 0.1]
+    p_conn = [0.001, 0.01, 0.05, 0.09]
     #p_conn = [0.01, 0.1]
 
     n = int(10000 * timestep)
@@ -149,19 +149,18 @@ if __name__ == "__main__":
     else:
         ts = 1
 
-    with open("/localhome/g90604lp/multitarget_experiments/Peak_comp/plasticity/" + str(int(n)) + "_neurons_" + str(timestep) + "_full_sing_final.txt",
+    with open("/localhome/g90604lp/more_neu/plasticity/" + str(int(n)) + "_neurons_" + str(timestep) + "_f.txt",
               "w") as fp:
         fp.write("Synaptic events simulations\n")
 
     for j in range(len(p_conn)):
         for i in range(len(combs_sing)):
             with open(
-                    "/localhome/g90604lp/multitarget_experiments/Peak_comp/plasticity/" + str(int(n)) + "_neurons_" + str(timestep) + "_full_sing_final.txt",
+                    "/localhome/g90604lp/more_neu/plasticity/" + str(int(n)) + "_neurons_" + str(timestep) + "_f.txt",
                     "a") as fp:
                 fp.write("[" + str(combs_sing[i][0]) + ", 1] " + str(n/steps[i]) + " " + str(combs_sing[i][1]) + " " + str(p_conn[j] * 100) + "\n")
                 print("\n\n\n\n\n\n----------------RUNNING WITH " + str(combs_sing[i][0]) + " PARTITIONS, " + str(n/steps[i]) + " SPIKING NEURONS " + str(combs_sing[i][1]) + " TARGETS " + str(p_conn[j] * 100) + " PROB----------------\n\n\n\n\n\n")
-                results = multipartition_test([combs_sing[i][0], 1], steps[i], timestep, n, p_conn[j], 1, 1, 64 * combs_sing[i][1], 80)
-
+                results = multipartition_test([combs_sing[i][0], 1], steps[i], timestep, n, p_conn[j], 1, 1, 128 * combs_sing[i][1], 100)
                 fp.write(#str(results["dma_read"] * 0.005) + " " +
                          #str(results["state_update"] * 0.005) + " " +
                          #str(results["loop_time"] * 0.005) + " " +

@@ -58,6 +58,11 @@ def bar_plot(ax, data, colors=None, total_width=0.8, single_width=1, legend=True
     x_axis2 = ["[4, 2]", "[9, 3]", "[8, 2]", "[16, 4]", "[25, 5]", "[18, 3]", "[36, 6]", "[49, 7]", "[16, 2]",
                "[32, 4]", "[20, 2]", "[24, 2]"]
 
+    # x_axis2 = ["[4, 2]", "[9, 3]", "[8, 2]", "[16, 4]", "[25, 5]", "[18, 3]", "[36, 6]", "[49, 7]", "[16, 2]",
+    #            "[32, 4]"]
+
+    #x_axis2 = ["[4, 2]", "[9, 3]", "[8, 2]", "[18, 3]", "[16, 2]", "[20, 2]", "[24, 2]"]
+
     # Iterate over all data
     for i, (name, values) in enumerate(data.items()):
         # The offset in x direction of that bar
@@ -84,7 +89,7 @@ def bar_plot(ax, data, colors=None, total_width=0.8, single_width=1, legend=True
 
     ax.set_xticks(np.arange(len(x_axis)))
     ax.set_xticklabels(x_axis)
-    ax.set_title("Total Processed Synaptic Events " + str(perc) + " % connectivity (Plastic) 1 ms")
+    ax.set_title("Total Processed Synaptic Events " + str(perc) + " % connectivity (Static) 1 ms")
 
     ax2.set_xticks(np.arange(len(x_axis2)))
     ax2.set_xticklabels(x_axis2)
@@ -104,12 +109,19 @@ if __name__ == "__main__":
     tot_evets_base = dict()
 
     x_axis = ["[2, 2]", "[3, 3]", "[4, 2]", "[4, 4]", "[5, 5]", "[6, 3]", "[6, 6]", "[7, 7]", "[8, 2]", "[8, 4]", "[10, 2]", "[12, 2]"]
-    x_axis2 = ["[4, 2]", "[9, 3]", "[8, 2]", "[16, 4]", "[25, 5]", "[18, 3]", "[36, 6]", "[49, 7]", "[16, 2]", "[32, 4]", "[20, 2]", "[24, 2]"]
+    # x_axis = ["[2, 2]", "[3, 3]", "[4, 2]", "[4, 4]", "[5, 5]", "[6, 3]", "[6, 6]", "[7, 7]", "[8, 2]", "[8, 4]"]
+    # x_axis2 = ["[4, 2]", "[9, 3]", "[8, 2]", "[16, 4]", "[25, 5]", "[18, 3]", "[36, 6]", "[49, 7]", "[16, 2]", "[32, 4]"]
+    x_axis2 = ["[4, 2]", "[9, 3]", "[8, 2]", "[16, 4]", "[25, 5]", "[18, 3]", "[36, 6]", "[49, 7]", "[16, 2]",
+               "[32, 4]", "[20, 2]", "[24, 2]"]
     cores = [2, 3, 2, 4, 5, 3, 6, 7, 2, 4, 2, 2]
 
-    filename_wrong = "/localhome/g90604lp/multitarget_experiments/Peak_comp/plasticity/10000_neurons_1_wrong_sing_final.txt"
-    filename_single = "/localhome/g90604lp/multitarget_experiments/Peak_comp/plasticity/10000_neurons_1_full_sing_final.txt"
-    filename_multi = "/localhome/g90604lp/multitarget_experiments/Peak_comp/plasticity/10000_neurons_1_full_mult_final.txt"
+    # Plastic
+    #x_axis = ["[2, 2]", "[3, 3]", "[4, 2]", "[6, 3]", "[8, 2]", "[10, 2]", "[12, 2]"]
+    #x_axis2 = ["[4, 2]", "[9, 3]", "[8, 2]", "[18, 3]", "[16, 2]", "[20, 2]", "[24, 2]"]
+
+    filename_wrong = "/localhome/g90604lp/multitarget_experiments/Peak_comp/10000_neurons_1_wrong_sing_final.txt"
+    filename_single = "/localhome/g90604lp/multitarget_experiments/Peak_comp/10000_neurons_1_full_sing_final.txt"
+    filename_multi = "/localhome/g90604lp/multitarget_experiments/Peak_comp/10000_neurons_1_full_mult_final.txt"
     
     fpath = filename_multi.split("/")[-1]
     ts = int(fpath.split("_")[0]) / 10
@@ -188,7 +200,10 @@ if __name__ == "__main__":
     
     for conn_prob in tot_events_wrong.keys():
         c_prob = conn_prob / 100
+        #64 neurons per core
         eve = ((float(ts - 65 - (8.064 * c_prob + 6.567) - (7.36 * c_prob + 2.48)) / (7.36 * c_prob + 3.96)) + 2) * 64 * c_prob
+        # 256 neurons per core
+        #eve = ((float(ts - 263 - (32.26 * c_prob + 6.567) - (29.44 * c_prob + 2.48)) / (29.44 * c_prob + 3.96)) + 2) * 256 * c_prob
         # empty pkts
         print(eve)
         empty = eve / 10
@@ -209,13 +224,16 @@ if __name__ == "__main__":
             "single expanded": tot_events_wrong[k],
             "multitarget": tot_events_multi[k],
             "single target": tot_events_single[k],
-            #"base": tot_evets_base[k]
+            "homogeneous": tot_evets_base[k]
 
         }
 
         plt.rcParams.update({'font.size': 20})
         fig, ax = plt.subplots()
         bar_plot(ax, data, total_width=.8, single_width=.9, perc=k, x_axis=x_axis, colors=plt.cm.viridis(np.linspace(0, 1, 4)))
+
+        ax.set_ylabel("Total Synaptic Events")
+
         plt.show()
 
     # for k in tot_events_multi.keys():

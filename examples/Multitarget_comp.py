@@ -113,27 +113,34 @@ if __name__ == "__main__":
               "loop_time_input": []}
 
 
-    combs = [[2, 2], [3, 3], [4, 2], [4, 4], [5, 5], [6, 3], [6, 6], [7, 7], [8, 2], [8, 4]]
-    combs_sing = [[1, 2], [1, 3], [2, 2], [1, 4], [1, 5], [2, 3], [1, 6], [1, 7], [4, 2], [2, 4]]
+    #combs = [[2, 2], [3, 3], [4, 2], [4, 4], [5, 5], [6, 3], [6, 6], [7, 7], [8, 2], [8, 4]]
+    #combs_sing = [[1, 2], [1, 3], [2, 2], [1, 4], [1, 5], [2, 3], [1, 6], [1, 7], [4, 2], [2, 4]]
 
-    # combs = [[2, 2], [3, 3], [4, 2], [4, 4], [5, 5], [6, 3], [6, 6], [7, 7], [8, 2], [8, 4], [10, 2], [12, 2]]
-    # combs_sing = [[1, 2], [1, 3], [2, 2], [1, 4], [1, 5], [2, 3], [1, 6], [1, 7], [4, 2], [2, 4], [5, 2], [6, 2]]
+    combs = [[2, 2], [3, 3], [4, 2], [4, 4], [5, 5], [6, 3], [6, 6], [7, 7], [8, 2], [8, 4], [10, 2], [12, 2]]
+    combs_sing = [[1, 2], [1, 3], [2, 2], [1, 4], [1, 5], [2, 3], [1, 6], [1, 7], [4, 2], [2, 4], [5, 2], [6, 2]]
+
+    #combs = [[2, 2], [3, 3], [4, 2], [4, 4], [6, 3], [8, 2], [8, 4], [10, 2], [12, 2]]
+    #combs_sing = [[1, 2], [1, 3], [2, 2], [1, 4], [2, 3], [4, 2], [2, 4]]
 
     #steps = [21, 12, 10, 10, 7, 6, 6, 5, 5, 5]
-    steps_sing = [42, 42, 21, 42, 42, 21, 42, 42, 10, 21, 7, 6]
-    # steps_ms = [21, 12, 10, 10, 7, 6, 6, 5, 5, 5, 4, 4]
+    #steps_sing = [42, 42, 21, 42, 42, 21, 42, 42, 10, 21, 7, 6]
+    steps = [21, 12, 10, 10, 7, 6, 6, 5, 5, 5, 4, 4]
+    #steps = [25, 15, 11, 10, 9, 7, 7, 6, 5, 5, 4, 4]
 
-    steps = [25, 20, 13, 12, 10, 9, 8, 7, 6, 5, 5, 5, 3]
-    # steps_sing = [45, 45, 25, 45, 45, 25, 45, 45, 13, 25]
+    #steps = [25, 20, 13, 12, 10, 9, 8, 7, 6, 5, 5, 5, 3]
+    #steps_sing = [45, 45, 25, 45, 45, 25, 45, 45, 13, 25]
 
-    wc_time = [14, 12, 17, 15, 15, 15, 15, 15, 15, 18, 20]
+    #steps_sing = [45, 45, 25, 45, 25, 13, 13]
+    #steps = [25, 20, 13, 12, 9, 6, 5, 5, 3]
+
+    wc_time = [14, 12, 17, 15, 15, 15, 15, 15, 15, 18, 25, 27]
 
     # targets.append([_ for _ in range(1, 12)])
     # targets.append([_ for _ in range(1, 10)])
 
-    timestep = 0.1
+    timestep = 1
 
-    p_conn = [0.01, 0.1, 0.5]
+    p_conn = [0.001, 0.01, 0.05, 0.1]
     #p_conn = [0.01, 0.1]
 
     n = int(10000 * timestep)
@@ -143,18 +150,18 @@ if __name__ == "__main__":
     else:
         ts = 1
 
-    with open("/localhome/g90604lp/multitarget_experiments/Peak_comp/" + str(int(n)) + "_neurons_" + str(timestep) + "_intro_new.txt",
+    with open("/localhome/g90604lp/more_neu/" + str(int(n)) + "_neurons_" + str(timestep) + "_fin_s.txt",
               "w") as fp:
         fp.write("Synaptic events simulations\n")
 
     for j in range(len(p_conn)):
-        for i in range(2, 14):
+        for i in range(len(combs)):
             with open(
-                    "/localhome/g90604lp/multitarget_experiments/Peak_comp/" + str(int(n)) + "_neurons_" + str(timestep) + "_intro_new.txt",
+                    "/localhome/g90604lp/more_neu/" + str(int(n)) + "_neurons_" + str(timestep) + "_fin_s.txt",
                     "a") as fp:
-                fp.write("[" + str(i) + ", 1] " + str(n/steps[i-2]) + " " + str(1) + " " + str(p_conn[j] * 100) + "\n")
-                print("\n\n\n\n\n\n----------------RUNNING WITH " + str(i) + " PARTITIONS, " + str(n/steps[i-2]) + " SPIKING NEURONS " + str(1) + " TARGETS " + str(p_conn[j] * 100) + " PROB----------------\n\n\n\n\n\n")
-                results = multipartition_test([i, 1], steps[i-2], timestep, n, p_conn[j], 1, 1, 64, 15)
+                fp.write("[" + str(combs_sing[i][0]) + ", 1] " + str(n/steps[i]) + " " + str(combs_sing[i][1]) + " " + str(p_conn[j] * 100) + "\n")
+                print("\n\n\n\n\n\n----------------RUNNING WITH " + str(combs_sing[i][0]) + " PARTITIONS, " + str(n/steps[i]) + " SPIKING NEURONS " + str(1) + " TARGETS " + str(p_conn[j] * 100) + " PROB----------------\n\n\n\n\n\n")
+                results = multipartition_test([combs_sing[i][0], 1], steps[i], timestep, n, p_conn[j], 1, 1, 256*combs[i][1], wc_time[i])
 
                 fp.write(#str(results["dma_read"] * 0.005) + " " +
                          #str(results["state_update"] * 0.005) + " " +

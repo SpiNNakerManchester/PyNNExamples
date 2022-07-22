@@ -15,10 +15,22 @@ if __name__ == "__main__":
     
     tot_evets_base = dict()
 
+    #0.1 ms
     x_axis = [4, 6, 8, 10, 9, 12, 14, 10, 12]
     x_axis1 = [4, 6, 8, 10, 9, 12, 14, 10, 12]
     x_axis2 = [12, 10, 20, 30, 21, 42, 18, 36]
     cores = [2, 3, 2, 4, 5, 3, 6, 7]
+
+    #1 ms
+    # x_axis = [4, 6, 8, 9, 12, 14, 10, 12, 12, 14]
+    # x_axis1 = [6, 8, 10, 9, 12, 14, 10, 12, 12, 14]
+    # x_axis2 = [12, 10, 20, 30, 21, 42, 18, 36, 22, 26]
+    # cores = [2, 3, 2, 4, 5, 3, 6, 7]
+
+    #Plastic
+    # x_axis = [4, 6, 8, 10, 9, 12, 14, 10, 12, 14]
+    # x_axis1 = [4, 6, 8, 10, 9, 12, 14, 10, 12, 14]
+    # x_axis2 = [12, 10, 20, 30, 21, 42, 18, 36, 22, 26]
 
     #x_axis = [4, 6, 6, 8, 10, 9, 12, 14, 10, 12]
     #x_axis2 = [6, 12, 10, 20, 30, 21, 42, 56, 18, 36]
@@ -114,7 +126,11 @@ if __name__ == "__main__":
     
     for conn_prob in tot_events_wrong.keys():
         c_prob = conn_prob / 100
+        # 64 neurons per core
         eve = ((float(ts - 65 - (8.064 * c_prob + 6.567) - (7.36 * c_prob + 2.48)) / (7.36 * c_prob + 3.96)) + 2) * 64 * c_prob
+        # 256 neurons per core
+        # eve = ((float(ts - 263 - (32.26 * c_prob + 6.567) - (29.44 * c_prob + 2.48)) / (
+        #             29.44 * c_prob + 3.96)) + 2) * 256 * c_prob
         # empty pkts
         empty = eve / 10
         tot_evets_base[conn_prob] = list()
@@ -125,37 +141,72 @@ if __name__ == "__main__":
             else:
                 tot_evets_base[conn_prob].append(int((eve) * c))
     
+    j = 1
+
     for k in tot_events_multi.keys():
         data = {
 
             "single expanded": tot_events_wrong[k],
             "multitarget": tot_events_multi[k],
             "single target": tot_events_single[k],
-            "base": tot_evets_base[k]
+            "homogeneous": tot_evets_base[k]
 
         }
 
+        #0.1ms
         lab1 = ["2,2", "3,3", "4,4", "5,5", "6,3", "6,6", "7,7", "8,2", "8,4"]
 
-        lab = ["2,2", "3,3", "4,4", "5,5", "6,3", "6,6", "7,7", "8,2", "8,4"]
+        lab = ["2,2", "3,3", "4,4", "5, 5", "6,3", "6,6", "7,7", "8,2", "8,4"]
 
         lab2 = ["9,3", "8,2", "16,4", "25,5", "18,3", "36,6", "16,2",
-                   "32,4"]
+                "32,4"]
         
         labbase = ["2", "3", "4", "5", "6", "7"]
-        
+
+        #1 ms
+        # lab1 = ["3,3", "4,4", "5,5", "6,3", "6,6", "7,7", "8,2", "8,4", "10, 2", "12, 2"]
+        #
+        # lab = ["2,2", "3,3", "4,4", "6,3", "6,6", "7,7", "8,2", "8,4", "10, 2", "12, 2"]
+        #
+        # lab2 = ["9,3", "8,2", "16,4", "25,5", "18,3", "36,6", "16,2",
+        #        "32,4", "20, 2", "24, 2"]
+
+        #Plastic
+        # lab1 = ["2,2", "3,3", "4,4", "5,5", "6,3", "6,6", "7,7", "8,2", "8,4", "12, 2"]
+        #
+        # lab = ["2,2", "3,3", "4,4", "5,5", "6,3", "6,6", "7,7", "8,2", "10, 2", "12, 2"]
+        #
+        # lab2 = ["9,3", "8,2", "16,4", "25,5", "18,3", "36,6", "16,2",
+        #         "32,4", "20, 2", "24, 2"]
+        #
         cores = [2, 3, 4, 5, 6, 7]
 
+        #Static
         tot_events_wrong[k].pop(7)
         tot_events_wrong[k].pop(0)
         tot_events_single[k].pop(2)
         tot_events_multi[k].pop(2)
+        #These three are double commented out
         #tot_events_single[k].pop(9)
         #tot_evets_base[k].pop(9)
         #tot_evets_base[k].pop(8)
         tot_evets_base[k].pop(5)
         tot_evets_base[k].pop(2)
-        
+        #tot_events_single[k].pop(0)
+        #tot_events_multi[k].pop(3)
+
+        #Plastic
+        # tot_events_single[k].pop(10)
+        # tot_events_wrong[k].pop(7)
+        # tot_events_wrong[k].pop(0)
+        # tot_events_single[k].pop(2)
+        # tot_events_multi[k].pop(2)
+        # # tot_events_single[k].pop(9)
+        # # tot_evets_base[k].pop(9)
+        # # tot_evets_base[k].pop(8)
+        # tot_evets_base[k].pop(5)
+        # tot_evets_base[k].pop(2)
+        # tot_events_multi[k].pop(8)
 
 
         N = 4
@@ -167,7 +218,7 @@ if __name__ == "__main__":
         ax.scatter(x_axis2, tot_events_wrong[k], marker="s", label="single expanded")
         ax.scatter(x_axis, tot_events_multi[k], marker="o", label="multitarget")
         ax.scatter(x_axis1, tot_events_single[k], marker="^", label="single target")
-        ax.scatter(cores, tot_evets_base[k], marker="X", label="base")
+        ax.scatter(cores, tot_evets_base[k], marker="X", label="homogeneous")
 
 
         ax.set_xticks(range(0, 50, 5))
@@ -176,15 +227,18 @@ if __name__ == "__main__":
         ax.set_ylabel("Total Synaptic Events")
         ax.set_title("Processed Synaptic Events " + str(k) + "% connectivity " + pl + str(ts/1000) + " ms")
 
-        for i in range(len(x_axis)):
-            ax.text(x_axis[i], tot_events_multi[k][i], lab[i], color=plt.cm.viridis(np.linspace(0, 1, 4))[1])
-        for i in range(len(x_axis1)):
-            ax.text(x_axis1[i], tot_events_single[k][i], lab1[i], color=plt.cm.viridis(np.linspace(0, 1, 4))[2])
-        for i in range(len(x_axis2)):
-            ax.text(x_axis2[i], tot_events_wrong[k][i], lab2[i], color=plt.cm.viridis(np.linspace(0, 1, 4))[0])
-        for i in range(len(cores)):
-            ax.text(cores[i], tot_evets_base[k][i], labbase[i], color=plt.cm.viridis(np.linspace(0, 1, 4))[3])
+        text_size = 12
 
+        # for i in range(len(x_axis)):
+        #     ax.text(x_axis[i], tot_events_multi[k][i], lab[i], color=plt.cm.viridis(np.linspace(0, 1, 4))[1], fontsize=text_size)
+        # for i in range(len(x_axis1)):
+        #     ax.text(x_axis1[i], tot_events_single[k][i], lab1[i], color=plt.cm.viridis(np.linspace(0, 1, 4))[2], fontsize=text_size)
+        # for i in range(len(x_axis2)):
+        #     ax.text(x_axis2[i], tot_events_wrong[k][i], lab2[i], color=plt.cm.viridis(np.linspace(0, 1, 4))[0], fontsize=text_size)
+        #for i in range(len(cores)):
+        #    ax.text(cores[i], tot_evets_base[k][i], labbase[i], color=plt.cm.viridis(np.linspace(0, 1, 4))[3], fontsize=text_size)
+
+        j += 1
 
         ax.legend()
         plt.show()
