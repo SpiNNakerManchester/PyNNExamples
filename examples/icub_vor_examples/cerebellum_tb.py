@@ -298,10 +298,10 @@ for i in range(num_MF_neurons):
     GC_lower_index = GC_medium_index - 40
     GC_upper_index = GC_medium_index + 60
 
-    if(GC_lower_index < 0):
+    if (GC_lower_index < 0):
         GC_lower_index = 0
 
-    elif(GC_upper_index > num_GC_neurons):
+    elif (GC_upper_index > num_GC_neurons):
         GC_upper_index = num_GC_neurons
 
     for j in range(GC_medium_index - GC_lower_index):
