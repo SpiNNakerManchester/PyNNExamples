@@ -65,7 +65,7 @@ def calc_irregularity(segment):
     irregularity = 0
     isi_array = []
     for i in range(len(segment.spiketrains)):
-        if(len(segment.spiketrains[i]) > 2):
+        if len(segment.spiketrains[i]) > 2:
             isi_array.append([])
             for j in range(len(segment.spiketrains[i])-1):
                 isi_array[-1].append(
