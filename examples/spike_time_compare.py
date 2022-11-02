@@ -38,8 +38,9 @@ input_2 = sim.Population(
 # One projection which sends the spikes to different neurons
 # with a range of delays
 input_proj = sim.Projection(
-    input_1, pop_1, sim.AllToAllConnector(), synapse_type=sim.StaticSynapse(
-        weight=20, delay=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]))
+    input_1, pop_1, sim.FromListConnector(
+        [(0, i, 20, i + 1) for i in range(pop_1.size)]),
+    synapse_type=sim.StaticSynapse())
 # One projection that always sends to all neurons with the average delay
 input_proj = sim.Projection(input_2, pop_1, sim.AllToAllConnector(),
                             synapse_type=sim.StaticSynapse(weight=20, delay=6))
