@@ -38,10 +38,6 @@ class ScriptBuilder(RootScriptBuilder):
         # For cron and manual runs these just and a warning
         too_long = {}
         too_long["stdp_triplet.py"] = "10 minutes"
-        too_long["balanced_random_live_rate.py"] = "125 seconds"
-        too_long["stdp_curve.py"] = "118 seconds"
-        too_long["stdp_curve_cond.py"] = "121 seconds"
-        too_long["vogels_2011.py"] = "698 seconds"
 
         self.create_test_scripts(["examples"], too_long, exceptions)
 

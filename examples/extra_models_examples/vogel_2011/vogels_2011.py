@@ -23,29 +23,8 @@ from spynnaker.pyNN.utilities import neo_convertor
 # runtime errors
 
 # cheating with 6 boards and pair compressor
-SLOWDOWN_STATIC = 4  # confirmed
-# SLOWDOWN_STATIC = 2
-SLOWDOWN_PLASTIC = 7
-
-# cheating with 6 boards
-# SLOWDOWN_STATIC = 4 # confirmed
-# SLOWDOWN_PLASTIC = 136
-
-# slow down bitfields and placer
-# SLOWDOWN_STATIC = 6 # confirmed
-# SLOWDOWN_PLASTIC = 136
-
-# slowdown bitfields merged
-# SLOWDOWN_STATIC = 6 # confirmed
-# SLOWDOWN_PLASTIC = 136
-
-# slowdown bitfields on core
-# SLOWDOWN_STATIC = 10  # confirmed
-# SLOWDOWN_PLASTIC = 136 # confirmed
-
-# slowdown old master
-# SLOWDOWN_STATIC = 13 # confirmed
-# SLOWDOWN_PLASTIC = 158 #  confirmed
+SLOWDOWN_STATIC = 10
+SLOWDOWN_PLASTIC = 10
 
 # bool hard code for extracting the weights or not
 EXTRACT_WEIGHTS = False
@@ -86,10 +65,7 @@ class Vogels2011(object):
     NUM_INHIBITORY = int(NUM_EXCITATORY / 4)
 
     # the number of neurons per core
-    N_NEURONS_PER_CORE = 10
-
-    # seed for random number generator
-    RANDOM_NUMBER_GENERATOR_SEED = 0xDEADBEEF
+    N_NEURONS_PER_CORE = 100
 
     # first run runtime
     FIRST_RUN_RUNTIME = 1000
@@ -105,7 +81,7 @@ class Vogels2011(object):
     RUN_STATIC_VERSION = True
 
     # bool saying to run the plastic version or not
-    RUN_PLASTIC_VERSION = False
+    RUN_PLASTIC_VERSION = True
 
     # bool for reading and saving all connectivity
     SAVE_ALL_CONNECTIVITY_IF_INSANE = False
@@ -140,6 +116,8 @@ class Vogels2011(object):
         sim.set_number_of_neurons_per_core(
             sim.IF_curr_exp, self.N_NEURONS_PER_CORE)
 
+        rng = NumpyRNG(59)
+
         # Create excitatory and inhibitory populations of neurons
         ex_pop = sim.Population(
             self.NUM_EXCITATORY, self.MODEL(**self.CELL_PARAMETERS),
@@ -158,27 +136,24 @@ class Vogels2011(object):
         # Make excitatory->inhibitory projections
         proj1 = sim.Projection(
             ex_pop, in_pop,
-            sim.FixedProbabilityConnector(
-                0.02, rng=NumpyRNG(seed=self.RANDOM_NUMBER_GENERATOR_SEED)),
+            sim.FixedProbabilityConnector(0.02, rng=rng),
             receptor_type='excitatory',
             synapse_type=sim.StaticSynapse(weight=0.029))
         proj2 = sim.Projection(
             ex_pop, ex_pop,
-            sim.FixedProbabilityConnector(
-                0.02, rng=NumpyRNG(seed=self.RANDOM_NUMBER_GENERATOR_SEED)),
+            sim.FixedProbabilityConnector(0.02, rng=rng),
             receptor_type='excitatory',
             synapse_type=sim.StaticSynapse(weight=0.029))
 
         # Make inhibitory->inhibitory projections
         proj3 = sim.Projection(
             in_pop, in_pop,
-            sim.FixedProbabilityConnector(
-                0.02, rng=NumpyRNG(seed=self.RANDOM_NUMBER_GENERATOR_SEED)),
+            sim.FixedProbabilityConnector(0.02, rng=rng),
             receptor_type='inhibitory',
             synapse_type=sim.StaticSynapse(weight=-0.29))
 
         # Build inhibitory plasticity model
-        stdp_model = None
+        stdp_model = sim.StaticSynapse(weight=0.29)
         if uses_stdp:
             stdp_model = sim.STDPMechanism(
                 timing_dependence=sim.extra_models.Vogels2011Rule(
@@ -189,8 +164,7 @@ class Vogels2011(object):
         # Make inhibitory->excitatory projection
         ie_projection = sim.Projection(
             in_pop, ex_pop,
-            sim.FixedProbabilityConnector(
-                0.02, rng=NumpyRNG(seed=self.RANDOM_NUMBER_GENERATOR_SEED)),
+            sim.FixedProbabilityConnector(0.02, rng=rng),
             receptor_type='inhibitory', synapse_type=stdp_model)
 
         # return the excitatory population and the inhibitory->excitatory
