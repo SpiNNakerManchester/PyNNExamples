@@ -77,14 +77,14 @@ def poisson_generator(_rate, _rng, _t_start=0.0, _t_stop=1000.0, _debug=False):
 
         spikes = np.concatenate((spikes, extra_spikes))
 
-        if debug:
+        if _debug:
             print("ISI buf overrun handled. len(spikes)=%d,"
                   " len(extra_spikes)=%d" % (len(spikes), len(extra_spikes)))
 
     else:
         spikes = np.resize(spikes, (i,))
 
-    if debug:
+    if _debug:
         return spikes, extra_spikes
     else:
         return [round(x) for x in spikes]
