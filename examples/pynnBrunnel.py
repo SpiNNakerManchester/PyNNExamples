@@ -24,8 +24,7 @@ simulator_Name = 'spiNNaker'
 # exec('import pyNN.%s as pynn' % simulator_Name)
 
 
-def poisson_generator(rate, rng, t_start=0.0, t_stop=1000.0, array=True,
-                      debug=False):
+def poisson_generator(_rate, _rng, _t_start=0.0, _t_stop=1000.0, _debug=False):
     """
     Returns a SpikeTrain whose spikes are a realization of a Poisson process
     with the given rate (Hz) and stopping time t_stop (milliseconds).
@@ -49,13 +48,13 @@ def poisson_generator(rate, rng, t_start=0.0, t_stop=1000.0, array=True,
         inh_adaptingmarkov_generator
     """
 
-    n = (t_stop - t_start) / 1000.0 * rate
+    n = (_t_stop - _t_start) / 1000.0 * _rate
     number = np.ceil(n + 3 * np.sqrt(n))
     if number < 100:
         number = min(5 + np.ceil(2 * n), 100)
 
     if number > 0:
-        isi = rng.exponential(1.0 / rate, number) * 1000.0
+        isi = _rng.exponential(1.0 / _rate, number) * 1000.0
         if number > 1:
             spikes = np.add.accumulate(isi)
         else:
@@ -63,18 +62,18 @@ def poisson_generator(rate, rng, t_start=0.0, t_stop=1000.0, array=True,
     else:
         spikes = np.array([])
 
-    spikes += t_start
-    i = np.searchsorted(spikes, t_stop)
+    spikes += _t_start
+    i = np.searchsorted(spikes, _t_stop)
 
     extra_spikes = []
     if i == len(spikes):
         # ISI buf overrun
 
-        t_last = spikes[-1] + rng.exponential(1.0 / rate, 1)[0] * 1000.0
+        t_last = spikes[-1] + _rng.exponential(1.0 / _rate, 1)[0] * 1000.0
 
-        while (t_last < t_stop):
+        while (t_last < _t_stop):
             extra_spikes.append(t_last)
-            t_last += rng.exponential(1.0 / rate, 1)[0] * 1000.0
+            t_last += _rng.exponential(1.0 / _rate, 1)[0] * 1000.0
 
         spikes = np.concatenate((spikes, extra_spikes))
 
