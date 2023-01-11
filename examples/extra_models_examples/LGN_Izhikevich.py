@@ -50,6 +50,8 @@ from pyNN.random import RandomDistribution, NumpyRNG
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 
+# pylint: disable=pointless-string-statement
+
 
 def get_mean_rate(numCells, population):
     firing_rate = []      # format = < neuron_id, rate (spikes/ms) >

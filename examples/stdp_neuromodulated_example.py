@@ -109,15 +109,15 @@ sim.run(duration)
 # Graphical diagnostics
 
 
-def plot_spikes(spikes, title, n_neurons):
-    if spikes is not None:
+def plot_spikes(_spikes, _title, _n_neurons):
+    if _spikes is not None:
         pylab.figure(figsize=(15, 5))
         pylab.xlim((0, duration))
-        pylab.ylim((0, (10 * n_neurons) + 1))
-        pylab.plot([i[1] for i in spikes], [i[0] for i in spikes], ".")
+        pylab.ylim((0, (10 * _n_neurons) + 1))
+        pylab.plot([i[1] for i in _spikes], [i[0] for i in _spikes], ".")
         pylab.xlabel('Time/ms')
         pylab.ylabel('spikes')
-        pylab.title(title)
+        pylab.title(_title)
     else:
         print("No spikes received")
 

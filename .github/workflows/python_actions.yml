@@ -60,6 +60,7 @@ jobs:
       uses: ./support/actions/pylint
       with:
         package: examples
+        exitcheck: 39
 
   validate:
     runs-on: ubuntu-latest

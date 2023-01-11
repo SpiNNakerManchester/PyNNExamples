@@ -59,7 +59,7 @@ sim.setup(timestep=0.1, min_delay=delay)
 # === Build the network =====================================================
 
 
-def build_spike_sequences(period, duration, n, delta_t):
+def build_spike_sequences(_period, _duration, _n, _delta_t):
     """
     Return a spike time generator for `n` neurons (spike sources), where
     all neurons fire with the same period, but neighbouring neurons have a
@@ -68,7 +68,7 @@ def build_spike_sequences(period, duration, n, delta_t):
     def spike_time_gen(i):
         """Spike time generator. `i` should be an array of indices."""
         return [numpy.arange(
-            period + j * delta_t, duration, period) for j in (i - n // 2)]
+            _period + j * _delta_t, _duration, _period) for j in (i - _n // 2)]
     return spike_time_gen
 
 
