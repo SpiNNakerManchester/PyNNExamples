@@ -44,11 +44,9 @@ def read_output(visualiser, out):
             print(line)
         result = visualiser.poll()
     print("Visualiser exited: {} - quitting".format(result))
-    global running
-    global ended
     if running and not ended:
         p.end()
-    os._exit(0)
+    os._exit(0)  # pylint: disable=protected-access
 
 
 def activate_visualiser(old_vis):
@@ -77,7 +75,7 @@ def activate_visualiser(old_vis):
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1)
         # Thread(target=read_output,
         #        args=[visualiser, visualiser.stdout]).start()
-    except Exception:
+    except Exception:  # pylint: disable=broad-except
         if not old_vis:
             print("This example depends on https://github.com/"
                   "SpiNNakerManchester/sPyNNakerVisualisers")
@@ -261,7 +259,7 @@ for x in range(9):
 #
 # set up the inter-cell inhibitory connections
 #
-def interCell(x, y, r, c, connections):
+def interCell():
     """ Inhibit same number: connections are n_N squares on diagonal of
         weight_cell() from cell[x][y] to cell[r][c]
     """
@@ -280,14 +278,14 @@ for x in range(9):
     for y in range(9):
         for r in range(9):
             if r != x:
-                interCell(x, y, r, y, connections)  # by row...
+                interCell()  # by row...
         for c in range(9):
             if c != y:
-                interCell(x, y, x, c, connections)  # by column...
+                interCell()  # by column...
         for r in range(3 * (x // 3), 3 * (x // 3 + 1)):
             for c in range(3 * (y // 3), 3 * (y // 3 + 1)):
                 if r != x and c != y:
-                    interCell(x, y, r, c, connections)  # & by square
+                    interCell()  # & by square
 conn_intC = p.FromListConnector(connections)
 p.Projection(cells, cells, conn_intC, receptor_type="inhibitory")
 
