@@ -1,4 +1,4 @@
-# Copyright (c) 2020 The University of Manchester
+# Copyright (c) 2020-2023 The University of Manchester
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,14 +23,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.7, 3.8, 3.9, "3.10"]
+        python-version: [3.7, 3.8, 3.9, "3.10", "3.11"]
 
     steps:
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
-
     - name: Checkout
       uses: actions/checkout@v3
     - name: Checkout SupportScripts
@@ -39,31 +34,24 @@ jobs:
         repository: SpiNNakerManchester/SupportScripts
         path: support
 
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
     - name: Install pip, etc
       uses: ./support/actions/python-tools
-    - name: Install matplotlib
-      uses: ./support/actions/install-matplotlib
-    - name: Checkout SpiNNaker Dependencies
+    - name: Install Spinnaker Dependencies
       uses: ./support/actions/checkout-spinn-deps
       with:
         repositories: >
           SpiNNUtils SpiNNMachine SpiNNMan PACMAN DataSpecification spalloc
           SpiNNFrontEndCommon sPyNNaker
         install: true
+
     - name: Setup PyNN
       uses: ./support/actions/pynn-setup
-    - name: install test requirements as no setup
-      run: pip install -r requirements-test.txt
-    - name: Test with pytest
-      uses: ./support/actions/pytest
-      with:
-        tests: unittests
-        coverage: ${{ matrix.python-version == 3.8 }}
-        cover-packages: PyNN8Examples
-        coveralls-token: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Install Python validation tools
-      run: pip install flake8
+    - name: Install matplotlib
+      uses: ./support/actions/install-matplotlib
 
     - name: Lint with flake8
       run: flake8 examples
@@ -73,6 +61,16 @@ jobs:
       with:
         package: examples
 
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Checkout SupportScripts
+      uses: actions/checkout@v3
+      with:
+        repository: SpiNNakerManchester/SupportScripts
+        path: support
     - name: Run rat copyright enforcement
       if: matrix.python-version == 3.8
       uses: ./support/actions/check-copyrights
