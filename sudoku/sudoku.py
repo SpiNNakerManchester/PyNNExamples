@@ -59,7 +59,7 @@ def activate_visualiser(old_vis):
         elif sys.platform.startswith("linux"):
             vis_exe = "sudoku_linux"
         else:
-            raise Exception("Unknown platform: {}".format(sys.platform))
+            raise NotImplementedError(f"Unknown platform: {sys.platform}")
         vis_exe = [os.path.abspath(os.path.join(
             os.path.dirname(__file__), vis_exe))]
         neur_per_num_opt = "-neurons_per_number"
