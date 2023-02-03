@@ -78,6 +78,8 @@ for t in delta_t:
             1, sim.SpikeSourceArray(spike_times=[post_times]))
 
         # Update simulation time
+        # You can not nest max or a int and a list
+        # pylint: disable=nested-min-max
         sim_time = max(sim_time, max(max(pre_times), max(post_times)) + 100)
 
         # Connections between spike sources and neuron populations
