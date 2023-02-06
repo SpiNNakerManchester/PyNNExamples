@@ -1,8 +1,20 @@
-import pylab
-try:
-    import pyNN.spiNNaker as sim
-except Exception as e:
-    import spynnaker8 as sim
+# Copyright (c) 2017-2022 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+import matplotlib.pyplot as pylab
+import pyNN.spiNNaker as sim
 
 # ------------------------------------------------------------------
 # This example uses the sPyNNaker implementation of pair-based STDP
@@ -34,7 +46,7 @@ cell_params = {'cm': 0.25,  # nF
                }
 
 # SpiNNaker setup
-sim.setup(timestep=1.0, min_delay=1.0, max_delay=10.0)
+sim.setup(timestep=1.0, min_delay=1.0)
 
 # -------------------------------------------------------------------
 # Experiment loop
@@ -92,7 +104,8 @@ for t in delta_t:
     # Plastic Connection between pre_pop and post_pop
     stdp_model = sim.STDPMechanism(
         timing_dependence=sim.SpikePairRule(
-            tau_plus=16.7, tau_minus=33.7, A_plus=0.005, A_minus=0.005),
+            tau_plus=16.7, tau_minus=33.7,
+            A_plus=0.0000875, A_minus=0.0000875),
         weight_dependence=sim.AdditiveWeightDependence(
             w_min=0.0, w_max=0.0175), weight=start_w)
 

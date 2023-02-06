@@ -1,12 +1,27 @@
+# Copyright (c) 2017-2022 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 # Standard PyNN imports
-import spynnaker8 as p
+import pyNN.spiNNaker as p
 
 # pynn plotting stuff
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 
 # Define a synfire chain as usual
-p.setup(timestep=1.0, min_delay=1.0, max_delay=144.0)
+p.setup(timestep=1.0, min_delay=1.0)
 nNeurons = 200  # number of neurons in each population
 p.set_number_of_neurons_per_core(p.IF_curr_exp, nNeurons / 2)
 

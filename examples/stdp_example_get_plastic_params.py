@@ -1,3 +1,18 @@
+# Copyright (c) 2017-2022 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 Simple test for STDP :
 
@@ -28,13 +43,10 @@ Authors : Catherine Wacongne < catherine.waco@gmail.com >
 
 April 2013
 """
-try:
-    import pyNN.spiNNaker as sim
-except Exception as e:
-    import spynnaker8 as sim
+import pyNN.spiNNaker as sim
 
 # SpiNNaker setup
-sim.setup(timestep=1.0, min_delay=1.0, max_delay=10.0)
+sim.setup(timestep=1.0, min_delay=1.0)
 
 # +-------------------------------------------------------------------+
 # | General Parameters                                                |

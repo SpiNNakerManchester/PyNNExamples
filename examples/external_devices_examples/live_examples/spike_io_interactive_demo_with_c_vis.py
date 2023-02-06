@@ -1,8 +1,23 @@
-# imports of both spynnaker and external device plugin.
-import Tkinter as tk
-import spynnaker8 as Frontend
+# Copyright (c) 2017-2022 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+import tkinter as tk
+import pyNN.spiNNaker as Frontend
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
+import multiprocessing
 
 
 class PyNNScript(object):
@@ -13,9 +28,10 @@ class PyNNScript(object):
     def __init__(self):
 
         # initial call to set up the front end (pynn requirement)
-        Frontend.setup(timestep=1.0, min_delay=1.0, max_delay=144.0)
+        Frontend.setup(timestep=1.0, min_delay=1.0)
 
-        use_c_visualiser = True
+        use_c_visualiser = False
+        visualiser_port = 19996
         use_spike_injector = True
 
         # neurons per population and the length of runtime in ms for the
@@ -24,13 +40,31 @@ class PyNNScript(object):
 
         # set up gui
         p = None
+        sender_port = None
         if use_spike_injector:
-            from multiprocessing import Process
-            from multiprocessing import Event
-            ready = Event()
-            p = Process(target=GUI, args=[self.n_neurons, ready])
+            port = multiprocessing.Value('i', 0)
+            event = multiprocessing.Event()
+            p = multiprocessing.Process(
+                target=GUI, args=[self.n_neurons, event, port])
             p.start()
-            ready.wait()
+            event.wait()
+            sender_port = port.value
+
+        if not use_c_visualiser:
+            # if not using the c visualiser, then a new spynnaker live spikes
+            # connection is created to define that there are python code which
+            # receives the outputted spikes.
+            live_spikes_connection_receive = \
+                Frontend.external_devices.SpynnakerLiveSpikesConnection(
+                    receive_labels=["pop_forward", "pop_backward"],
+                    local_port=None, send_labels=None)
+            visualiser_port = live_spikes_connection_receive.local_port
+
+            # Set up callbacks to occur when spikes are received
+            live_spikes_connection_receive.add_receive_callback(
+                "pop_forward", receive_spikes)
+            live_spikes_connection_receive.add_receive_callback(
+                "pop_backward", receive_spikes)
 
         # different runtimes for demostration purposes
         run_time = None
@@ -60,35 +94,11 @@ class PyNNScript(object):
                            }
 
         ##################################
-        # Parameters for the injector population.  This is the minimal set of
-        # parameters required, which is for a set of spikes where the key is
-        # not important.  Note that a virtual key *will* be assigned to the
-        # population, and that spikes sent which do not match this virtual key
-        # will be dropped; however, if spikes are sent using 16-bit keys, they
-        # will automatically be made to match the virtual key.  The virtual
-        # key assigned can be obtained from the database.
-        ##################################
-        cell_params_spike_injector = {
-
-            # The port on which the spiNNaker machine should listen for
-            # packets. Packets to be injected should be sent to this port on
-            # the spiNNaker machine
-            'port': 12345
-        }
-
-        ##################################
-        # Parameters for the injector population.  Note that each injector
-        # needs to be given a different port.  The virtual key is assigned
-        # here, rather than being allocated later.  As with the above, spikes
-        # injected need to match this key, and this will be done automatically
-        # with 16-bit keys.
+        # Parameters for the injector population.  The virtual key is assigned
+        # here, rather than being allocated later.  Spikes injected need to
+        # match this key, and this will be done automatically with 16-bit keys.
         ##################################
         cell_params_spike_injector_with_key = {
-
-            # The port on which the spiNNaker machine should listen for
-            # packets. Packets to be injected should be sent to this port on
-            # the spiNNaker machine
-            'port': 12346,
 
             # This is the base key to be used for the injection, which is used
             # to allow the keys to be routed around the spiNNaker machine.
@@ -113,12 +123,13 @@ class PyNNScript(object):
             injector_forward = Frontend.Population(
                 self.n_neurons,
                 Frontend.external_devices.SpikeInjector(
-                    **cell_params_spike_injector_with_key),
-                label='spike_injector_forward')
+                    database_notify_port_num=sender_port),
+                label='spike_injector_forward',
+                additional_parameters=cell_params_spike_injector_with_key)
             injector_backward = Frontend.Population(
                 self.n_neurons,
                 Frontend.external_devices.SpikeInjector(
-                    **cell_params_spike_injector),
+                    database_notify_port_num=sender_port),
                 label='spike_injector_backward')
         else:
             spike_times = []
@@ -182,25 +193,10 @@ class PyNNScript(object):
         # Activate the sending of live spikes
         Frontend.external_devices.activate_live_output_for(
             pop_forward, database_notify_host="localhost",
-            database_notify_port_num=19996)
+            database_notify_port_num=visualiser_port)
         Frontend.external_devices.activate_live_output_for(
             pop_backward, database_notify_host="localhost",
-            database_notify_port_num=19996)
-
-        if not use_c_visualiser:
-            # if not using the c visualiser, then a new spynnaker live spikes
-            # connection is created to define that there are python code which
-            # receives the outputted spikes.
-            live_spikes_connection_receive = \
-                Frontend.external_devices.SpynnakerLiveSpikesConnection(
-                    receive_labels=["pop_forward", "pop_backward"],
-                    local_port=19999, send_labels=None)
-
-            # Set up callbacks to occur when spikes are received
-            live_spikes_connection_receive.add_receive_callback(
-                "pop_forward", receive_spikes)
-            live_spikes_connection_receive.add_receive_callback(
-                "pop_backward", receive_spikes)
+            database_notify_port_num=visualiser_port)
 
         # Run the simulation on spiNNaker
         Frontend.run(run_time)
@@ -231,42 +227,44 @@ class PyNNScript(object):
 # Create a receiver of live spikes
 def receive_spikes(label, time, neuron_ids):
     for neuron_id in neuron_ids:
-        print "Received spike at time", time, "from", label, "-", neuron_id
+        print("Received spike at time {} from {} - {}".format(
+            time, label, neuron_id))
 
 
 class GUI(object):
-    """ Simple gui to demostrate live inejction of the spike io script.
+    """ Simple GUI to demonstrate live injection of the spike io script.
     """
 
-    def __init__(self, n_neurons, ready):
-        import spynnaker8 as Frontend
+    def __init__(self, n_neurons, ready, port):
         self._n_neurons = n_neurons
 
         # Set up the live connection for sending and receiving spikes
         self._live_spikes_connection = \
             Frontend.external_devices.SpynnakerLiveSpikesConnection(
-                receive_labels=None, local_port=19996,
+                receive_labels=None, local_port=None,
                 send_labels=["spike_injector_forward",
                              "spike_injector_backward"])
+        port.value = self._live_spikes_connection.local_port
 
         # Set up callbacks to occur at the start of simulation
-        self._live_spikes_connection.add_start_callback(
+        self._live_spikes_connection.add_start_resume_callback(
             "spike_injector_forward", self.start)
 
         self._root = tk.Tk()
         self._root.title("Injecting Spikes GUI")
-        label = tk.Label(self._root, fg="dark green")
-        label.pack()
-        neuron_id_value = tk.IntVar()
-        self._neuron_id = tk.Spinbox(
+        tk.Label(self._root, fg="dark green").pack()
+
+        self._neuron_id = tk.IntVar()
+        tk.Spinbox(
             self._root, from_=0, to=self._n_neurons - 1,
-            textvariable=neuron_id_value)
-        self._neuron_id.pack()
-        pop_label_value = tk.StringVar()
-        self._pop_label = tk.Spinbox(
-            self._root, textvariable=pop_label_value,
-            values=("spike_injector_forward", "spike_injector_backward"))
-        self._pop_label.pack()
+            textvariable=self._neuron_id).pack()
+
+        self._pop_label = tk.StringVar()
+        tk.Spinbox(
+            self._root, textvariable=self._pop_label,
+            values=("spike_injector_forward", "spike_injector_backward")
+            ).pack()
+
         self._button = tk.Button(
             self._root, text='Inject', width=25, command=self.inject_spike,
             state="disabled")
@@ -277,17 +275,17 @@ class GUI(object):
         self._root.mainloop()
 
     def start(self, pop_label, connection):
+        # pylint: disable=unused-argument
         self._button["state"] = "normal"
 
     def inject_spike(self):
-        neuron_id = int(self._neuron_id.get())
-        label = str(self._pop_label.get())
-        print "injecting with neuron_id {} to pop {}".format(neuron_id, label)
+        neuron_id = self._neuron_id.get()
+        label = self._pop_label.get()
+        print("injecting with neuron_id {} to pop {}".format(neuron_id, label))
         self._live_spikes_connection.send_spike(label, neuron_id)
 
 
 # set up the initial script
 if __name__ == '__main__':
-    from multiprocessing import freeze_support
-    freeze_support()
+    multiprocessing.freeze_support()
     script = PyNNScript()

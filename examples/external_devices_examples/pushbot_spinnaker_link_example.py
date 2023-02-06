@@ -1,11 +1,26 @@
-import spynnaker8 as p
+# Copyright (c) 2017-2022 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+from spynnaker.pyNN.protocols import MUNICH_MODES
+import pyNN.spiNNaker as p
 
 p.setup(1.0)
 
 # Set up the PushBot devices
 pushbot_protocol = p.external_devices.MunichIoSpiNNakerLinkProtocol(
-    mode=p.external_devices.MunichIoSpiNNakerLinkProtocol.MODES.PUSH_BOT,
-    uart_id=0)
+    mode=MUNICH_MODES.PUSH_BOT, uart_id=0)
 spinnaker_link = 0
 board_address = None
 motor_0 = p.external_devices.PushBotSpiNNakerLinkMotorDevice(

@@ -1,25 +1,28 @@
+# Copyright (c) 2017-2022 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
-A single IF neuron with exponential, current-based synapses, fed by two
-spike sources.
-
-Run as:
-
-$ python IF_curr_exp.py <simulator>
-
-where <simulator> is 'neuron', 'nest', etc
-
-Andrew Davison, UNIC, CNRS
-September 2006
-
-$Id$
+A single LIF neuron with two exponential, current-based synapses,
+and two delta, current-based synapses, fed by two spike sources.
 """
 
-import pylab
-import spynnaker8 as sim
+import pyNN.spiNNaker as sim
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 
-sim.setup(timestep=1.0, min_delay=1.0, max_delay=4.0)
+sim.setup(timestep=0.1, min_delay=0.1)
 
 delta_cell = sim.Population(1, sim.extra_models.IFCurDelta(**{
     'i_offset': 0.1,
@@ -95,10 +98,9 @@ Figure(
     Panel(exp_data.segments[0].filter(name='gsyn_inh')[0],
           ylabel="gsyn inhibitory (mV)",
           data_labels=[exp_cell.label], yticks=True, xlim=(0, runtime)),
-    title="Simple synfire chain example",
+    title="IF_curr_delta example",
     annotations="Simulated with {}".format(sim.name())
 )
 plt.show()
 
 sim.end()
-pylab.show()

@@ -1,13 +1,28 @@
+# Copyright (c) 2017-2022 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 Synfirechain-like example
 """
-import spynnaker8 as p
+import pyNN.spiNNaker as p
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 
 from pyNN.random import RandomDistribution
 
-p.setup(timestep=1.0, min_delay=1.0, max_delay=144.0)
+p.setup(timestep=1.0, min_delay=1.0)
 nNeurons = 200  # number of neurons in each population
 max_delay = 50
 run_time = max_delay * nNeurons
@@ -45,7 +60,7 @@ p.Projection(input_pop, main_pop, p.FromListConnector(injectionConnection))
 
 main_pop.record(['v', 'gsyn_exc', 'gsyn_inh', 'spikes'])
 
-print "Running for {} ms".format(run_time)
+print("Running for {} ms".format(run_time))
 p.run(run_time)
 # get data (could be done as one, but can be done bit by bit as well)
 data = main_pop.get_data(['v', 'gsyn_exc', 'spikes', 'gsyn_inh'])

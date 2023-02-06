@@ -1,4 +1,20 @@
 # coding: utf-8
+
+# Copyright (c) 2017-2022 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 An implementation of benchmarks 1 and 2 from
 
@@ -13,7 +29,7 @@ Andrew Davison, UNIC, CNRS
 August 2006
 """
 import socket
-import spynnaker8 as p
+import pyNN.spiNNaker as p
 from pyNN.random import NumpyRNG, RandomDistribution
 from pyNN.utility import Timer
 from pyNN.utility.plotting import Figure, Panel
@@ -80,7 +96,7 @@ assert tau_m == cm * Rm                # just to check
 n_exc = int(round((n * r_ei / (1 + r_ei))))  # number of excitatory cells
 n_inh = n - n_exc                            # number of inhibitory cells
 
-print n_exc, n_inh
+print("{} {}".format(n_exc, n_inh))
 
 w_exc = None
 w_inh = None
@@ -89,7 +105,7 @@ if benchmark == "COBA":
     celltype = p.IF_cond_exp
     w_exc = Gexc * 1e-3              # We convert conductances to uS
     w_inh = Ginh * 1e-3
-    print w_exc, w_inh
+    print("{} {}".format(w_exc, w_inh))
 elif benchmark == "CUBA":
     celltype = p.IF_curr_exp
     w_exc = 1e-3 * Gexc * (Erev_exc - v_mean)  # (nA) weight of exc synapses
@@ -106,8 +122,7 @@ if simulator_name == "neuroml":
     extra["file"] = "VAbenchmarks.xml"
 
 node_id = p.setup(
-    timestep=dt, min_delay=delay, max_delay=delay,
-    db_name='va_benchmark.sqlite', **extra)
+    timestep=dt, min_delay=delay, db_name='va_benchmark.sqlite', **extra)
 
 if simulator_name == 'spiNNaker':
     p.set_number_of_neurons_per_core(p.IF_curr_exp, 100)      # this will set
@@ -117,10 +132,10 @@ if simulator_name == 'spiNNaker':
 np = 1
 
 host_name = socket.gethostname()
-print "Host #%d is on %s" % (np, host_name)
+print("Host #%d is on %s" % (np, host_name))
 
-print "%s Initialising the simulator with %d thread(s)..." % (
-    node_id, extra['threads'])
+print("%s Initialising the simulator with %d thread(s)..." % (
+    node_id, extra['threads']))
 
 cell_params = {'tau_m': tau_m,
                'tau_syn_E': tau_exc,
@@ -133,7 +148,7 @@ cell_params = {'tau_m': tau_m,
                'i_offset': 0
                }
 
-print cell_params
+print(cell_params)
 
 if (benchmark == "COBA"):
     cell_params['e_rev_E'] = Erev_exc
@@ -141,7 +156,7 @@ if (benchmark == "COBA"):
 
 timer.start()
 
-print "%s Creating cell populations..." % node_id
+print("%s Creating cell populations..." % node_id)
 exc_cells = p.Population(
     n_exc, celltype(**cell_params), label="Excitatory_Cells")
 inh_cells = p.Population(
@@ -156,13 +171,13 @@ if benchmark == "COBA":
     ext_conn = p.FixedProbabilityConnector(rconn)
     ext_stim.record("spikes")
 
-print "%s Initialising membrane potential to random values..." % node_id
+print("%s Initialising membrane potential to random values..." % node_id)
 rng = NumpyRNG(seed=rngseed, parallel_safe=parallel_safe)
 uniformDistr = RandomDistribution('uniform', [v_reset, v_thresh], rng=rng)
-exc_cells.set(v=uniformDistr)
-inh_cells.set(v=uniformDistr)
+exc_cells.initialize(v=uniformDistr)
+inh_cells.initialize(v=uniformDistr)
 
-print "%s Connecting populations..." % node_id
+print("%s Connecting populations..." % node_id)
 exc_conn = p.FixedProbabilityConnector(pconn, rng=rng)
 inh_conn = p.FixedProbabilityConnector(pconn, rng=rng)
 
@@ -181,6 +196,8 @@ connections = {
         synapse_type=p.StaticSynapse(weight=w_inh, delay=delay))}
 
 if benchmark == "COBA":
+    # pylint is WRONG!
+    # pylint: disable=used-before-assignment
     connections['ext2e'] = p.Projection(
         ext_stim, exc_cells, ext_conn, receptor_type='excitatory',
         synapse_type=p.StaticSynapse(weight=0.1))
@@ -189,16 +206,16 @@ if benchmark == "COBA":
         synapse_type=p.StaticSynapse(weight=0.1))
 
 # === Setup recording ===
-print "%s Setting up recording..." % node_id
+print("%s Setting up recording..." % node_id)
 exc_cells.record("spikes")
 
 buildCPUTime = timer.diff()
 
 # === Run simulation ===
-print "%d Running simulation..." % node_id
+print("%d Running simulation..." % node_id)
 
-print "timings: number of neurons:", n
-print "timings: number of synapses:", n * n * pconn
+print("timings: number of neurons: {}".format(n))
+print("timings: number of synapses: {}".format(n * n * pconn))
 
 p.run(tstop)
 
@@ -220,16 +237,16 @@ plt.show()
 writeCPUTime = timer.diff()
 
 if node_id == 0:
-    print "\n--- Vogels-Abbott Network Simulation ---"
-    print "Nodes                  : %d" % np
-    print "Simulation type        : %s" % benchmark
-    print "Number of Neurons      : %d" % n
-    print "Number of Synapses     : %s" % connections
-    print "Excitatory conductance : %g nS" % Gexc
-    print "Inhibitory conductance : %g nS" % Ginh
-    print "Build time             : %g s" % buildCPUTime
-    print "Simulation time        : %g s" % simCPUTime
-    print "Writing time           : %g s" % writeCPUTime
+    print("\n--- Vogels-Abbott Network Simulation ---")
+    print("Nodes                  : %d" % np)
+    print("Simulation type        : %s" % benchmark)
+    print("Number of Neurons      : %d" % n)
+    print("Number of Synapses     : %s" % connections)
+    print("Excitatory conductance : %g nS" % Gexc)
+    print("Inhibitory conductance : %g nS" % Ginh)
+    print("Build time             : %g s" % buildCPUTime)
+    print("Simulation time        : %g s" % simCPUTime)
+    print("Writing time           : %g s" % writeCPUTime)
 
 
 # === Finished with simulator ===

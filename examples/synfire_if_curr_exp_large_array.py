@@ -1,12 +1,27 @@
+# Copyright (c) 2017-2022 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 Synfirechain-like example
 """
-import spynnaker8 as p
+import pyNN.spiNNaker as p
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 
 run_time = 6000
-p.setup(timestep=1.0, min_delay=1.0, max_delay=144.0)
+p.setup(timestep=1.0, min_delay=1.00)
 nNeurons = 10  # number of neurons in each population
 
 cell_params_lif = {'cm': 0.25,
@@ -33,12 +48,10 @@ for i in range(0, nNeurons - 1):
 
 injectionConnection_1 = [(0, 0, weight_to_spike, 1)]
 injectionConnection_2 = [(1, nNeurons - 1, weight_to_spike, 1)]
-input_1 = [i for i in xrange(0, run_time, space_between_inputs)]
-input_2 = [i for i in xrange(second_spike_start, run_time,
-                             space_between_inputs)]
-spikeArray = {'spike_times': [input_1, input_2],
-              'max_on_chip_memory_usage_for_spikes_in_bytes': 640,
-              'space_before_notification': 320}
+input_1 = list(range(0, run_time, space_between_inputs))
+input_2 = list(range(second_spike_start, run_time, space_between_inputs))
+spikeArray = {'spike_times': [input_1, input_2]}
+
 main_pop = p.Population(
     nNeurons, p.IF_curr_exp(**cell_params_lif), label='pop_1')
 second_main_pop = p.Population(

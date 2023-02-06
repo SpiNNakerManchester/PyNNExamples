@@ -1,12 +1,27 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 Simple Associative Memory
 """
-import spynnaker8 as p
-from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 from pyNN.random import NumpyRNG, RandomDistribution
+import pyNN.spiNNaker as p
+from pyNN.utility.plotting import Figure, Panel
 
-p.setup(timestep=1.0, min_delay=1.0, max_delay=15.0)
+p.setup(timestep=1.0, min_delay=1.0)
 p.set_number_of_neurons_per_core(p.IF_curr_exp, 100)
 
 nSourceNeurons = 1  # number of input (excitatory) neurons
@@ -71,9 +86,9 @@ p_from_inhib_connect = 1.0
 
 spikes0 = list()
 teachingSpikes = list()
-for i in range(runTime/40):
+for i in range(runTime//40):
     spikes0.append(i*40)
-for i in range(runTime/80):
+for i in range(runTime//80):
     teachingSpikes.append(i*40+5+120)
 
 # spikes0 = [0, 40, 80, 120, 160, 200, 240, 280, 320, 360, 400, 440, 480, 520,
@@ -150,7 +165,7 @@ populations[excit].record(['v', 'spikes'])
 p.run(runTime)
 
 final_weights = projections[0].get('weight', 'list', with_address=False)
-print "Final weights: ", final_weights
+print("Final weights: {}".format(final_weights))
 
 # myDelays = projections[0].getDelays()
 # total=0.0

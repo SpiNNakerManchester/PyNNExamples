@@ -1,12 +1,27 @@
+# Copyright (c) 2017-2022 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 Synfirechain-like example
 """
-import spynnaker8 as p
+import pyNN.spiNNaker as p
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 
 runtime = 500
-p.setup(timestep=1.0, min_delay=1.0, max_delay=144.0)
+p.setup(timestep=1.0, min_delay=1.0)
 nNeurons = 200  # number of neurons in each population
 p.set_number_of_neurons_per_core(p.Izhikevich, nNeurons / 2)
 
@@ -14,8 +29,8 @@ cell_params_izk = {'a': 0.02,
                    'b': 0.2,
                    'c': -65,
                    'd': 8,
-                   'v_init': -75,
-                   'u_init': 0,
+                   'v': -75,
+                   'u': 0,
                    'tau_syn_E': 2,
                    'tau_syn_I': 2,
                    'i_offset': 0

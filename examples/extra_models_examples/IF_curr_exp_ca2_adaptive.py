@@ -1,3 +1,18 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 # -----------------------------------------------------------------------------
 # Example of integrate-and-fire neuron with spike-frequency adaption
 # Model and example taken from Liu, Y. H., & Wang, X. J. (2001).
@@ -8,8 +23,8 @@
 # -----------------------------------------------------------------------------
 import math
 import numpy
-import pylab
-import spynnaker8 as sim
+import matplotlib.pyplot as pylab
+import pyNN.spiNNaker as sim
 
 # Timestep (ms)
 # **NOTE** the 2.5Khz input frequency is not going to work particularily well
@@ -23,7 +38,7 @@ N = 300
 T = 250
 
 # Setup simulator
-sim.setup(timestep=dt, min_delay=1.0, max_delay=4.0)
+sim.setup(timestep=dt, min_delay=1.0)
 
 # Create population of neurons
 cell = sim.Population(N, sim.extra_models.IFCurrExpCa2Adaptive(**{
@@ -73,7 +88,7 @@ mean_isis = {t: numpy.average(i)
 isi_cv = {t: math.sqrt(
     numpy.sum(numpy.power(time_binned_isis[t] - mean_isi, 2)) /
     float(len(time_binned_isis[t]))) / mean_isi
-    for (t, mean_isi) in mean_isis.iteritems()}
+    for (t, mean_isi) in mean_isis.items()}
 
 # Take average CA2 level across all neurons
 # average_ca2 = numpy.average(numpy.reshape(ca2[:,2], (N, int(T / dt))),
@@ -82,15 +97,15 @@ isi_cv = {t: math.sqrt(
 # Plot
 fig, axes = pylab.subplots(2, sharex=True)
 
-axes[0].scatter(list(mean_isis.iterkeys()),
-                [1000.0 / i for i in mean_isis.itervalues()], s=2)
+axes[0].scatter(mean_isis.keys(),
+                [1000.0 / i for i in mean_isis.values()], s=2)
 axes[0].set_ylabel("Firing rate/Hz")
 
 # axes[1].scatter(numpy.arange(0.0, T, dt), average_ca2, s=2)
 # axes[1].set_ylabel("CA2/mA")
 # axes[1].set_ylim((0.0, numpy.amax(average_ca2) * 1.25))
 
-axes[1].scatter(list(isi_cv.iterkeys()), list(isi_cv.itervalues()), s=2)
+axes[1].scatter(isi_cv.keys(), isi_cv.values(), s=2)
 axes[1].set_ylabel("Coefficient of ISI variance")
 
 axes[1].set_xlim((0.0, T))
