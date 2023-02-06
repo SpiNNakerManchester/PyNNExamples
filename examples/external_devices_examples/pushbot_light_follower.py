@@ -5,7 +5,8 @@
 ###########################################
 #  Import libraries
 ###########################################
-import spynnaker8 as p
+import pyNN.spiNNaker as p
+from spynnaker.pyNN.protocols import MUNICH_MODES
 import numpy as np
 import sys
 import subprocess
@@ -42,7 +43,7 @@ p.set_number_of_neurons_per_core(p.IF_curr_exp, 150)
 # Create the pushbot protocols to pass to the devices of Pushbot
 # (i.e. motors, laser, etc)
 pushbot_protocol = p.external_devices.MunichIoSpiNNakerLinkProtocol(
-    mode=p.external_devices.MunichIoSpiNNakerLinkProtocol.MODES.PUSH_BOT,
+    mode=MUNICH_MODES.PUSH_BOT,
     uart_id=UART_ID)
 
 # Create motor devices on SpiNNaker

@@ -1,4 +1,4 @@
-import spynnaker8 as p
+import pyNN.spiNNaker as p
 import sys
 
 if len(sys.argv) < 3:
