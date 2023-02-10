@@ -78,6 +78,8 @@ for t in delta_t:
             1, sim.SpikeSourceArray(spike_times=[post_times]))
 
         # Update simulation time
+        # You can not nest max or a int and a list
+        # pylint: disable=nested-min-max
         sim_time = max(sim_time, max(max(pre_times), max(post_times)) + 100)
 
         # Connections between spike sources and neuron populations
@@ -142,7 +144,7 @@ axis.set_ylabel(r"$(\frac{\Delta w_{ij}}{w_{ij}})$", rotation="horizontal",
                 size="xx-large")
 
 line_styles = ["--", "-"]
-for m_w, d_w, d_e, l in zip(weights, data_w, data_e, line_styles):
+for m_w, d_w, d_e, l, t in zip(weights, data_w, data_e, line_styles, delta_t):
     # Calculate deltas from end weights
     delta_w = [(w - start_w) / start_w for w in m_w]
 
