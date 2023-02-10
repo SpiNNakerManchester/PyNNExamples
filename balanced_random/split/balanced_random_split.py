@@ -1,25 +1,12 @@
-# Copyright (c) 2017-2020 The University of Manchester
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-import matplotlib.pyplot as pylab
+import pylab
 import numpy
 from pyNN.random import RandomDistribution
 from pyNN.utility.plotting import Figure, Panel
 import pyNN.spiNNaker as p
+from spynnaker.pyNN.extra_algorithms.splitter_components import (
+    SplitterPoissonDelegate, SplitterAbstractPopulationVertexNeuronsSynapses)
 
-p.setup(timestep=0.1)
+p.setup(timestep=0.1, time_scale_factor=1)
 p.set_number_of_neurons_per_core(p.IF_curr_exp, 64)
 p.set_number_of_neurons_per_core(p.SpikeSourcePoisson, 64)
 n_neurons = 500
@@ -30,20 +17,30 @@ weight_inh = -5.0 * weight_exc
 weight_input = 0.001
 rng = p.NumpyRNG(0)
 
+pop_input_splitter = SplitterPoissonDelegate()
 pop_input = p.Population(100, p.SpikeSourcePoisson(rate=0.0),
                          additional_parameters={
                              "max_rate": 50.0,
-                             "seed": 0},
+                             "seed": 0,
+                             "splitter": pop_input_splitter},
                          label="Input")
 
-pop_exc = p.Population(n_exc, p.IF_curr_exp, label="Excitatory")
-pop_inh = p.Population(n_inh, p.IF_curr_exp, label="Inhibitory")
+pop_exc_splitter = \
+    SplitterAbstractPopulationVertexNeuronsSynapses(1, 128, False)
+pop_exc = p.Population(n_exc, p.IF_curr_exp, label="Excitatory",
+                       additional_parameters={"splitter": pop_exc_splitter})
+pop_inh_splitter = \
+    SplitterAbstractPopulationVertexNeuronsSynapses(1, 128, False)
+pop_inh = p.Population(n_inh, p.IF_curr_exp, label="Inhibitory",
+                       additional_parameters={"splitter": pop_inh_splitter})
+stim_exc_splitter = SplitterPoissonDelegate()
 stim_exc = p.Population(
     n_exc, p.SpikeSourcePoisson(rate=1000.0), label="Stim_Exc",
-    additional_parameters={"seed": 1})
+    additional_parameters={"seed": 1, "splitter": stim_exc_splitter})
+stim_inh_splitter = SplitterPoissonDelegate()
 stim_inh = p.Population(
     n_inh, p.SpikeSourcePoisson(rate=1000.0), label="Stim_Inh",
-    additional_parameters={"seed": 2})
+    additional_parameters={"seed": 2, "splitter": stim_inh_splitter})
 
 delays_exc = RandomDistribution(
     "normal_clipped", mu=1.5, sigma=0.75, low=1.0, high=1.6, rng=rng)
@@ -59,20 +56,26 @@ weights_inh = RandomDistribution(
 conn_inh = p.FixedProbabilityConnector(0.1, rng=rng)
 synapse_inh = p.StaticSynapse(weight=weights_inh, delay=delays_inh)
 p.Projection(
-    pop_exc, pop_exc, conn_exc, synapse_exc, receptor_type="excitatory")
+    pop_exc, pop_exc, conn_exc, synapse_exc, receptor_type="excitatory",
+    label="exc_exc")
 p.Projection(
-    pop_exc, pop_inh, conn_exc, synapse_exc, receptor_type="excitatory")
+    pop_exc, pop_inh, conn_exc, synapse_exc, receptor_type="excitatory",
+    label="exc_inh")
 p.Projection(
-    pop_inh, pop_inh, conn_inh, synapse_inh, receptor_type="inhibitory")
+    pop_inh, pop_inh, conn_inh, synapse_inh, receptor_type="inhibitory",
+    label="inh_inh")
 p.Projection(
-    pop_inh, pop_exc, conn_inh, synapse_inh, receptor_type="inhibitory")
+    pop_inh, pop_exc, conn_inh, synapse_inh, receptor_type="inhibitory",
+    label="inh_exc")
 
 conn_stim = p.OneToOneConnector()
 synapse_stim = p.StaticSynapse(weight=weight_exc, delay=1.0)
 p.Projection(
-    stim_exc, pop_exc, conn_stim, synapse_stim, receptor_type="excitatory")
+    stim_exc, pop_exc, conn_stim, synapse_stim, receptor_type="excitatory",
+    label="stim_exc_exc")
 p.Projection(
-    stim_inh, pop_inh, conn_stim, synapse_stim, receptor_type="excitatory")
+    stim_inh, pop_inh, conn_stim, synapse_stim, receptor_type="excitatory",
+    label="stim_inh_inh")
 
 delays_input = RandomDistribution(
     "normal_clipped", mu=1.5, sigma=0.75, low=1.0, high=1.6, rng=rng)
@@ -80,7 +83,8 @@ weights_input = RandomDistribution(
     "normal_clipped", mu=weight_input, sigma=0.01, low=0, high=numpy.inf,
     rng=rng)
 p.Projection(pop_input, pop_exc, p.AllToAllConnector(), p.StaticSynapse(
-    weight=weights_input, delay=delays_input))
+    weight=weights_input, delay=delays_input),
+    label="input_exc")
 
 pop_exc.initialize(
     v=RandomDistribution("uniform", low=-65.0, high=-55.0, rng=rng))

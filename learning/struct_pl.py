@@ -1,20 +1,6 @@
-# Copyright (c) 2017-2020 The University of Manchester
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 import pyNN.utility.plotting as plot
 import matplotlib.pyplot as plt
+import numpy
 import pyNN.spiNNaker as sim
 
 n_neurons = 100
@@ -51,12 +37,38 @@ timing_rule = sim.SpikePairRule(tau_plus=20.0, tau_minus=20.0,
                                 A_plus=0.5, A_minus=0.5)
 weight_rule = sim.AdditiveWeightDependence(w_max=5.0, w_min=0.0)
 
-stdp_model = sim.STDPMechanism(timing_dependence=timing_rule,
-                               weight_dependence=weight_rule,
-                               weight=0.0, delay=5.0)
+# Structurally plastic connection between pre_pop and post_pop
+partner_selection_last_neuron = sim.RandomSelection()
+formation_distance = sim.DistanceDependentFormation(
+    grid=[numpy.sqrt(n_neurons), numpy.sqrt(n_neurons)],
+    sigma_form_forward=.5  # spread of feed-forward connections
+)
+elimination_weight = sim.RandomByWeightElimination(
+    threshold=.2  # Use same weight as initial weight for static connections
+)
+structure_model_without_stdp = sim.StructuralMechanismStatic(
+    # Partner selection, formation and elimination rules from above
+    partner_selection_last_neuron, formation_distance, elimination_weight,
+    # Use this weight when creating a new synapse
+    initial_weight=5,
+    # Use this weight for synapses at start of simulation
+    weight=5,
+    # Use this delay when creating a new synapse
+    initial_delay=5,
+    # Use this weight for synapses at the start of simulation
+    delay=5,
+    # Maximum allowed fan-in per target-layer neuron
+    s_max=32,
+    # Frequency of rewiring in Hz
+    f_rew=10 ** 4
+)
 
-stdp_projection = sim.Projection(pre_pop, post_pop, sim.OneToOneConnector(),
-                                 synapse_type=stdp_model)
+plastic_projection = sim.Projection(
+    pre_pop, post_pop,
+    sim.FixedProbabilityConnector(0.),  # No initial connections
+    synapse_type=structure_model_without_stdp,
+    label="structurally_plastic_projection"
+)
 
 sim.run(simtime)
 
@@ -66,7 +78,7 @@ pre_spikes = pre_neo.segments[0].spiketrains
 post_neo = post_pop.get_data(variables=["spikes"])
 post_spikes = post_neo.segments[0].spiketrains
 
-print(stdp_projection.getWeights())
+print(plastic_projection.getWeights())
 
 sim.end()
 

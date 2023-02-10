@@ -1,8 +1,24 @@
+# Copyright (c) 2017-2020 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 Synfire chain example
 """
-import spynnaker8 as sim
-from spynnaker8.utilities import neo_convertor
+import matplotlib.pyplot as plt
+import pyNN.spiNNaker as sim
+from spynnaker.pyNN.utilities import neo_convertor
 
 # number of neurons in each population
 n_neurons = 100
@@ -11,7 +27,7 @@ weights = 0.5
 delays = 17.0
 simtime = 1000
 
-sim.setup(timestep=1.0, min_delay=1.0, max_delay=144.0)
+sim.setup(timestep=1.0, min_delay=1.0)
 
 spikeArray = {'spike_times': [[0]]}
 stimulus = sim.Population(1, sim.SpikeSourceArray, spikeArray,
@@ -45,21 +61,20 @@ spikes = map(neo_convertor.convert_spikes, neos)
 sim.end()
 
 
-if __name__ == '__main__':
-    try:
-        import pylab
-        pylab.figure()
-        pylab.xlabel('Time (ms)')
-        pylab.ylabel('Neuron')
-        pylab.title('Spikes Sent By Chain')
-        offset = 0
-        for pop_spikes in spikes:
-            pylab.plot(
-                [i[1] for i in pop_spikes],
-                [i[0] + offset for i in pop_spikes], "."
-            )
-            offset += n_neurons
-        pylab.savefig("results.png")
-    except Exception as ex:
-        print(ex)
-        print(spikes)
+try:
+    plt.figure()
+    plt.xlabel('Time (ms)')
+    plt.ylabel('Neuron')
+    plt.title('Spikes Sent By Chain')
+    offset = 0
+    for pop_spikes in spikes:
+        plt.plot(
+            [i[1] for i in pop_spikes],
+            [i[0] + offset for i in pop_spikes], "."
+        )
+        offset += n_neurons
+    plt.show()
+    # pylab.savefig("results.png")
+except Exception as ex:
+    print(spikes)
+    raise ex

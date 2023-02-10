@@ -1,33 +1,29 @@
-# Copyright (c) 2017-2020 The University of Manchester
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 import pyNN.utility.plotting as plot
 import matplotlib.pyplot as plt
 import pyNN.spiNNaker as sim
+from spynnaker.pyNN.extra_algorithms.splitter_components import (
+    SplitterAbstractPopulationVertexNeuronsSynapses, SplitterPoissonDelegate)
 
-n_neurons = 100
+n_neurons = 192
 simtime = 5000
 
 sim.setup(timestep=1.0)
+sim.set_number_of_neurons_per_core(sim.IF_curr_exp, 64)
 
-pre_pop = sim.Population(n_neurons, sim.IF_curr_exp(), label="Pre")
-post_pop = sim.Population(n_neurons, sim.IF_curr_exp(), label="Post")
+pre_splitter = SplitterAbstractPopulationVertexNeuronsSynapses(1, 128, False)
+pre_pop = sim.Population(
+    n_neurons, sim.IF_curr_exp(), label="Pre", additional_parameters={
+        "splitter": pre_splitter})
+post_splitter = SplitterAbstractPopulationVertexNeuronsSynapses(1, 128, False)
+post_pop = sim.Population(
+    n_neurons, sim.IF_curr_exp(), label="Post", additional_parameters={
+        "splitter": post_splitter})
 pre_noise = sim.Population(
-    n_neurons, sim.SpikeSourcePoisson(rate=10.0), label="Noise_Pre")
+    n_neurons, sim.SpikeSourcePoisson(rate=10.0), label="Noise_Pre",
+    additional_parameters={"splitter": SplitterPoissonDelegate()})
 post_noise = sim.Population(
-    n_neurons, sim.SpikeSourcePoisson(rate=10.0), label="Noise_Post")
+    n_neurons, sim.SpikeSourcePoisson(rate=10.0), label="Noise_Post",
+    additional_parameters={"splitter": SplitterPoissonDelegate()})
 
 pre_pop.record("spikes")
 post_pop.record("spikes")
@@ -35,7 +31,8 @@ post_pop.record("spikes")
 training = sim.Population(
     n_neurons,
     sim.SpikeSourcePoisson(rate=10.0, start=1500.0, duration=1500.0),
-    label="Training")
+    label="Training",
+    additional_parameters={"splitter": SplitterPoissonDelegate()})
 
 sim.Projection(pre_noise,  pre_pop,  sim.OneToOneConnector(),
                synapse_type=sim.StaticSynapse(weight=2.0))
@@ -56,6 +53,7 @@ stdp_model = sim.STDPMechanism(timing_dependence=timing_rule,
                                weight=0.0, delay=5.0)
 
 stdp_projection = sim.Projection(pre_pop, post_pop, sim.OneToOneConnector(),
+                                 # sim.StaticSynapse(0, 5.0))
                                  synapse_type=stdp_model)
 
 sim.run(simtime)
