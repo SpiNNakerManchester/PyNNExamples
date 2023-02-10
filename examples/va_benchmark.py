@@ -196,6 +196,8 @@ connections = {
         synapse_type=p.StaticSynapse(weight=w_inh, delay=delay))}
 
 if benchmark == "COBA":
+    # pylint is WRONG!
+    # pylint: disable=used-before-assignment
     connections['ext2e'] = p.Projection(
         ext_stim, exc_cells, ext_conn, receptor_type='excitatory',
         synapse_type=p.StaticSynapse(weight=0.1))
