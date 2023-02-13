@@ -1,10 +1,9 @@
-import Tkinter as tk
-import spynnaker8 as p
-import logging
+import tkinter as tk
+import tkinter.font as tkFont
 import sys
-from utils import puzzles, get_rates
 import functools
-import tkFont
+import pyNN.spiNNaker as p
+from utils import puzzles, get_rates
 
 
 class GUI(object):
@@ -17,7 +16,8 @@ class GUI(object):
         self._puzzle = puzzle
         self._connection = \
             p.external_devices.SpynnakerPoissonControlConnection(
-                poisson_labels=["Noise"], local_port=19990)
+                poisson_labels=["Noise"], local_port=None)
+        print(f"Listening on {self._connection.local_port}")
         self._connection.add_start_callback("Noise", self.on_start)
         self._root = tk.Tk()
         default_font = tkFont.nametofont("TkDefaultFont")
@@ -74,7 +74,7 @@ class GUI(object):
         maximum_rate = tk.StringVar(max_rate_frame)
         maximum_rate.set(str(max_rate))
         self._max_rate = tk.Spinbox(
-            max_rate_frame, from_=0, to=100, width=5,
+            max_rate_frame, from_=0, to=max_rate, width=5,
             textvariable=maximum_rate)
         self._max_rate.grid(row=0, column=1, padx=5)
         max_rate_frame.grid(row=12, column=0, columnspan=11, pady=5)
@@ -99,9 +99,9 @@ class GUI(object):
 
     def cycle_puzzles(self):
         self._after_id = self._root.after(30000, self.cycle_puzzles)
-        print "Cycling after 30 seconds"
+        print("Cycling after 30 seconds")
         self._puzzle = (self._puzzle + 1) % len(puzzles)
-        print "Updating puzzle to", self._puzzle
+        print("Updating puzzle to", self._puzzle)
         self.set_puzzle(self._puzzle, automatic=True)
 
     def set_dream(self):
@@ -120,17 +120,17 @@ class GUI(object):
     def set_values(self, automatic=False):
         if not automatic:
             if self._after_id is not None:
-                print "Cancelling"
+                print("Cancelling")
                 self._root.after_cancel(self._after_id)
             self._after_id = self._root.after(120000, self.cycle_puzzles)
-            print "Setting timeout to 120 seconds"
+            print("Setting timeout to 120 seconds")
         new_values = [[0 for _ in range(9)] for _ in range(9)]
         for x in range(9):
             for y in range(9):
                 new_values[x][y] = int(self._numbers[x][y].get())
         new_rates = get_rates(
             new_values, self._n_total, self._n_cell, self._n_N,
-            self._default_rate.get(), self._max_rate.get())
+            int(self._default_rate.get()), int(self._max_rate.get()))
         updated_rates = list()
         for i, rate in enumerate(new_rates):
             if rate != self._rates[i]:
@@ -140,7 +140,6 @@ class GUI(object):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
     gui = GUI(int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3]),
               float(sys.argv[4]), float(sys.argv[5]), int(sys.argv[6]))
     gui.start()

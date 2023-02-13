@@ -19,13 +19,15 @@
 # Steve Furber, November 2015
 #
 #############################################################
-from pyNN.random import RandomDistribution
-import pyNN.spiNNaker as p
-import spynnaker.pyNN.external_devices as ext
 import subprocess
 import os
 import sys
 import traceback
+import re
+from threading import Thread
+from pyNN.random import RandomDistribution
+import pyNN.spiNNaker as p
+import spynnaker.pyNN.external_devices as ext
 from utils import puzzles, get_rates
 
 run_time = 20000                        # run time in milliseconds
@@ -72,10 +74,19 @@ def activate_visualiser(old_vis):
         neur_per_num_opt = "--neurons_per_number"
         ms_per_bin_opt = "--ms_per_bin"
     try:
-        return subprocess.Popen(
+        vis_proc = subprocess.Popen(
             args=vis_exe + [neur_per_num_opt, str(neurons_per_digit),
                             ms_per_bin_opt, str(ms_per_bin)],
-            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1)
+            stderr=subprocess.PIPE)
+        visline = str(vis_proc.stderr.readline(), "UTF-8")
+        vismatch = re.match("^Listening on (.*)$", visline)
+        if not vismatch:
+            vis_proc.kill()
+            raise Exception(f"Receiver returned unknown output: {firstline}")
+        port = int(vismatch.group(1))
+
+        return vis_proc, port
+
         # Thread(target=read_output,
         #        args=[visualiser, visualiser.stdout]).start()
     except Exception:
@@ -84,12 +95,12 @@ def activate_visualiser(old_vis):
                   "SpiNNakerManchester/sPyNNakerVisualisers")
             traceback.print_exc()
             print("trying old visualiser")
-            activate_visualiser(old_vis=True)
+            return activate_visualiser(old_vis=True)
         else:
             raise
 
 
-vis_process = activate_visualiser(old_vis=("OLD_VIS" in os.environ))
+vis_process, vis_port = activate_visualiser(old_vis=("OLD_VIS" in os.environ))
 
 p.setup(timestep=1.0)
 print("Creating Sudoku Network...")
@@ -139,14 +150,14 @@ print("Creating Populations...")
 cells = p.Population(n_total, p.IF_curr_exp, cell_params_lif, label="Cells",
                      additional_parameters={"spikes_per_second": 200})
 # cells.record("spikes")
-ext.activate_live_output_for(cells, tag=1, port=17897)
+ext.activate_live_output_for(cells, database_notify_port_num=vis_port)
 
 #
 # add a noise source to each cell
 #
 print("Creating Noise Sources...")
 default_rate = 35.0
-max_rate = 100.0
+max_rate = 200.0
 rates = get_rates(init, n_total, n_cell, n_N, default_rate, max_rate)
 noise = p.Population(
     n_total, p.SpikeSourcePoisson,
@@ -156,8 +167,20 @@ noise = p.Population(
 p.Projection(noise, cells, p.OneToOneConnector(),
              synapse_type=p.StaticSynapse(weight=weight_nois))
 
+set_window = subprocess.Popen((sys.executable, "-m", "set_numbers",
+                               str(n_total), str(n_cell), str(n_N),
+                               str(default_rate), str(max_rate), str(puzzle)),
+                              stdout=subprocess.PIPE)
+firstline = str(set_window.stdout.readline(), "UTF-8")
+match = re.match("^Listening on (.*)$", firstline)
+if not match:
+    set_window.kill()
+    vis_process.kill()
+    raise Exception(f"Receiver returned unknown output: {firstline}")
+set_port = int(match.group(1))
+
 p.external_devices.add_poisson_live_rate_control(
-    noise, database_notify_port_num=19990)
+    noise, database_notify_port_num=set_port)
 
 
 #
@@ -215,9 +238,16 @@ p.Projection(cells, cells, conn_intC, receptor_type="inhibitory")
 # initialise the network, run, and get results
 cells.initialize(v=RandomDistribution("uniform", [-65.0, -55.0]))
 
-set_window = subprocess.Popen((sys.executable, "-m", "set_numbers",
-                               str(n_total), str(n_cell), str(n_N),
-                               str(default_rate), str(max_rate), str(puzzle)))
+
+def wait_for_end():
+    set_window.wait()
+    set_window.terminate()
+    vis_process.terminate()
+    p.external_devices.request_stop()
+
+
+wait_thread = Thread(target=wait_for_end)
+wait_thread.start()
 
 p.external_devices.run_forever()
 
@@ -237,8 +267,4 @@ p.external_devices.run_forever()
 # pylab.show()
 # pylab.savefig("sudoku.png")
 
-vis_process.wait()
-set_window.wait()
-
 p.end()
-ended = True
