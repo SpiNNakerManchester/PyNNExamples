@@ -130,6 +130,7 @@ init = puzzles[puzzle]
 corr = init
 
 p.set_number_of_neurons_per_core(p.IF_curr_exp, 200)
+p.set_number_of_neurons_per_core(p.SpikeSourcePoisson, 200)
 
 #
 # set up the 9x9 cell array populations
@@ -196,9 +197,11 @@ for x in range(9):
         # diagonal
         connections_cell = [
             (i + base, j + base,
-             0.0 if i // n_N == j // n_N else weight_cell, delay)
+             weight_cell, delay)
             for i in range(n_cell) for j in range(n_cell)
+            if i // n_N != j // n_N
         ]
+        print(connections_cell)
         connections.extend(connections_cell)
 
 
@@ -211,10 +214,15 @@ def interCell(x, y, r, c, connections):
     """
     base_source = ((y * 9) + x) * n_cell
     base_dest = ((c * 9) + r) * n_cell
+    # p.Projection(cells_pop[base_source:base_source+n_cell],
+    #              cells_pop[base_dest:base_dest+n_cell],
+    #              p.AllToAllConnector(),
+    #              p.StaticSynapse(weight=weight_cell, delay=delay))
     connections_intC = [
         (i + base_source, j + base_dest, weight_cell, delay)
         for i in range(n_cell)
         for j in range(n_N * (i // n_N), n_N * (i // n_N + 1))]
+    print(connections_intC)
 
     connections.extend(connections_intC)
 
