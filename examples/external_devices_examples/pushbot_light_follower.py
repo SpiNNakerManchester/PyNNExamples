@@ -4,12 +4,10 @@
 """
 ###########################################
 #  Import libraries
-###########################################
+############################################
+import numpy
 import pyNN.spiNNaker as p
 from spynnaker.pyNN.protocols import MUNICH_MODES
-import numpy as np
-import sys
-import subprocess
 
 
 ###########################################
@@ -22,19 +20,19 @@ UART_ID = 0
 # SpiNNaker link ID (IO Board connected to)
 spinnaker_link = 0
 
-# IP Address of the SpiNNaker board connected to (or None if only one)
-board_address = None  # "10.162.242.14" #"10.162.242.13" "192.168.240.1"
-
 # Retina resolution
 retina_resolution = \
     p.external_devices.PushBotRetinaResolution.DOWNSAMPLE_32_X_32
 
-# Simulation time [ms]
-simtime = 240000
+# Name to call the retina
+retina_label = "Retina"
+
+retina_viewer = p.external_devices.PushBotRetinaViewer(
+    retina_resolution, retina_label)
 
 # Simulate with 1 ms time step
 p.setup(1.0)
-p.set_number_of_neurons_per_core(p.IF_curr_exp, 150)
+# p.set_number_of_neurons_per_core(p.IF_curr_exp, 150)
 
 
 ###########################################
@@ -49,16 +47,15 @@ pushbot_protocol = p.external_devices.MunichIoSpiNNakerLinkProtocol(
 # Create motor devices on SpiNNaker
 motor_0 = p.external_devices.PushBotSpiNNakerLinkMotorDevice(
     p.external_devices.PushBotMotor.MOTOR_0_PERMANENT, pushbot_protocol,
-    spinnaker_link, board_address=board_address)
+    spinnaker_link)
 
 motor_1 = p.external_devices.PushBotSpiNNakerLinkMotorDevice(
     p.external_devices.PushBotMotor.MOTOR_1_PERMANENT, pushbot_protocol,
-    spinnaker_link, board_address=board_address)
+    spinnaker_link)
 
 # Create retina device on SpiNNaker
 retina_device = p.external_devices.PushBotSpiNNakerLinkRetinaDevice(
         spinnaker_link_id=spinnaker_link,
-        board_address=board_address,
         protocol=pushbot_protocol,
         resolution=retina_resolution)
 
@@ -69,19 +66,11 @@ devices = [motor_0, motor_1]
 #  Create populations
 ###########################################
 
-# Pushbot motor neuron population
-# Each member of population is a LIF neuron without a threshold
-pushbot = p.Population(
-    len(devices), p.external_devices.PushBotLifSpinnakerLink(
-        protocol=pushbot_protocol,
-        devices=devices,
-        tau_syn_E=5.0, tau_syn_I=5.0),
-    label="PushBot"
-)
-
 # Retina population ( num of neurons:n_pixel*n_pixel*2 )
 pushbot_retina = p.Population(
-    retina_resolution.value.n_neurons, retina_device)
+    retina_resolution.value.n_neurons, retina_device, label=retina_label)
+p.external_devices.activate_live_output_for(
+    pushbot_retina, database_notify_port_num=retina_viewer.port)
 
 
 # Network implementation
@@ -130,7 +119,7 @@ w_conn = 0.2
 d_conn = 1
 
 # Array containing id of each neuron
-arr = np.arange(retina_resolution.value.n_neurons / 2)
+arr = numpy.arange(retina_resolution.value.n_neurons / 2)
 
 # Determines which neuron IDs are on the left group
 id_to_left = (arr % retina_resolution.value.pixels) < end_of_left
@@ -153,15 +142,15 @@ id_to_middle_up_3 = (
 id_to_middle_up = id_to_middle_up_1 & id_to_middle_up_2  # & id_to_middle_up_3
 
 # Extracts the neuron IDs to be connected to the left neuron of driver_pop
-id_to_left = np.extract(id_to_left, arr)
+id_to_left = numpy.extract(id_to_left, arr)
 print("left =", id_to_left)
 
 # Extracts the neuron IDs to be connected to the right neuron of driver_pop
-id_to_right = np.extract(id_to_right, arr)
+id_to_right = numpy.extract(id_to_right, arr)
 print("right =", id_to_right)
 
 # Extracts the neuron IDs to be connected to the forward neuron of driver_pop
-id_to_middle_up = np.extract(id_to_middle_up, arr)
+id_to_middle_up = numpy.extract(id_to_middle_up, arr)
 print("middle =", id_to_middle_up)
 
 # Conn list: (source neuron, target neuron, weight, delay)
@@ -189,9 +178,9 @@ w_conn, w_inh = (0.35, 1.00)  # (3.7,95)#(3.8, 90.)# (3.7,65,15)
 
 conn_list_local = []
 n_row = retina_resolution.value.pixels
-conn_inc = np.array(
+conn_inc = numpy.array(
     [-n_row-1, -n_row, -n_row + 1, -1, 0, 1, n_row - 1, n_row, n_row + 1])
-cont_inc = np.array([1, 1, 1, 0, 0, 0, -1, -1, -1])
+cont_inc = numpy.array([1, 1, 1, 0, 0, 0, -1, -1, -1])
 for i in range(retina_resolution.value.n_neurons):
     sources = i + conn_inc
     cont_1 = i / n_row
@@ -206,6 +195,16 @@ for i in range(retina_resolution.value.n_neurons):
 ###########################################
 
 # w_inh=90.#70
+
+# Pushbot motor neuron population
+# Each member of population is a LIF neuron without a threshold
+pushbot = p.Population(
+    len(devices), p.external_devices.PushBotLifSpinnakerLink(
+        protocol=pushbot_protocol,
+        devices=devices,
+        tau_syn_E=5.0, tau_syn_I=5.0),
+    label="PushBot"
+)
 
 p.Projection(pushbot_retina, exc_pop, p.FromListConnector(conn_list_local))
 p.Projection(
@@ -231,16 +230,4 @@ p.Projection(
 # Record spikes and membrane potentials
 # driver_pop.record(['spikes','v'])
 
-# Add a retina viewer to see what the pushbot sees
-viewer = subprocess.Popen(args=[
-    sys.executable, "pushbot_retina_viewer.py", "17895",
-    retina_resolution.name])
-p.external_devices.activate_live_output_for(
-    pushbot_retina, port=17895, notify=False)
-
-# Start simulation
-p.external_devices.run_forever()
-# p.run(simtime)
-viewer.wait()
-
-p.end()
+retina_viewer.run_until_closed()
