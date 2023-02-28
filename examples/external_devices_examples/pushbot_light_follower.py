@@ -37,7 +37,7 @@ retina_resolution = \
 retina_label = "Retina"
 
 retina_viewer = p.external_devices.PushBotRetinaViewer(
-    retina_resolution, retina_label)
+    retina_resolution, retina_label, p)
 
 # Simulate with 1 ms time step
 p.setup(1.0)

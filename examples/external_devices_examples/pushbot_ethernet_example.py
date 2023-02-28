@@ -83,7 +83,7 @@ pushbot_retina = p.external_devices.EthernetSensorPopulation(
     ))
 
 retina_viewer = p.external_devices.PushBotRetinaViewer(
-    retina_resolution, pushbot_retina.label)
+    retina_resolution, pushbot_retina.label, p)
 p.external_devices.activate_live_output_for(
     pushbot_retina, database_notify_port_num=retina_viewer.port)
 
