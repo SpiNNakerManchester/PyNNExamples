@@ -17,7 +17,6 @@
 ############################################
 import numpy
 import pyNN.spiNNaker as p
-from spynnaker.pyNN.protocols import MUNICH_MODES
 
 
 ###########################################
@@ -51,7 +50,7 @@ p.setup(1.0)
 # Create the pushbot protocols to pass to the devices of Pushbot
 # (i.e. motors, laser, etc)
 pushbot_protocol = p.external_devices.MunichIoSpiNNakerLinkProtocol(
-    mode=MUNICH_MODES.PUSH_BOT,
+    mode=p.external_devices.protocols.MUNICH_MODES.PUSH_BOT,
     uart_id=UART_ID)
 
 # Create motor devices on SpiNNaker
