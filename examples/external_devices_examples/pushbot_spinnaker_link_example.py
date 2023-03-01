@@ -11,37 +11,32 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from spynnaker.pyNN.protocols import MUNICH_MODES
 import pyNN.spiNNaker as p
 
 p.setup(1.0)
 
 # Set up the PushBot devices
 pushbot_protocol = p.external_devices.MunichIoSpiNNakerLinkProtocol(
-    mode=MUNICH_MODES.PUSH_BOT, uart_id=0)
+    mode=p.external_devices.protocols.MUNICH_MODES.PUSH_BOT, uart_id=0)
 spinnaker_link = 0
-board_address = None
 motor_0 = p.external_devices.PushBotSpiNNakerLinkMotorDevice(
     p.external_devices.PushBotMotor.MOTOR_0_PERMANENT, pushbot_protocol,
-    spinnaker_link, board_address=board_address)
+    spinnaker_link)
 motor_1 = p.external_devices.PushBotSpiNNakerLinkMotorDevice(
     p.external_devices.PushBotMotor.MOTOR_1_PERMANENT, pushbot_protocol,
-    spinnaker_link, board_address=board_address)
+    spinnaker_link)
 speaker = p.external_devices.PushBotSpiNNakerLinkSpeakerDevice(
     p.external_devices.PushBotSpeaker.SPEAKER_TONE, pushbot_protocol,
-    spinnaker_link, board_address=board_address)
+    spinnaker_link)
 laser = p.external_devices.PushBotSpiNNakerLinkLaserDevice(
     p.external_devices.PushBotLaser.LASER_ACTIVE_TIME, pushbot_protocol,
-    spinnaker_link, board_address=board_address, start_total_period=1000)
+    spinnaker_link, start_total_period=1000)
 led_front = p.external_devices.PushBotSpiNNakerLinkLEDDevice(
     p.external_devices.PushBotLED.LED_FRONT_ACTIVE_TIME, pushbot_protocol,
-    spinnaker_link, board_address=board_address,
-    start_total_period=1000)
+    spinnaker_link, start_total_period=1000)
 led_back = p.external_devices.PushBotSpiNNakerLinkLEDDevice(
     p.external_devices.PushBotLED.LED_BACK_ACTIVE_TIME, pushbot_protocol,
-    spinnaker_link, board_address=board_address,
-    start_total_period=1000)
+    spinnaker_link, start_total_period=1000)
 
 weights = {
     motor_0: 10.0,
@@ -81,15 +76,13 @@ pushbot_retina = p.Population(
     retina_resolution.value.n_neurons,
     p.external_devices.PushBotSpiNNakerLinkRetinaDevice(
         spinnaker_link_id=spinnaker_link,
-        board_address=board_address,
         protocol=pushbot_protocol,
-        resolution=retina_resolution))
+        resolution=retina_resolution),
+    label="Retina")
 
-viewer = p.external_devices.PushBotRetinaViewer(
-    retina_resolution.value, port=17895)
+retina_viewer = p.external_devices.PushBotRetinaViewer(
+    retina_resolution, pushbot_retina.label, p)
 p.external_devices.activate_live_output_for(
-    pushbot_retina, port=viewer.local_port, notify=False)
+    pushbot_retina, database_notify_port_num=retina_viewer.port)
 
-viewer.start()
-p.run(len(devices) * 1000)
-p.end()
+retina_viewer.run(len(devices) * 1000)

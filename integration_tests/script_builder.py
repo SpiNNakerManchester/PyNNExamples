@@ -26,6 +26,7 @@ class ScriptBuilder(RootScriptBuilder):
         # These scripts raise a SkipTest with the reasons given
         exceptions = {}
         exceptions["pushbot_ethernet_example.py"] = "Needs a physical pushbot"
+        exceptions["pushbot_light_follower.py"] = "Runs forever"
         exceptions["dataflow.py"] = "Vertex tested elsewhere"
         exceptions["receptive_fields_for_motion.py"] = "Duplication"
         exceptions["cerebellum.py"] = "Script has no run stage"
