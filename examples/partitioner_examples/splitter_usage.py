@@ -15,10 +15,10 @@ import pyNN.spiNNaker as p
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 from pacman.model.partitioner_splitters import (
-    SplitterOneToOneLegacy as OneToOneSplitter)
+    SplitterOneToOneLegacy as OneToOneSplitter,
+    SplitterFixedLegacy)
 from spynnaker.pyNN.extra_algorithms.splitter_components import (
-    SplitterAbstractPopulationVertexFixed,
-    SpynnakerSplitterFixedLegacy as LegacySplitter)
+    SplitterAbstractPopulationVertexFixed)
 
 runtime = 1000
 n_neurons = 100  # number of neurons in each population
@@ -48,7 +48,7 @@ neuron4 = p.Population(
 input1 = p.Population(
     n_neurons, p.SpikeSourcePoisson(), label='inputSpikes_1',
     additional_parameters={
-        "splitter_object": LegacySplitter()})
+        "splitter_object": SplitterFixedLegacy()})
 input2 = p.Population(
     n_neurons, p.SpikeSourcePoisson(), label='inputSpikes_2',
     additional_parameters={
