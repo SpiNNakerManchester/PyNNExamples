@@ -76,3 +76,7 @@ jobs:
       uses: ./support/actions/check-copyrights
       with:
         config_file: rat_asl20.xml
+
+    - name: Validate CITATION.cff
+      if: matrix.python-version == 3.8
+      uses: dieghernan/cff-validator@main
