@@ -72,7 +72,9 @@ jobs:
         repository: SpiNNakerManchester/SupportScripts
         path: support
     - name: Run rat copyright enforcement
-      if: matrix.python-version == 3.8
       uses: ./support/actions/check-copyrights
       with:
         config_file: rat_asl20.xml
+
+    - name: Validate CITATION.cff
+      uses: dieghernan/cff-validator@main
