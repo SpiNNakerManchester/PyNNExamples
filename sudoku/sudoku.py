@@ -171,7 +171,7 @@ elif puzzle == 5:
             [0, 2, 0,  0, 0, 7,  0, 5, 1]]
 elif puzzle == 6:
     # "World's hardest sudoku":
-    # http://www.telegraph.co.uk/news/science/science-news/9359579/\
+    # https://www.telegraph.co.uk/news/science/science-news/9359579/\
     # Worlds-hardest-sudoku-can-you-crack-it.html
     init = [[8, 0, 0,  0, 0, 0,  0, 0, 0],
             [0, 0, 3,  6, 0, 0,  0, 0, 0],
