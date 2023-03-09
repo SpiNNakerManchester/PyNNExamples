@@ -1,0 +1,109 @@
+# Copyright (c) 2017 The University of Manchester
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+cff-version: 1.2.0
+message: If you use this software, please cite it as below.
+preferred-citation:
+  type: article
+  doi: 10.3389/fnins.2018.00816
+  issn: 1662-453X
+  url: https://www.frontiersin.org/articles/10.3389/fnins.2018.00816
+  title: "sPyNNaker: A Software Package for Running PyNN Simulations on SpiNNaker"
+  journal: Frontiers in Neuroscience
+  volume: 12
+  year: 2018
+  month: 11
+  abstract: This work presents sPyNNaker 4.0.0, the latest version of the software package for simulating PyNN-defined spiking neural networks (SNNs) on the SpiNNaker neuromorphic platform. Operations underpinning realtime SNN execution are presented, including an event-based operating system facilitating efficient time-driven neuron state updates and pipelined event-driven spike processing. Preprocessing, realtime execution, and neuron/synapse model implementations are discussed, all in the context of a simple example SNN. Simulation results are demonstrated, together with performance profiling providing insights into how software interacts with the underlying hardware to achieve realtime execution. System performance is shown to be within a factor of 2 of the original design target of 10,000 synaptic events per millisecond, however SNN topology is shown to influence performance considerably. A cost model is therefore developed characterizing the effect of network connectivity and SNN partitioning. This model enables users to estimate SNN simulation performance, allows the SpiNNaker team to make predictions on the impact of performance improvements, and helps demonstrate the continued potential of the SpiNNaker neuromorphic hardware.
+  authors:
+  - given-names: Oliver
+    family-names: Rhodes
+    affiliation: University Of Manchester
+    orcid: https://orcid.org/0000-0003-1728-2828
+    website: https://research.manchester.ac.uk/en/persons/oliver.rhodes
+  - given-names: Petrut
+    family-names: Bogdan
+    affiliation: University Of Manchester
+    orcid: https://orcid.org/0000-0001-5535-7865
+  - given-names: Christian Y.
+    family-names: Brenninkmeijer
+    affiliation: University Of Manchester
+    email: christian.brenninkmeijer@manchester.ac.uk
+    orcid: https://orcid.org/0000-0002-2937-7819
+    website: https://www.researchgate.net/profile/Christian_Brenninkmeijer
+  - given-names: Simon
+    family-names: Davidson
+    affiliation: University Of Manchester
+    orcid: https://orcid.org/0000-0001-5385-442X
+    website: https://research.manchester.ac.uk/en/persons/simon.davidson
+  - given-names: Donal
+    family-names: Fellows
+    affiliation: University Of Manchester
+    orcid: https://orcid.org/0000-0002-9091-5938
+    website: https://www.researchgate.net/profile/Donal-Fellows
+  - given-names: Andrew
+    family-names: Gait
+    affiliation: University Of Manchester
+    orcid: https://orcid.org/0000-0001-9349-1096
+    website: https://personalpages.manchester.ac.uk/staff/andrew.gait/
+  - given-names: David R.
+    family-names: Lester
+    affiliation: University Of Manchester
+    orcid: https://orcid.org/0000-0002-7267-291X
+  - given-names: Mantas
+    family-names: Mikaitis
+    affiliation: University Of Manchester
+    orcid: https://orcid.org/0000-0001-8706-1436
+    website: https://research.manchester.ac.uk/en/persons/mantas.mikaitis
+  - given-names: Luis A.
+    family-names: Plana
+    affiliation: University Of Manchester
+    orcid: https://orcid.org/0000-0002-6113-3929
+    website: https://research.manchester.ac.uk/en/persons/luis.plana
+  - given-names: Andrew G. D.
+    family-names: Rowley
+    affiliation: University Of Manchester
+    email: Andrew.Rowley@manchester.ac.uk
+    orcid: https://orcid.org/0000-0002-2646-8520
+    website: https://www.researchgate.net/profile/Andrew_Rowley2
+  - given-names: Alan B.
+    family-names: Stokes
+    affiliation: University Of Manchester
+    orcid: https://orcid.org/0000-0002-6110-1484
+    website: http://www.cs.man.ac.uk/~stokesa6/
+  - given-names: Steve B.
+    family-names: Furber
+    affiliation: University Of Manchester
+    orcid: https://orcid.org/0000-0002-6524-3367
+    website: https://research.manchester.ac.uk/en/persons/steve.furber
+
+title: This repository holds miscellaneous examples of using sPyNNaker for PyNN
+authors:
+    - name: SpiNNaker Software Team
+      alias: For a list of contributors see https://github.com/SpiNNakerManchester/PyNN8Examples/graphs/contributors or for a combined list see http://spinnakermanchester.github.io/latest/LicenseAgreement.html#contributors
+      address: University of Manchester, Oxford Road
+      city: Manchester
+      country: GB
+      email: spinnakerusers@googlegroups.com
+      post-code: M13 9PL
+      website: https://apt.cs.manchester.ac.uk/projects/SpiNNaker/
+url: http://spinnakermanchester.github.io/
+contact:
+- address: University of Manchester, Oxford Road
+  city: Manchester
+  country: GB
+  email: spinnakerusers@googlegroups.com
+  name: SpiNNaker Software Team
+  post-code: M13 9PL
+license: Apache-2.0
+repository: https://github.com/SpiNNakerManchester/PyNN8Examples
