@@ -24,7 +24,8 @@ There are four "standard" current sources in PyNN:
 
 Any other current waveforms could be implemented using StepCurrentSource.
 
-Script from https://neuralensemble.org/docs/PyNN/examples/current_injection.html
+Script from
+https://neuralensemble.org/docs/PyNN/examples/current_injection.html
 
 """
 
