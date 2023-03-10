@@ -35,7 +35,7 @@ Run as :
    $ ./stdp_example
 
 This example requires that the NeuroTools package is installed
-(http://neuralensemble.org/trac/NeuroTools)
+(https://neuralensemble.org/trac/NeuroTools)
 
 Authors : Catherine Wacongne < catherine.waco@gmail.com >
           Xavier Lagorce < Xavier.Lagorce@crans.org >

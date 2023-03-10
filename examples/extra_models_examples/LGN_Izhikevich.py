@@ -37,7 +37,7 @@ A.B. Stokes, A. Rowley, I. Sugiarto, S.B. Furber,
 SpiNNaker machine", Frontiers in Neuroscience, vol. 11 (454), 2017.
 
 Free online access:
-http://journal.frontiersin.org/article/10.3389/fnins.2017.00454/abstract
+https://journal.frontiersin.org/article/10.3389/fnins.2017.00454/abstract
 """
 
 import pyNN.spiNNaker as p

@@ -38,7 +38,7 @@ class Vogels2011(object):
     This example uses the sPyNNaker implementation of the inhibitory
     Plasticity rule developed by Vogels, Sprekeler, Zenke et al (2011)
     https://www.ncbi.nlm.nih.gov/pubmed/22075724
-    http://www.opensourcebrain.org/projects/vogelsetal2011/wiki
+    https://www.opensourcebrain.org/projects/vogelsetal2011/wiki
     To reproduce the experiment from their paper
     """
 
