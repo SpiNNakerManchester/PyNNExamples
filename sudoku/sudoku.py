@@ -47,11 +47,6 @@ def read_output(visualiser, out):
             print(line)
         result = visualiser.poll()
     print("Visualiser exited: {} - quitting".format(result))
-    global running
-    global ended
-    if running and not ended:
-        p.end()
-    os._exit(0)
 
 
 def activate_visualiser(old_vis):
@@ -84,11 +79,9 @@ def activate_visualiser(old_vis):
             vis_proc.kill()
             raise Exception(f"Receiver returned unknown output: {firstline}")
         port = int(vismatch.group(1))
+        Thread(target=read_output, args=[vis_proc, vis_proc.stderr]).start()
 
         return vis_proc, port
-
-        # Thread(target=read_output,
-        #        args=[visualiser, visualiser.stdout]).start()
     except Exception:
         if not old_vis:
             print("This example depends on https://github.com/"
@@ -201,7 +194,6 @@ for x in range(9):
             for i in range(n_cell) for j in range(n_cell)
             if i // n_N != j // n_N
         ]
-        print(connections_cell)
         connections.extend(connections_cell)
 
 
@@ -222,7 +214,6 @@ def interCell(x, y, r, c, connections):
         (i + base_source, j + base_dest, weight_cell, delay)
         for i in range(n_cell)
         for j in range(n_N * (i // n_N), n_N * (i // n_N + 1))]
-    print(connections_intC)
 
     connections.extend(connections_intC)
 
