@@ -18,6 +18,7 @@ class GUI(object):
             p.external_devices.SpynnakerPoissonControlConnection(
                 poisson_labels=["Noise"], local_port=None)
         print(f"Listening on {self._connection.local_port}")
+        sys.stdout.flush()
         self._connection.add_start_callback("Noise", self.on_start)
         self._root = tk.Tk()
         default_font = tkFont.nametofont("TkDefaultFont")
