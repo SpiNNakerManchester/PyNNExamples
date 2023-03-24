@@ -1,19 +1,18 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-import spynnaker8 as pynn
+import pyNN.spiNNaker as pynn
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -24,8 +23,7 @@ simulator_Name = 'spiNNaker'
 # exec('import pyNN.%s as pynn' % simulator_Name)
 
 
-def poisson_generator(rate, rng, t_start=0.0, t_stop=1000.0, array=True,
-                      debug=False):
+def poisson_generator(_rate, _rng, _t_start=0.0, _t_stop=1000.0, _debug=False):
     """
     Returns a SpikeTrain whose spikes are a realization of a Poisson process
     with the given rate (Hz) and stopping time t_stop (milliseconds).
@@ -49,13 +47,13 @@ def poisson_generator(rate, rng, t_start=0.0, t_stop=1000.0, array=True,
         inh_adaptingmarkov_generator
     """
 
-    n = (t_stop - t_start) / 1000.0 * rate
+    n = (_t_stop - _t_start) / 1000.0 * _rate
     number = np.ceil(n + 3 * np.sqrt(n))
     if number < 100:
         number = min(5 + np.ceil(2 * n), 100)
 
     if number > 0:
-        isi = rng.exponential(1.0 / rate, number) * 1000.0
+        isi = _rng.exponential(1.0 / _rate, number) * 1000.0
         if number > 1:
             spikes = np.add.accumulate(isi)
         else:
@@ -63,36 +61,36 @@ def poisson_generator(rate, rng, t_start=0.0, t_stop=1000.0, array=True,
     else:
         spikes = np.array([])
 
-    spikes += t_start
-    i = np.searchsorted(spikes, t_stop)
+    spikes += _t_start
+    i = np.searchsorted(spikes, _t_stop)
 
     extra_spikes = []
     if i == len(spikes):
         # ISI buf overrun
 
-        t_last = spikes[-1] + rng.exponential(1.0 / rate, 1)[0] * 1000.0
+        t_last = spikes[-1] + _rng.exponential(1.0 / _rate, 1)[0] * 1000.0
 
-        while (t_last < t_stop):
+        while (t_last < _t_stop):
             extra_spikes.append(t_last)
-            t_last += rng.exponential(1.0 / rate, 1)[0] * 1000.0
+            t_last += _rng.exponential(1.0 / _rate, 1)[0] * 1000.0
 
         spikes = np.concatenate((spikes, extra_spikes))
 
-        if debug:
+        if _debug:
             print("ISI buf overrun handled. len(spikes)=%d,"
                   " len(extra_spikes)=%d" % (len(spikes), len(extra_spikes)))
 
     else:
         spikes = np.resize(spikes, (i,))
 
-    if debug:
+    if _debug:
         return spikes, extra_spikes
     else:
         return [round(x) for x in spikes]
 
 
 # Total number of neurons
-Neurons = 3000
+Neurons = 1000
 sim_time = 1000.0
 g = 5.0
 eta = 2.0
@@ -130,18 +128,15 @@ p_rate = 1000.0 * nu_ex * C_E
 print("Rate is: %f HZ" % (p_rate / 1000))
 
 # Neural Parameters
-pynn.setup(timestep=1.0, min_delay=1.0, max_delay=16.0)
+pynn.setup(timestep=0.1, min_delay=0.1)
 
 if simulator_Name == "spiNNaker":
 
     # Makes it easy to scale up the number of cores
-    pynn.set_number_of_neurons_per_core(pynn.IF_curr_exp, 100)
-    pynn.set_number_of_neurons_per_core(pynn.SpikeSourcePoisson, 100)
+    pynn.set_number_of_neurons_per_core(pynn.IF_curr_exp, 64)
+    pynn.set_number_of_neurons_per_core(pynn.SpikeSourcePoisson, 64)
 
 rng = NumpyRNG(seed=1)
-
-v_distr_exc = RandomDistribution('uniform', low=-10.0, high=0.0, rng=rng)
-v_distr_inh = RandomDistribution('uniform', low=-10.0, high=0.0, rng=rng)
 
 exc_cell_params = {
     'cm': 1.0,  # pf
@@ -175,19 +170,20 @@ I_pop = pynn.Population(
     N_I, pynn.IF_curr_exp(**inh_cell_params), label="I_pop")
 
 Poiss_ext_E = pynn.Population(
-    N_E, pynn.SpikeSourcePoisson(rate=10.0), label="Poisson_pop_E")
+    N_E, pynn.SpikeSourcePoisson(rate=10.0), label="Poisson_pop_E",
+    additional_parameters={"seed": int(rng.next() * 0xFFFFFFFF)})
 Poiss_ext_I = pynn.Population(
-    N_I, pynn.SpikeSourcePoisson(rate=10.0), label="Poisson_pop_I")
+    N_I, pynn.SpikeSourcePoisson(rate=10.0), label="Poisson_pop_I",
+    additional_parameters={"seed": int(rng.next() * 0xFFFFFFFF)})
 
 # Connectors
-E_conn = pynn.FixedProbabilityConnector(epsilon)
-I_conn = pynn.FixedProbabilityConnector(epsilon)
+E_conn = pynn.FixedProbabilityConnector(epsilon, rng=rng)
+I_conn = pynn.FixedProbabilityConnector(epsilon, rng=rng)
 
 # Use random delays for the external noise and
 # set the inital membrance voltage below the resting potential
 # to avoid the overshoot of activity in the beginning of the simulation
-rng = NumpyRNG(seed=1)
-delay_distr = RandomDistribution('uniform', low=1.0, high=16.0, rng=rng)
+delay_distr = RandomDistribution('uniform', low=0.1, high=12.8, rng=rng)
 Ext_conn = pynn.OneToOneConnector()
 
 uniformDistr = RandomDistribution('uniform', low=-10, high=0, rng=rng)

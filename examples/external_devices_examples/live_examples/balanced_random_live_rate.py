@@ -1,19 +1,18 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-import spynnaker8 as p
+import pyNN.spiNNaker as p
 from pyNN.random import RandomDistribution
 import pylab
 import numpy
@@ -40,17 +39,19 @@ stim_exc = p.Population(
 stim_inh = p.Population(
     n_inh, p.SpikeSourcePoisson(rate=1000.0), label="Stim_Inh")
 
+rng = p.NumpyRNG()
 delays_exc = RandomDistribution(
-    "normal_clipped", mu=1.5, sigma=0.75, low=1.0, high=14.4)
+    "normal_clipped", mu=1.5, sigma=0.75, low=1.0, high=14.4, rng=rng)
 weights_exc = RandomDistribution(
-    "normal_clipped", mu=weight_exc, sigma=0.1, low=0, high=numpy.inf)
-conn_exc = p.FixedProbabilityConnector(0.1)
+    "normal_clipped", mu=weight_exc, sigma=0.1, low=0, high=numpy.inf, rng=rng)
+conn_exc = p.FixedProbabilityConnector(0.1, rng=rng)
 synapse_exc = p.StaticSynapse(weight=weights_exc, delay=delays_exc)
 delays_inh = RandomDistribution(
-    "normal_clipped", mu=0.75, sigma=0.375, low=1.0, high=14.4)
+    "normal_clipped", mu=0.75, sigma=0.375, low=1.0, high=14.4, rng=rng)
 weights_inh = RandomDistribution(
-    "normal_clipped", mu=weight_inh, sigma=0.1, low=-numpy.inf, high=0)
-conn_inh = p.FixedProbabilityConnector(0.1)
+    "normal_clipped", mu=weight_inh, sigma=0.1, low=-numpy.inf, high=0,
+    rng=rng)
+conn_inh = p.FixedProbabilityConnector(0.1, rng=rng)
 synapse_inh = p.StaticSynapse(weight=weights_inh, delay=delays_inh)
 p.Projection(
     pop_exc, pop_exc, conn_exc, synapse_exc, receptor_type="excitatory")
@@ -69,21 +70,25 @@ p.Projection(
     stim_inh, pop_inh, conn_stim, synapse_stim, receptor_type="excitatory")
 
 delays_input = RandomDistribution(
-    "normal_clipped", mu=1.5, sigma=0.75, low=1.0, high=14.4)
+    "normal_clipped", mu=1.5, sigma=0.75, low=1.0, high=14.4, rng=rng)
 weights_input = RandomDistribution(
-    "normal_clipped", mu=weight_input, sigma=0.01, low=0, high=numpy.inf)
+    "normal_clipped", mu=weight_input, sigma=0.01, low=0, high=numpy.inf,
+    rng=rng)
 p.Projection(pop_input, pop_exc, p.AllToAllConnector(), p.StaticSynapse(
     weight=weights_input, delay=delays_input))
 
-pop_exc.initialize(v=RandomDistribution("uniform", low=-65.0, high=-55.0))
-pop_inh.initialize(v=RandomDistribution("uniform", low=-65.0, high=-55.0))
+pop_exc.initialize(
+    v=RandomDistribution("uniform", low=-65.0, high=-55.0, rng=rng))
+pop_inh.initialize(
+    v=RandomDistribution("uniform", low=-65.0, high=-55.0, rng=rng))
 
 pop_exc.record("spikes")
 
-p.external_devices.add_poisson_live_rate_control(pop_input)
-
 poisson_control = p.external_devices.SpynnakerPoissonControlConnection(
-    poisson_labels=[pop_input.label])
+    poisson_labels=[pop_input.label], local_port=None)
+
+p.external_devices.add_poisson_live_rate_control(
+    pop_input, database_notify_port_num=poisson_control.local_port)
 
 
 def start_callback(label, connection):

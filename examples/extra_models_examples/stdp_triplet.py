@@ -1,21 +1,20 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import matplotlib.pyplot as pylab
 
-import spynnaker8 as sim
+import pyNN.spiNNaker as sim
 
 # -------------------------------------------------------------------
 # This example uses the sPyNNaker implementation of the triplet rule
@@ -55,7 +54,7 @@ cell_params = {'cm': 0.25, 'i_offset': 0.0, 'tau_m': 10.0, 'tau_refrac': 2.0,
                'v_rest': -65.0, 'v_thresh': -55.4}
 
 # SpiNNaker setup
-sim.setup(timestep=1.0, min_delay=1.0, max_delay=10.0)
+sim.setup(timestep=1.0, min_delay=1.0)
 
 # Sweep times and frequencies
 projections = []
@@ -78,6 +77,8 @@ for t in delta_t:
             1, sim.SpikeSourceArray(spike_times=[post_times]))
 
         # Update simulation time
+        # You can not nest max or a int and a list
+        # pylint: disable=nested-min-max
         sim_time = max(sim_time, max(max(pre_times), max(post_times)) + 100)
 
         # Connections between spike sources and neuron populations
@@ -142,7 +143,7 @@ axis.set_ylabel(r"$(\frac{\Delta w_{ij}}{w_{ij}})$", rotation="horizontal",
                 size="xx-large")
 
 line_styles = ["--", "-"]
-for m_w, d_w, d_e, l in zip(weights, data_w, data_e, line_styles):
+for m_w, d_w, d_e, l, t in zip(weights, data_w, data_e, line_styles, delta_t):
     # Calculate deltas from end weights
     delta_w = [(w - start_w) / start_w for w in m_w]
 

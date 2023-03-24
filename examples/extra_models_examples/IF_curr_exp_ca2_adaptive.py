@@ -1,17 +1,16 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 # -----------------------------------------------------------------------------
 # Example of integrate-and-fire neuron with spike-frequency adaption
@@ -24,8 +23,7 @@
 import math
 import numpy
 import matplotlib.pyplot as pylab
-import spynnaker8 as sim
-from six import iteritems, iterkeys, itervalues
+import pyNN.spiNNaker as sim
 
 # Timestep (ms)
 # **NOTE** the 2.5Khz input frequency is not going to work particularily well
@@ -39,7 +37,7 @@ N = 300
 T = 250
 
 # Setup simulator
-sim.setup(timestep=dt, min_delay=1.0, max_delay=4.0)
+sim.setup(timestep=dt, min_delay=1.0)
 
 # Create population of neurons
 cell = sim.Population(N, sim.extra_models.IFCurrExpCa2Adaptive(**{
@@ -89,7 +87,7 @@ mean_isis = {t: numpy.average(i)
 isi_cv = {t: math.sqrt(
     numpy.sum(numpy.power(time_binned_isis[t] - mean_isi, 2)) /
     float(len(time_binned_isis[t]))) / mean_isi
-    for (t, mean_isi) in iteritems(mean_isis)}
+    for (t, mean_isi) in mean_isis.items()}
 
 # Take average CA2 level across all neurons
 # average_ca2 = numpy.average(numpy.reshape(ca2[:,2], (N, int(T / dt))),
@@ -98,15 +96,15 @@ isi_cv = {t: math.sqrt(
 # Plot
 fig, axes = pylab.subplots(2, sharex=True)
 
-axes[0].scatter(list(iterkeys(mean_isis)),
-                [1000.0 / i for i in itervalues(mean_isis)], s=2)
+axes[0].scatter(mean_isis.keys(),
+                [1000.0 / i for i in mean_isis.values()], s=2)
 axes[0].set_ylabel("Firing rate/Hz")
 
 # axes[1].scatter(numpy.arange(0.0, T, dt), average_ca2, s=2)
 # axes[1].set_ylabel("CA2/mA")
 # axes[1].set_ylim((0.0, numpy.amax(average_ca2) * 1.25))
 
-axes[1].scatter(list(iterkeys(isi_cv)), list(itervalues(isi_cv)), s=2)
+axes[1].scatter(isi_cv.keys(), isi_cv.values(), s=2)
 axes[1].set_ylabel("Coefficient of ISI variance")
 
 axes[1].set_xlim((0.0, T))
