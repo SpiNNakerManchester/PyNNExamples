@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -37,7 +37,7 @@ A.B. Stokes, A. Rowley, I. Sugiarto, S.B. Furber,
 SpiNNaker machine", Frontiers in Neuroscience, vol. 11 (454), 2017.
 
 Free online access:
-http://journal.frontiersin.org/article/10.3389/fnins.2017.00454/abstract
+https://journal.frontiersin.org/article/10.3389/fnins.2017.00454/abstract
 """
 
 import pyNN.spiNNaker as p
