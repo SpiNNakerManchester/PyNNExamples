@@ -52,6 +52,8 @@ readout_neuron_params = {
 
 pynn.setup(timestep=1)
 
+# pynn.set_number_of_neurons_per_core(pynn.extra_models.EPropAdaptive, 6)
+
 input_size = 100
 input_pop = pynn.Population(input_size,
                             pynn.SpikeSourceArray,

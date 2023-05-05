@@ -28,7 +28,6 @@ readout_neuron_params = {
     "target_data": target_data,
     }
 
-
 input_pop = pynn.Population(1,
                             pynn.SpikeSourceArray,
                             {'spike_times': [200, 210]},
@@ -48,8 +47,8 @@ in_proj = pynn.Projection(input_pop,
 readout_pop = pynn.Population(3, # HARDCODED 1
                        pynn.extra_models.SinusoidReadout(
                             **readout_neuron_params
-                           ), 
-                       label="readout_pop" 
+                           ),
+                       label="readout_pop"
                        )
 
 learning_proj = pynn.Projection(readout_pop,

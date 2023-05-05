@@ -1,7 +1,7 @@
 import spynnaker8 as pynn
 import numpy as np
 import matplotlib.pyplot as plt
-from PyNN8Examples.eprop_testing.frozen_poisson import build_input_spike_train, frozen_poisson_variable_hz
+from frozen_poisson import build_input_spike_train, frozen_poisson_variable_hz
 from pyNN.random import NumpyRNG, RandomDistribution
 from pyNN.utility.plotting import Figure, Panel
 
@@ -29,7 +29,7 @@ def probability_connector(pre_pop_size, post_pop_size, prob, offset=0, base_weig
 np.random.seed(272727)
 
 cycle_time = 1024
-num_repeats = 100
+num_repeats = 100 # 100
 pynn.setup(1.0)
 
 target_data = []
@@ -52,6 +52,7 @@ base_weight = 0.55
 
 pynn.setup(timestep=1)
 
+pynn.set_number_of_neurons_per_core(pynn.extra_models.EPropAdaptive, 6)
 
 input_size = 100
 readout_neuron_params = {
@@ -172,8 +173,10 @@ if recurrent_connections:
 
 input_pop.record('spikes')
 if neuron_pop_size:
+    # neuron.record('all')
     neuron.record('spikes')
-    neuron.record(['gsyn_exc', 'v', 'gsyn_inh'], indexes=[0, 1, 9, 17, 25, 33])
+    # neuron.record(['gsyn_exc', 'v', 'gsyn_inh'], indexes=[0, 1, 9, 17, 25, 33])
+    neuron[0, 1, 9, 17, 25, 33].record(['gsyn_exc', 'v', 'gsyn_inh'])
 readout_pop.record('all')
 
 experiment_label = "eta:{}/{} - size:{}/{} - reg_rate:{} - p_conn:{}/{}/{} - rec:{} - 10*{}hz all2all".format(

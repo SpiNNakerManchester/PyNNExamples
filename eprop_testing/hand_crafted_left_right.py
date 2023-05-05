@@ -1,11 +1,11 @@
 import spynnaker8 as pynn
 import numpy as np
 import matplotlib.pyplot as plt
-from PyNN8Examples.eprop_testing.frozen_poisson import build_input_spike_train, frozen_poisson_variable_hz
+from frozen_poisson import build_input_spike_train, frozen_poisson_variable_hz
 from pyNN.random import NumpyRNG, RandomDistribution
 from pyNN.utility.plotting import Figure, Panel
 from spynnaker.pyNN.spynnaker_external_device_plugin_manager import SpynnakerExternalDevicePluginManager
-from PyNN8Examples.eprop_testing.plot_graph import draw_graph_from_list, plot_learning_curve
+from plot_graph import draw_graph_from_list, plot_learning_curve
 
 def weight_distribution(pop_size):
     base_weight = np.random.randn() / np.sqrt(pop_size) #+ 0.5
@@ -66,6 +66,7 @@ out_weight = 0
 weight_string = "i{}-p{}-r{}-o{}".format(in_weight, prompt_weight, rec_weight, out_weight)
 pynn.setup(timestep=1)
 
+pynn.set_number_of_neurons_per_core(pynn.extra_models.EPropAdaptive, 6)
 
 input_size = 40
 readout_neuron_params = {
@@ -131,7 +132,12 @@ readout_pop = pynn.Population(3, # HARDCODED 1
                        label="readout_pop"
                        )
 
-SpynnakerExternalDevicePluginManager.add_edge(readout_pop._get_vertex, input_pop._get_vertex, "CONTROL")
+poisson_control_edge = SpynnakerExternalDevicePluginManager.add_edge(
+    readout_pop._vertex, input_pop._vertex, "CONTROL")
+# pynn.external_devices.activate_live_output_to(
+#     readout_pop, input_pop, "CONTROL")
+input_pop._vertex.set_live_poisson_control_edge(poisson_control_edge)
+# pynn.external_devices.add_poisson_live_rate_control(input_pop)
 
 start_w = [weight_distribution(neuron_pop_size*input_size) for i in range(input_size)]
 eprop_learning_neuron = pynn.STDPMechanism(
@@ -206,7 +212,9 @@ if recurrent_connections:
 
 input_pop.record('spikes')
 neuron.record('spikes')
-neuron.record(['gsyn_exc', 'v', 'gsyn_inh'], indexes=[i for i in range(int((neuron_pop_size/2)-5), int((neuron_pop_size/2)+5))])
+# neuron.record(['gsyn_exc', 'v', 'gsyn_inh'], indexes=[i for i in range(int((neuron_pop_size/2)-5), int((neuron_pop_size/2)+5))])
+neuron[[i for i in range(int((neuron_pop_size/2)-5), int(
+    (neuron_pop_size/2)+5))]].record(['gsyn_exc', 'v', 'gsyn_inh'])
 readout_pop.record('all')
 
 runtime = cycle_time * num_repeats
@@ -343,8 +351,9 @@ Figure(
 
     title="neuron data for {}".format(experiment_label)
 )
-manager = plt.get_current_fig_manager()
-manager.resize(*manager.window.maxsize())
+# The below only works with a Qt-based backend for matplotlib
+# manager = plt.get_current_fig_manager()
+# manager.resize(*manager.window.maxsize())
 plt.show()
 
 print("plotted neuron data")
@@ -372,8 +381,9 @@ axs[3].plot([i+32 for i in range(len(ave_corr64))], ave_corr64)
 axs[3].plot([0, num_repeats], [0.9, 0.9], 'r')
 axs[3].plot([0, num_repeats], [0.95, 0.95], 'g')
 axs[3].set_xlim([-20, num_repeats+20])
-manager = plt.get_current_fig_manager()
-manager.resize(*manager.window.maxsize())
+# The below only works with a Qt-based backend for matplotlib
+# manager = plt.get_current_fig_manager()
+# manager.resize(*manager.window.maxsize())
 plt.show()
 
 print("plotted curves")

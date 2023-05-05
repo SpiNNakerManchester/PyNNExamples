@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from frozen_poisson import build_input_spike_train, frozen_poisson_variable_hz
 from pyNN.random import NumpyRNG, RandomDistribution
 from pyNN.utility.plotting import Figure, Panel
-from spynnaker.pyNN.spynnaker_external_device_plugin_manager import SpynnakerExternalDevicePluginManager
+# from spynnaker.pyNN.spynnaker_external_device_plugin_manager import SpynnakerExternalDevicePluginManager
 
 def weight_distribution(pop_size):
     base_weight = np.random.randn() / np.sqrt(pop_size) #+ 0.5
@@ -69,6 +69,7 @@ out_weight = 1
 
 pynn.setup(timestep=1)
 
+pynn.set_number_of_neurons_per_core(pynn.extra_models.EPropAdaptive, 6)
 
 input_size = 24
 readout_neuron_params = {
@@ -129,7 +130,9 @@ readout_pop = pynn.Population(3, # HARDCODED 1
                        label="readout_pop"
                        )
 
-SpynnakerExternalDevicePluginManager.add_edge(readout_pop._get_vertex, input_pop._get_vertex, "CONTROL")
+# SpynnakerExternalDevicePluginManager.add_edge(readout_pop._get_vertex, input_pop._get_vertex, "CONTROL")
+pynn.external_devices.activate_live_output_to(
+    readout_pop, input_pop, "CONTROL")
 
 start_w = [weight_distribution(neuron_pop_size*input_size) for i in range(input_size)]
 eprop_learning_neuron = pynn.STDPMechanism(
@@ -211,7 +214,7 @@ runtime = cycle_time * num_repeats
 
 experiment_label = "eta:{}/{} - size:{}/{} - reg_rate:{} - p_conn:{}/{}/{} - rec:{} - cycle:{}/{}/{} regoff delai".format(
     readout_neuron_params["eta"], neuron_params["eta"], input_size, neuron_pop_size, reg_rate, p_connect_in, p_connect_rec, p_connect_out, recurrent_connections, cycle_time, window_size, runtime)
-print "\n", experiment_label, "\n"
+print("\n", experiment_label, "\n")
 
 pynn.run(runtime)
 in_spikes = input_pop.get_data('spikes')
@@ -245,9 +248,9 @@ from_list_in.sort(key=lambda x:x[1])
 connection_diff_in = []
 for i in range(len(from_list_in)):
     connection_diff_in.append(new_connections_in[i][2] - from_list_in[i][2])
-print "Input connections\noriginal\n", np.array(from_list_in)
-print "new\n", np.array(new_connections_in)
-print "diff\n", np.array(connection_diff_in)
+print("Input connections\noriginal\n", np.array(from_list_in))
+print("new\n", np.array(new_connections_in))
+print("diff\n", np.array(connection_diff_in))
 
 new_connections_out = []#out_proj.get('weight', 'delay').connections[0]#[]
 for partition in out_proj.get('weight', 'delay').connections:
@@ -258,17 +261,17 @@ from_list_out.sort(key=lambda x:x[1])
 connection_diff_out = []
 for i in range(len(from_list_out)):
     connection_diff_out.append(new_connections_out[i][2] - from_list_out[i][2])
-print "Output connections\noriginal\n", np.array(from_list_out)
-print "new\n", np.array(new_connections_out)
-print "diff\n", np.array(connection_diff_out)
+print("Output connections\noriginal\n", np.array(from_list_out))
+print("new\n", np.array(new_connections_out))
+print("diff\n", np.array(connection_diff_out))
 
-print experiment_label
-print "cycle_error =", cycle_error
-print "total error =", total_error
-print "average error = ", np.average(cycle_error)
-print "weighted average", np.average(cycle_error, weights=[i for i in range(num_repeats)])
-print "minimum error = ", np.min(cycle_error)
-print "minimum iteration =", cycle_error.index(np.min(cycle_error)), "- with time stamp =", cycle_error.index(np.min(cycle_error)) * 1024
+print(experiment_label)
+print("cycle_error =", cycle_error)
+print("total error =", total_error)
+print("average error = ", np.average(cycle_error))
+print("weighted average", np.average(cycle_error, weights=[i for i in range(num_repeats)]))
+print("minimum error = ", np.min(cycle_error))
+print("minimum iteration =", cycle_error.index(np.min(cycle_error)), "- with time stamp =", cycle_error.index(np.min(cycle_error)) * 1024)
 
 plt.figure()
 Figure(

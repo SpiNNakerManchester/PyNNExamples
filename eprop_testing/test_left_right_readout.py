@@ -9,7 +9,7 @@ from spynnaker.pyNN.spynnaker_external_device_plugin_manager import SpynnakerExt
 def weight_distribution(pop_size):
     base_weight = np.random.randn() / np.sqrt(pop_size) #+ 0.5
     if abs(base_weight) < np.exp(-10):  # checking because if too many are small neurons can't learn
-        print "\nweight too small: {}\n".format(base_weight)
+        print("\nweight too small: {}\n".format(base_weight))
     # base_weight = 0
     return base_weight
 
@@ -65,6 +65,7 @@ weight_string = "i{}-p{}-r{}-o{}".format(in_weight, prompt_weight, rec_weight, o
 
 pynn.setup(timestep=1)
 
+pynn.set_number_of_neurons_per_core(pynn.extra_models.EPropAdaptive, 6)
 
 input_size = 40
 readout_neuron_params = {
@@ -125,7 +126,10 @@ readout_pop = pynn.Population(3, # HARDCODED 1
                        label="readout_pop"
                        )
 
-SpynnakerExternalDevicePluginManager.add_edge(readout_pop._get_vertex, input_pop._get_vertex, "CONTROL")
+# SpynnakerExternalDevicePluginManager.add_edge(
+#     readout_pop._vertex, input_pop._vertex, "CONTROL")
+pynn.external_devices.activate_live_output_to(
+    readout_pop, input_pop, "CONTROL")
 
 # start_w = [weight_distribution(neuron_pop_size*input_size) for i in range(input_size)]
 eprop_learning_neuron = pynn.STDPMechanism(
@@ -137,7 +141,7 @@ from_list_in, max_syn_per_input = probability_connector(input_size, neuron_pop_s
 if max_syn_per_input > 100:
     Exception
 else:
-    print "max number of synapses per neuron:", max_syn_per_input
+    print("max number of synapses per neuron:", max_syn_per_input)
 in_proj = pynn.Projection(input_pop,
                           neuron,
                           pynn.FromListConnector(from_list_in),
@@ -156,7 +160,7 @@ from_list_out, max_syn_per_output = probability_connector(neuron_pop_size, 2, p_
 if max_syn_per_output > 100:
     Exception
 else:
-    print "max number of synapses per readout:", max_syn_per_output
+    print("max number of synapses per readout:", max_syn_per_output)
 out_proj = pynn.Projection(neuron,
                            readout_pop,
                            # pynn.OneToOneConnector(),
@@ -187,7 +191,7 @@ if recurrent_connections:
     if max_syn_per_rec > 150:
         Exception
     else:
-        print "max number of synapses per neuron:", max_syn_per_rec
+        print("max number of synapses per neuron:", max_syn_per_rec)
     recurrent_proj = pynn.Projection(neuron,
                                      neuron,
                                      pynn.FromListConnector(from_list_rec),
@@ -197,14 +201,15 @@ if recurrent_connections:
 
 input_pop.record('spikes')
 neuron.record('spikes')
-neuron.record(['gsyn_exc', 'v', 'gsyn_inh'], indexes=[i for i in range(45, 55)])
+# neuron.record(['gsyn_exc', 'v', 'gsyn_inh'], indexes=[i for i in range(45, 55)])
+neuron[[i for i in range(45, 55)]].record(['gsyn_exc', 'v', 'gsyn_inh'])
 readout_pop.record('all')
 
 runtime = cycle_time * num_repeats
 
 experiment_label = "eta:{}/{} - size:{}/{} - reg_rate:{} - p_conn:{}/{}/{} - rec:{} - cycle:{}/{}/{} noresetv 0d b:{} in+{}".format(
     readout_neuron_params["eta"], neuron_params["eta"], input_size, neuron_pop_size, reg_rate, p_connect_in, p_connect_rec, p_connect_out, recurrent_connections, cycle_time, window_size, runtime, eprop_beta, added_input_weight)
-print "\n", experiment_label, "\n"
+print("\n", experiment_label, "\n")
 
 pynn.run(runtime)
 in_spikes = input_pop.get_data('spikes')
@@ -286,9 +291,9 @@ from_list_in.sort(key=lambda x:x[0])
 connection_diff_in = []
 for i in range(len(from_list_in)):
     connection_diff_in.append(new_connections_in[i][2] - from_list_in[i][2])
-print "Input connections\noriginal\n", np.array(from_list_in)
-print "new\n", np.array(new_connections_in)
-print "diff\n", np.array(connection_diff_in)
+print("Input connections\noriginal\n", np.array(from_list_in))
+print("new\n", np.array(new_connections_in))
+print("diff\n", np.array(connection_diff_in))
 
 new_connections_out = []#out_proj.get('weight', 'delay').connections[0]#[]
 for partition in out_proj.get('weight', 'delay').connections:
@@ -301,9 +306,9 @@ from_list_out.sort(key=lambda x:x[0])
 connection_diff_out = []
 for i in range(len(from_list_out)):
     connection_diff_out.append(new_connections_out[i][2] - from_list_out[i][2])
-print "Output connections\noriginal\n", np.array(from_list_out)
-print "new\n", np.array(new_connections_out)
-print "diff\n", np.array(connection_diff_out)
+print("Output connections\noriginal\n", np.array(from_list_out))
+print("new\n", np.array(new_connections_out))
+print("diff\n", np.array(connection_diff_out))
 
 if recurrent_connections:
     new_connections_rec = []#out_proj.get('weight', 'delay').connections[0]#[]
@@ -317,20 +322,20 @@ if recurrent_connections:
     connection_diff_rec = []
     for i in range(len(from_list_out)):
         connection_diff_rec.append(new_connections_rec[i][2] - from_list_rec[i][2])
-    print "Recurrent connections\noriginal\n", np.array(from_list_out)
-    print "new\n", np.array(new_connections_out)
-    print "diff\n", np.array(connection_diff_out)
+    print("Recurrent connections\noriginal\n", np.array(from_list_out))
+    print("new\n", np.array(new_connections_out))
+    print("diff\n", np.array(connection_diff_out))
 
-print experiment_label
-print "cycle_error =", cycle_error
-print "total error =", total_error
-print "correct:"# =", correct_or_not
+print(experiment_label)
+print("cycle_error =", cycle_error)
+print("total error =", total_error)
+print("correct:")# =", correct_or_not
 for i in range(int(np.ceil(len(correct_or_not) / float(window_cycles)))):
-    print correct_or_not[i*window_cycles:(i+1)*window_cycles], np.average(correct_or_not[i*window_cycles:(i+1)*window_cycles])
-print "average error = ", np.average(cycle_error)
-print "weighted average", np.average(cycle_error, weights=[i for i in range(num_repeats)])
-print "minimum error = ", np.min(cycle_error)
-print "minimum iteration =", cycle_error.index(np.min(cycle_error)), "- with time stamp =", cycle_error.index(np.min(cycle_error)) * 1024
+    print(correct_or_not[i*window_cycles:(i+1)*window_cycles], np.average(correct_or_not[i*window_cycles:(i+1)*window_cycles]))
+print("average error = ", np.average(cycle_error))
+print("weighted average", np.average(cycle_error, weights=[i for i in range(num_repeats)]))
+print("minimum error = ", np.min(cycle_error))
+print("minimum iteration =", cycle_error.index(np.min(cycle_error)), "- with time stamp =", cycle_error.index(np.min(cycle_error)) * 1024)
 
 plt.figure()
 Figure(

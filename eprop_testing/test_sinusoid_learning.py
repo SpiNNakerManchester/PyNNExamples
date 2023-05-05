@@ -65,7 +65,7 @@ out_proj = pynn.Projection(neuron,
                            readout_pop,
                            pynn.OneToOneConnector(),
                            synapse_type=eprop_learning,
-                           label='input_connections',
+                           label='output_connections',
                            receptor_type='input_connections')
 
 learning_proj = pynn.Projection(readout_pop,

@@ -6,7 +6,7 @@ def frozen_poisson_variable_hz(num_repeats, cycle_time, split, speed_up, pop_siz
     pattern = np.load('1000 neurons - 10Hz - 100*1024s.npy').tolist()
 
     if split > pop_size:
-        print "Cannot split population into sizes smaller than 1 i.e. split > population size"
+        print("Cannot split population into sizes smaller than 1 i.e. split > population size")
         raise Exception
 
     spikes = []
