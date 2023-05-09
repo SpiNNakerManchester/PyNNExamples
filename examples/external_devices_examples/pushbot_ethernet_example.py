@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,14 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from spynnaker.pyNN.protocols import MUNICH_MODES
 import pyNN.spiNNaker as p
 
 p.setup(1.0)
 
 # Set up the PushBot devices
 pushbot_protocol = p.external_devices.MunichIoSpiNNakerLinkProtocol(
-    mode=MUNICH_MODES.PUSH_BOT, uart_id=0)
+    mode=p.external_devices.protocols.MUNICH_MODES.PUSH_BOT, uart_id=0)
 motor_0 = p.external_devices.PushBotEthernetMotorDevice(
     p.external_devices.PushBotMotor.MOTOR_0_PERMANENT, pushbot_protocol)
 motor_1 = p.external_devices.PushBotEthernetMotorDevice(
@@ -52,7 +51,8 @@ pushbot = p.external_devices.EthernetControlPopulation(
     len(devices), p.external_devices.PushBotLifEthernet(
         protocol=pushbot_protocol,
         devices=devices,
-        pushbot_ip_address="10.162.177.57",
+        pushbot_ip_address="10.10.10.1",
+        pushbot_port=3000,
         # "pushbot_ip_address": "127.0.0.1",
         tau_syn_E=500.0),
     label="PushBot"
@@ -76,14 +76,14 @@ pushbot_retina = p.external_devices.EthernetSensorPopulation(
     p.external_devices.PushBotEthernetRetinaDevice(
         protocol=pushbot_protocol,
         resolution=retina_resolution,
-        pushbot_ip_address="10.162.177.57"
+        pushbot_ip_address="10.10.10.1",
+        pushbot_port=3000,
+        retina_injector_label="Retina"
     ))
 
-viewer = p.external_devices.PushBotRetinaViewer(
-    retina_resolution.value, port=17895)
+retina_viewer = p.external_devices.PushBotRetinaViewer(
+    retina_resolution, pushbot_retina.label, p)
 p.external_devices.activate_live_output_for(
-    pushbot_retina, port=viewer.local_port, notify=False)
+    pushbot_retina, database_notify_port_num=retina_viewer.port)
 
-viewer.start()
-p.run(len(devices) * 1000)
-p.end()
+retina_viewer.run(len(devices) * 1000)

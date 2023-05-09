@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -38,7 +38,7 @@ class Vogels2011(object):
     This example uses the sPyNNaker implementation of the inhibitory
     Plasticity rule developed by Vogels, Sprekeler, Zenke et al (2011)
     https://www.ncbi.nlm.nih.gov/pubmed/22075724
-    http://www.opensourcebrain.org/projects/vogelsetal2011/wiki
+    https://www.opensourcebrain.org/projects/vogelsetal2011/wiki
     To reproduce the experiment from their paper
     """
 
