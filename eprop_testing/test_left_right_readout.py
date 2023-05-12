@@ -126,10 +126,12 @@ readout_pop = pynn.Population(3, # HARDCODED 1
                        label="readout_pop"
                        )
 
-# SpynnakerExternalDevicePluginManager.add_edge(
-#     readout_pop._vertex, input_pop._vertex, "CONTROL")
-pynn.external_devices.activate_live_output_to(
-    readout_pop, input_pop, "CONTROL")
+poisson_control_edge = SpynnakerExternalDevicePluginManager.add_edge(
+    readout_pop._vertex, input_pop._vertex, "CONTROL")
+# pynn.external_devices.activate_live_output_to(
+#     readout_pop, input_pop, "CONTROL")
+input_pop._vertex.set_live_poisson_control_edge(poisson_control_edge)
+# pynn.external_devices.add_poisson_live_rate_control(input_pop)
 
 # start_w = [weight_distribution(neuron_pop_size*input_size) for i in range(input_size)]
 eprop_learning_neuron = pynn.STDPMechanism(
@@ -207,8 +209,10 @@ readout_pop.record('all')
 
 runtime = cycle_time * num_repeats
 
-experiment_label = "eta:{}/{} - size:{}/{} - reg_rate:{} - p_conn:{}/{}/{} - rec:{} - cycle:{}/{}/{} noresetv 0d b:{} in+{}".format(
-    readout_neuron_params["eta"], neuron_params["eta"], input_size, neuron_pop_size, reg_rate, p_connect_in, p_connect_rec, p_connect_out, recurrent_connections, cycle_time, window_size, runtime, eprop_beta, added_input_weight)
+experiment_label = "eta:{}/{} - size:{}/{} - reg_rate:{} - p_conn:{}/{}/{} - rec:{} - cycle:{}/{}/{} noresetv 0d b:{}".format(
+    readout_neuron_params["eta"], neuron_params["eta"], input_size, neuron_pop_size,
+    reg_rate, p_connect_in, p_connect_rec, p_connect_out, recurrent_connections,
+    cycle_time, window_size, runtime, eprop_beta)
 print("\n", experiment_label, "\n")
 
 pynn.run(runtime)

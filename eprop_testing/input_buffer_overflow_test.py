@@ -130,9 +130,12 @@ readout_pop = pynn.Population(3, # HARDCODED 1
                        label="readout_pop"
                        )
 
-# SpynnakerExternalDevicePluginManager.add_edge(readout_pop._get_vertex, input_pop._get_vertex, "CONTROL")
-pynn.external_devices.activate_live_output_to(
-    readout_pop, input_pop, "CONTROL")
+poisson_control_edge = SpynnakerExternalDevicePluginManager.add_edge(
+    readout_pop._vertex, input_pop._vertex, "CONTROL")
+# pynn.external_devices.activate_live_output_to(
+#     readout_pop, input_pop, "CONTROL")
+input_pop._vertex.set_live_poisson_control_edge(poisson_control_edge)
+# pynn.external_devices.add_poisson_live_rate_control(input_pop)
 
 start_w = [weight_distribution(neuron_pop_size*input_size) for i in range(input_size)]
 eprop_learning_neuron = pynn.STDPMechanism(

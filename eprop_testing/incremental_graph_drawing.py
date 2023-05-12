@@ -1,11 +1,11 @@
 import spynnaker8 as pynn
 import numpy as np
 import matplotlib.pyplot as plt
-from PyNN8Examples.eprop_testing.frozen_poisson import build_input_spike_train, frozen_poisson_variable_hz
+from frozen_poisson import build_input_spike_train, frozen_poisson_variable_hz
 from pyNN.random import NumpyRNG, RandomDistribution
 from pyNN.utility.plotting import Figure, Panel
 from spynnaker.pyNN.spynnaker_external_device_plugin_manager import SpynnakerExternalDevicePluginManager
-from PyNN8Examples.eprop_testing.plot_graph import draw_graph_from_list, plot_learning_curve
+from plot_graph import draw_graph_from_list, plot_learning_curve
 
 def load_connections(npy_label, pop_size, rec=True):
     in_conn = [list(ele) for ele in np.load(npy_label+' in.npy').tolist()]
@@ -72,7 +72,7 @@ np.random.seed(272727)
 number_of_cues = 1
 cycle_time = (number_of_cues*150)+1000+150
 num_repeats = 300
-pynn.setup(1.0)
+# pynn.setup(1.0) # setup called twice?
 
 reg_rate = 0.000
 p_connect_in = 1.
@@ -94,12 +94,13 @@ out_weight = 0#0.01
 weight_string = "i{}-p{}-r{}-o{}".format(in_weight, prompt_weight, rec_weight, out_weight)
 pynn.setup(timestep=1)
 
+pynn.set_number_of_neurons_per_core(pynn.extra_models.EPropAdaptive, 6)
 
 input_size = 40
 readout_neuron_params = {
     "v": 0,
     "v_thresh": 30, # controls firing rate of error neurons
-    "poisson_pop_size": input_size / 4,
+    "poisson_pop_size": input_size // 4,
     "rate_on": 100,
     "rate_off": 0,
     # "tau_m": tau_a,
@@ -109,7 +110,7 @@ readout_neuron_params = {
     }
 rates = []
 for i in range(input_size):
-    if i >= (3*input_size) / 4:
+    if i >= (3*input_size) // 4:
         rates.append(10)
     else:
         rates.append(0)
@@ -125,7 +126,7 @@ neuron_pop_size = 4*15
 ratio_of_LIF = 0.5
 beta = []
 for i in range(neuron_pop_size):
-    if i < neuron_pop_size/2:
+    if i < neuron_pop_size//2:
     # if i % 2 == 0:
         beta.append(threshold_beta)
     else:
@@ -158,7 +159,12 @@ readout_pop = pynn.Population(3, # HARDCODED 1
                        label="readout_pop"
                        )
 
-SpynnakerExternalDevicePluginManager.add_edge(readout_pop._get_vertex, input_pop._get_vertex, "CONTROL")
+poisson_control_edge = SpynnakerExternalDevicePluginManager.add_edge(
+    readout_pop._vertex, input_pop._vertex, "CONTROL")
+# pynn.external_devices.activate_live_output_to(
+#     readout_pop, input_pop, "CONTROL")
+input_pop._vertex.set_live_poisson_control_edge(poisson_control_edge)
+# pynn.external_devices.add_poisson_live_rate_control(input_pop)
 
 eprop_learning_neuron = pynn.STDPMechanism(
     timing_dependence=pynn.extra_models.TimingDependenceEprop(),
@@ -232,7 +238,9 @@ if recurrent_connections:
 
 input_pop.record('spikes')
 neuron.record('spikes')
-neuron.record(['gsyn_exc', 'v', 'gsyn_inh'], indexes=[i for i in range(int((neuron_pop_size/2)-5), int((neuron_pop_size/2)+5))])
+# neuron.record(['gsyn_exc', 'v', 'gsyn_inh'], indexes=[i for i in range(int((neuron_pop_size/2)-5), int((neuron_pop_size/2)+5))])
+neuron[[i for i in range(int((neuron_pop_size/2)-5),
+                         int((neuron_pop_size/2)+5))]].record(['gsyn_exc', 'v', 'gsyn_inh'])
 readout_pop.record('all')
 
 runtime = cycle_time * num_repeats
@@ -246,7 +254,7 @@ while current_window*window_size < runtime:
     pynn.run(window_size)
     in_spikes = input_pop.get_data('spikes', clear=True)
     neuron_res = neuron.get_data('all', clear=True)
-    readout_res = readout_pop.get_data('all', clear=True)
+    readout_res = readout_pop.get_data('all')  #, clear=True)
     plot_start = (window_size*current_window)
     current_window += 1
     plot_end = (window_size*current_window)
@@ -315,7 +323,9 @@ while current_window*window_size < runtime:
 
     graph_directory = './graphs/'
     draw_graph_from_list(new_connections_in, new_connections_rec, new_connections_out, graph_directory, experiment_label+' {}'.format(current_window), rec_flag=recurrent_connections, save_flag=True)
-    plot_learning_curve([correct_or_not, cycle_error], graph_directory, experiment_label+' {}'.format(current_window), save_flag=True)
+    plot_learning_curve(correct_or_not, cycle_error, graph_directory,
+                        experiment_label+' {}'.format(current_window),
+                        save_flag=True)
 
 
 total_error = 0.0

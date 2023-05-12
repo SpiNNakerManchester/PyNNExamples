@@ -29,7 +29,7 @@ input_size = 40
 readout_neuron_params = {
     "v": 0,
     "v_thresh": 30,  # controls firing rate of error neurons
-    "poisson_pop_size": input_size / 4,
+    "poisson_pop_size": input_size // 4,
     "rate_on": 100,
     "rate_off": 0,
     "w_fb": [1, -1, 0],
@@ -39,7 +39,7 @@ readout_neuron_params = {
 }
 rates = []
 for i in range(input_size):
-    if i >= (3 * input_size) / 4:
+    if i >= (3 * input_size) // 4:
         rates.append(10)
     else:
         rates.append(0)
@@ -49,7 +49,7 @@ neuron_pop_size = 4 * 25
 ratio_of_LIF = 0.5
 beta = []
 for i in range(neuron_pop_size):
-    if i < neuron_pop_size / 2:
+    if i < neuron_pop_size // 2:
         beta.append(threshold_beta)
     else:
         beta.append(threshold_beta)

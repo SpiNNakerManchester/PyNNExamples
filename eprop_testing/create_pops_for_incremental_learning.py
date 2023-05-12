@@ -1,7 +1,7 @@
-import spynnaker8 as pynn
+import pyNN.spiNNaker as pynn
 from spynnaker.pyNN.spynnaker_external_device_plugin_manager import SpynnakerExternalDevicePluginManager
-from eprop_testing.plot_graph import draw_graph_from_list, plot_learning_curve
-from eprop_testing.incremental_config import *
+from plot_graph import draw_graph_from_list, plot_learning_curve
+from incremental_config import *
 
 def load_connections(npy_label, pop_size, rec=True):
     in_conn = [list(ele) for ele in np.load(npy_label+' in.npy').tolist()]
@@ -66,6 +66,7 @@ def range_connector(pre_min, pre_max, post_min, post_max, weight=1.5, delay_offs
 
 def first_create_pops():
     pynn.setup(timestep=1)
+    pynn.set_number_of_neurons_per_core(pynn.extra_models.EPropAdaptive, 6)
     input_pop = pynn.Population(input_size,
                                 pynn.SpikeSourcePoisson(rate=rates),
                                 label='input_pop')
@@ -81,7 +82,13 @@ def first_create_pops():
                                   label="readout_pop"
                                   )
 
-    SpynnakerExternalDevicePluginManager.add_edge(readout_pop._get_vertex, input_pop._get_vertex, "CONTROL")
+    # SpynnakerExternalDevicePluginManager.add_edge(readout_pop._get_vertex, input_pop._get_vertex, "CONTROL")
+    poisson_control_edge = SpynnakerExternalDevicePluginManager.add_edge(
+        readout_pop._vertex, input_pop._vertex, "CONTROL")
+    # pynn.external_devices.activate_live_output_to(
+    #     readout_pop, input_pop, "CONTROL")
+    input_pop._vertex.set_live_poisson_control_edge(poisson_control_edge)
+    # pynn.external_devices.add_poisson_live_rate_control(input_pop)
 
     eprop_learning_neuron = pynn.STDPMechanism(
         timing_dependence=pynn.extra_models.TimingDependenceEprop(),
@@ -179,7 +186,13 @@ def next_create_pops(from_list_in, from_list_rec, from_list_out):
                                   label="readout_pop"
                                   )
 
-    SpynnakerExternalDevicePluginManager.add_edge(readout_pop._get_vertex, input_pop._get_vertex, "CONTROL")
+    # SpynnakerExternalDevicePluginManager.add_edge(readout_pop._get_vertex, input_pop._get_vertex, "CONTROL")
+    poisson_control_edge = SpynnakerExternalDevicePluginManager.add_edge(
+        readout_pop._vertex, input_pop._vertex, "CONTROL")
+    # pynn.external_devices.activate_live_output_to(
+    #     readout_pop, input_pop, "CONTROL")
+    input_pop._vertex.set_live_poisson_control_edge(poisson_control_edge)
+    # pynn.external_devices.add_poisson_live_rate_control(input_pop)
 
     eprop_learning_neuron = pynn.STDPMechanism(
         timing_dependence=pynn.extra_models.TimingDependenceEprop(),
@@ -290,14 +303,16 @@ def run_until(experiment_label, runtime, pynn, in_proj, recurrent_proj, out_proj
         pynn.run(window_size)
         # in_spikes = input_pop.get_data('spikes', clear=True)
         # neuron_res = neuron.get_data('all', clear=True)
-        readout_res = readout_pop.get_data('all', clear=True)
+        readout_res = readout_pop.get_data('all')  #, clear=True)
 
         for cycle in range(window_cycles):
             cycle_error.append(0.0)
             correct_or_not.append([])
             for time_index in range(cycle_time):
                 instantaneous_error = np.abs(float(
-                    readout_res.segments[0].filter(name='gsyn_inh')[0][time_index + ((cycle+current_iter) * cycle_time)][0]))
+                    readout_res.segments[0].filter(
+                        name='gsyn_inh')[0][time_index + (
+                            (cycle+current_iter) * cycle_time)][0]))
                 cycle_error[-1] += instantaneous_error
             if cycle_error[-1] < 75:
                 correct_or_not[-1] = 1
