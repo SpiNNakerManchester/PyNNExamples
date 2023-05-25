@@ -67,6 +67,9 @@ def range_connector(pre_min, pre_max, post_min, post_max, weight=1.5, delay_offs
 def first_create_pops():
     pynn.setup(timestep=1)
     pynn.set_number_of_neurons_per_core(pynn.extra_models.EPropAdaptive, 6)
+
+    print("Check rates: ", rates)
+
     input_pop = pynn.Population(input_size,
                                 pynn.SpikeSourcePoisson(rate=rates),
                                 label='input_pop')
@@ -101,6 +104,9 @@ def first_create_pops():
                                    weight=in_weight)  # connect all 2 prompt
     from_list_in += range_connector(ps * 2, ps * 4, 0, neuron_pop_size, delay_offset=0,
                                     weight=prompt_weight)  # connect all 2 prompt
+
+    print("length ", len(from_list_in))
+
     in_proj = pynn.Projection(input_pop,
                               neuron,
                               pynn.FromListConnector(from_list_in),
@@ -303,7 +309,7 @@ def run_until(experiment_label, runtime, pynn, in_proj, recurrent_proj, out_proj
         pynn.run(window_size)
         # in_spikes = input_pop.get_data('spikes', clear=True)
         # neuron_res = neuron.get_data('all', clear=True)
-        readout_res = readout_pop.get_data('all')  #, clear=True)
+        readout_res = readout_pop.get_data('all', clear=True)
 
         for cycle in range(window_cycles):
             cycle_error.append(0.0)
@@ -312,7 +318,8 @@ def run_until(experiment_label, runtime, pynn, in_proj, recurrent_proj, out_proj
                 instantaneous_error = np.abs(float(
                     readout_res.segments[0].filter(
                         name='gsyn_inh')[0][time_index + (
-                            (cycle+current_iter) * cycle_time)][0]))
+                            cycle * cycle_time)][0]))
+                            # (cycle+current_iter) * cycle_time)][0]))
                 cycle_error[-1] += instantaneous_error
             if cycle_error[-1] < 75:
                 correct_or_not[-1] = 1
@@ -375,9 +382,12 @@ def run_until(experiment_label, runtime, pynn, in_proj, recurrent_proj, out_proj
         print(experiment_label)
 
         graph_directory = './big_with_labels/'
-        draw_graph_from_list(new_connections_in, new_connections_rec, new_connections_out, graph_directory,
-                             experiment_label + ' {}'.format(current_window), rec_flag=recurrent_connections,
-                             save_flag=True)
+        draw_graph_from_list(
+            new_connections_in, new_connections_rec, new_connections_out,
+            graph_directory,
+            experiment_label + ' {}'.format(current_window),
+            rec_flag=recurrent_connections,
+            save_flag=True)
         plot_learning_curve(correct_or_not, cycle_error, graph_directory,
                             experiment_label + ' {}'.format(current_window),
                             save_flag=True,

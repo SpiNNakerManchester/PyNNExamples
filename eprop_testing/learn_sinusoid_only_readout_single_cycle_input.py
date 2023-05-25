@@ -1,4 +1,4 @@
-import spynnaker8 as pynn
+import pyNN.spiNNaker as pynn
 import numpy as np
 import matplotlib.pyplot as plt
 from frozen_poisson import build_input_spike_train, frozen_poisson_variable_hz
@@ -95,7 +95,7 @@ runtime = cycle_time * num_repeats
 for i in range(num_repeats):
     print('\nrepeat: {}\n'.format(i))
     pynn.run(cycle_time)
-    
+
 in_spikes = input_pop.get_data('spikes')
 readout_res = readout_pop.get_data('all')
 
@@ -117,7 +117,7 @@ from_list_in.sort(key=lambda x:x[1])
 connection_diff_in = []
 for i in range(len(from_list_in)):
     connection_diff_in.append(new_connections_in[i][2] - from_list_in[i][2])
-    
+
 print("Input connections\noriginal\n", np.array(from_list_in))
 print("new\n", np.array(new_connections_in))
 print("diff\n", np.array(connection_diff_in))

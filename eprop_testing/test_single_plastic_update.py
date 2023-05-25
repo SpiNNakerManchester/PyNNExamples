@@ -1,4 +1,4 @@
-import spynnaker8 as pynn
+import pyNN.spiNNaker as pynn
 import numpy as np
 import matplotlib.pyplot as plt
 from pyNN.random import NumpyRNG, RandomDistribution
@@ -29,7 +29,7 @@ start_w = [-0.5, 2]
 eprop_learning = pynn.STDPMechanism(
     timing_dependence=pynn.extra_models.TimingDependenceEprop(),
     weight_dependence=pynn.extra_models.WeightDependenceEpropReg(
-        w_min=-2.0, w_max=2.0, reg_rate=1.5), 
+        w_min=-2.0, w_max=2.0, reg_rate=1.5),
     weight=start_w, delay=[0, 0])
 
 proj = pynn.Projection(spike_source, neuron,

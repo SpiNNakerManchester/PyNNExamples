@@ -1,4 +1,4 @@
-import spynnaker8 as pynn
+import pyNN.spiNNaker as pynn
 import numpy as np
 import matplotlib.pyplot as plt
 from pyNN.random import NumpyRNG, RandomDistribution

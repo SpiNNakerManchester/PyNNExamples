@@ -1,4 +1,4 @@
-import spynnaker8 as pynn
+import pyNN.spiNNaker as pynn
 import numpy as np
 import matplotlib.pyplot as plt
 from frozen_poisson import build_input_spike_train, frozen_poisson_variable_hz

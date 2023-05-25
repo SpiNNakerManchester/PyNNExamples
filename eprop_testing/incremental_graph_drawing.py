@@ -1,4 +1,4 @@
-import spynnaker8 as pynn
+import pyNN.spiNNaker as pynn
 import numpy as np
 import matplotlib.pyplot as plt
 from frozen_poisson import build_input_spike_train, frozen_poisson_variable_hz
@@ -139,7 +139,9 @@ neuron_params = {
     # "w_fb": [(np.random.random() * 2) - 1. for i in range(neuron_pop_size)],
     # "w_fb": [4*np.random.random() - 4*np.random.random() for i in range(neuron_pop_size)],  ## for both feedback weights
     # "w_fb": [-3]*(neuron_pop_size/2) + [3]*(neuron_pop_size/2),
-    "w_fb": [3]*int(neuron_pop_size/4) + [-3]*int(neuron_pop_size/4) + [3]*int(neuron_pop_size/4) + [-3]*int(neuron_pop_size/4),
+    "w_fb": [3.0]*int(neuron_pop_size/4) + [-3.0]*int(
+        neuron_pop_size/4) + [3.0]*int(neuron_pop_size/4) + [-3.0]*int(
+            neuron_pop_size/4),
     # "B": 0.0,
     "beta": beta,
     "target_rate": 10,
@@ -254,7 +256,7 @@ while current_window*window_size < runtime:
     pynn.run(window_size)
     in_spikes = input_pop.get_data('spikes', clear=True)
     neuron_res = neuron.get_data('all', clear=True)
-    readout_res = readout_pop.get_data('all')  #, clear=True)
+    readout_res = readout_pop.get_data('all', clear=True)
     plot_start = (window_size*current_window)
     current_window += 1
     plot_end = (window_size*current_window)
@@ -262,7 +264,8 @@ while current_window*window_size < runtime:
     total_error = 0.0
     cycle_error = [0.0 for i in range(current_window*window_cycles)]
     correct_or_not = [0 for i in range(current_window*window_cycles)]
-    for cycle in range(current_window*window_cycles):
+    # for cycle in range(current_window*window_cycles):
+    for cycle in range(window_cycles):
         for time_index in range(cycle_time):
             instantaneous_error = np.abs(float(
                 readout_res.segments[0].filter(name='gsyn_inh')[0][time_index+(cycle*cycle_time)][0]))

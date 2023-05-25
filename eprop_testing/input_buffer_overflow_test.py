@@ -1,10 +1,10 @@
-import spynnaker8 as pynn
+import pyNN.spiNNaker as pynn
 import numpy as np
 import matplotlib.pyplot as plt
 from frozen_poisson import build_input_spike_train, frozen_poisson_variable_hz
 from pyNN.random import NumpyRNG, RandomDistribution
 from pyNN.utility.plotting import Figure, Panel
-# from spynnaker.pyNN.spynnaker_external_device_plugin_manager import SpynnakerExternalDevicePluginManager
+from spynnaker.pyNN.spynnaker_external_device_plugin_manager import SpynnakerExternalDevicePluginManager
 
 def weight_distribution(pop_size):
     base_weight = np.random.randn() / np.sqrt(pop_size) #+ 0.5
@@ -75,7 +75,7 @@ input_size = 24
 readout_neuron_params = {
     "v": 0,
     "v_thresh": 30, # controls firing rate of error neurons
-    "poisson_pop_size": input_size / 4,
+    "poisson_pop_size": input_size // 4,
     "rate_on": 40,
     "rate_off": 0,
     # "tau_m": tau_a,
@@ -85,7 +85,7 @@ readout_neuron_params = {
     }
 rates = []
 for i in range(input_size):
-    if i >= (3*input_size) / 4:
+    if i >= (3*input_size) // 4:
         rates.append(10)
     else:
         rates.append(0)
@@ -99,7 +99,7 @@ neuron_pop_size = 10
 ratio_of_LIF = 0.5
 beta = []
 for i in range(neuron_pop_size):
-    if i < neuron_pop_size/2:
+    if i < neuron_pop_size//2:
     # if i % 2 == 0:
         beta.append(25.8)
     else:
@@ -145,8 +145,8 @@ eprop_learning_neuron = pynn.STDPMechanism(
 
 # from_list_in, max_syn_per_input = probability_connector(input_size, neuron_pop_size, p_connect_in)
 ps = readout_neuron_params["poisson_pop_size"]
-from_list_in = range_connector(0, ps, 0, neuron_pop_size/2, weight=in_weight)
-from_list_in += range_connector(ps, ps*2, neuron_pop_size/2, neuron_pop_size, weight=in_weight)
+from_list_in = range_connector(0, ps, 0, neuron_pop_size//2, weight=in_weight)
+from_list_in += range_connector(ps, ps*2, neuron_pop_size//2, neuron_pop_size, weight=in_weight)
 from_list_in += range_connector(ps*2, ps*3, 0, neuron_pop_size, delay_offset=0, weight=prompt_weight)
 in_proj = pynn.Projection(input_pop,
                           neuron,
