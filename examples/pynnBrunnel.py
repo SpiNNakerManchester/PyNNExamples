@@ -16,7 +16,7 @@ import pyNN.spiNNaker as pynn
 
 import numpy as np
 import matplotlib.pyplot as plt
-from pyNN.random import NumpyRNG, RandomDistribution
+from pyNN.random import RandomDistribution
 from pyNN.utility.plotting import Figure, Panel
 
 simulator_Name = 'spiNNaker'
@@ -136,8 +136,6 @@ if simulator_Name == "spiNNaker":
     pynn.set_number_of_neurons_per_core(pynn.IF_curr_exp, 64)
     pynn.set_number_of_neurons_per_core(pynn.SpikeSourcePoisson, 64)
 
-rng = NumpyRNG(seed=1)
-
 exc_cell_params = {
     'cm': 1.0,  # pf
     'tau_m': tau_m,
@@ -164,29 +162,29 @@ inh_cell_params = {
 
 # Set-up pynn Populations
 E_pop = pynn.Population(
-    N_E, pynn.IF_curr_exp(**exc_cell_params), label="E_pop")
+    N_E, pynn.IF_curr_exp(**exc_cell_params), label="E_pop", seed=1)
 
 I_pop = pynn.Population(
-    N_I, pynn.IF_curr_exp(**inh_cell_params), label="I_pop")
+    N_I, pynn.IF_curr_exp(**inh_cell_params), label="I_pop", seed=2)
 
 Poiss_ext_E = pynn.Population(
     N_E, pynn.SpikeSourcePoisson(rate=10.0), label="Poisson_pop_E",
-    additional_parameters={"seed": int(rng.next() * 0xFFFFFFFF)})
+    additional_parameters={"seed": 3})
 Poiss_ext_I = pynn.Population(
     N_I, pynn.SpikeSourcePoisson(rate=10.0), label="Poisson_pop_I",
-    additional_parameters={"seed": int(rng.next() * 0xFFFFFFFF)})
+    additional_parameters={"seed": 4})
 
 # Connectors
-E_conn = pynn.FixedProbabilityConnector(epsilon, rng=rng)
-I_conn = pynn.FixedProbabilityConnector(epsilon, rng=rng)
+E_conn = pynn.FixedProbabilityConnector(epsilon)
+I_conn = pynn.FixedProbabilityConnector(epsilon)
 
 # Use random delays for the external noise and
 # set the inital membrance voltage below the resting potential
 # to avoid the overshoot of activity in the beginning of the simulation
-delay_distr = RandomDistribution('uniform', low=0.1, high=12.8, rng=rng)
+delay_distr = RandomDistribution('uniform', low=0.1, high=12.8)
 Ext_conn = pynn.OneToOneConnector()
 
-uniformDistr = RandomDistribution('uniform', low=-10, high=0, rng=rng)
+uniformDistr = RandomDistribution('uniform', low=-10, high=0)
 E_pop.initialize(v=uniformDistr)
 I_pop.initialize(v=uniformDistr)
 
