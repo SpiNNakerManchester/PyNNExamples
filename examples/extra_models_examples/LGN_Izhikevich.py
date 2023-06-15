@@ -121,14 +121,10 @@ Inp_isi = int(1000 / Rate_Inp)
 
 """ Initialising Model connectivity parameters """
 
-intra_pop_delay = RandomDistribution('uniform', (1, 3),
-                                     rng=NumpyRNG(seed=85520))
-intra_nucleus_delay = RandomDistribution('uniform', (1, 3),
-                                         rng=NumpyRNG(seed=85521))
-inter_nucleus_delay = RandomDistribution('uniform', (1, 3),
-                                         rng=NumpyRNG(seed=85522))
-inter_pop_delay = RandomDistribution('uniform', (1, 3),
-                                     rng=NumpyRNG(seed=85523))
+intra_pop_delay = RandomDistribution('uniform', (1, 3))
+intra_nucleus_delay = RandomDistribution('uniform', (1, 3))
+inter_nucleus_delay = RandomDistribution('uniform', (1, 3))
+inter_pop_delay = RandomDistribution('uniform', (1, 3))
 input_delay = inter_pop_delay
 
 # # input_delay is the delay of the spike source hitting the neuronal pops
@@ -262,25 +258,25 @@ NumCellsIN = 2*scale_fact
 NumCellsTRN = 4*scale_fact
 TCR_pop = p.Population(
     NumCellsTCR, p.extra_models.Izhikevich_cond, TCR_cell_params,
-    label='TCR_pop', initial_values=TCR_initial_values)
+    label='TCR_pop', initial_values=TCR_initial_values, seed=85520)
 IN_pop = p.Population(
     NumCellsIN, p.extra_models.Izhikevich_cond, IN_cell_params,
-    label='IN_pop', initial_values=IN_initial_values)
+    label='IN_pop', initial_values=IN_initial_values, seed=85521)
 TRN_pop = p.Population(
     NumCellsTRN, p.extra_models.Izhikevich_cond, TRN_cell_params,
-    label='TRN_pop', initial_values=TRN_initial_values)
+    label='TRN_pop', initial_values=TRN_initial_values, seed=85522)
 
 """ Poisson input for TCR """
 spike_source_TCR = p.Population(
     NumCellsTCR, p.SpikeSourcePoisson(rate=10, start=Start_Inp,
                                       duration=Duration_Inp),
-    label='spike_source_TCR')
+    label='spike_source_TCR', seed=85523)
 
 """ Poisson input for IN """
 spike_source_IN = p.Population(
     NumCellsIN, p.SpikeSourcePoisson(rate=10, start=Start_Inp,
                                      duration=Duration_Inp),
-    label='spike_source_IN')
+    label='spike_source_IN', seed=85524)
 
 """ Poisson Source to TCR population projections """
 Proj0 = p.Projection(

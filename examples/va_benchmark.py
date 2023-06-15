@@ -29,7 +29,7 @@ August 2006
 """
 import socket
 import pyNN.spiNNaker as p
-from pyNN.random import NumpyRNG, RandomDistribution
+from pyNN.random import RandomDistribution
 from pyNN.utility import Timer
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
@@ -157,28 +157,27 @@ timer.start()
 
 print("%s Creating cell populations..." % node_id)
 exc_cells = p.Population(
-    n_exc, celltype(**cell_params), label="Excitatory_Cells")
+    n_exc, celltype(**cell_params), label="Excitatory_Cells", seed=1)
 inh_cells = p.Population(
-    n_inh, celltype(**cell_params), label="Inhibitory_Cells")
+    n_inh, celltype(**cell_params), label="Inhibitory_Cells", seed=2)
 exc_conn = None
 ext_stim = None
 if benchmark == "COBA":
     ext_stim = p.Population(
         20, p.SpikeSourcePoisson(rate=rate, duration=stim_dur),
-        label="expoisson")
+        label="expoisson", seed=3)
     rconn = 0.01
     ext_conn = p.FixedProbabilityConnector(rconn)
     ext_stim.record("spikes")
 
 print("%s Initialising membrane potential to random values..." % node_id)
-rng = NumpyRNG(seed=rngseed, parallel_safe=parallel_safe)
-uniformDistr = RandomDistribution('uniform', [v_reset, v_thresh], rng=rng)
+uniformDistr = RandomDistribution('uniform', [v_reset, v_thresh])
 exc_cells.initialize(v=uniformDistr)
 inh_cells.initialize(v=uniformDistr)
 
 print("%s Connecting populations..." % node_id)
-exc_conn = p.FixedProbabilityConnector(pconn, rng=rng)
-inh_conn = p.FixedProbabilityConnector(pconn, rng=rng)
+exc_conn = p.FixedProbabilityConnector(pconn)
+inh_conn = p.FixedProbabilityConnector(pconn)
 
 connections = {
     'e2e': p.Projection(
