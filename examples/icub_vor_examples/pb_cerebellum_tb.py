@@ -21,7 +21,7 @@ import matplotlib as mlib
 
 
 from pyNN.utility.plotting import Figure, Panel
-from pyNN.random import RandomDistribution, NumpyRNG
+from pyNN.random import RandomDistribution
 
 # PAB imports
 import traceback
@@ -150,13 +150,11 @@ num_CF_neurons = 200
 
 # Random distribution for synapses delays and weights (MF and GO)
 delay_distr = RandomDistribution(
-    'uniform', (1.0, 10.0), rng=NumpyRNG(seed=85524))
+    'uniform', (1.0, 10.0))
 weight_distr_MF = RandomDistribution(
-    'uniform', (mf_gc_weights * 0.8, mf_gc_weights * 1.2),
-    rng=NumpyRNG(seed=85524))
+    'uniform', (mf_gc_weights * 0.8, mf_gc_weights * 1.2))
 weight_distr_GO = RandomDistribution(
-    'uniform', (go_gc_weights * 0.8, go_gc_weights * 1.2),
-    rng=NumpyRNG(seed=24568))
+    'uniform', (go_gc_weights * 0.8, go_gc_weights * 1.2))
 
 # Post-synapse population
 neuron_params = {
@@ -212,8 +210,7 @@ initial_weight_s = max_weight_s  # 0.0001
 plastic_delay_s = 4
 weight_dist_pfpc = RandomDistribution('uniform',
                                       (initial_weight_s * 0.8,
-                                       initial_weight_s * 1.2),
-                                      rng=NumpyRNG(seed=24534))
+                                       initial_weight_s * 1.2))
 
 sim.setup(timestep=1., min_delay=1, max_delay=15)
 global_n_neurons_per_core = 64
@@ -406,35 +403,37 @@ MF_population = sim.Population(
     # {'rate': sa_mean_freq},  # source spike times
     {'rate': sensorial_activity(0)[0]},  # source spike times
     label="MFLayer",  # identifier
-    additional_parameters={"max_rate": MAX_RATE}
+    additional_parameters={"max_rate": MAX_RATE, 'seed': 24534}
     )
 
 all_populations["mossy_fibers"] = MF_population
 
 # Create GOC population
 GOC_population = sim.Population(num_GOC_neurons, sim.IF_cond_exp(),
-                                label='GOCLayer')
+                                label='GOCLayer',
+                                additional_parameters={'seed': 24534})
 all_populations["golgi"] = GOC_population
 
 # create PC population
 PC_population = sim.Population(
     num_PC_neurons,  # number of neurons
     sim.extra_models.IFCondExpCerebellum(**neuron_params),  # Neuron model
-    label="Purkinje Cell"  # identifier
-    )
+    label="Purkinje Cell",  # identifier
+    additional_parameters={'seed': 24534})
 all_populations["purkinje"] = PC_population
 
 # create VN population
 VN_population = sim.Population(
     num_VN_neurons,  # number of neurons
     sim.extra_models.IFCondExpCerebellum(**neuron_params),  # Neuron model
-    label="Vestibular Nuclei"  # identifier
-    )
+    label="Vestibular Nuclei",  # identifier
+    additional_parameters={'seed': 24534})
 all_populations["vn"] = VN_population
 
 # Create GrC population
 GC_population = sim.Population(num_GC_neurons, sim.IF_curr_exp(),
-                               label='GCLayer')
+                               label='GCLayer',
+                               additional_parameters={'seed': 24534})
 all_populations["granule"] = GC_population
 
 # generate fake error (it should be calculated from sensorial activity in error
@@ -449,7 +448,7 @@ CF_population = sim.Population(
     # {'rate': sa_mean_freq},  # source spike times
     {'rate': error_activity(err)},  # source spike times
     label="CFLayer",  # identifier
-    additional_parameters={"max_rate": MAX_RATE}
+    additional_parameters={"max_rate": MAX_RATE, 'seed': 24534}
     )
 all_populations["climbing_fibers"] = CF_population
 
