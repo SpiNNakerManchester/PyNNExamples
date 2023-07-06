@@ -8,3 +8,5 @@ __pycache__
 *application_generated_data_files/
 *reports/
 .mypy_cache/
+*big_with_labels/
+*graphs/
