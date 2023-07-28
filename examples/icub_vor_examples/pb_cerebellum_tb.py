@@ -860,8 +860,7 @@ F = Figure(
           yticks=True, markersize=2, xlim=(0, total_runtime),
           xlabel='VN_spikes'),
     Panel(VN_gsyninh.segments[0].filter(name='gsyn_inh')[0],
-          ylabel="gsyn_inh", yticks=True, xlim=(0,
-                                                               total_runtime))
+          ylabel="gsyn_inh", yticks=True, xlim=(0, total_runtime))
 )
 save_figure(plt, os.path.join(fig_folder, "collections"),
             extensions=['.png', ])
