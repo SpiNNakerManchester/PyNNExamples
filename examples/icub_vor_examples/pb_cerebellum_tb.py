@@ -682,7 +682,8 @@ MF_spikes = MF_population.get_data('spikes')
 CF_spikes = CF_population.get_data('spikes')
 GC_spikes = GC_population.get_data('all')
 GOC_spikes = GOC_population.get_data('spikes')
-VN_spikes = VN_population.get_data('all')  # VN_population.get_data('spikes')
+VN_spikes = VN_population.get_data('spikes')
+VN_gsyninh = VN_population.get_data('gsyn_inh')
 PC_spikes = PC_population.get_data('spikes')
 
 mfvn_weights = mf_vn_connections.get('weight', 'list', with_address=False)
@@ -827,16 +828,17 @@ save_figure(plt, os.path.join(fig_folder, "raster_plots"),
             extensions=['.png', '.pdf'])
 plt.close(f)
 
-for proj, conn in final_connectivity.items():
-    f = plt.figure(1, figsize=(9, 9), dpi=400)
-    plt.hist(conn[:, 2], bins=20)
-    plt.title(proj)
-    plt.xlabel("Weight")
-    plt.ylabel("Count")
-    save_figure(plt, os.path.join(
-        fig_folder, "{}_weight_histogram".format(proj)),
-                extensions=['.png', ])
-    plt.close(f)
+if not isinstance(final_connectivity, list):
+    for proj, conn in final_connectivity.items():
+        f = plt.figure(1, figsize=(9, 9), dpi=400)
+        plt.hist(conn[:, 2], bins=20)
+        plt.title(proj)
+        plt.xlabel("Weight")
+        plt.ylabel("Count")
+        save_figure(plt, os.path.join(
+            fig_folder, "{}_weight_histogram".format(proj)),
+                    extensions=['.png', ])
+        plt.close(f)
 
 F = Figure(
     Panel(MF_spikes.segments[0].spiketrains,
@@ -857,8 +859,8 @@ F = Figure(
     Panel(VN_spikes.segments[0].spiketrains,
           yticks=True, markersize=2, xlim=(0, total_runtime),
           xlabel='VN_spikes'),
-    Panel(VN_spikes.segments[0].filter(name='gsyn_inh')[0],
-          ylabel="Membrane potential (mV)", yticks=True, xlim=(0,
+    Panel(VN_gsyninh.segments[0].filter(name='gsyn_inh')[0],
+          ylabel="gsyn_inh", yticks=True, xlim=(0,
                                                                total_runtime))
 )
 save_figure(plt, os.path.join(fig_folder, "collections"),
