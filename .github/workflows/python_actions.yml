@@ -43,7 +43,7 @@ jobs:
       uses: ./support/actions/install-spinn-deps
       with:
         repositories: >
-          SpiNNUtils SpiNNMachine SpiNNMan PACMAN DataSpecification spalloc
+          SpiNNUtils SpiNNMachine SpiNNMan PACMAN spalloc
           SpiNNFrontEndCommon sPyNNaker
         install: true
 
