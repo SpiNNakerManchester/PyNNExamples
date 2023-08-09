@@ -1,5 +1,6 @@
 **/*.colour_map
 **/*.col
+**/*.npy
 **/SpiNNUtils/**
 **/SpiNNMachine/**
 **/SpiNNMan/**
