@@ -106,7 +106,7 @@ for t in delta_t:
             tau_plus=16.7, tau_minus=33.7,
             A_plus=0.0000875, A_minus=0.0000875),
         weight_dependence=sim.AdditiveWeightDependence(
-            w_min=0.0, w_max=0.0175), weight=start_w)
+            w_min=0.0, w_max=0.2), weight=start_w)
 
     projections.append(sim.Projection(
         pre_pop, post_pop, sim.OneToOneConnector(),
