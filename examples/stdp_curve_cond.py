@@ -26,7 +26,7 @@ import pyNN.spiNNaker as sim
 # ------------------------------------------------------------------
 time_between_pairs = 1000
 num_pairs = 60
-start_w = 0.005
+start_w = 0.05
 delta_t = [-100, -60, -40, -30, -20, -10, -1, 1, 10, 20, 30, 40, 60, 100]
 start_time = 200
 mad = True
@@ -89,7 +89,7 @@ for t in delta_t:
     post_stim = sim.Population(
         1, sim.SpikeSourceArray(spike_times=[post_times]))
 
-    weight = 0.035
+    weight = 0.075
 
     # Connections between spike sources and neuron populations
     ee_connector = sim.OneToOneConnector()
@@ -104,9 +104,9 @@ for t in delta_t:
     stdp_model = sim.STDPMechanism(
         timing_dependence=sim.SpikePairRule(
             tau_plus=16.7, tau_minus=33.7,
-            A_plus=0.0000875, A_minus=0.0000875),
+            A_plus=0.00075, A_minus=0.00075),
         weight_dependence=sim.AdditiveWeightDependence(
-            w_min=0.0, w_max=0.0175), weight=start_w)
+            w_min=0.0, w_max=1.0), weight=start_w)
 
     projections.append(sim.Projection(
         pre_pop, post_pop, sim.OneToOneConnector(),
