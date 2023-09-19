@@ -17,7 +17,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from pyNN.utility.plotting import Figure, Panel
-from pyNN.random import RandomDistribution, NumpyRNG
+from pyNN.random import RandomDistribution
 
 L_RATE = 2
 H_RATE = 20

@@ -82,6 +82,7 @@ plastic_delay_s = 4
 
 sim.setup(timestep=1.)
 
+
 # Sensorial Activity: input activity from vestibulus (will come from the head
 # IMU, now it is a test bench)
 def sensorial_activity(pt):
@@ -390,4 +391,3 @@ io_pc_connections = sim.Projection(
 lif_pop = sim.Population(1024, sim.IF_curr_exp(), label='pop_lif')
 
 out_pop = sim.Population(128, sim.IF_curr_exp(), label='pop_out')
-
