@@ -12,11 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import print_function
 import pyNN.spiNNaker as p
-# import numpy
-# import math
-# import unittest
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 
@@ -45,7 +41,7 @@ plastic_delay = 4
 
 vestibular_nuclei = p.Population(
     1,  # number of neurons
-    p.extra_models.IFCondExpCerebellum(**neuron_params),  # Neuron model
+    p.IF_cond_exp(**neuron_params),  # Neuron model
     label="Vestibular Nuclei"  # identifier
     )
 

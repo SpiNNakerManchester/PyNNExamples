@@ -12,26 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import print_function  # for python3 printing in python2
-# import socket
 import pyNN.spiNNaker as sim
 import numpy as np
-# import logging
 import matplotlib.pyplot as plt
 
-# from spynnaker8.utilities import DataHolder
-# from pacman.model.constraints.key_allocator_constraints import (
-#     FixedKeyAndMaskConstraint)
-# from pacman.model.graphs.application import ApplicationSpiNNakerLinkVertex
-# from pacman.model.routing_info import BaseKeyAndMask
-# from spinn_front_end_common.abstract_models.\
-#     abstract_provides_n_keys_for_partition import (
-#         AbstractProvidesNKeysForPartition)
-# from spinn_front_end_common.abstract_models.\
-#     abstract_provides_outgoing_partition_constraints import (
-#         AbstractProvidesOutgoingPartitionConstraints)
-# from spinn_utilities.overrides import overrides
-# from pyNN.utility import Timer
 from pyNN.utility.plotting import Figure, Panel
 from pyNN.random import RandomDistribution, NumpyRNG
 
@@ -60,14 +44,13 @@ num_VN_neurons = 200
 num_CF_neurons = 200
 
 # Random distribution for synapses delays and weights (MF and GO)
-delay_distr = RandomDistribution('uniform', (1.0, 10.0),
-                                 rng=NumpyRNG(seed=85524))
+delay_distr = RandomDistribution('uniform', (1.0, 10.0))
 weight_distr_MF = RandomDistribution(
-    'uniform', (mf_gc_weights*0.8, mf_gc_weights*1.2),
-    rng=NumpyRNG(seed=85524))
+    'uniform', (mf_gc_weights*0.8, mf_gc_weights*1.2))
+seed_MF = 85524
 weight_distr_GO = RandomDistribution(
-    'uniform', (go_gc_weights*0.8, go_gc_weights*1.2),
-    rng=NumpyRNG(seed=24568))
+    'uniform', (go_gc_weights*0.8, go_gc_weights*1.2))
+seed_GO = 24568
 
 
 # Post-synapse population
@@ -97,8 +80,8 @@ initial_weight_s = max_weight_s  # 0.0001
 plastic_delay_s = 4
 weight_dist_pfpc = RandomDistribution('uniform',
                                       (initial_weight_s*0.8,
-                                       initial_weight_s*1.2),
-                                      rng=NumpyRNG(seed=24534))
+                                       initial_weight_s*1.2))
+seed_PFPC = 24534
 
 sim.setup(timestep=1.)
 
@@ -174,32 +157,9 @@ def sensorial_activity(pt):
 # Error Activity: error from eye and head encoders
 def error_activity(error_):
 
-    # min_rate = 1.0
-    # max_rate = 25.0
-    #
-    # low_neuron_ID_threshold = abs(error_) * 100.0
-    # up_neuron_ID_threshold = low_neuron_ID_threshold - 100.0
     IO_agonist = np.zeros((100))
     IO_antagonist = np.zeros((100))
 
-    # rate = []
-    # for i in range (100):
-    #     if(i < up_neuron_ID_threshold):
-    #         rate.append(max_rate)
-    #     elif(i<low_neuron_ID_threshold):
-    #         aux_rate=max_rate - (max_rate-min_rate)*(
-    #             (i - up_neuron_ID_threshold)/(
-    #                 low_neuron_ID_threshold - up_neuron_ID_threshold))
-    #         rate.append(aux_rate)
-    #     else:
-    #         rate.append(min_rate)
-    #
-    # if error_>=0.0:
-    #     IO_agonist[0:100]=min_rate
-    #     IO_antagonist=rate
-    # else:
-    #     IO_antagonist[0:100]=min_rate
-    #     IO_agonist=rate
     IO_agonist[:] = H_RATE
     IO_antagonist[:] = L_RATE
 
@@ -231,30 +191,34 @@ MF_population = sim.Population(
     # {'rate': sa_mean_freq},  # source spike times
     {'rate': sensorial_activity(0)[0]},  # source spike times
     label="MFLayer",  # identifier
-    additional_parameters={"max_rate": MAX_RATE}
+    additional_parameters={"max_rate": MAX_RATE, "seed": seed_MF}
     )
 
 # Create GOC population
 GOC_population = sim.Population(num_GOC_neurons, sim.IF_cond_exp(),
-                                label='GOCLayer')
+                                label='GOCLayer',
+                                additional_parameters={"seed": seed_GO})
 
 # create PC population
 PC_population = sim.Population(
     num_PC_neurons,  # number of neurons
-    sim.extra_models.IFCondExpCerebellum(**neuron_params),  # Neuron model
-    label="Purkinje Cell"  # identifier
+    sim.IF_cond_exp(**neuron_params),  # Neuron model
+    label="Purkinje Cell",  # identifier
+    additional_parameters={"seed": seed_PFPC}
     )
 
 # create VN population
 VN_population = sim.Population(
     num_VN_neurons,  # number of neurons
-    sim.extra_models.IFCondExpCerebellum(**neuron_params),  # Neuron model
-    label="Vestibular Nuclei"  # identifier
+    sim.IF_cond_exp(**neuron_params),  # Neuron model
+    label="Vestibular Nuclei",  # identifier
+    additional_parameters={"seed": seed_PFPC}
     )
 
 # Create GrC population
 GC_population = sim.Population(num_GC_neurons, sim.IF_curr_exp(),
-                               label='GCLayer')
+                               label='GCLayer',
+                               additional_parameters={"seed": seed_GO})
 
 # generate fake error (it should be calculated from sensorial activity in error
 # activity, but we skip it and just generate an error from -1.5 to 1.5)
@@ -380,32 +344,6 @@ cf_pc_connections = sim.Projection(
     synapse_type=sim.StaticSynapse(delay=1.0, weight=cf_pc_weights),
     receptor_type='excitatory')
 
-# lif_pop = sim.Population(1024, sim.IF_curr_exp(), label='pop_lif')
-#
-# out_pop = sim.Population(128, sim.IF_curr_exp(), label='pop_out')
-
-# sim.run(1000)
-
-# sim.Projection(
-#     lif_pop, out_pop, sim.OneToOneConnector(),
-#     synapse_type=sim.StaticSynapse(weight=0.1))
-#
-#
-# # live output of the input (retina_pop) to the first population (lif_pop)
-# sim.external_devices.activate_live_output_to(out_pop,retina_pop)
-#
-#
-# recordings and simulations
-# lif_pop.record(["spikes"])
-#
-# out_pop.record(["spikes"])
-#
-#
-#
-# sim.run(10)
-#
-# sim.end()
-
 MF_population.record(['spikes'])
 CF_population.record(['spikes'])
 GC_population.record('all')
@@ -430,33 +368,6 @@ for i in range(samples_in_repeat):
     print(total_runtime)
 
     MF_population.set(rate=sensorial_activity(total_runtime)[0])
-
-#     sim.run(runtime*0.4)
-#
-#     CF_rates=[]
-#     lower_rate=100*[L_RATE]
-#     upper_rate=100*[H_RATE]
-#     CF_rates.extend(lower_rate)
-#     CF_rates.extend(upper_rate)
-#     CF_population.set(rate=CF_rates)
-#
-#     sim.run(runtime*0.4)
-#
-#     CF_rates=[]
-#     lower_rate=100*[H_RATE]
-#     upper_rate=100*[L_RATE]
-#     CF_rates.extend(lower_rate)
-#     CF_rates.extend(upper_rate)
-#     CF_population.set(rate=CF_rates)
-#
-#     sim.run(runtime*0.2)
-#
-#     CF_rates=[]
-#     lower_rate=100*[H_RATE]
-#     upper_rate=100*[L_RATE]
-#     CF_rates.extend(lower_rate)
-#     CF_rates.extend(upper_rate)
-#     CF_population.set(rate=CF_rates)
 
 total_runtime = runtime*repeats
 

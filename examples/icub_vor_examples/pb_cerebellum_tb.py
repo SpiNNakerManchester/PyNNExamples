@@ -12,23 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import print_function
 import pyNN.spiNNaker as sim
 import numpy as np
-# import logging
 import pylab as plt
 import matplotlib as mlib
-
 
 from pyNN.utility.plotting import Figure, Panel
 from pyNN.random import RandomDistribution
 
 # PAB imports
 import traceback
-# import pandas as pd
 import os
 import neo
-# import copy
 
 # ====================== MAKING THINGS LOOK CONSISTENT ========================
 # ensure we use viridis as the default cmap
@@ -197,7 +192,6 @@ pot_alpha_c = 0.001  # this is alpha in the paper
 beta_c = 11
 sigma_c = 201
 initial_weight_c = 0.001  # max_weight_c #0.0005
-# initial_weight_c = 0.05
 plastic_delay_c = 4
 
 # Learning parameters sin rule
@@ -220,7 +214,7 @@ sim.set_number_of_neurons_per_core(
     sim.SpikeSourceArray, global_n_neurons_per_core)
 sim.set_number_of_neurons_per_core(sim.IF_cond_exp, global_n_neurons_per_core)
 sim.set_number_of_neurons_per_core(
-    sim.extra_models.IFCondExpCerebellum, global_n_neurons_per_core)
+    sim.IF_cond_exp, global_n_neurons_per_core)
 
 # Sensorial Activity: input activity from vestibulus (will come from the head
 # IMU, now it is a test bench)
@@ -346,32 +340,9 @@ def sensorial_activity(pt):
 
 # Error Activity: error from eye and head encoders
 def error_activity(error_):
-    # min_rate = 1.0
-    # max_rate = 25.0
-    #
-    # low_neuron_ID_threshold = abs(error_) * 100.0
-    # up_neuron_ID_threshold = low_neuron_ID_threshold - 100.0
     IO_agonist = np.zeros((100))
     IO_antagonist = np.zeros((100))
-    #
-    # rate = []
-    # for i in range (100):
-    #     if(i < up_neuron_ID_threshold):
-    #         rate.append(max_rate)
-    #     elif(i<low_neuron_ID_threshold):
-    #         aux_rate=max_rate - (max_rate-min_rate)*(
-    #             (i - up_neuron_ID_threshold) / (
-    #                 low_neuron_ID_threshold - up_neuron_ID_threshold))
-    #         rate.append(aux_rate)
-    #     else:
-    #         rate.append(min_rate)
-    #
-    # if error_>=0.0:
-    #     IO_agonist[0:100]=min_rate
-    #     IO_antagonist=rate
-    # else:
-    #     IO_antagonist[0:100]=min_rate
-    #     IO_agonist=rate
+
     IO_agonist[:] = H_RATE
     IO_antagonist[:] = L_RATE
 
@@ -417,7 +388,7 @@ all_populations["golgi"] = GOC_population
 # create PC population
 PC_population = sim.Population(
     num_PC_neurons,  # number of neurons
-    sim.extra_models.IFCondExpCerebellum(**neuron_params),  # Neuron model
+    sim.IF_cond_exp(**neuron_params),  # Neuron model
     label="Purkinje Cell",  # identifier
     additional_parameters={'seed': 24534})
 all_populations["purkinje"] = PC_population
@@ -425,7 +396,7 @@ all_populations["purkinje"] = PC_population
 # create VN population
 VN_population = sim.Population(
     num_VN_neurons,  # number of neurons
-    sim.extra_models.IFCondExpCerebellum(**neuron_params),  # Neuron model
+    sim.IF_cond_exp(**neuron_params),  # Neuron model
     label="Vestibular Nuclei",  # identifier
     additional_parameters={'seed': 24534})
 all_populations["vn"] = VN_population
@@ -580,32 +551,6 @@ cf_pc_connections = sim.Projection(
     receptor_type='excitatory')
 all_projections["cf_pc"] = cf_pc_connections
 
-# lif_pop = sim.Population(1024, sim.IF_curr_exp(), label='pop_lif')
-#
-# out_pop = sim.Population(128, sim.IF_curr_exp(), label='pop_out')
-
-# sim.run(1000)
-
-# sim.Projection(
-#     lif_pop, out_pop, sim.OneToOneConnector(),
-#     synapse_type=sim.StaticSynapse(weight=0.1))
-#
-#
-# # live output of the input (retina_pop) to the first population (lif_pop)
-# sim.external_devices.activate_live_output_to(out_pop,retina_pop)
-#
-#
-# recordings and simulations
-# lif_pop.record(["spikes"])
-#
-# out_pop.record(["spikes"])
-#
-#
-#
-# sim.run(10)
-#
-# sim.end()
-
 # ============================  Set up recordings ============================
 
 MF_population.record(['spikes'])
@@ -642,33 +587,6 @@ for i in range(samples_in_repeat):
     print(total_runtime)
 
     MF_population.set(rate=sensorial_activity(total_runtime)[0])
-
-    # sim.run(runtime*0.4)
-    #
-    # CF_rates=[]
-    # lower_rate=100*[L_RATE]
-    # upper_rate=100*[H_RATE]
-    # CF_rates.extend(lower_rate)
-    # CF_rates.extend(upper_rate)
-    # CF_population.set(rate=CF_rates)
-    #
-    # sim.run(runtime*0.4)
-    #
-    # CF_rates=[]
-    # lower_rate=100*[H_RATE]
-    # upper_rate=100*[L_RATE]
-    # CF_rates.extend(lower_rate)
-    # CF_rates.extend(upper_rate)
-    # CF_population.set(rate=CF_rates)
-    #
-    # sim.run(runtime*0.2)
-    #
-    # CF_rates=[]
-    # lower_rate=100*[H_RATE]
-    # upper_rate=100*[L_RATE]
-    # CF_rates.extend(lower_rate)
-    # CF_rates.extend(upper_rate)
-    # CF_population.set(rate=CF_rates)
 
 end_time = plt.datetime.datetime.now()
 total_time = end_time - start_time

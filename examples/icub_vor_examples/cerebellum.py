@@ -15,20 +15,8 @@
 # import socket
 import pyNN.spiNNaker as sim
 import numpy as np
-# import logging
 import matplotlib.pyplot as plt
 
-# from spynnaker8.utilities import DataHolder
-# from pacman.model.constraints.key_allocator_constraints import (
-#     FixedKeyAndMaskConstraint)
-# from pacman.model.graphs.application import ApplicationSpiNNakerLinkVertex
-# from pacman.model.routing_info import BaseKeyAndMask
-# from spinn_front_end_common.abstract_models.\
-#     abstract_provides_outgoing_partition_constraints import (
-#         AbstractProvidesOutgoingPartitionConstraints)
-# from spinn_utilities.overrides import overrides
-# from pyNN.utility import Timer
-# from pyNN.utility.plotting import Figure, Panel
 from pyNN.random import RandomDistribution, NumpyRNG
 
 # cerebellum with simulated input
@@ -37,50 +25,6 @@ RETINA_Y_SIZE = 240
 RETINA_BASE_KEY = 0x00000000
 RETINA_MASK = 0xFF000000
 RETINA_Y_BIT_SHIFT = 9
-
-# class ICUBInputVertex(
-#         ApplicationSpiNNakerLinkVertex,
-#         # AbstractProvidesNKeysForPartition,
-#          AbstractProvidesOutgoingPartitionConstraints):
-#
-#     def __init__(self, n_neurons, spinnaker_link_id, board_address=None,
-#                  constraints=None, label=None):
-#
-#         ApplicationSpiNNakerLinkVertex.__init__(
-#             self, n_neurons, spinnaker_link_id=spinnaker_link_id,
-#             board_address=board_address, label=label,
-#             constraints=constraints)
-#         #AbstractProvidesNKeysForPartition.__init__(self)
-#         AbstractProvidesOutgoingPartitionConstraints.__init__(self)
-#
-# #    @overrides(AbstractProvidesNKeysForPartition.get_n_keys_for_partition)
-# #    def get_n_keys_for_partition(self, partition, graph_mapper):
-# #        return 1048576
-#
-#     @overrides(AbstractProvidesOutgoingPartitionConstraints.
-#                get_outgoing_partition_constraints)
-#     def get_outgoing_partition_constraints(self, partition):
-#         return [FixedKeyAndMaskConstraint(
-#             keys_and_masks=[BaseKeyAndMask(
-#                 base_key=0, #upper part of the key
-#                 mask=0xFFFFFC00)])]
-#     # keys, i.e. neuron addresses of the input population that sits in
-#     # the ICUB vertex: this mask removes all spikes that have a "1" in
-#     # the MSB and lets the spikes go only if the MSB are at "0"
-#     # it must have enough keys to host the input addressing space and
-#     # the output (with the same keys)
-# class ICUBInputVertexDataHolder(DataHolder):
-#
-#     def __init__(self, spinnaker_link_id, board_address=None,
-#                  constraints=None, label=None):
-#         DataHolder.__init__(
-#             self, {"spinnaker_link_id": spinnaker_link_id,
-#                    "board_address": board_address, "label": label})
-#
-#     @staticmethod
-#     def build_model():
-#         return ICUBInputVertex
-# #logger = logging.getLogger(__name__)
 
 # Synapsis parameters
 gc_pc_weights = 0.005
@@ -137,13 +81,6 @@ initial_weight_s = 0.05
 plastic_delay_s = 4
 
 sim.setup(timestep=1.)
-# sim.set_number_of_neurons_per_core(sim.IF_curr_exp, 255)
-
-# set up input populations
-# num_pxl = 304 * 240;
-# retina_pop = sim.Population(
-#     1024, ICUBInputVertexDataHolder(spinnaker_link_id=0), label='pop_retina')
-
 
 # Sensorial Activity: input activity from vestibulus (will come from the head
 # IMU, now it is a test bench)
@@ -284,11 +221,6 @@ def error_activity(pt):
                 IO_agonist = rate
 
             ea_rate = np.concatenate((IO_agonist, IO_antagonist))
-        # print(j)
-        # plt.plot(np.linspace(up_neuron_ID_threshold,
-        #                      low_neuron_ID_threshold,200), ea_rate)
-        # plt.plot(ea_rate)
-#     plt.show()
 
     low_neuron_ID_threshold = abs(error) * 100.0
     up_neuron_ID_threshold = low_neuron_ID_threshold - 100.0
@@ -316,9 +248,6 @@ def error_activity(pt):
 
         ea_rate = np.concatenate((IO_agonist, IO_antagonist))
 
-#     plt.plot(ea_rate)
-#     plt.show()
-
     return ea_rate
 
 
@@ -335,8 +264,7 @@ SA_population = sim.Population(
     {'rate': sensorial_activity(10)[0]},  # source spike times
     label="sa_population"  # identifier
     )
-# plt.plot(sensorial_activity())
-# plt.show()
+
 # Create MF population
 MF_population = sim.Population(num_MF_neurons, sim.IF_curr_exp(),
                                label='MFLayer')
@@ -357,14 +285,14 @@ GC_population = sim.Population(num_GC_neurons, sim.IF_curr_exp(),
 # create PC population
 PC_population = sim.Population(
     num_PC_neurons,  # number of neurons
-    sim.extra_models.IFCondExpCerebellum(**neuron_params),  # Neuron model
+    sim.IF_cond_exp(**neuron_params),  # Neuron model
     label="Purkinje Cell"  # identifier
     )
 
 # create VN population
 VN_population = sim.Population(
     num_VN_neurons,  # number of neurons
-    sim.extra_models.IFCondExpCerebellum(**neuron_params),  # Neuron model
+    sim.IF_cond_exp(**neuron_params),  # Neuron model
     label="Vestibular Nuclei"  # identifier
     )
 
@@ -463,22 +391,3 @@ lif_pop = sim.Population(1024, sim.IF_curr_exp(), label='pop_lif')
 
 out_pop = sim.Population(128, sim.IF_curr_exp(), label='pop_out')
 
-# sim.Projection(
-#     lif_pop, out_pop, sim.OneToOneConnector(),
-#     synapse_type=sim.StaticSynapse(weight=0.1))
-#
-#
-# # live output of the input (retina_pop) to the first population (lif_pop)
-# sim.external_devices.activate_live_output_to(out_pop,retina_pop)
-#
-#
-# #recordings and simulations
-# lif_pop.record(["spikes"])
-#
-# out_pop.record(["spikes"])
-#
-#
-#
-# sim.run(10)
-#
-# sim.end()
