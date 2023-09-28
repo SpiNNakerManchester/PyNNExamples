@@ -90,9 +90,9 @@ live_spikes_connection_receive = \
         local_port=None, send_labels=None)
 
 # Set up callbacks to occur when spikes are received
-live_spikes_connection_receive.add_receive_callback(
+live_spikes_connection_receive.add_receive_time_callback(
     "pop_forward", receive_spikes)
-live_spikes_connection_receive.add_receive_callback(
+live_spikes_connection_receive.add_receive_time_callback(
     "pop_backward", receive_spikes)
 
 
