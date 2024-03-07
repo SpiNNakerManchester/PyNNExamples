@@ -3,7 +3,7 @@ import tkinter.font as tkFont
 import sys
 import functools
 import pyNN.spiNNaker as p
-from utils import puzzles, get_rates
+from sudoku.utils import puzzles, get_rates
 
 
 class GUI(object):
@@ -94,7 +94,7 @@ class GUI(object):
     def start(self):
         self._root.mainloop()
 
-    def on_start(self, label, connection):
+    def on_start(self, label, connection): # pylint: disable=unused-argument
         self._button["state"] = "normal"
         self._cycle_button["state"] = "normal"
 
