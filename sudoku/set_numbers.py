@@ -94,7 +94,7 @@ class GUI(object):
     def start(self):
         self._root.mainloop()
 
-    def on_start(self, label, connection): # pylint: disable=unused-argument
+    def on_start(self, label, connection):  # pylint: disable=unused-argument
         self._button["state"] = "normal"
         self._cycle_button["state"] = "normal"
 
