@@ -27,7 +27,7 @@ from threading import Thread
 from pyNN.random import RandomDistribution
 import pyNN.spiNNaker as p
 import spynnaker.pyNN.external_devices as ext
-from utils import puzzles, get_rates
+from sudoku.utils import puzzles, get_rates
 
 run_time = 20000                        # run time in milliseconds
 neurons_per_digit = 5                   # number of neurons per digit
@@ -79,7 +79,7 @@ def activate_visualiser(old_vis):
         vismatch = re.match("^Listening on (.*)$", visline)
         if not vismatch:
             vis_proc.kill()
-            raise Exception(f"Receiver returned unknown output: {firstline}")
+            raise ValueError(f"Receiver returned unknown output: {firstline}")
         port = int(vismatch.group(1))
         Thread(target=read_output, args=[vis_proc, vis_proc.stderr]).start()
 
@@ -91,11 +91,10 @@ def activate_visualiser(old_vis):
             traceback.print_exc()
             print("trying old visualiser")
             return activate_visualiser(old_vis=True)
-        else:
-            raise
+        raise
 
 
-vis_process, vis_port = activate_visualiser(old_vis=("OLD_VIS" in os.environ))
+vis_process, vis_port = activate_visualiser(old_vis="OLD_VIS" in os.environ)
 
 p.setup(timestep=1.0)
 print("Creating Sudoku Network...")
@@ -172,7 +171,7 @@ match = re.match("^Listening on (.*)$", firstline)
 if not match:
     set_window.kill()
     vis_process.kill()
-    raise Exception(f"Receiver returned unknown output: {firstline}")
+    raise ValueError(f"Receiver returned unknown output: {firstline}")
 set_port = int(match.group(1))
 
 p.external_devices.add_poisson_live_rate_control(
@@ -202,12 +201,12 @@ for x in range(9):
 #
 # set up the inter-cell inhibitory connections
 #
-def interCell(x, y, r, c, connections):
+def interCell(ic_x, ic_y, ic_r, ic_c, conns):
     """ Inhibit same number: connections are n_N squares on diagonal of
-        weight_cell() from cell[x][y] to cell[r][c]
+        weight_cell() from cell[ic_x][ic_y] to cell[ic_r][ic_c]
     """
-    base_source = ((y * 9) + x) * n_cell
-    base_dest = ((c * 9) + r) * n_cell
+    base_source = ((ic_y * 9) + ic_x) * n_cell
+    base_dest = ((ic_c * 9) + ic_r) * n_cell
     # p.Projection(cells_pop[base_source:base_source+n_cell],
     #              cells_pop[base_dest:base_dest+n_cell],
     #              p.AllToAllConnector(),
@@ -217,7 +216,7 @@ def interCell(x, y, r, c, connections):
         for i in range(n_cell)
         for j in range(n_N * (i // n_N), n_N * (i // n_N + 1))]
 
-    connections.extend(connections_intC)
+    conns.extend(connections_intC)
 
 
 print("Setting up inhibition between cells...")
