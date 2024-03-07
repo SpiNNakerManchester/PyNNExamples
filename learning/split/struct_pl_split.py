@@ -85,7 +85,7 @@ pre_spikes = pre_neo.segments[0].spiketrains
 post_neo = post_pop.get_data(variables=["spikes"])
 post_spikes = post_neo.segments[0].spiketrains
 
-print(plastic_projection.getWeights())
+print(plastic_projection.get('weight', format="list"))
 
 sim.end()
 

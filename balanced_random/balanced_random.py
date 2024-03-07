@@ -1,17 +1,16 @@
-# Copyright (c) 2017-2020 The University of Manchester
+# Copyright (c) 2017 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import matplotlib.pyplot as pylab
 import numpy
@@ -28,7 +27,6 @@ n_inh = int(round(n_neurons * 0.2))
 weight_exc = 0.1
 weight_inh = -5.0 * weight_exc
 weight_input = 0.001
-rng = p.NumpyRNG(0)
 
 pop_input = p.Population(100, p.SpikeSourcePoisson(rate=0.0),
                          additional_parameters={
@@ -36,27 +34,26 @@ pop_input = p.Population(100, p.SpikeSourcePoisson(rate=0.0),
                              "seed": 0},
                          label="Input")
 
-pop_exc = p.Population(n_exc, p.IF_curr_exp, label="Excitatory")
-pop_inh = p.Population(n_inh, p.IF_curr_exp, label="Inhibitory")
+pop_exc = p.Population(n_exc, p.IF_curr_exp, label="Excitatory", seed=1)
+pop_inh = p.Population(n_inh, p.IF_curr_exp, label="Inhibitory", seed=2)
 stim_exc = p.Population(
     n_exc, p.SpikeSourcePoisson(rate=1000.0), label="Stim_Exc",
-    additional_parameters={"seed": 1})
+    additional_parameters={"seed": 3})
 stim_inh = p.Population(
     n_inh, p.SpikeSourcePoisson(rate=1000.0), label="Stim_Inh",
-    additional_parameters={"seed": 2})
+    additional_parameters={"seed": 4})
 
 delays_exc = RandomDistribution(
-    "normal_clipped", mu=1.5, sigma=0.75, low=1.0, high=1.6, rng=rng)
+    "normal_clipped", mu=1.5, sigma=0.75, low=1.0, high=1.6)
 weights_exc = RandomDistribution(
-    "normal_clipped", mu=weight_exc, sigma=0.1, low=0, high=numpy.inf, rng=rng)
-conn_exc = p.FixedProbabilityConnector(0.1, rng=rng)
+    "normal_clipped", mu=weight_exc, sigma=0.1, low=0, high=numpy.inf)
+conn_exc = p.FixedProbabilityConnector(0.1)
 synapse_exc = p.StaticSynapse(weight=weights_exc, delay=delays_exc)
 delays_inh = RandomDistribution(
-    "normal_clipped", mu=0.75, sigma=0.375, low=1.0, high=1.6, rng=rng)
+    "normal_clipped", mu=0.75, sigma=0.375, low=1.0, high=1.6)
 weights_inh = RandomDistribution(
-    "normal_clipped", mu=weight_inh, sigma=0.1, low=-numpy.inf, high=0,
-    rng=rng)
-conn_inh = p.FixedProbabilityConnector(0.1, rng=rng)
+    "normal_clipped", mu=weight_inh, sigma=0.1, low=-numpy.inf, high=0)
+conn_inh = p.FixedProbabilityConnector(0.1)
 synapse_inh = p.StaticSynapse(weight=weights_inh, delay=delays_inh)
 p.Projection(
     pop_exc, pop_exc, conn_exc, synapse_exc, receptor_type="excitatory")
@@ -75,17 +72,16 @@ p.Projection(
     stim_inh, pop_inh, conn_stim, synapse_stim, receptor_type="excitatory")
 
 delays_input = RandomDistribution(
-    "normal_clipped", mu=1.5, sigma=0.75, low=1.0, high=1.6, rng=rng)
+    "normal_clipped", mu=1.5, sigma=0.75, low=1.0, high=1.6)
 weights_input = RandomDistribution(
-    "normal_clipped", mu=weight_input, sigma=0.01, low=0, high=numpy.inf,
-    rng=rng)
+    "normal_clipped", mu=weight_input, sigma=0.01, low=0, high=numpy.inf)
 p.Projection(pop_input, pop_exc, p.AllToAllConnector(), p.StaticSynapse(
     weight=weights_input, delay=delays_input))
 
 pop_exc.initialize(
-    v=RandomDistribution("uniform", low=-65.0, high=-55.0, rng=rng))
+    v=RandomDistribution("uniform", low=-65.0, high=-55.0))
 pop_inh.initialize(
-    v=RandomDistribution("uniform", low=-65.0, high=-55.0, rng=rng))
+    v=RandomDistribution("uniform", low=-65.0, high=-55.0))
 
 pop_exc.record("spikes")
 

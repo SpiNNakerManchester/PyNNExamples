@@ -1,17 +1,16 @@
-# Copyright (c) 2017-2020 The University of Manchester
+# Copyright (c) 2016 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 #############################################################
 #
@@ -47,6 +46,9 @@ def read_output(visualiser, out):
             print(line)
         result = visualiser.poll()
     print("Visualiser exited: {} - quitting".format(result))
+    if running and not ended:
+        p.end()
+    os._exit(0)  # pylint: disable=protected-access
 
 
 def activate_visualiser(old_vis):
@@ -59,7 +61,7 @@ def activate_visualiser(old_vis):
         elif sys.platform.startswith("linux"):
             vis_exe = "sudoku_linux"
         else:
-            raise Exception("Unknown platform: {}".format(sys.platform))
+            raise NotImplementedError(f"Unknown platform: {sys.platform}")
         vis_exe = [os.path.abspath(os.path.join(
             os.path.dirname(__file__), vis_exe))]
         neur_per_num_opt = "-neurons_per_number"
@@ -82,7 +84,7 @@ def activate_visualiser(old_vis):
         Thread(target=read_output, args=[vis_proc, vis_proc.stderr]).start()
 
         return vis_proc, port
-    except Exception:
+    except Exception:  # pylint: disable=broad-except
         if not old_vis:
             print("This example depends on https://github.com/"
                   "SpiNNakerManchester/sPyNNakerVisualisers")
@@ -200,7 +202,7 @@ for x in range(9):
 #
 # set up the inter-cell inhibitory connections
 #
-def interCell(x, y, r, c, connections):
+def interCell():
     """ Inhibit same number: connections are n_N squares on diagonal of
         weight_cell() from cell[x][y] to cell[r][c]
     """
@@ -223,14 +225,14 @@ for x in range(9):
     for y in range(9):
         for r in range(9):
             if r != x:
-                interCell(x, y, r, y, connections)  # by row...
+                interCell()  # by row...
         for c in range(9):
             if c != y:
-                interCell(x, y, x, c, connections)  # by column...
+                interCell()  # by column...
         for r in range(3 * (x // 3), 3 * (x // 3 + 1)):
             for c in range(3 * (y // 3), 3 * (y // 3 + 1)):
                 if r != x and c != y:
-                    interCell(x, y, r, c, connections)  # & by square
+                    interCell()  # & by square
 conn_intC = p.FromListConnector(connections)
 p.Projection(cells, cells, conn_intC, receptor_type="inhibitory")
 
