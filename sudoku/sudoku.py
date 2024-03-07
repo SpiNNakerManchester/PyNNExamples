@@ -202,7 +202,7 @@ for x in range(9):
 #
 # set up the inter-cell inhibitory connections
 #
-def interCell():
+def interCell(x, y, r, c, connections):
     """ Inhibit same number: connections are n_N squares on diagonal of
         weight_cell() from cell[x][y] to cell[r][c]
     """
@@ -225,14 +225,14 @@ for x in range(9):
     for y in range(9):
         for r in range(9):
             if r != x:
-                interCell()  # by row...
+                interCell(x, y, r, y, connections)  # by row...
         for c in range(9):
             if c != y:
-                interCell()  # by column...
+                interCell(x, y, x, c, connections)  # by column...
         for r in range(3 * (x // 3), 3 * (x // 3 + 1)):
             for c in range(3 * (y // 3), 3 * (y // 3 + 1)):
                 if r != x and c != y:
-                    interCell()  # & by square
+                    interCell(x, y, r, c, connections)  # & by square
 conn_intC = p.FromListConnector(connections)
 p.Projection(cells, cells, conn_intC, receptor_type="inhibitory")
 
