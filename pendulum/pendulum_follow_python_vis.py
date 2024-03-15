@@ -1,15 +1,12 @@
-import numpy
 import math
-import os
-import re
-import subprocess
 from time import time, sleep
 from functools import partial
 from threading import Thread
-import pyNN.spiNNaker as p
 from matplotlib import pyplot, colors
 from matplotlib.patches import Rectangle
-from spynnaker.pyNN.utilities.utility_calls import get_n_bits
+import numpy
+import pyNN.spiNNaker as p
+from spynnaker.pyNN.models.utility_models.spike_injector import SpikeInjector
 
 running = True
 
@@ -58,7 +55,6 @@ def send_spikes(width, height, min_x, min_y, run_time, label, connection):
     start_time = None
     max_x = min_x + width
     max_y = min_y + height
-    y_shift = get_n_bits(width)
     with open("spikes.csv") as f:
         first_time = -1
         line = read_csv_line(f)
@@ -74,9 +70,9 @@ def send_spikes(width, height, min_x, min_y, run_time, label, connection):
             line = next_line
 
             filtered_lines = [
-                l for l in same_time_lines
-                if (l.x >= min_x and l.x < max_x and l.y >= min_y and
-                    l.y < max_y)]
+                ln for ln in same_time_lines
+                if (ln.x >= min_x and ln.x < max_x and ln.y >= min_y and
+                    ln.y < max_y)]
 
             if not filtered_lines:
                 continue
@@ -95,8 +91,8 @@ def send_spikes(width, height, min_x, min_y, run_time, label, connection):
     running = False
 
 
-WIDTH = 120
-HEIGHT = 120
+WIDTH = 118
+HEIGHT = 118
 MIN_X = 450
 MIN_Y = 400
 PER_CORE_WIDTH = 16
@@ -169,12 +165,14 @@ conn = p.external_devices.SpynnakerLiveSpikesConnection(
 conn.add_receive_callback(SEND_POP_LABEL, recv)
 conn.add_receive_callback(POP_LABEL, recv_conv)
 conn.add_start_callback(
-    SEND_POP_LABEL, partial(send_spikes, WIDTH, HEIGHT, MIN_X, MIN_Y, RUN_TIME / 1000.0))
+    SEND_POP_LABEL, partial(send_spikes, WIDTH, HEIGHT, MIN_X, MIN_Y,
+                            RUN_TIME / 1000.0))
 
 
 p.setup(1.0)
 p.set_number_of_neurons_per_core(p.IF_curr_exp,
                                  (PER_CORE_WIDTH, PER_CORE_HEIGHT))
+p.set_number_of_neurons_per_core(SpikeInjector, (WIDTH, HEIGHT))
 
 retina = p.Population(
     WIDTH * HEIGHT, p.external_devices.SpikeInjector(
@@ -211,7 +209,8 @@ while running and fig.get_visible():
             if rect_count == 0:
                 rect_pos = None
                 rect_count = None
-                rect.set_visible(False)
+                if rect is not None:
+                    rect.set_visible(False)
         if rect_pos is not None:
             x_min, y_min, x_max, y_max = rect_pos
             width = x_max - x_min + 1

@@ -1,4 +1,3 @@
-import numpy
 import math
 import os
 import re
@@ -6,11 +5,10 @@ import subprocess
 from time import time, sleep
 from functools import partial
 from threading import Thread
+from matplotlib import pyplot
+import numpy
 import pyNN.spiNNaker as p
-from matplotlib import pyplot, colors
-from matplotlib.patches import Rectangle
-from spynnaker.pyNN.utilities.utility_calls import get_n_bits
-from collections import defaultdict
+from spynnaker.pyNN.models.utility_models.spike_injector import SpikeInjector
 
 running = True
 
@@ -59,7 +57,6 @@ def send_spikes(width, height, min_x, min_y, run_time, label, connection):
     start_time = None
     max_x = min_x + width
     max_y = min_y + height
-    y_shift = get_n_bits(width)
     with open("spikes.csv") as f:
         first_time = -1
         line = read_csv_line(f)
@@ -75,9 +72,9 @@ def send_spikes(width, height, min_x, min_y, run_time, label, connection):
             line = next_line
 
             filtered_lines = [
-                l for l in same_time_lines
-                if (l.x >= min_x and l.x < max_x and l.y >= min_y and
-                    l.y < max_y)]
+                ln for ln in same_time_lines
+                if (ln.x >= min_x and ln.x < max_x and ln.y >= min_y and
+                    ln.y < max_y)]
 
             if not filtered_lines:
                 continue
@@ -96,8 +93,8 @@ def send_spikes(width, height, min_x, min_y, run_time, label, connection):
     running = False
 
 
-WIDTH = 120
-HEIGHT = 120
+WIDTH = 118
+HEIGHT = 118
 MIN_X = 450
 MIN_Y = 400
 PER_CORE_WIDTH = 16
@@ -139,24 +136,27 @@ firstline = str(receiver.stderr.readline(), "UTF-8")
 match = re.match("^Listening on (.*)$", firstline)
 if not match:
     receiver.kill()
-    raise Exception(f"Receiver returned unknown output: {firstline}")
+    raise ValueError(f"Receiver returned unknown output: {firstline}")
 receiver_port = int(match.group(1))
 firstline = str(receiver.stderr.readline(), "UTF-8")
 match = re.match("^Listening on (.*)$", firstline)
 if not match:
     receiver.kill()
-    raise Exception(f"Receiver returned unknown output: {firstline}")
+    raise ValueError(f"Receiver returned unknown output: {firstline}")
 receiver_port2 = int(match.group(1))
 
 conn = p.external_devices.SpynnakerLiveSpikesConnection(
     send_labels=[SEND_POP_LABEL], local_port=None)
 conn.add_start_callback(
-    SEND_POP_LABEL, partial(send_spikes, WIDTH, HEIGHT, MIN_X, MIN_Y, RUN_TIME / 1000.0))
+    SEND_POP_LABEL, partial(send_spikes, WIDTH, HEIGHT, MIN_X, MIN_Y,
+                            RUN_TIME / 1000.0))
 
 
 p.setup(1.0)
 p.set_number_of_neurons_per_core(p.IF_curr_exp,
                                  (PER_CORE_WIDTH, PER_CORE_HEIGHT))
+p.set_number_of_neurons_per_core(SpikeInjector,
+                                 (WIDTH, HEIGHT))
 
 retina = p.Population(
     WIDTH * HEIGHT, p.external_devices.SpikeInjector(
@@ -178,8 +178,9 @@ def do_run():
     global running
     # target_pop.record("spikes")
     p.external_devices.run_forever()
-    spikes_by_time = defaultdict(list)
-    # for i, st in enumerate(target_pop.get_data("spikes").segments[0].spiketrains):
+    # spikes_by_time = defaultdict(list)
+    # for i, st in enumerate(
+    #         target_pop.get_data("spikes").segments[0].spiketrains):
     #     for s in st.magnitude:
     #         spikes_by_time[s].append(i)
     # for k, v in spikes_by_time.items():
@@ -197,6 +198,7 @@ def read_output():
     while line:
         print(str(line, "UTF-8"))
         line = receiver.stderr.readline()
+
 
 r = Thread(target=read_output)
 r.start()
