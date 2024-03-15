@@ -45,10 +45,7 @@ def read_output(visualiser, out):
         if line:
             print(line)
         result = visualiser.poll()
-    print("Visualiser exited: {} - quitting".format(result))
-    if running and not ended:
-        p.end()
-    os._exit(0)  # pylint: disable=protected-access
+    print("Visualiser exited: {}".format(result))
 
 
 def activate_visualiser(old_vis):
@@ -108,9 +105,9 @@ n_stim_total = n_stim * 9 * 9
 
 # global distributions & parameters
 weight_cell = 0.2
-weight_stim = 1.8
+weight_stim = 1.2
 dur_nois = RandomDistribution("uniform", [30000.0, 30001.0])
-weight_nois = 1.8
+weight_nois = 1.2
 delay = 2.0
 puzzle = 5
 
