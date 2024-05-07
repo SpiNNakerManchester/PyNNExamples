@@ -7,4 +7,5 @@ __pycache__
 .pytest_cache
 *application_generated_data_files/
 *reports/
+.cache/
 .mypy_cache/

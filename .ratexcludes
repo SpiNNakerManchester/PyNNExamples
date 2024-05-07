@@ -9,3 +9,10 @@
 **/sPyNNaker/**
 **/sPyNNaker8/**
 **/.pylintrc
+**/*.dll
+**/*.exe
+**/*.png
+**/*linux
+**/*osx
+**/*.exe
+**/.pylintrc

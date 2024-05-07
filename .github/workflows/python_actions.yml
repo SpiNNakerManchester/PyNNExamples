@@ -53,12 +53,12 @@ jobs:
       uses: ./support/actions/install-matplotlib
 
     - name: Lint with flake8
-      run: flake8 examples
+      run: flake8 examples flake8 balanced_random learning sudoku synfire
 
     - name: Lint with pylint
       uses: ./support/actions/pylint
       with:
-        package: examples
+        package: examples balanced_random learning sudoku synfire
         exitcheck: 39
 
   validate:
@@ -72,9 +72,11 @@ jobs:
         repository: SpiNNakerManchester/SupportScripts
         path: support
     - name: Run rat copyright enforcement
+      if: matrix.python-version == 3.12
       uses: ./support/actions/check-copyrights
       with:
         config_file: rat_asl20.xml
 
     - name: Validate CITATION.cff
+      if: matrix.python-version == 3.12
       uses: dieghernan/cff-validator@main
