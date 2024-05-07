@@ -69,7 +69,7 @@ sim.Projection(in_pop, in_pop, sim.FixedProbabilityConnector(0.02),
 # Build inhibitory plasticity  model
 stdp_model = sim.STDPMechanism(
     timing_dependence=sim.extra_models.Vogels2011Rule(alpha=0.12, tau=20.0,
-                                                      A_plus=0.05),
+                                                      A_plus=0.0005),
     weight_dependence=sim.AdditiveWeightDependence(w_min=0.0, w_max=1.0))
 
 # Make inhibitory->excitatory projections

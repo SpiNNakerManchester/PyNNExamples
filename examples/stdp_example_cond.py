@@ -142,20 +142,20 @@ ee_connector = sim.OneToOneConnector()
 # Noise projections
 sim.Projection(
     INoisePre, pre_pop, ee_connector, receptor_type='excitatory',
-    synapse_type=sim.StaticSynapse(weight=JEE * 0.001))
+    synapse_type=sim.StaticSynapse(weight=JEE * 0.0012))
 sim.Projection(
     INoisePost, post_pop, ee_connector, receptor_type='excitatory',
-    synapse_type=sim.StaticSynapse(weight=JEE * 0.001))
+    synapse_type=sim.StaticSynapse(weight=JEE * 0.0012))
 
 # Additional Inputs projections
 for i in range(len(IAddPre)):
     sim.Projection(
         IAddPre[i], pre_pop, ee_connector, receptor_type='excitatory',
-        synapse_type=sim.StaticSynapse(weight=JEE * 0.001))
+        synapse_type=sim.StaticSynapse(weight=JEE * 0.0012))
 for i in range(len(IAddPost)):
     sim.Projection(
         IAddPost[i], post_pop, ee_connector, receptor_type='excitatory',
-        synapse_type=sim.StaticSynapse(weight=JEE * 0.001))
+        synapse_type=sim.StaticSynapse(weight=JEE * 0.0012))
 
 # Plastic Connections between pre_pop and post_pop
 stdp_model = sim.STDPMechanism(
@@ -178,7 +178,7 @@ post_pop.record(['v', 'spikes'])
 # Run simulation
 sim.run(simtime)
 
-print("Weights:{}".format(plastic_projection.get('weight', 'list')))
+# print("Weights:{}".format(plastic_projection.get('weight', 'list')))
 
 pre_spikes = pre_pop.get_data('spikes')
 post_spikes = post_pop.get_data('spikes')
@@ -188,7 +188,7 @@ Figure(
     Panel(pre_spikes.segments[0].spiketrains,
           yticks=True, markersize=0.5, xlim=(0, simtime)),
     Panel(post_spikes.segments[0].spiketrains,
-          yticks=True, markersize=0.5, xlim=(0, simtime)),
+          yticks=True, xticks=True, markersize=0.5, xlim=(0, simtime)),
     title="stdp example cond",
     annotations="Simulated with {}".format(sim.name()))
 plt.show()
