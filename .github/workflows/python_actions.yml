@@ -53,7 +53,7 @@ jobs:
       uses: ./support/actions/install-matplotlib
 
     - name: Lint with flake8
-      run: flake8 examples flake8 balanced_random learning sudoku synfire
+      run: flake8 examples balanced_random learning sudoku synfire
 
     - name: Lint with pylint
       uses: ./support/actions/pylint
