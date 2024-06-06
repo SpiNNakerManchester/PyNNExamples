@@ -18,7 +18,7 @@ Simple test for STDP :
    Reproduces a classical plasticity experiment of plasticity induction by
 pre/post synaptic pairing specifically :
 
- * At the begining of the simulation, "n_stim_test" external stimulations of
+ * At the beginning of the simulation, "n_stim_test" external stimulations of
    the "pre_pop" (presynaptic) population do not trigger activity in the
    "post_pop" (postsynaptic) population.
 
@@ -178,7 +178,7 @@ post_pop.record(['v', 'spikes'])
 # Run simulation
 sim.run(simtime)
 
-print("Weights:{}".format(plastic_projection.get('weight', 'list')))
+print(f"Weights:{plastic_projection.get('weight', 'list')}")
 
 pre_spikes = pre_pop.get_data('spikes')
 post_spikes = post_pop.get_data('spikes')
@@ -190,7 +190,7 @@ Figure(
     Panel(post_spikes.segments[0].spiketrains,
           yticks=True, markersize=0.5, xlim=(0, simtime)),
     title="stdp example cond",
-    annotations="Simulated with {}".format(sim.name()))
+    annotations=f"Simulated with {sim.name()}")
 plt.show()
 
 # End simulation on SpiNNaker

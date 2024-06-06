@@ -24,7 +24,7 @@ Simple test for STDP :
    Reproduces a classical plasticity experiment of plasticity induction by
 pre/post synaptic pairing specifically :
 
- * At the begining of the simulation, "n_stim_test" external stimulations of
+ * At the beginning of the simulation, "n_stim_test" external stimulations of
    the "pre_pop" (presynaptic) population do not trigger activity in the
    "post_pop" (postsynaptic) population.
 

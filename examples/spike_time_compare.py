@@ -69,6 +69,6 @@ plot.Figure(
     # plot spikes (or in this case spike)
     plot.Panel(spikes, yticks=True, markersize=5, xlim=(0, simtime)),
     title="Simple Example",
-    annotations="Simulated with {}".format(sim.name())
+    annotations=f"Simulated with {sim.name()}"
 )
 plt.show()

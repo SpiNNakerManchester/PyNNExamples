@@ -60,7 +60,7 @@ plot.Figure(
                data_labels=[populations[0].label],
                yticks=True, xlim=(0, runtime)),
     title=title,
-    annotations="Simulated with {}".format(p.name())
+    annotations=f"Simulated with {p.name()}"
 )
 plt.show()
 p.end()
