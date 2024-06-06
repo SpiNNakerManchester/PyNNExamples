@@ -77,6 +77,7 @@ except Exception as ex:
     print(spikes)
     raise ex
 
+    # pylint: disable=wrong-spelling-in-comment
     # Way to plot the spikes without neo converter but without the colours
     # try:
     #     import matplotlib.pyplot as plt
