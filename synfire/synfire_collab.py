@@ -73,7 +73,6 @@ try:
         )
         offset += n_neurons
     plt.show()
-    # pylab.savefig("results.png")
 except Exception as ex:
     print(spikes)
     raise ex

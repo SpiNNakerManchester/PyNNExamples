@@ -237,6 +237,9 @@ cells.initialize(v=RandomDistribution("uniform", [-65.0, -55.0]))
 
 
 def wait_for_end():
+    """
+    Collections of method that need to run at the endo of a run
+    """
     set_window.wait()
     set_window.terminate()
     vis_process.terminate()
@@ -248,6 +251,7 @@ wait_thread.start()
 
 p.external_devices.run_forever()
 
+# pylint: disable=wrong-spelling-in-comment
 # spikes = cells.getSpikes()
 # f, axarr = pylab.subplots(9, 9)
 # for y in range(9):

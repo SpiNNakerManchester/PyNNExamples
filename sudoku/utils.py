@@ -104,6 +104,17 @@ puzzles.append(
 
 
 def get_rates(values, n_total, n_cell, n_N, default_rate, max_rate):
+    """
+    Calculates the list of rates for a given number of cells.
+
+    :param list(list(int)) values:
+    :param int n_total:
+    :param int n_cell:
+    :param int n_N:
+    :param float default_rate:
+    :param float max_rate:
+    :rtype: list(float)
+    """
     rates = [default_rate] * n_total
     for x in range(9):
         for y in range(9):

@@ -23,6 +23,14 @@ from sudoku.utils import puzzles, get_rates
 class GUI(object):
 
     def __init__(self, n_total, n_cell, n_N, default_rate, max_rate, puzzle):
+        """
+        :param int n_total:
+        :param int n_cell:
+        :param int n_N:
+        :param float default_rate:
+        :param float max_rate:
+        :param int puzzle:
+        """
         self._n_total = n_total
         self._n_cell = n_cell
         self._n_N = n_N
@@ -108,11 +116,18 @@ class GUI(object):
     def start(self):
         self._root.mainloop()
 
-    def on_start(self, label, connection):  # pylint: disable=unused-argument
+    def on_start(self, label, connection):
+        """
+        set the button and cycle button to normal
+        """
+        # pylint: disable=unused-argument
         self._button["state"] = "normal"
         self._cycle_button["state"] = "normal"
 
     def cycle_puzzles(self):
+        """
+        Cycle through the puzzles at 30 seconds intervals
+        """
         self._after_id = self._root.after(30000, self.cycle_puzzles)
         print("Cycling after 30 seconds")
         self._puzzle = (self._puzzle + 1) % len(puzzles)
@@ -120,12 +135,22 @@ class GUI(object):
         self.set_puzzle(self._puzzle, automatic=True)
 
     def set_dream(self):
+        """
+        Sets the numbers to zero and based on that the coonections and rates
+        """
         for x in range(9):
             for y in range(9):
                 self._numbers_txt[x][y].set(0)
         self.set_values()
 
     def set_puzzle(self, puzzle, automatic=False):
+        """
+        Sets the puzzel number and based on that the numbers, coonections \
+        and rates
+
+        :param int puzzle:
+        :param bool automatic:
+        """
         self._puzzle = puzzle
         for x in range(9):
             for y in range(9):
@@ -133,6 +158,12 @@ class GUI(object):
         self.set_values(automatic)
 
     def set_values(self, automatic=False):
+        """
+        Stes the connections and rates
+
+        :param bool automatic:
+        :return:
+        """
         if not automatic:
             if self._after_id is not None:
                 print("Cancelling")
