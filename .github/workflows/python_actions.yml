@@ -32,6 +32,7 @@ jobs:
       coverage-package:
       flake8-packages: examples balanced_random learning sudoku synfire
       pylint-packages: examples balanced_random learning sudoku synfire
-      # Examples are not types to keep them easier to read
+      pylint-disable: R, wrong-spelling-in-comment
+      # Examples are not typed to keep them easier to read
       mypy-packages:
       run_sphinx: false
