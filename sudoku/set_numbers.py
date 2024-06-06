@@ -64,7 +64,7 @@ class GUI(object):
         frame = tk.Frame(self._root)
         for i in range(len(puzzles)):
             button = tk.Button(
-                frame, text="Puzzle {}".format(i + 1), width=10,
+                frame, text=f"Puzzle {i + 1}", width=10,
                 command=functools.partial(self.set_puzzle, i))
             button.grid(row=i, column=0, pady=5)
         button = tk.Button(frame, text="Dream", width=10,

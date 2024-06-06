@@ -164,7 +164,7 @@ populations[excit].record(['v', 'spikes'])
 p.run(runTime)
 
 final_weights = projections[0].get('weight', 'list', with_address=False)
-print("Final weights: {}".format(final_weights))
+print(f"Final weights: {final_weights}")
 
 # myDelays = projections[0].getDelays()
 # total=0.0
@@ -205,7 +205,7 @@ Figure(
           data_labels=[populations[excit].label], yticks=True,
           xlim=(0, runTime), xticks=True),
     title="Simple associative memory: spikes and membrane potential",
-    annotations="Simulated with {}".format(p.name())
+    annotations=f"Simulated with {p.name()}"
 )
 plt.show()
 

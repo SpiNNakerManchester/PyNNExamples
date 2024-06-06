@@ -95,7 +95,7 @@ assert tau_m == cm * Rm                # just to check
 n_exc = int(round((n * r_ei / (1 + r_ei))))  # number of excitatory cells
 n_inh = n - n_exc                            # number of inhibitory cells
 
-print("{} {}".format(n_exc, n_inh))
+print(n_exc, n_inh)
 
 w_exc = None
 w_inh = None
@@ -104,7 +104,7 @@ if benchmark == "COBA":
     celltype = p.IF_cond_exp
     w_exc = Gexc * 1e-3              # We convert conductances to uS
     w_inh = Ginh * 1e-3
-    print("{} {}".format(w_exc, w_inh))
+    print(w_exc, w_inh)
 elif benchmark == "CUBA":
     celltype = p.IF_curr_exp
     w_exc = 1e-3 * Gexc * (Erev_exc - v_mean)  # (nA) weight of exc synapses
@@ -212,8 +212,8 @@ buildCPUTime = timer.diff()
 # === Run simulation ===
 print("%d Running simulation..." % node_id)
 
-print("timings: number of neurons: {}".format(n))
-print("timings: number of synapses: {}".format(n * n * pconn))
+print(f"timings: number of neurons: {n}")
+print(f"timings: number of synapses: {n * n * pconn}")
 
 p.run(tstop)
 
@@ -228,7 +228,7 @@ Figure(
     Panel(exc_spikes.segments[0].spiketrains, xlabel="Time/ms", xticks=True,
           yticks=True, markersize=0.2, xlim=(0, tstop)),
     title="Vogels-Abbott benchmark: spikes",
-    annotations="Simulated with {}".format(p.name())
+    annotations=f"Simulated with {p.name()}"
 )
 plt.show()
 

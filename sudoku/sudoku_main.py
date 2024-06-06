@@ -45,7 +45,7 @@ def read_output(visualiser, out):
         if line:
             print(line)
         result = visualiser.poll()
-    print("Visualiser exited: {}".format(result))
+    print(f"Visualiser exited: {result}")
 
 
 def activate_visualiser(old_vis):

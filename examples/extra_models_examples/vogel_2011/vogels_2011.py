@@ -173,10 +173,10 @@ class Vogels2011(object):
     @staticmethod
     def save_name(spike_name):
         index = 0
-        file_name = spike_name + "{}".format(index)
+        file_name = spike_name + str(index)
         while os.path.exists(file_name):
             index += 1
-            file_name = spike_name + "{}".format(index)
+            file_name = spike_name + str(index)
         return file_name
 
     def run(self, slow_down_static, slow_down_plastic, extract_weights):
@@ -209,7 +209,7 @@ class Vogels2011(object):
             index = 0
             if self.SAVE_ALL_CONNECTIVITY_IF_INSANE:
                 for proj in projs:
-                    proj.save("all", "projection{}_data".format(index))
+                    proj.save("all", f"projection{index}_data")
                     index += 1
 
             # Get static spikes
@@ -241,7 +241,7 @@ class Vogels2011(object):
             index = 0
             if self.SAVE_ALL_CONNECTIVITY_IF_INSANE:
                 plastic_ie_projection.save(
-                    "all", "projection{}_before_data_plastic".format(index))
+                    "all", f"projection{index}_before_data_plastic")
 
             # Run simulation
             sim.run(self.SECOND_RUN_RUNTIME)
@@ -250,7 +250,7 @@ class Vogels2011(object):
                 projs = [plastic_ie_projection]
                 index = 0
                 for proj in projs:
-                    proj.save("all", "projection{}_data_plastic".format(index))
+                    proj.save("all", f"projection{index}_data_plastic")
                     index += 1
 
             # Get plastic spikes and save to disk

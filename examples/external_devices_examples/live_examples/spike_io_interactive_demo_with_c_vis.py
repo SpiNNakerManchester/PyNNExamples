@@ -218,7 +218,7 @@ class PyNNScript(object):
             Panel(spikes_backward.segments[0].spiketrains,
                   yticks=True, markersize=0.2, xlim=(0, run_time)),
             title="Simple synfire chain example with injected spikes",
-            annotations="Simulated with {}".format(Frontend.name())
+            annotations=f"Simulated with {Frontend.name()}"
         )
         plt.show()
 
@@ -226,8 +226,7 @@ class PyNNScript(object):
 # Create a receiver of live spikes
 def receive_spikes(label, time, neuron_ids):
     for neuron_id in neuron_ids:
-        print("Received spike at time {} from {} - {}".format(
-            time, label, neuron_id))
+        print(f"Received spike at time {time} from {label} - {neuron_id}")
 
 
 class GUI(object):
@@ -280,7 +279,7 @@ class GUI(object):
     def inject_spike(self):
         neuron_id = self._neuron_id.get()
         label = self._pop_label.get()
-        print("injecting with neuron_id {} to pop {}".format(neuron_id, label))
+        print(f"injecting with neuron_id {neuron_id} to pop {label}")
         self._live_spikes_connection.send_spike(label, neuron_id)
 
 

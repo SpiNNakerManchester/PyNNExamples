@@ -144,7 +144,7 @@ Figure(
           ylim=(0.9 * final_weights.min(), 1.1 * final_weights.max()),
           xlabel="t_post - t_pre (ms)", ylabel="Final weight (nA)"),
     title="Simple STDP example",
-    annotations="Simulated with {}".format(sim.name())
+    annotations=f"Simulated with {sim.name()}"
 )
 
 # figure_filename = "simple_STDP.png"

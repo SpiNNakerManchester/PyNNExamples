@@ -104,6 +104,6 @@ plot.Figure(
     plot.Panel(pre_spikes, post_spikes, yticks=True, xlim=(0, simtime),
                line_properties=line_properties),
     title="STDP Network Example",
-    annotations="Simulated with {}".format(sim.name())
+    annotations=f"Simulated with {sim.name()}"
 )
 plt.show()

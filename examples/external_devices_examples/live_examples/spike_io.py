@@ -29,9 +29,9 @@ print_condition = Condition()
 
 # Create an initialisation method
 def init_pop(_label, _n_neurons, _run_time_ms, _machine_timestep_ms):
-    print("{} has {} neurons".format(_label, _n_neurons))
-    print("Simulation will run for {}ms at {}ms timesteps".format(
-        _run_time_ms, _machine_timestep_ms))
+    print(f"{_label} has {_n_neurons} neurons")
+    print(f"Simulation will run for {_run_time_ms}ms "
+          f"at {_machine_timestep_ms}ms timesteps")
 
 
 # Create a sender of packets for the forward population
@@ -39,7 +39,7 @@ def send_input_forward(label, sender):
     for neuron_id in range(0, 100, 20):
         time.sleep(random.random() + 0.5)
         print_condition.acquire()
-        print("Sending forward spike {}".format(neuron_id))
+        print(f"Sending forward spike {neuron_id}")
         print_condition.release()
         sender.send_spike(label, neuron_id, send_full_keys=True)
 
@@ -50,7 +50,7 @@ def send_input_backward(label, sender):
         real_id = 100 - neuron_id - 1
         time.sleep(random.random() + 0.5)
         print_condition.acquire()
-        print("Sending backward spike {}".format(real_id))
+        print(f"Sending backward spike {real_id}")
         print_condition.release()
         sender.send_spike(label, real_id)
 
@@ -59,8 +59,7 @@ def send_input_backward(label, sender):
 def receive_spikes(label, _time, neuron_ids):
     for neuron_id in neuron_ids:
         print_condition.acquire()
-        print("Received spike at time {} from {} - {}".format(
-            _time, label, neuron_id))
+        print(f"Received spike at time {_time} from {label} - {neuron_id}")
         print_condition.release()
 
 
@@ -203,7 +202,7 @@ Figure(
     Panel(spikes_backward.segments[0].spiketrains,
           yticks=True, markersize=0.2, xlim=(0, run_time)),
     title="Simple synfire chain example with injected spikes",
-    annotations="Simulated with {}".format(Frontend.name())
+    annotations=f"Simulated with {Frontend.name}"
 )
 plt.show()
 

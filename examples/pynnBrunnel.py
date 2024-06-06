@@ -228,7 +228,7 @@ Figure(
     Panel(esp.segments[0].spiketrains,
           yticks=True, markersize=1, xlim=(0, sim_time)),
     title="Brunnel example",
-    annotations="Simulated with {}".format(pynn.name())
+    annotations=f"Simulated with {pynn.name()}"
 )
 plt.show()
 

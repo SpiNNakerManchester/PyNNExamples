@@ -172,10 +172,10 @@ plastic_projection = sim.Projection(
 # Run simulation
 sim.run(simtime)
 
-print("Weights:{}".format(plastic_projection.get('weight', 'list')))
-print("plastic1:{}".format(plastic_projection.get('tau_plus', 'list')))
-print("plastic2andweights:{}".format(plastic_projection.get(
-    ['weight', 'tau_plus'], 'list')))
+print(f"Weights:{plastic_projection.get('weight', 'list')}")
+print(f"plastic1:{plastic_projection.get('tau_plus', 'list')}")
+print(f"plastic2andweights:{plastic_projection.get(
+    ['weight', 'tau_plus'], 'list')}")
 
 # End simulation on SpiNNaker
 sim.end()

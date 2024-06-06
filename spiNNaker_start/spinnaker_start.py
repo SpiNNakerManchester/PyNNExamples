@@ -166,7 +166,7 @@ class ReadNetinitPhaseProcess(AbstractMultiConnectionProcess):
         self._start_time = time.time()
         if load:
             read_file = open_file(
-                "record/netinit_{}_{}.dat".format(x, y), "rb")
+                f"record/netinit_{x}_{y}.dat", "rb")
             self._p2p_active_data = read_data_from_file(read_file)
             self._netinit_phase_data = read_data_from_file(read_file)
             close_file(read_file)
@@ -189,8 +189,8 @@ class ReadNetinitPhaseProcess(AbstractMultiConnectionProcess):
 
     def _process_p2p_active_count(self, count):
         if count != self._last_count:
-            warn("{:03d} {:03d} {:05d} has {} active P2P entries".format(
-                self._x, self._y, self._index, count))
+            warn(f"{self._x:03d} {self._y:03d} {self._index:05d} "
+                 f"has {count} active P2P entries")
             self._last_count = count
             self._core_counter.set_ethernet_n_routes(self._x, self._y, count)
             self._index += 1
@@ -210,8 +210,8 @@ class ReadNetinitPhaseProcess(AbstractMultiConnectionProcess):
         if self._last_phase != value:
             self._core_counter.set_ethernet_netinit_phase(
                 self._x, self._y, value)
-            warn("{:03d} {:03d} {:05d} moved to phase {:03d}".format(
-                self._x, self._y, self._index, value))
+            warn(f"{self._x:03d} {self._y:03d} {self._index:05d} "
+                 f"moved to phase {value:03d}")
             self._index += 1
             self._last_phase = value
             if self._save:
@@ -271,7 +271,7 @@ class ReadNetinitPhaseProcess(AbstractMultiConnectionProcess):
                 time.sleep(0.1)
             if self._save:
                 write_file = open_file(
-                    "record/netinit_{}_{}.dat".format(self._x, self._y), "wb")
+                    f"record/netinit_{self._x}_{self._y}.dat", "wb")
                 write_data_to_file(write_file, self._p2p_active_data)
                 write_data_to_file(write_file, self._netinit_phase_data)
                 close_file(write_file)
@@ -351,7 +351,7 @@ class ReadBoardProcess(AbstractMultiConnectionProcess):
         self._start_time = time.time()
         if load:
             read_file = open_file(
-                "record/board_{}_{}.dat".format(eth_x, eth_y), "rb")
+                f"record/board_{eth_x}_{eth_y}.dat", "rb")
             self._data = read_data_from_file(read_file)
             close_file(read_file)
 
@@ -404,8 +404,7 @@ class ReadBoardProcess(AbstractMultiConnectionProcess):
             warn(e)
         if self._save:
             write_file = open_file(
-                "record/board_{}_{}.dat".format(
-                    self._eth_x, self._eth_y), "wb")
+                f"record/board_{self._eth_x}_{self._eth_y}.dat", "wb")
             write_data_to_file(write_file, self._data)
             close_file(write_file)
 
@@ -463,7 +462,7 @@ class CoreCounter(object):
         bbox = self._ax.get_window_extent().transformed(
             self._fig.dpi_scale_trans.inverted())
         self._text.set_fontsize(bbox.width * 12.5)
-        self._text.set_text("{:08,d}".format(self._total_cores))
+        self._text.set_text(f"{self._total_cores:08,d}")
         return [self._image, self._text]
 
     def _get_max_value(self, x, y):

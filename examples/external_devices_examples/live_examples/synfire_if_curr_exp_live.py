@@ -75,7 +75,7 @@ Figure(
     Panel(spikes.segments[0].spiketrains,
           yticks=True, markersize=0.2, xlim=(0, 5000)),
     title="Simple synfire chain example with injected spikes",
-    annotations="Simulated with {}".format(p.name())
+    annotations=f"Simulated with {p.name()}"
 )
 plt.show()
 

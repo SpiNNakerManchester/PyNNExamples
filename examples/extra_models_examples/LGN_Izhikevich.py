@@ -394,7 +394,7 @@ Figure(
           xticks=True, ylabel="TRN membrane voltage",
           yticks=True, markersize=0.5, xlim=(100, 400), legend=False),
     title="Effect of I_DC on periodic input, with Izhikevich_cond neurons",
-    annotations="Simulated with {}".format(p.name())
+    annotations=f"Simulated with {p.name()}"
 )
 # plt.savefig("Effect of I_DC on periodic input.png")
 plt.show()

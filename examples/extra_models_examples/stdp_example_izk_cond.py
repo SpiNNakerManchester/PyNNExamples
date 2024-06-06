@@ -182,7 +182,7 @@ post_pop.record(['v', 'spikes', 'gsyn_exc', 'gsyn_inh'])
 # Run simulation
 sim.run(simtime)
 
-print("Weights:{}".format(plastic_projection.get('weight', 'list')))
+print(f"Weights:{plastic_projection.get('weight', 'list')}")
 
 # Get data
 pre_spikes = pre_pop.get_data('spikes')
@@ -215,7 +215,7 @@ Figure(
           yticks=True, xticks=True, markersize=2.0,
           xlim=(0, simtime), color="blue", ylabel="Post-Population"),
     title="excitatory synaptic conductance (mS) and spike raster plots",
-    annotations="Simulated with {}".format(sim.name())
+    annotations=f"Simulated with {sim.name()}"
 )
 plt.show()
 

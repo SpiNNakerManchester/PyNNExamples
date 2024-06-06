@@ -33,7 +33,7 @@ stimulus = sim.Population(1, sim.SpikeSourceArray, spikeArray,
                           label='stimulus')
 
 chain_pops = [
-    sim.Population(n_neurons, sim.IF_curr_exp, {}, label='chain_{}'.format(i))
+    sim.Population(n_neurons, sim.IF_curr_exp, {}, label='chain_{i}')
     for i in range(n_populations)
 ]
 for pop in chain_pops:
