@@ -25,13 +25,13 @@ jobs:
       dependencies: >
           SpiNNUtils SpiNNMachine SpiNNMan PACMAN spalloc
           SpiNNFrontEndCommon sPyNNaker
+      install_module: false
       ubuntu_packages: graphviz
       test_directories: unittests
-      coverage-package: mcmc
+      coverage-package:
       flake8-packages: examples balanced_random learning sudoku synfire
       pylint-packages: examples balanced_random learning sudoku synfire
       pylint_exitcheck: 39
       # Examples are not types to keep them easier to read
       mypy-packages:
-      check_prereleases: false
       run_sphinx: false
