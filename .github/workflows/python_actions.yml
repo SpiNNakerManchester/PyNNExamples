@@ -32,7 +32,6 @@ jobs:
       coverage-package:
       flake8-packages: examples balanced_random learning sudoku synfire
       pylint-packages: examples balanced_random learning sudoku synfire
-      pylint_exitcheck: 39
       # Examples are not types to keep them easier to read
       mypy-packages:
       run_sphinx: false
