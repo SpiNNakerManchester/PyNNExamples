@@ -32,7 +32,9 @@ jobs:
       coverage-package:
       flake8-packages: examples balanced_random learning sudoku synfire
       pylint-packages: examples balanced_random learning sudoku synfire
-      pylint-disable: R, wrong-spelling-in-comment
+      # invalid-name because scripts have values pylint considers constants
+      # wrong-spelling-in-docstring due to param names ect
+      pylint-disable: R, wrong-spelling-in-docstring, invalid-name
       # Examples are not typed to keep them easier to read
       mypy-packages:
       run_sphinx: false
