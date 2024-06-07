@@ -11,10 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
 from pyNN.random import NumpyRNG
 import pyNN.spiNNaker as sim
 import numpy
-import os
 import matplotlib.pyplot as pylab
 from spynnaker.pyNN.utilities import neo_convertor
 
@@ -172,6 +172,15 @@ class Vogels2011(object):
 
     @staticmethod
     def save_name(spike_name):
+        """
+        Gets the name of a none existing file based on this name.
+
+        If needed ands a number at the end.
+
+        :param str spike_name:
+        :return: A unique file name
+        :rtype: str
+        """
         index = 0
         file_name = spike_name + str(index)
         while os.path.exists(file_name):
@@ -293,7 +302,7 @@ class Vogels2011(object):
         # print mean weight, if we bothered to extract them.
         if plastic_weights is not None:
             mean_weight = numpy.average(plastic_weights)
-            print("Mean learnt ie weight:%f" % mean_weight)
+            print(f"Mean learnt ie weight:{mean_weight:f}")
 
         # Create plot
         _fig, axes = pylab.subplots(3)

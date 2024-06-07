@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pyNN.utility.plotting as plot
 import matplotlib.pyplot as plt
 import pyNN.spiNNaker as sim
+import pyNN.utility.plotting as plot
 
 n_neurons = 100
 simtime = 5000

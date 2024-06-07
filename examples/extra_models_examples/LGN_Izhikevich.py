@@ -49,10 +49,17 @@ from pyNN.random import RandomDistribution, NumpyRNG
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 
-# pylint: disable=pointless-string-statement
+# pylint: disable=pointless-string-statement,disable=wrong-spelling-in-comment
 
 
 def get_mean_rate(numCells, population):
+    """
+    Calculate the average number of spikes ber neuron
+
+    :param int numCells:
+    :param population: neo block
+    :return:
+    """
     firing_rate = []      # format = < neuron_id, rate (spikes/ms) >
 
     for index in range(0, numCells):
@@ -63,6 +70,11 @@ def get_mean_rate(numCells, population):
 
 
 def calc_irregularity(segment):
+    """
+    Calculate the irregularity of spikes
+
+    :param segment: neo Segment
+    """
     irregularity = 0
     isi_array = []
     for i in range(len(segment.spiketrains)):
@@ -81,12 +93,21 @@ def calc_irregularity(segment):
 
 
 def print_irregularity():
+    """
+    Calculate and prints the irregularity of spikes
+    """
     print("TCR irregularity: ", calc_irregularity(TCR_spikes.segments[0]))
     print("IN irregularity: ", calc_irregularity(IN_spikes.segments[0]))
     print("TRN irregularity: ", calc_irregularity(TRN_spikes.segments[0]))
 
 
 def calc_synchrony(segment):
+    """
+    Calculate the synchrony of spikes
+
+    :param segment: neo Segment
+    :return:
+    """
     spike_counts = np.zeros(int(TotalDuration/2.0), dtype=int)
     for i in range(len(segment.spiketrains)):
         for j in range(len(segment.spiketrains[i])):
@@ -99,6 +120,9 @@ def calc_synchrony(segment):
 
 
 def print_synchrony():
+    """
+    Calculate and print the synchrony of spikes
+    """
     print("TCR synchrony: ", calc_synchrony(TCR_spikes.segments[0]))
     print("IN synchrony: ", calc_synchrony(IN_spikes.segments[0]))
     print("TRN synchrony: ", calc_synchrony(TRN_spikes.segments[0]))

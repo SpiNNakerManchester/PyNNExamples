@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pyNN.utility.plotting as plot
 import matplotlib.pyplot as plt
 import pyNN.spiNNaker as sim
+import pyNN.utility.plotting as plot
 
 sim.setup(timestep=1.0, n_boards_required=1)
 machine = sim.get_machine()

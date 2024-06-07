@@ -14,7 +14,7 @@
 
 import pyNN.spiNNaker as sim
 
-
+# pylint: disable=wrong-spelling-in-comment
 # -------------------------------------------------------------------
 # This example uses the sPyNNaker implementation of the inhibitory
 # Plasticity rule developed by Vogels, Sprekeler, Zenke et al (2011)

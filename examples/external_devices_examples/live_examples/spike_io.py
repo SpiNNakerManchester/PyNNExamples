@@ -29,6 +29,14 @@ print_condition = Condition()
 
 # Create an initialisation method
 def init_pop(_label, _n_neurons, _run_time_ms, _machine_timestep_ms):
+    """
+    Print method to show callback has been called
+
+    :param str _label:
+    :param int _n_neurons:
+    :param float _run_time_ms:
+    :param float _machine_timestep_ms:
+    """
     print(f"{_label} has {_n_neurons} neurons")
     print(f"Simulation will run for {_run_time_ms}ms "
           f"at {_machine_timestep_ms}ms timesteps")
@@ -36,6 +44,12 @@ def init_pop(_label, _n_neurons, _run_time_ms, _machine_timestep_ms):
 
 # Create a sender of packets for the forward population
 def send_input_forward(label, sender):
+    """
+    Sends 5 spikes at 20 millisecond intervals
+
+    :param str label:
+    :param SpynnakerLiveSpikesConnection sender:
+    """
     for neuron_id in range(0, 100, 20):
         time.sleep(random.random() + 0.5)
         print_condition.acquire()
@@ -46,6 +60,12 @@ def send_input_forward(label, sender):
 
 # Create a sender of packets for the backward population
 def send_input_backward(label, sender):
+    """
+    Sends 5 spikes at 20 millisecond intervals
+
+    :param str label:
+    :param SpynnakerLiveSpikesConnection sender:
+    """
     for neuron_id in range(0, 100, 20):
         real_id = 100 - neuron_id - 1
         time.sleep(random.random() + 0.5)
@@ -57,6 +77,14 @@ def send_input_backward(label, sender):
 
 # Create a receiver of live spikes
 def receive_spikes(label, _time, neuron_ids):
+    """
+    Prints that spikes have been received
+
+    :param int label:
+    :param str _time:
+    :param list(int) neuron_ids:
+    :return:
+    """
     for neuron_id in neuron_ids:
         print_condition.acquire()
         print(f"Received spike at time {_time} from {label} - {neuron_id}")
@@ -176,7 +204,7 @@ Frontend.Projection(pop_backward, pop_backward,
                     Frontend.FromListConnector(loop_backward))
 
 # record spikes from the synfire chains so that we can read off valid results
-# in a safe way afterwards, and verify the behavior
+# in a safe way afterwards, and verify the behaviour
 pop_forward.record('spikes')
 pop_backward.record('spikes')
 

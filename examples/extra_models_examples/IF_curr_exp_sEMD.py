@@ -101,7 +101,6 @@ Figure(
     annotations=f"Simulated with {p.name()}"
 )
 plt.show()
-# plt.savefig('results.png')
 
 # end
 p.end()

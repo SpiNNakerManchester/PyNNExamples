@@ -16,6 +16,7 @@ import matplotlib.pyplot as pylab
 
 import pyNN.spiNNaker as sim
 
+# pylint: disable=wrong-spelling-in-comment
 # -------------------------------------------------------------------
 # This example uses the sPyNNaker implementation of the triplet rule
 # Developed by Pfister and Gerstner(2006) to reproduce the pairing

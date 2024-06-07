@@ -21,6 +21,9 @@ from sudoku.utils import puzzles, get_rates
 
 
 class GUI(object):
+    """
+    A Gui for setting the numbers in the puzzle.
+    """
 
     def __init__(self, n_total, n_cell, n_N, default_rate, max_rate, puzzle):
         """
@@ -114,6 +117,10 @@ class GUI(object):
         button_frame.grid(row=13, column=0, columnspan=11, pady=5)
 
     def start(self):
+        """
+        Starts the main loop running
+
+        """
         self._root.mainloop()
 
     def on_start(self, label, connection):

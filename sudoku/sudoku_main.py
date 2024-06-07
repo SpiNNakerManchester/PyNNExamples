@@ -204,10 +204,6 @@ def interCell(ic_x, ic_y, ic_r, ic_c, conns):
     """
     base_source = ((ic_y * 9) + ic_x) * n_cell
     base_dest = ((ic_c * 9) + ic_r) * n_cell
-    # p.Projection(cells_pop[base_source:base_source+n_cell],
-    #              cells_pop[base_dest:base_dest+n_cell],
-    #              p.AllToAllConnector(),
-    #              p.StaticSynapse(weight=weight_cell, delay=delay))
     connections_intC = [
         (i + base_source, j + base_dest, weight_cell, delay)
         for i in range(n_cell)

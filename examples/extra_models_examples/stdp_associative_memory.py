@@ -166,6 +166,7 @@ p.run(runTime)
 final_weights = projections[0].get('weight', 'list', with_address=False)
 print(f"Final weights: {final_weights}")
 
+# pylint: disable=wrong-spelling-in-comment
 # myDelays = projections[0].getDelays()
 # total=0.0
 # count = len(myDelays)

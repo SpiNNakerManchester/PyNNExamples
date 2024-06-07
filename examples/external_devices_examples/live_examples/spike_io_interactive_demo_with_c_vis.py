@@ -185,7 +185,7 @@ class PyNNScript(object):
                             Frontend.FromListConnector(loop_backward))
 
         # record spikes from the synfire chains so that we can read off valid
-        # results in a safe way afterwards, and verify the behavior
+        # results in a safe way afterwards, and verify the behaviour
         pop_forward.record('spikes')
         pop_backward.record('spikes')
 

@@ -121,7 +121,8 @@ for i in range(n_stim_pairing):
         pop_size, sim.SpikeSourcePoisson(
             rate=in_rate, start=start_pairing + ISI * i + 10,
             duration=dur_stim)))
-    # Pre spikes 10ms after Post so that Hebb can cause LTP
+    # pylint: disable=wrong-spelling-in-comment
+    # Pre spikes 10ms after Post so that Hebb can cause long-term potentiation
 
 # Test post pairing : only pre_pop is stimulated (and should trigger activity
 # in Post)
@@ -156,13 +157,13 @@ sim.Projection(
     synapse_type=sim.StaticSynapse(weight=JEE * 0.01))
 
 # Additional Inputs projections
-for i in range(len(IAddPre)):
+for iAddPre in IAddPre:
     sim.Projection(
-        IAddPre[i], pre_pop, ee_connector, receptor_type='excitatory',
+        iAddPre, pre_pop, ee_connector, receptor_type='excitatory',
         synapse_type=sim.StaticSynapse(weight=JEE * 0.01))
-for i in range(len(IAddPost)):
+for iAddPost in IAddPost:
     sim.Projection(
-        IAddPost[i], post_pop, ee_connector, receptor_type='excitatory',
+        iAddPost, post_pop, ee_connector, receptor_type='excitatory',
         synapse_type=sim.StaticSynapse(weight=JEE * 0.01))
 
 # Plastic Connections between pre_pop and post_pop
