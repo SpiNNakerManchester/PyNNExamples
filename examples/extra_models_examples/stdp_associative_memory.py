@@ -100,8 +100,8 @@ spikes4 = []
 arrayEntries = []
 for i in range(nSourceNeurons):
     newEntry = []
-    for j in range(len(spikes0)):
-        newEntry.append(spikes0[j] + i*40.0/100.0)
+    for spike in spikes0:
+        newEntry.append(spike + i*40.0/100.0)
     arrayEntries.append(newEntry)
 spikeArray = {'spike_times': arrayEntries}
 

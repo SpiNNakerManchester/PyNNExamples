@@ -65,7 +65,7 @@ class PyNNScript(object):
             live_spikes_connection_receive.add_receive_callback(
                 "pop_backward", receive_spikes)
 
-        # different runtimes for demonstration purposes
+        # different run times for demonstration purposes
         run_time = None
         if not use_c_visualiser and not use_spike_injector:
             run_time = 1000

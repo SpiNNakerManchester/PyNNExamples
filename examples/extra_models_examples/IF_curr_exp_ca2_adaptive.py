@@ -80,7 +80,7 @@ binned_isis = numpy.hstack([
 # Split interspike intervals into separate array for each time bin
 time_binned_isis = [binned_isis[0, binned_isis[1] == t] for t in range(T)]
 
-# Create a dictionary of non-empty time bins to mean interspike inverval
+# Create a dictionary of non-empty time bins to mean interspike interval
 mean_isis = {t: numpy.average(i)
              for (t, i) in enumerate(time_binned_isis) if len(i) > 0}
 

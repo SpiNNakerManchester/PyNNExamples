@@ -13,9 +13,9 @@
 # limitations under the License.
 
 import random
-import pyNN.spiNNaker as Frontend
 import time
 from threading import Condition
+import pyNN.spiNNaker as Frontend
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 
