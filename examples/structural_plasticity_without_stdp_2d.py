@@ -173,7 +173,7 @@ for _i_add_post in i_add_post:
 # Structurally plastic connection between pre_pop and post_pop
 partner_selection_last_neuron = sim.RandomSelection()
 formation_distance = sim.DistanceDependentFormation(
-    grid=[np.sqrt(pop_size), np.sqrt(pop_size)],  # spatial org of neurons
+    grid=[np.sqrt(pop_size), np.sqrt(pop_size)],  # spatial neurons
     sigma_form_forward=.5  # spread of feed-forward connections
 )
 elimination_weight = sim.RandomByWeightElimination(
