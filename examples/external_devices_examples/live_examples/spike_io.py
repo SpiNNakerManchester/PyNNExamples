@@ -137,7 +137,7 @@ n_neurons = 100
 run_time = 8000
 weight_to_spike = 2.0
 
-# neural parameters of the ifcur model used to respond to injected spikes.
+# neural parameters of the model used to respond to injected spikes.
 # (cell params for a synfire chain)
 cell_params_lif = {'cm': 0.25,
                    'i_offset': 0.0,

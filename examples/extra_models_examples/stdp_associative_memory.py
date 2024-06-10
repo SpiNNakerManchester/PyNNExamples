@@ -19,6 +19,7 @@ import matplotlib.pyplot as plt
 from pyNN.random import NumpyRNG, RandomDistribution
 import pyNN.spiNNaker as p
 from pyNN.utility.plotting import Figure, Panel
+# pylint: disable=wrong-spelling-in-comment
 
 p.setup(timestep=1.0, min_delay=1.0)
 p.set_number_of_neurons_per_core(p.IF_curr_exp, 100)
@@ -166,7 +167,6 @@ p.run(runTime)
 final_weights = projections[0].get('weight', 'list', with_address=False)
 print(f"Final weights: {final_weights}")
 
-# pylint: disable=wrong-spelling-in-comment
 # myDelays = projections[0].getDelays()
 # total=0.0
 # count = len(myDelays)

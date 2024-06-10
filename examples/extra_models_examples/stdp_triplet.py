@@ -37,6 +37,14 @@ delta_t = [-10, 10]
 
 def generate_fixed_frequency_test_data(
         frequency, first_spike_time, num_spikes):
+    """
+    Generates a list of spike times based on the frequency
+
+    :param int frequency:
+    :param int first_spike_time:
+    :param int num_spikes:
+    :rtype: list(int)
+    """
     # Calculate interspike delays in ms
     interspike_delay = int(1000.0 / float(frequency))
 
@@ -110,7 +118,7 @@ for t in delta_t:
                 pre_pop, post_pop, sim.OneToOneConnector(),
                 synapse_type=stdp_model))
 
-print("Simulating for %us" % (sim_time / 1000))
+print(f"Simulating for {(sim_time / 1000)}s")
 
 # Run simulation
 sim.run(sim_time)

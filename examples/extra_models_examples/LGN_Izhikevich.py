@@ -40,9 +40,9 @@ Free online access:
 https://journal.frontiersin.org/article/10.3389/fnins.2017.00454/abstract
 """
 
+import math
 import pyNN.spiNNaker as p
 import numpy as np
-import math
 from pyNN.random import RandomDistribution, NumpyRNG
 
 # for plotting
@@ -77,15 +77,15 @@ def calc_irregularity(segment):
     """
     irregularity = 0
     isi_array = []
-    for i in range(len(segment.spiketrains)):
-        if len(segment.spiketrains[i]) > 2:
+    for spiketrain in segment.spiketrains:
+        if len(spiketrain) > 2:
             isi_array.append([])
-            for j in range(len(segment.spiketrains[i])-1):
+            for j in range(len(spiketrain)-1):
                 isi_array[-1].append(
-                    segment.spiketrains[i][j+1]-segment.spiketrains[i][j])
-    for i in range(len(isi_array)):
-        mean = np.mean(isi_array[i])
-        sd = np.std(isi_array[i])
+                    spiketrain[j+1]-spiketrain[j])
+    for isi in isi_array:
+        mean = np.mean(isi)
+        sd = np.std(isi)
         cv = sd / mean
         irregularity += cv
     irregularity = irregularity / len(segment.spiketrains)
@@ -109,9 +109,9 @@ def calc_synchrony(segment):
     :return:
     """
     spike_counts = np.zeros(int(TotalDuration/2.0), dtype=int)
-    for i in range(len(segment.spiketrains)):
-        for j in range(len(segment.spiketrains[i])):
-            index = math.floor(segment.spiketrains[i][j] / 2.0)
+    for spiketrain in segment.spiketrains:
+        for spike in spiketrain:
+            index = math.floor(spike / 2.0)
             spike_counts[index] += 1
     mean = np.mean(spike_counts)
     var = np.std(spike_counts) * np.std(spike_counts)

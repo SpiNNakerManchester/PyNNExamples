@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import multiprocessing
 import tkinter as tk
 import pyNN.spiNNaker as Frontend
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
-import multiprocessing
 
 
 class PyNNScript(object):
@@ -37,7 +37,7 @@ class PyNNScript(object):
         # simulation, as well as the expected weight each spike will contain
         self.n_neurons = 100
 
-        # set up gui
+        # set up GUI
         p = None
         sender_port = None
         if use_spike_injector:
@@ -65,7 +65,7 @@ class PyNNScript(object):
             live_spikes_connection_receive.add_receive_callback(
                 "pop_backward", receive_spikes)
 
-        # different runtimes for demostration purposes
+        # different runtimes for demonstration purposes
         run_time = None
         if not use_c_visualiser and not use_spike_injector:
             run_time = 1000
@@ -225,6 +225,14 @@ class PyNNScript(object):
 
 # Create a receiver of live spikes
 def receive_spikes(label, time, neuron_ids):
+    """
+    Print that spikes have been received
+
+    :param str label:
+    :param int time:
+    :param list(int) neuron_ids:
+    :return:
+    """
     for neuron_id in neuron_ids:
         print(f"Received spike at time {time} from {label} - {neuron_id}")
 
@@ -273,10 +281,19 @@ class GUI(object):
         self._root.mainloop()
 
     def start(self, pop_label, connection):
+        """
+        Set the start button to state to normal
+
+        :param pop_label: IGNORED
+        :param connection:  IGNORED
+        """
         # pylint: disable=unused-argument
         self._button["state"] = "normal"
 
     def inject_spike(self):
+        """
+        Inject a spike into system
+        """
         neuron_id = self._neuron_id.get()
         label = self._pop_label.get()
         print(f"injecting with neuron_id {neuron_id} to pop {label}")
