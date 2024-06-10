@@ -157,7 +157,7 @@ if (benchmark == "COBA"):
 
 timer.start()
 
-print(f"{ode_id} Creating cell populations...")
+print(f"{node_id} Creating cell populations...")
 exc_cells = p.Population(
     n_exc, celltype(**cell_params), label="Excitatory_Cells", seed=1)
 inh_cells = p.Population(
@@ -246,7 +246,7 @@ if node_id == 0:
     print(f"Inhibitory conductance : {Ginh} nS")
     print(f"Build time             : {buildCPUTime} s")
     print(f"Simulation time        : {simCPUTime} s")
-    print(f"Writing time           : {writeCPUTime} s" )
+    print(f"Writing time           : {writeCPUTime} s")
 
 
 # === Finished with simulator ===
