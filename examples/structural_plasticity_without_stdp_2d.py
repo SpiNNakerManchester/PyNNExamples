@@ -159,14 +159,14 @@ sim.Projection(
     synapse_type=sim.StaticSynapse(weight=jee * 0.05))
 
 # Additional Inputs projections
-for i in range(len(i_add_pre)):
+for _i_add_pre in i_add_pre:
     sim.Projection(
-        i_add_pre[i], pre_pop, sim.OneToOneConnector(),
+        _i_add_pre, pre_pop, sim.OneToOneConnector(),
         receptor_type='excitatory',
         synapse_type=sim.StaticSynapse(weight=jee * 0.05))
-for i in range(len(i_add_post)):
+for _i_add_post in i_add_post:
     sim.Projection(
-        i_add_post[i], post_pop, sim.OneToOneConnector(),
+        _i_add_post, post_pop, sim.OneToOneConnector(),
         receptor_type='excitatory',
         synapse_type=sim.StaticSynapse(weight=jee * 0.05))
 
