@@ -39,6 +39,12 @@ ended = False
 
 # Run the visualiser
 def read_output(visualiser, out):
+    """
+    Pools the visualiser and prints the output until the
+
+    :param subprocess.Popen visualiser:
+    :param BufferedReader out:
+    """
     result = visualiser.poll()
     while result is None:
         line = out.readline()
@@ -49,6 +55,11 @@ def read_output(visualiser, out):
 
 
 def activate_visualiser(old_vis):
+    """
+    Creates and starts the GUi
+
+    :param bool old_vis: If the old Visualiser should be used
+    """
     vis_exe = None
     if old_vis:
         if sys.platform.startswith("win32"):
@@ -76,7 +87,7 @@ def activate_visualiser(old_vis):
         vismatch = re.match("^Listening on (.*)$", visline)
         if not vismatch:
             vis_proc.kill()
-            raise ValueError(f"Receiver returned unknown output: {firstline}")
+            raise ValueError(f"Receiver returned unknown output: {visline}")
         port = int(vismatch.group(1))
         Thread(target=read_output, args=[vis_proc, vis_proc.stderr]).start()
 
