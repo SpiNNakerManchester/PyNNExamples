@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/SpiNNakerManchester/PyNN8Examples.svg?branch=master)](https://travis-ci.org/SpiNNakerManchester/PyNN8Examples)
+[![Build Status](https://travis-ci.org/SpiNNakerManchester/PyNNExamples.svg?branch=master)](https://travis-ci.org/SpiNNakerManchester/PyNNExamples)
 
 Examples for PyNN
 =================
