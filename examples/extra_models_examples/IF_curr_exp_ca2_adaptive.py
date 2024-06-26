@@ -26,7 +26,7 @@ import matplotlib.pyplot as pylab
 import pyNN.spiNNaker as sim
 
 # Timestep (ms)
-# **NOTE** the 2.5Khz input frequency is not going to work particularily well
+# **NOTE** the 2.5Khz input frequency is not going to work particularly well
 # at 1ms
 dt = 0.1
 
@@ -67,7 +67,8 @@ spike_times = cell.spinnaker_get_data('spikes')
 # Split into list of spike times for each neuron
 neuron_spikes = [spike_times[spike_times[:, 0] == n, 1] for n in range(N)]
 
-# Calculate isis and pair these with bin index of last spike time in pair
+# Calculate interspike intervals
+# and pair these with bin index of last spike time in pair
 # **NOTE** using first spike time in pair leads to a dip at the
 # end as the end of long pairs goes off the end of the simulation
 binned_isis = numpy.hstack([
@@ -76,10 +77,10 @@ binned_isis = numpy.hstack([
          numpy.digitize(t[1:], numpy.arange(T)) - 1))
     for t in neuron_spikes])
 
-# Split ISIs into seperate array for each time bin
+# Split interspike intervals into separate array for each time bin
 time_binned_isis = [binned_isis[0, binned_isis[1] == t] for t in range(T)]
 
-# Create a dictionary of non-empty time bins to mean ISI
+# Create a dictionary of non-empty time bins to mean interspike interval
 mean_isis = {t: numpy.average(i)
              for (t, i) in enumerate(time_binned_isis) if len(i) > 0}
 

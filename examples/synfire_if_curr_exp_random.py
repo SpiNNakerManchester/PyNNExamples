@@ -15,11 +15,11 @@
 """
 Synfirechain-like example
 """
+import matplotlib.pyplot as plt
+from pyNN.random import RandomDistribution
 import pyNN.spiNNaker as p
 from pyNN.utility.plotting import Figure, Panel
-import matplotlib.pyplot as plt
 
-from pyNN.random import RandomDistribution
 
 p.setup(timestep=1.0, min_delay=1.0)
 nNeurons = 200  # number of neurons in each population
@@ -59,7 +59,7 @@ p.Projection(input_pop, main_pop, p.FromListConnector(injectionConnection))
 
 main_pop.record(['v', 'gsyn_exc', 'gsyn_inh', 'spikes'])
 
-print("Running for {} ms".format(run_time))
+print(f"Running for {run_time} ms")
 p.run(run_time)
 # get data (could be done as one, but can be done bit by bit as well)
 data = main_pop.get_data(['v', 'gsyn_exc', 'spikes', 'gsyn_inh'])
@@ -79,7 +79,7 @@ Figure(
           ylabel="gsyn inhibitory (mV)",
           data_labels=[main_pop.label], yticks=True, xlim=(0, run_time)),
     title="Simple synfire chain example",
-    annotations="Simulated with {}".format(p.name())
+    annotations=f"Simulated with {p.name()}"
 )
 plt.show()
 

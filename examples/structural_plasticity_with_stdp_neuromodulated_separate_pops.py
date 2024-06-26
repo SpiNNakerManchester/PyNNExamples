@@ -85,7 +85,7 @@ stim_projections = []
 # Structurally plastic connection between pre_pop and post_pop
 partner_selection_last_neuron = sim.RandomSelection()
 formation_distance = sim.DistanceDependentFormation(
-    grid=[np.sqrt(n_neurons), np.sqrt(n_neurons)],  # spatial org of neurons
+    grid=[np.sqrt(n_neurons), np.sqrt(n_neurons)],  # spatial neurons
     sigma_form_forward=1.0  # spread of feed-forward connections
 )
 elimination_weight = sim.RandomByWeightElimination(
@@ -129,7 +129,8 @@ for i in range(n_pops):
         cell_params, label='post'))
     mid_projections.append(sim.Projection(
         stimulation[i], mid_pops[i],
-        sim.FixedProbabilityConnector(0.0),  # small number of initial conns
+        # small number of initial connections
+        sim.FixedProbabilityConnector(0.0),
         synapse_type=structure_model_with_stdp,
         label="stim-mid projection"))
     plastic_projections.append(
@@ -157,6 +158,15 @@ sim.run(duration)
 
 
 def plot_spikes(_mid_spikes, _spikes, _title, _n_pops, _n_neurons):
+    """
+    Creates a plot of the spikes if any received.
+
+    :param list([int, quantity]) _mid_spikes:
+    :param list([int, quantity]) _spikes:
+    :param str _title:
+    :param iny _n_pops:
+    :param int _n_neurons:
+    """
     if _spikes is not None:
         pylab.figure(figsize=(15, 5))
         pylab.xlim((0, duration))
@@ -191,7 +201,7 @@ pylab.plot(rewards, [0.5 for x in rewards], 'g^')
 pylab.plot(punishments, [0.5 for x in punishments], 'r^')
 pylab.show()
 
-print("Weights(Initial %s)" % plastic_weights)
+print("Weights(Initial {plastic_weights})")
 for x in weights:
     print(x)
 

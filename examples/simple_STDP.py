@@ -118,15 +118,16 @@ sim.run(t_stop)
 presynaptic_spikes = p1.get_data('spikes').segments[0]
 postsynaptic_spikes = p2.get_data('spikes').segments[0]
 postsynaptic_v = p2.get_data('v').segments[0]
-print("Post-synaptic spike times: %s" % postsynaptic_spikes.spiketrains[0])
+print(f"Post-synaptic spike times: {postsynaptic_spikes.spiketrains[0]}")
 
 weights = connections.get(["weight"], "list")
 final_weights = numpy.array([w[-1] for w in weights])
 deltas = delta_t * numpy.arange(n // 2, -n // 2, -1)
-print("Final weights: %s" % final_weights)
+print(f"Final weights: {final_weights}")
 plasticity_data = DataTable(deltas, final_weights)
 
 Figure(
+    # pylint: disable=wrong-spelling-in-comment
     # raster plot of the presynaptic neuron spike times
     Panel(presynaptic_spikes.spiketrains,
           yticks=True, markersize=0.2, xlim=(0, t_stop)),
@@ -144,7 +145,7 @@ Figure(
           ylim=(0.9 * final_weights.min(), 1.1 * final_weights.max()),
           xlabel="t_post - t_pre (ms)", ylabel="Final weight (nA)"),
     title="Simple STDP example",
-    annotations="Simulated with {}".format(sim.name())
+    annotations=f"Simulated with {sim.name()}"
 )
 
 # figure_filename = "simple_STDP.png"

@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pyNN.utility.plotting as plot
 import matplotlib.pyplot as plt
 import pyNN.spiNNaker as sim
+import pyNN.utility.plotting as plot
 
 sim.setup(timestep=1.0, n_boards_required=1)
 machine = sim.get_machine()
@@ -43,6 +43,6 @@ plot.Figure(
     # plot spikes (or in this case spike)
     plot.Panel(spikes, yticks=True, markersize=5, xlim=(0, simtime)),
     title="Simple Example",
-    annotations="Simulated with {}".format(sim.name())
+    annotations=f"Simulated with {sim.name()}"
 )
 plt.show()

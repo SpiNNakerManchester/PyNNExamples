@@ -75,7 +75,7 @@ devices = [motor_0, motor_1]
 #  Create populations
 ###########################################
 
-# Retina population ( num of neurons:n_pixel*n_pixel*2 )
+# Retina population ( number of neurons:n_pixel*n_pixel*2 )
 pushbot_retina = p.Population(
     retina_resolution.value.n_neurons, retina_device, label=retina_label)
 p.external_devices.activate_live_output_for(
@@ -162,7 +162,7 @@ print("right =", id_to_right)
 id_to_middle_up = numpy.extract(id_to_middle_up, arr)
 print("middle =", id_to_middle_up)
 
-# Conn list: (source neuron, target neuron, weight, delay)
+# Connection list: (source neuron, target neuron, weight, delay)
 # Creates connection list to connect left neuron
 conn_list_left = [(i, 0, w_conn, d_conn) for i in id_to_left]
 

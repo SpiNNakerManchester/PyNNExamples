@@ -84,7 +84,7 @@ Figure(
           ylabel="gsyn inhibitory (mV)",
           data_labels=[populations[0].label], yticks=True, xlim=(0, runtime)),
     title="Synfire chain example  with dual exponential synapse",
-    annotations="Simulated with {}".format(p.name())
+    annotations=f"Simulated with {p.name()}"
 )
 plt.show()
 print(figure_filename)

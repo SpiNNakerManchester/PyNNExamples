@@ -86,7 +86,7 @@ Figure(
           ylabel="gsyn inhibitory (mV)",
           data_labels=[populations[0].label], yticks=True, xlim=(0, runtime)),
     title="Simple synfire chain example",
-    annotations="Simulated with {}".format(p.name())
+    annotations=f"Simulated with {p.name()}".format()
 )
 plt.show()
 

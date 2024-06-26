@@ -1,3 +1,17 @@
+# Copyright (c) 2018 The University of Manchester
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import tkinter as tk
 import tkinter.font as tkFont
 import sys
@@ -7,8 +21,19 @@ from sudoku.utils import puzzles, get_rates
 
 
 class GUI(object):
+    """
+    A Gui for setting the numbers in the puzzle.
+    """
 
     def __init__(self, n_total, n_cell, n_N, default_rate, max_rate, puzzle):
+        """
+        :param int n_total:
+        :param int n_cell:
+        :param int n_N:
+        :param float default_rate:
+        :param float max_rate:
+        :param int puzzle:
+        """
         self._n_total = n_total
         self._n_cell = n_cell
         self._n_N = n_N
@@ -50,7 +75,7 @@ class GUI(object):
         frame = tk.Frame(self._root)
         for i in range(len(puzzles)):
             button = tk.Button(
-                frame, text="Puzzle {}".format(i + 1), width=10,
+                frame, text=f"Puzzle {i + 1}", width=10,
                 command=functools.partial(self.set_puzzle, i))
             button.grid(row=i, column=0, pady=5)
         button = tk.Button(frame, text="Dream", width=10,
@@ -92,13 +117,24 @@ class GUI(object):
         button_frame.grid(row=13, column=0, columnspan=11, pady=5)
 
     def start(self):
+        """
+        Starts the main loop running
+
+        """
         self._root.mainloop()
 
-    def on_start(self, label, connection):  # pylint: disable=unused-argument
+    def on_start(self, label, connection):
+        """
+        set the button and cycle button to normal
+        """
+        # pylint: disable=unused-argument
         self._button["state"] = "normal"
         self._cycle_button["state"] = "normal"
 
     def cycle_puzzles(self):
+        """
+        Cycle through the puzzles at 30 seconds intervals
+        """
         self._after_id = self._root.after(30000, self.cycle_puzzles)
         print("Cycling after 30 seconds")
         self._puzzle = (self._puzzle + 1) % len(puzzles)
@@ -106,12 +142,22 @@ class GUI(object):
         self.set_puzzle(self._puzzle, automatic=True)
 
     def set_dream(self):
+        """
+        Sets the numbers to zero and based on that the coonections and rates
+        """
         for x in range(9):
             for y in range(9):
                 self._numbers_txt[x][y].set(0)
         self.set_values()
 
     def set_puzzle(self, puzzle, automatic=False):
+        """
+        Sets the puzzel number and based on that the numbers, coonections \
+        and rates
+
+        :param int puzzle:
+        :param bool automatic:
+        """
         self._puzzle = puzzle
         for x in range(9):
             for y in range(9):
@@ -119,6 +165,12 @@ class GUI(object):
         self.set_values(automatic)
 
     def set_values(self, automatic=False):
+        """
+        Stes the connections and rates
+
+        :param bool automatic:
+        :return:
+        """
         if not automatic:
             if self._after_id is not None:
                 print("Cancelling")

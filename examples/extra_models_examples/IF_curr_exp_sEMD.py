@@ -98,10 +98,9 @@ Figure(
           ylabel="gsyn inhibitory (mV)",
           data_labels=[sEMD.label], yticks=True, xlim=(0, simulation_runtime)),
     title="SEMD example",
-    annotations="Simulated with {}".format(p.name())
+    annotations=f"Simulated with {p.name()}"
 )
 plt.show()
-# plt.savefig('results.png')
 
 # end
 p.end()

@@ -106,6 +106,6 @@ Figure(
     Panel(data.segments[0].spiketrains,
           yticks=True, markersize=2.0, xlim=(0, end_time)),
     title="Balanced Random Network",
-    annotations="Simulated with {}".format(p.name())
+    annotations=f"Simulated with {p.name()}"
 )
 pylab.show()

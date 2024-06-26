@@ -13,9 +13,9 @@
 # limitations under the License.
 
 import random
-import pyNN.spiNNaker as Frontend
 import time
 from threading import Condition
+import pyNN.spiNNaker as Frontend
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 
@@ -29,38 +29,65 @@ print_condition = Condition()
 
 # Create an initialisation method
 def init_pop(_label, _n_neurons, _run_time_ms, _machine_timestep_ms):
-    print("{} has {} neurons".format(_label, _n_neurons))
-    print("Simulation will run for {}ms at {}ms timesteps".format(
-        _run_time_ms, _machine_timestep_ms))
+    """
+    Print method to show callback has been called
+
+    :param str _label:
+    :param int _n_neurons:
+    :param float _run_time_ms:
+    :param float _machine_timestep_ms:
+    """
+    print(f"{_label} has {_n_neurons} neurons")
+    print(f"Simulation will run for {_run_time_ms}ms "
+          f"at {_machine_timestep_ms}ms timesteps")
 
 
 # Create a sender of packets for the forward population
 def send_input_forward(label, sender):
+    """
+    Sends 5 spikes at 20 millisecond intervals
+
+    :param str label:
+    :param SpynnakerLiveSpikesConnection sender:
+    """
     for neuron_id in range(0, 100, 20):
         time.sleep(random.random() + 0.5)
         print_condition.acquire()
-        print("Sending forward spike {}".format(neuron_id))
+        print(f"Sending forward spike {neuron_id}")
         print_condition.release()
         sender.send_spike(label, neuron_id, send_full_keys=True)
 
 
 # Create a sender of packets for the backward population
 def send_input_backward(label, sender):
+    """
+    Sends 5 spikes at 20 millisecond intervals
+
+    :param str label:
+    :param SpynnakerLiveSpikesConnection sender:
+    """
     for neuron_id in range(0, 100, 20):
         real_id = 100 - neuron_id - 1
         time.sleep(random.random() + 0.5)
         print_condition.acquire()
-        print("Sending backward spike {}".format(real_id))
+        print(f"Sending backward spike {real_id}")
         print_condition.release()
         sender.send_spike(label, real_id)
 
 
 # Create a receiver of live spikes
 def receive_spikes(label, _time, neuron_ids):
+    """
+    Prints that spikes have been received
+
+    :param int label:
+    :param str _time:
+    :param list(int) neuron_ids:
+    :return:
+    """
     for neuron_id in neuron_ids:
         print_condition.acquire()
-        print("Received spike at time {} from {} - {}".format(
-            _time, label, neuron_id))
+        print(f"Received spike at time {_time} from {label} - {neuron_id}")
         print_condition.release()
 
 
@@ -110,7 +137,7 @@ n_neurons = 100
 run_time = 8000
 weight_to_spike = 2.0
 
-# neural parameters of the ifcur model used to respond to injected spikes.
+# neural parameters of the model used to respond to injected spikes.
 # (cell params for a synfire chain)
 cell_params_lif = {'cm': 0.25,
                    'i_offset': 0.0,
@@ -177,7 +204,7 @@ Frontend.Projection(pop_backward, pop_backward,
                     Frontend.FromListConnector(loop_backward))
 
 # record spikes from the synfire chains so that we can read off valid results
-# in a safe way afterwards, and verify the behavior
+# in a safe way afterwards, and verify the behaviour
 pop_forward.record('spikes')
 pop_backward.record('spikes')
 
@@ -203,7 +230,7 @@ Figure(
     Panel(spikes_backward.segments[0].spiketrains,
           yticks=True, markersize=0.2, xlim=(0, run_time)),
     title="Simple synfire chain example with injected spikes",
-    annotations="Simulated with {}".format(Frontend.name())
+    annotations=f"Simulated with {Frontend.name}"
 )
 plt.show()
 

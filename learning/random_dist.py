@@ -67,6 +67,6 @@ plot.Figure(
     # plot spikes
     plot.Panel(spikes, yticks=True, markersize=5, xlim=(0, simtime)),
     title="Balanced Random Network Example",
-    annotations="Simulated with {}".format(sim.name())
+    annotations=f"Simulated with {sim.name()}"
 )
 plt.show()

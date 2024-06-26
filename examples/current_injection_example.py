@@ -66,7 +66,7 @@ Figure(
           xlabel="Time (ms)", ylabel="Membrane potential (mV)",
           ylim=(-96, -59)),
     title="Current injection example",
-    annotations="Simulated with {}".format(sim.name())
+    annotations=f"Simulated with {sim.name()}"
 )
 
 plt.show()
