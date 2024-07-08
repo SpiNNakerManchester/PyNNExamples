@@ -164,7 +164,7 @@ for _i_add_pre in i_add_pre:
         _i_add_pre, pre_pop, sim.OneToOneConnector(),
         receptor_type='excitatory',
         synapse_type=sim.StaticSynapse(weight=jee * 0.05))
-for _i_add_post in range(len(i_add_post)):
+for _i_add_post in i_add_post:
     sim.Projection(
         _i_add_post, post_pop, sim.OneToOneConnector(),
         receptor_type='excitatory',
