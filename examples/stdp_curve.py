@@ -111,7 +111,7 @@ for t in delta_t:
         pre_pop, post_pop, sim.OneToOneConnector(),
         synapse_type=stdp_model))
 
-print("Simulating for %us" % (sim_time / 1000))
+print("Simulating for {sim_time / 1000}s")
 
 # Run simulation
 sim.run(sim_time)

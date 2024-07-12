@@ -18,7 +18,7 @@ Simple test for STDP :
    Reproduces a classical plasticity experiment of plasticity induction by
 pre/post synaptic pairing specifically :
 
- * At the begining of the simulation, "n_stim_test" external stimulations of
+ * At the beginning of the simulation, "n_stim_test" external stimulations of
    the "pre_pop" (presynaptic) population do not trigger activity in the
    "post_pop" (postsynaptic) population.
 
@@ -148,13 +148,13 @@ sim.Projection(
     synapse_type=sim.StaticSynapse(weight=JEE * 0.001))
 
 # Additional Inputs projections
-for i in range(len(IAddPre)):
+for iAddPre in IAddPre:
     sim.Projection(
-        IAddPre[i], pre_pop, ee_connector, receptor_type='excitatory',
+        iAddPre, pre_pop, ee_connector, receptor_type='excitatory',
         synapse_type=sim.StaticSynapse(weight=JEE * 0.001))
-for i in range(len(IAddPost)):
+for iAddPost in IAddPost:
     sim.Projection(
-        IAddPost[i], post_pop, ee_connector, receptor_type='excitatory',
+        iAddPost, post_pop, ee_connector, receptor_type='excitatory',
         synapse_type=sim.StaticSynapse(weight=JEE * 0.001))
 
 # Plastic Connections between pre_pop and post_pop
@@ -178,7 +178,7 @@ post_pop.record(['v', 'spikes'])
 # Run simulation
 sim.run(simtime)
 
-print("Weights:{}".format(plastic_projection.get('weight', 'list')))
+print(f"Weights:{plastic_projection.get('weight', 'list')}")
 
 pre_spikes = pre_pop.get_data('spikes')
 post_spikes = post_pop.get_data('spikes')
@@ -190,7 +190,7 @@ Figure(
     Panel(post_spikes.segments[0].spiketrains,
           yticks=True, markersize=0.5, xlim=(0, simtime)),
     title="stdp example cond",
-    annotations="Simulated with {}".format(sim.name()))
+    annotations=f"Simulated with {sim.name()}")
 plt.show()
 
 # End simulation on SpiNNaker

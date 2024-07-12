@@ -18,7 +18,7 @@ Simple test for STDP :
    Reproduces a classical plasticity experiment of plasticity induction by
 pre/post synaptic pairing specifically :
 
- * At the begining of the simulation, "n_stim_test" external stimulations of
+ * At the beginning of the simulation, "n_stim_test" external stimulations of
    the "pre_pop" (presynaptic) population do not trigger activity in the
    "post_pop" (postsynaptic) population.
 
@@ -26,7 +26,7 @@ pre/post synaptic pairing specifically :
    "n_stim_pairing" times by an external source so that the "post_pop"
    population spikes 10ms after the "pre_pop" population.
 
- * Ater that period, only the "pre_pop" population is externally stimulated
+ * After that period, only the "pre_pop" population is externally stimulated
    "n_stim_test" times, but now it should trigger activity in the "post_pop"
    population (due to STDP learning)
 
@@ -148,13 +148,13 @@ sim.Projection(
     synapse_type=sim.StaticSynapse(weight=jee * 0.05))
 
 # Additional Inputs projections
-for i in range(len(i_add_pre)):
+for _i_add_pre in i_add_pre:
     sim.Projection(
-        i_add_pre[i], pre_pop, ee_connector, receptor_type='excitatory',
+        _i_add_pre, pre_pop, ee_connector, receptor_type='excitatory',
         synapse_type=sim.StaticSynapse(weight=jee * 0.05))
-for i in range(len(i_add_post)):
+for _i_add_post in i_add_post:
     sim.Projection(
-        i_add_post[i], post_pop, ee_connector, receptor_type='excitatory',
+        _i_add_post, post_pop, ee_connector, receptor_type='excitatory',
         synapse_type=sim.StaticSynapse(weight=jee * 0.05))
 
 # Plastic Connections between pre_pop and post_pop
@@ -178,7 +178,7 @@ post_pop.record(['v', 'spikes'])
 # Run simulation
 sim.run(sim_time)
 
-print("Weights:{}".format(plastic_projection.get('weight', 'list')))
+print(f"Weights:{plastic_projection.get('weight', 'list')}")
 
 pre_spikes = pre_pop.get_data('spikes')
 post_spikes = post_pop.get_data('spikes')
@@ -190,7 +190,7 @@ Figure(
     Panel(post_spikes.segments[0].spiketrains,
           yticks=True, markersize=0.5, xlim=(0, sim_time)),
     title="stdp example curr",
-    annotations="Simulated with {}".format(sim.name()))
+    annotations=f"Simulated with {sim.name()}")
 plt.show()
 
 # End simulation on SpiNNaker

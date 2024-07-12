@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pyNN.utility.plotting as plot
 import matplotlib.pyplot as plt
 import pyNN.spiNNaker as sim
+import pyNN.utility.plotting as plot
 
 n_neurons = 100
 simtime = 5000
@@ -77,6 +77,6 @@ plot.Figure(
     plot.Panel(pre_spikes, post_spikes, yticks=True, xlim=(0, simtime),
                line_properties=line_properties),
     title="STDP Network Example",
-    annotations="Simulated with {}".format(sim.name())
+    annotations=f"Simulated with {sim.name()}"
 )
 plt.show()

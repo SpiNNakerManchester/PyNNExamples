@@ -109,6 +109,13 @@ sim.run(duration)
 
 
 def plot_spikes(_spikes, _title, _n_neurons):
+    """
+    Plots the spikes if there are any.
+
+    :param list([int, quantity]) _spikes:
+    :param str _title:
+    :param int _n_neurons:
+    """
     if _spikes is not None:
         pylab.figure(figsize=(15, 5))
         pylab.xlim((0, duration))
@@ -136,7 +143,7 @@ pylab.plot(rewards, [0.5 for x in rewards], 'g^')
 pylab.plot(punishments, [0.5 for x in punishments], 'r^')
 pylab.show()
 
-print("Weights(Initial %s)" % plastic_weights)
+print("Weights(Initial {plastic_weights})")
 for x in weights:
     print(x)
 

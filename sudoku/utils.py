@@ -1,3 +1,17 @@
+# Copyright (c) 2018 The University of Manchester
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 puzzles = list()
 puzzles.append(
     # Diabolical problem:
@@ -90,6 +104,17 @@ puzzles.append(
 
 
 def get_rates(values, n_total, n_cell, n_N, default_rate, max_rate):
+    """
+    Calculates the list of rates for a given number of cells.
+
+    :param list(list(int)) values:
+    :param int n_total:
+    :param int n_cell:
+    :param int n_N:
+    :param float default_rate:
+    :param float max_rate:
+    :rtype: list(float)
+    """
     rates = [default_rate] * n_total
     for x in range(9):
         for y in range(9):

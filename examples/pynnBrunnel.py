@@ -66,7 +66,7 @@ def poisson_generator(_rate, _rng, _t_start=0.0, _t_stop=1000.0, _debug=False):
 
     extra_spikes = []
     if i == len(spikes):
-        # ISI buf overrun
+        # Interspike interval buffer overrun
 
         t_last = spikes[-1] + _rng.exponential(1.0 / _rate, 1)[0] * 1000.0
 
@@ -77,8 +77,8 @@ def poisson_generator(_rate, _rng, _t_start=0.0, _t_stop=1000.0, _debug=False):
         spikes = np.concatenate((spikes, extra_spikes))
 
         if _debug:
-            print("ISI buf overrun handled. len(spikes)=%d,"
-                  " len(extra_spikes)=%d" % (len(spikes), len(extra_spikes)))
+            print(f"ISI buf overrun handled. {len(spikes)=}, "
+                  f"{len(extra_spikes)=}")
 
     else:
         spikes = np.resize(spikes, (i,))
@@ -125,7 +125,7 @@ nu_ex = eta * V_th / (J_E * C_E * tau_m)
 # nu_ex*C_E  the factor 1000.0 changes the units from
 # spikes per ms to spikes per second.
 p_rate = 1000.0 * nu_ex * C_E
-print("Rate is: %f HZ" % (p_rate / 1000))
+print(f"Rate is: {p_rate / 1000} HZ")
 
 # Neural Parameters
 pynn.setup(timestep=0.1, min_delay=0.1)
@@ -137,7 +137,7 @@ if simulator_Name == "spiNNaker":
     pynn.set_number_of_neurons_per_core(pynn.SpikeSourcePoisson, 64)
 
 exc_cell_params = {
-    'cm': 1.0,  # pf
+    'cm': 1.0,
     'tau_m': tau_m,
     'tau_refrac': tau_ref,
     'v_rest': v_rest,
@@ -149,7 +149,7 @@ exc_cell_params = {
 }
 
 inh_cell_params = {
-    'cm': 1.0,  # pf
+    'cm': 1.0,
     'tau_m': tau_m,
     'tau_refrac': tau_ref,
     'v_rest': v_rest,
@@ -179,7 +179,7 @@ E_conn = pynn.FixedProbabilityConnector(epsilon)
 I_conn = pynn.FixedProbabilityConnector(epsilon)
 
 # Use random delays for the external noise and
-# set the inital membrance voltage below the resting potential
+# set the initial membrane voltage below the resting potential
 # to avoid the overshoot of activity in the beginning of the simulation
 delay_distr = RandomDistribution('uniform', low=0.1, high=12.8)
 Ext_conn = pynn.OneToOneConnector()
@@ -228,7 +228,7 @@ Figure(
     Panel(esp.segments[0].spiketrains,
           yticks=True, markersize=1, xlim=(0, sim_time)),
     title="Brunnel example",
-    annotations="Simulated with {}".format(pynn.name())
+    annotations=f"Simulated with {pynn.name()}"
 )
 plt.show()
 

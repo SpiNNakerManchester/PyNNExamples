@@ -91,6 +91,6 @@ Figure(
           ylabel="gsyn inhibitory (mV)",
           data_labels=[neuron.label], yticks=True, xlim=(0, runtime)),
     title="Simple synfire chain example",
-    annotations="Simulated with {}".format(p.name())
+    annotations=f"Simulated with {p.name()}"
 )
 plt.show()

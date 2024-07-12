@@ -40,19 +40,26 @@ Free online access:
 https://journal.frontiersin.org/article/10.3389/fnins.2017.00454/abstract
 """
 
+import math
 import pyNN.spiNNaker as p
 import numpy as np
-import math
 from pyNN.random import RandomDistribution, NumpyRNG
 
 # for plotting
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 
-# pylint: disable=pointless-string-statement
+# pylint: disable=pointless-string-statement,disable=wrong-spelling-in-comment
 
 
 def get_mean_rate(numCells, population):
+    """
+    Calculate the average number of spikes ber neuron
+
+    :param int numCells:
+    :param population: neo block
+    :return:
+    """
     firing_rate = []      # format = < neuron_id, rate (spikes/ms) >
 
     for index in range(0, numCells):
@@ -63,17 +70,22 @@ def get_mean_rate(numCells, population):
 
 
 def calc_irregularity(segment):
+    """
+    Calculate the irregularity of spikes
+
+    :param segment: neo Segment
+    """
     irregularity = 0
     isi_array = []
-    for i in range(len(segment.spiketrains)):
-        if len(segment.spiketrains[i]) > 2:
+    for spiketrain in segment.spiketrains:
+        if len(spiketrain) > 2:
             isi_array.append([])
-            for j in range(len(segment.spiketrains[i])-1):
+            for j in range(len(spiketrain)-1):
                 isi_array[-1].append(
-                    segment.spiketrains[i][j+1]-segment.spiketrains[i][j])
-    for i in range(len(isi_array)):
-        mean = np.mean(isi_array[i])
-        sd = np.std(isi_array[i])
+                    spiketrain[j+1]-spiketrain[j])
+    for isi in isi_array:
+        mean = np.mean(isi)
+        sd = np.std(isi)
         cv = sd / mean
         irregularity += cv
     irregularity = irregularity / len(segment.spiketrains)
@@ -81,16 +93,25 @@ def calc_irregularity(segment):
 
 
 def print_irregularity():
+    """
+    Calculate and prints the irregularity of spikes
+    """
     print("TCR irregularity: ", calc_irregularity(TCR_spikes.segments[0]))
     print("IN irregularity: ", calc_irregularity(IN_spikes.segments[0]))
     print("TRN irregularity: ", calc_irregularity(TRN_spikes.segments[0]))
 
 
 def calc_synchrony(segment):
+    """
+    Calculate the synchrony of spikes
+
+    :param segment: neo Segment
+    :return:
+    """
     spike_counts = np.zeros(int(TotalDuration/2.0), dtype=int)
-    for i in range(len(segment.spiketrains)):
-        for j in range(len(segment.spiketrains[i])):
-            index = math.floor(segment.spiketrains[i][j] / 2.0)
+    for spiketrain in segment.spiketrains:
+        for spike in spiketrain:
+            index = math.floor(spike / 2.0)
             spike_counts[index] += 1
     mean = np.mean(spike_counts)
     var = np.std(spike_counts) * np.std(spike_counts)
@@ -99,6 +120,9 @@ def calc_synchrony(segment):
 
 
 def print_synchrony():
+    """
+    Calculate and print the synchrony of spikes
+    """
     print("TCR synchrony: ", calc_synchrony(TCR_spikes.segments[0]))
     print("IN synchrony: ", calc_synchrony(IN_spikes.segments[0]))
     print("TRN synchrony: ", calc_synchrony(TRN_spikes.segments[0]))
@@ -394,7 +418,7 @@ Figure(
           xticks=True, ylabel="TRN membrane voltage",
           yticks=True, markersize=0.5, xlim=(100, 400), legend=False),
     title="Effect of I_DC on periodic input, with Izhikevich_cond neurons",
-    annotations="Simulated with {}".format(p.name())
+    annotations=f"Simulated with {p.name()}"
 )
 # plt.savefig("Effect of I_DC on periodic input.png")
 plt.show()

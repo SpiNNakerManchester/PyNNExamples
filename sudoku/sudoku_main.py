@@ -39,16 +39,27 @@ ended = False
 
 # Run the visualiser
 def read_output(visualiser, out):
+    """
+    Pools the visualiser and prints the output until the
+
+    :param subprocess.Popen visualiser:
+    :param BufferedReader out:
+    """
     result = visualiser.poll()
     while result is None:
         line = out.readline()
         if line:
             print(line)
         result = visualiser.poll()
-    print("Visualiser exited: {}".format(result))
+    print(f"Visualiser exited: {result}")
 
 
 def activate_visualiser(old_vis):
+    """
+    Creates and starts the GUi
+
+    :param bool old_vis: If the old Visualiser should be used
+    """
     vis_exe = None
     if old_vis:
         if sys.platform.startswith("win32"):
@@ -76,7 +87,7 @@ def activate_visualiser(old_vis):
         vismatch = re.match("^Listening on (.*)$", visline)
         if not vismatch:
             vis_proc.kill()
-            raise ValueError(f"Receiver returned unknown output: {firstline}")
+            raise ValueError(f"Receiver returned unknown output: {visline}")
         port = int(vismatch.group(1))
         Thread(target=read_output, args=[vis_proc, vis_proc.stderr]).start()
 
@@ -204,10 +215,6 @@ def interCell(ic_x, ic_y, ic_r, ic_c, conns):
     """
     base_source = ((ic_y * 9) + ic_x) * n_cell
     base_dest = ((ic_c * 9) + ic_r) * n_cell
-    # p.Projection(cells_pop[base_source:base_source+n_cell],
-    #              cells_pop[base_dest:base_dest+n_cell],
-    #              p.AllToAllConnector(),
-    #              p.StaticSynapse(weight=weight_cell, delay=delay))
     connections_intC = [
         (i + base_source, j + base_dest, weight_cell, delay)
         for i in range(n_cell)
@@ -237,6 +244,9 @@ cells.initialize(v=RandomDistribution("uniform", [-65.0, -55.0]))
 
 
 def wait_for_end():
+    """
+    Collections of method that need to run at the endo of a run
+    """
     set_window.wait()
     set_window.terminate()
     vis_process.terminate()
@@ -248,6 +258,7 @@ wait_thread.start()
 
 p.external_devices.run_forever()
 
+# pylint: disable=wrong-spelling-in-comment
 # spikes = cells.getSpikes()
 # f, axarr = pylab.subplots(9, 9)
 # for y in range(9):

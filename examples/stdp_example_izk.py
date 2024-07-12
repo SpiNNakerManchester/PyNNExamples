@@ -24,7 +24,7 @@ Simple test for STDP :
    Reproduces a classical plasticity experiment of plasticity induction by
 pre/post synaptic pairing specifically :
 
- * At the begining of the simulation, "n_stim_test" external stimulations of
+ * At the beginning of the simulation, "n_stim_test" external stimulations of
    the "pre_pop" (presynaptic) population do not trigger activity in the
    "post_pop" (postsynaptic) population.
 
@@ -118,6 +118,7 @@ for i in range(n_stim_pairing):
         pop_size, sim.SpikeSourcePoisson(
             rate=in_rate, start=start_pairing + ISI * i + 10,
             duration=dur_stim)))
+    # pylint: disable=wrong-spelling-in-comment
     # Pre spikes 10ms after Post so that Hebb can cause LTP
 
 # Test post pairing : only pre_pop is stimulated (and should trigger activity
@@ -153,13 +154,13 @@ sim.Projection(
     synapse_type=sim.StaticSynapse(weight=JEE))
 
 # Additional Inputs projections
-for i in range(len(IAddPre)):
+for iAddPre in IAddPre:
     sim.Projection(
-        IAddPre[i], pre_pop, ee_connector, receptor_type='excitatory',
+        iAddPre, pre_pop, ee_connector, receptor_type='excitatory',
         synapse_type=sim.StaticSynapse(weight=JEE))
-for i in range(len(IAddPost)):
+for iAddPost in IAddPost:
     sim.Projection(
-        IAddPost[i], post_pop, ee_connector, receptor_type='excitatory',
+        iAddPost, post_pop, ee_connector, receptor_type='excitatory',
         synapse_type=sim.StaticSynapse(weight=JEE))
 
 # Plastic Connections between pre_pop and post_pop
@@ -179,7 +180,7 @@ post_pop.record(['v', 'spikes', 'gsyn_exc', 'gsyn_inh'])
 # Run simulation
 sim.run(simtime)
 
-print("Weights:{}".format(plastic_projection.get('weight', 'list')))
+print(f"Weights:{plastic_projection.get('weight', 'list')}")
 
 # Get data
 pre_spikes = pre_pop.get_data('spikes')
@@ -211,7 +212,7 @@ Figure(
           yticks=True, xticks=True, markersize=2.0,
           xlim=(0, simtime), color="blue", ylabel="Post-Population"),
     title="Excitatory synaptic conductance (mS) and spike raster plots",
-    annotations="Simulated with {}".format(sim.name())
+    annotations=f"Simulated with {sim.name()}"
 )
 plt.show()
 

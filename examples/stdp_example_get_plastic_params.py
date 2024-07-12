@@ -18,7 +18,7 @@ Simple test for STDP :
    Reproduces a classical plasticity experiment of plasticity induction by
 pre/post synaptic pairing specifically :
 
- * At the begining of the simulation, "n_stim_test" external stimulations of
+ * At the beginning of the simulation, "n_stim_test" external stimulations of
    the "pre_pop" (presynaptic) population do not trigger activity in the
    "post_pop" (postsynaptic) population.
 
@@ -146,13 +146,13 @@ sim.Projection(
     synapse_type=sim.StaticSynapse(weight=JEE * 0.05))
 
 # Additional Inputs projections
-for i in range(len(IAddPre)):
+for iAddPre in IAddPre:
     sim.Projection(
-        IAddPre[i], pre_pop, ee_connector, receptor_type='excitatory',
+        iAddPre, pre_pop, ee_connector, receptor_type='excitatory',
         synapse_type=sim.StaticSynapse(weight=JEE * 0.05))
-for i in range(len(IAddPost)):
+for iAddPost in IAddPost:
     sim.Projection(
-        IAddPost[i], post_pop, ee_connector, receptor_type='excitatory',
+        iAddPost, post_pop, ee_connector, receptor_type='excitatory',
         synapse_type=sim.StaticSynapse(weight=JEE * 0.05))
 
 # Plastic Connections between pre_pop and post_pop
@@ -172,10 +172,10 @@ plastic_projection = sim.Projection(
 # Run simulation
 sim.run(simtime)
 
-print("Weights:{}".format(plastic_projection.get('weight', 'list')))
-print("plastic1:{}".format(plastic_projection.get('tau_plus', 'list')))
-print("plastic2andweights:{}".format(plastic_projection.get(
-    ['weight', 'tau_plus'], 'list')))
+print(f"Weights:{plastic_projection.get('weight', 'list')}")
+print(f"plastic1:{plastic_projection.get('tau_plus', 'list')}")
+print(f"plastic2andweights:"
+      f"{plastic_projection.get(['weight', 'tau_plus'], 'list')}")
 
 # End simulation on SpiNNaker
 sim.end()

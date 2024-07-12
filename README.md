@@ -1,7 +1,7 @@
 [![Build Status](https://travis-ci.org/SpiNNakerManchester/PyNNExamples.svg?branch=master)](https://travis-ci.org/SpiNNakerManchester/PyNNExamples)
 
 Examples for PyNN
-=====================
+=================
 
 This repository holds miscellaneous examples of using sPyNNaker for PyNN
 

@@ -92,7 +92,7 @@ Figure(
           ylabel="spikes from second pop",
           yticks=True, markersize=0.2, xlim=(0, run_time)),
     title="large data Simple synfire chain example",
-    annotations="Simulated with {}".format(p.name())
+    annotations=f"Simulated with {p.name()}"
 )
 plt.show()
 

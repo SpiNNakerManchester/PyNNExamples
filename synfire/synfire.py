@@ -33,7 +33,7 @@ stimulus = sim.Population(1, sim.SpikeSourceArray, spikeArray,
                           label='stimulus')
 
 chain_pops = [
-    sim.Population(n_neurons, sim.IF_curr_exp, {}, label='chain_{}'.format(i))
+    sim.Population(n_neurons, sim.IF_curr_exp, {}, label=f'chain_{i}')
     for i in range(n_populations)
 ]
 for pop in chain_pops:
@@ -77,6 +77,7 @@ except Exception as ex:
     print(spikes)
     raise ex
 
+    # pylint: disable=wrong-spelling-in-comment
     # Way to plot the spikes without neo converter but without the colours
     # try:
     #     import matplotlib.pyplot as plt
