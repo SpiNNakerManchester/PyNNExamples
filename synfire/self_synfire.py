@@ -14,13 +14,15 @@
 """
 Synfire chain example
 """
+import time
 import matplotlib.pyplot as plt
 import pyNN.spiNNaker as sim
 import pyNN.utility.plotting as plot
 
+start = time.time()
 # number of neurons in each population
-n_neurons = 10
-simtime = 1000
+n_neurons = 1000
+simtime = 10000
 pops = 1
 
 sim.setup(timestep=1.0, min_delay=1.0)
@@ -63,3 +65,5 @@ plot.Figure(
     annotations="Simulated with {}".format(sim.name())
 )
 plt.show()
+
+print(time.time()-start)

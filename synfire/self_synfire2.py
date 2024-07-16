@@ -14,33 +14,34 @@
 """
 Synfire chain example
 """
+import time
 import matplotlib.pyplot as plt
 import pyNN.spiNNaker as sim
 import pyNN.utility.plotting as plot
 
+start = time.time()
 # number of neurons in each population
-n_neurons = 10
-simtime = 1000
-pops = 5
+n_neurons = 1000
+simtime = 10000
+pops = 1
 
 sim.setup(timestep=1.0, min_delay=1.0)
 
 spikeArray = {'spike_times': [[0]]}
 stimulus = sim.Population(1, sim.SpikeSourceArray, spikeArray,
                           label='stimulus')
-
-pop = sim.Population(n_neurons, sim.IF_curr_exp, {}, label='chain')
-pop.record("spikes")
-#pop.record(["spikes", "v"])
-sim.Projection(stimulus, pop,
-               sim.OneToOneConnector(),
-               sim.StaticSynapse(weight=5, delay=1))
-sim.Projection(pop[n_neurons - 1], pop[0], sim.OneToOneConnector(),
-               sim.StaticSynapse(weight=5, delay=1))
-for i in range(n_neurons - 1):
-    print(i, i+1)
-    sim.Projection(pop[i], pop[i], sim.OneToOneConnector(),
+for i in range(pops):
+    pop = sim.Population(n_neurons, sim.IF_curr_exp, {}, label='chain')
+    pop.record("spikes")
+    #pop.record(["spikes", "v"])
+    sim.Projection(stimulus, pop,
+                   sim.OneToOneConnector(),
                    sim.StaticSynapse(weight=5, delay=1))
+    sim.Projection(pop[n_neurons - 1], pop[0], sim.OneToOneConnector(),
+                   sim.StaticSynapse(weight=5, delay=1))
+    for i in range(n_neurons-1):
+        sim.Projection(pop[i], pop[i+1], sim.OneToOneConnector(),
+                       sim.StaticSynapse(weight=5, delay=1))
 
 sim.run(simtime)
 neo = pop.get_data(variables=["spikes"])
@@ -61,3 +62,5 @@ plot.Figure(
     annotations="Simulated with {}".format(sim.name())
 )
 plt.show()
+
+print(time.time()-start)
