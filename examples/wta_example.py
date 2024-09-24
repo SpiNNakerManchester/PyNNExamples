@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Demonstration of the WTA connector in use.  There are two populations both
-# receiving input from the same Poisson source.  One population has a
-# self-connection with a WTA connector, which will attempt to ensure that only
-# one neuron in the population spikes at a time.  As neuron 2 has a higher rate
-# of input than the others, it will be the "winner" more often than the others.
+# Demonstration of the winner-takes-all connector in use.  There are two
+# populations both receiving input from the same Poisson source.  One
+# population has a self-connection with a winner-takes-all connector, which
+# will attempt to ensure that only one neuron in the population spikes at a
+# time.  As neuron 2  has a higher rate of input than the others, it will be
+# the "winner" more often than the others.
 
 # Note that SpiNNaker does not send "instantaneous" spikes, so there can be
 # times where two neurons spike in the same time step.
