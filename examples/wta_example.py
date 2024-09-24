@@ -44,8 +44,8 @@ sim.Projection(
 sim.Projection(
     stim, wta, sim.OneToOneConnector(), sim.StaticSynapse(weight=5.0))
 sim.Projection(
-    wta, wta, sim.extra_models.WTAConnector(), sim.StaticSynapse(weight=10.0),
-    receptor_type="inhibitory")
+    wta, wta, sim.extra_models.AllButMeConnector(),
+    sim.StaticSynapse(weight=10.0), receptor_type="inhibitory")
 
 sim.run(10000)
 
@@ -58,11 +58,11 @@ sim.end()
 for spiketrain in pop_spikes:
     y = numpy.ones_like(spiketrain) * spiketrain.annotations["source_index"]
     line, = plt.plot(spiketrain, y.magnitude * 2, "r|",
-                     label="Without WTA")
+                     label="Without AllButMe")
 for spiketrain in wta_spikes:
     y = numpy.ones_like(spiketrain) * spiketrain.annotations["source_index"]
     line_2, = plt.plot(spiketrain, (y.magnitude * 2) + 1, "b|",
-                       label="With WTA")
+                       label="With AllButMe")
 plt.xlabel("Time (ms)")
 plt.title("Simple example")
 plt.legend(handles=[line, line_2], loc=9)
