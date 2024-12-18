@@ -17,7 +17,7 @@ import pyNN.spiNNaker as p
 p.setup(1.0)
 
 # Set up the PushBot devices
-pushbot_protocol = p.external_devices.MunichIoSpiNNakerLinkProtocol(
+pushbot_protocol = p.external_devices.MunichIoEthernetProtocol(
     mode=p.external_devices.protocols.MUNICH_MODES.PUSH_BOT, uart_id=0)
 motor_0 = p.external_devices.PushBotEthernetMotorDevice(
     p.external_devices.PushBotMotor.MOTOR_0_PERMANENT, pushbot_protocol)
