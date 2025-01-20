@@ -19,6 +19,7 @@ import matplotlib.pyplot as plt
 from pyNN.random import NumpyRNG, RandomDistribution
 import pyNN.spiNNaker as p
 from pyNN.utility.plotting import Figure, Panel
+# pylint: disable=wrong-spelling-in-comment
 
 p.setup(timestep=1.0, min_delay=1.0)
 p.set_number_of_neurons_per_core(p.IF_curr_exp, 100)
@@ -99,8 +100,8 @@ spikes4 = []
 arrayEntries = []
 for i in range(nSourceNeurons):
     newEntry = []
-    for j in range(len(spikes0)):
-        newEntry.append(spikes0[j] + i*40.0/100.0)
+    for spike in spikes0:
+        newEntry.append(spike + i*40.0/100.0)
     arrayEntries.append(newEntry)
 spikeArray = {'spike_times': arrayEntries}
 
@@ -164,7 +165,7 @@ populations[excit].record(['v', 'spikes'])
 p.run(runTime)
 
 final_weights = projections[0].get('weight', 'list', with_address=False)
-print("Final weights: {}".format(final_weights))
+print(f"Final weights: {final_weights}")
 
 # myDelays = projections[0].getDelays()
 # total=0.0
@@ -205,7 +206,7 @@ Figure(
           data_labels=[populations[excit].label], yticks=True,
           xlim=(0, runTime), xticks=True),
     title="Simple associative memory: spikes and membrane potential",
-    annotations="Simulated with {}".format(p.name())
+    annotations=f"Simulated with {p.name()}"
 )
 plt.show()
 

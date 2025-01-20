@@ -4,9 +4,15 @@
 **/SpiNNMachine/**
 **/SpiNNMan/**
 **/PACMAN/**
-**/DataSpecification/**
 **/spalloc/**
 **/SpiNNFrontEndCommon/**
 **/sPyNNaker/**
 **/sPyNNaker8/**
+**/.pylintrc
+**/*.dll
+**/*.exe
+**/*.png
+**/*linux
+**/*osx
+**/*.exe
 **/.pylintrc

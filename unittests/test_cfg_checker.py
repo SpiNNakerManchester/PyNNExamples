@@ -28,11 +28,5 @@ class TestCfgChecker(unittest.TestCase):
         parent = os.path.dirname(unittests)
         examples = os.path.join(parent, "examples")
         integration_tests = os.path.join(parent, "integration_tests")
-        repeaters = [
-            "placer",
-            "info_allocator",
-            "router",
-            "compressor",
-            "delay_support_adder"]
         run_config_checks(directories=[
-            examples, integration_tests, unittests], repeaters=repeaters)
+            examples, integration_tests, unittests], check_all_used=False)

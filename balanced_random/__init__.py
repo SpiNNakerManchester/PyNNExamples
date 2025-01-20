@@ -11,11 +11,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-coverage >= 4.4, < 5.0
-flake8
-# pytest will be brought in by pytest-cov
-pytest-cov
-sphinx >= 2
-pylint
-testfixtures

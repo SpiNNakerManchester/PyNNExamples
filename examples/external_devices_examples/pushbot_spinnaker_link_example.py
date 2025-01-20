@@ -47,7 +47,7 @@ weights = {
     led_back: 100.0,
 }
 
-devices = [motor_0, motor_1, speaker, laser, led_front, led_back]
+devices = [motor_0, motor_1] #, speaker, laser, led_front, led_back]
 
 # Set up the PushBot control
 pushbot = p.Population(

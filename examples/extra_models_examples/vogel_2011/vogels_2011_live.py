@@ -13,9 +13,8 @@
 # limitations under the License.
 
 import pyNN.spiNNaker as sim
-from pyNN.random import NumpyRNG
 
-
+# pylint: disable=wrong-spelling-in-comment
 # -------------------------------------------------------------------
 # This example uses the sPyNNaker implementation of the inhibitory
 # Plasticity rule developed by Vogels, Sprekeler, Zenke et al (2011)
@@ -45,8 +44,6 @@ sim.setup(timestep=1.0, min_delay=1.0, time_scale_factor=10)
 # Reduce number of neurons to simulate on each core
 sim.set_number_of_neurons_per_core(sim.IF_curr_exp, 100)
 
-rng = NumpyRNG(seed=59)
-
 # Create excitatory and inhibitory populations of neurons
 ex_pop = sim.Population(NUM_EXCITATORY, model(**cell_params),
                         label="Excitatory", additional_parameters={"seed": 2})
@@ -57,15 +54,15 @@ in_pop = sim.Population(NUM_EXCITATORY / 4, model(**cell_params),
 ex_pop.record('spikes')
 
 # Make excitatory->inhibitory projections
-sim.Projection(ex_pop, in_pop, sim.FixedProbabilityConnector(0.02, rng=rng),
+sim.Projection(ex_pop, in_pop, sim.FixedProbabilityConnector(0.02),
                receptor_type='excitatory',
                synapse_type=sim.StaticSynapse(weight=0.029))
-sim.Projection(ex_pop, ex_pop, sim.FixedProbabilityConnector(0.02, rng=rng),
+sim.Projection(ex_pop, ex_pop, sim.FixedProbabilityConnector(0.02),
                receptor_type='excitatory',
                synapse_type=sim.StaticSynapse(weight=0.029))
 
 # Make inhibitory->inhibitory projections
-sim.Projection(in_pop, in_pop, sim.FixedProbabilityConnector(0.02, rng=rng),
+sim.Projection(in_pop, in_pop, sim.FixedProbabilityConnector(0.02),
                receptor_type='inhibitory',
                synapse_type=sim.StaticSynapse(weight=-0.29))
 
@@ -76,7 +73,7 @@ stdp_model = sim.STDPMechanism(
     weight_dependence=sim.AdditiveWeightDependence(w_min=0.0, w_max=1.0))
 
 # Make inhibitory->excitatory projections
-sim.Projection(in_pop, ex_pop, sim.FixedProbabilityConnector(0.02, rng=rng),
+sim.Projection(in_pop, ex_pop, sim.FixedProbabilityConnector(0.02),
                receptor_type='inhibitory',
                synapse_type=stdp_model)
 

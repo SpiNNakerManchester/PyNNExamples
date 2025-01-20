@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import pyNN.spiNNaker as p
-import matplotlib.pyplot as plt
 import pyNN.utility.plotting as plot
+import matplotlib.pyplot as plt
 
 p.setup(0.1)
 runtime = 50
@@ -60,7 +60,7 @@ plot.Figure(
                data_labels=[populations[0].label],
                yticks=True, xlim=(0, runtime)),
     title=title,
-    annotations="Simulated with {}".format(p.name())
+    annotations=f"Simulated with {p.name()}"
 )
 plt.show()
 p.end()

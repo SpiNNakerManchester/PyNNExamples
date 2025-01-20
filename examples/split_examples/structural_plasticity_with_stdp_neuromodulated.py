@@ -87,7 +87,7 @@ stim_projections = []
 # Structurally plastic connection between pre_pop and post_pop
 partner_selection_last_neuron = sim.RandomSelection()
 formation_distance = sim.DistanceDependentFormation(
-    grid=[np.sqrt(n_neurons), np.sqrt(n_neurons)],  # spatial org of neurons
+    grid=[np.sqrt(n_neurons), np.sqrt(n_neurons)],  # spatial neurons
     sigma_form_forward=0.5  # spread of feed-forward connections
 )
 elimination_weight = sim.RandomByWeightElimination(

@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import time
+import numpy
+import pylab
 import pyNN.spiNNaker as p
 from pyNN.random import RandomDistribution
-import pylab
-import numpy
 from pyNN.utility.plotting import Figure, Panel
-import time
 
 p.setup(timestep=0.1)
 p.set_number_of_neurons_per_core(p.SpikeSourcePoisson, 50)
@@ -92,6 +92,12 @@ p.external_devices.add_poisson_live_rate_control(
 
 
 def start_callback(label, connection):
+    """
+    Changes the connection rate very 10 seconds
+
+    :param str label:
+    :param SpynnakerPoissonControlConnection connection:
+    """
     for rate in [50, 10, 20]:
         time.sleep(10.0)
         connection.set_rates(label, [(i, rate) for i in range(100)])
@@ -112,6 +118,6 @@ Figure(
     Panel(data.segments[0].spiketrains,
           yticks=True, markersize=2.0, xlim=(0, end_time)),
     title="Balanced Random Network",
-    annotations="Simulated with {}".format(p.name())
+    annotations=f"Simulated with {p.name()}"
 )
 pylab.show()
