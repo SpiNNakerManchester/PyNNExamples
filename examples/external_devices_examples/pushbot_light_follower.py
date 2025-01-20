@@ -31,7 +31,11 @@ spinnaker_link = 0
 
 # Retina resolution
 retina_resolution = \
-    p.external_devices.PushBotRetinaResolution.DOWNSAMPLE_32_X_32
+    p.external_devices.PushBotRetinaResolution.NATIVE_128_X_128
+
+# Number of machine vertices.  We divide the retina into eight and then also
+# into polarity.
+n_machine_vertices = retina_resolution.value.pixels * 16
 
 # Name to call the retina
 retina_label = "Retina"
@@ -41,7 +45,7 @@ retina_viewer = p.external_devices.PushBotRetinaViewer(
 
 # Simulate with 1 ms time step
 p.setup(1.0)
-# p.set_number_of_neurons_per_core(p.IF_curr_exp, 150)
+p.set_number_of_neurons_per_core(p.IF_curr_exp, 1)
 
 
 ###########################################
@@ -66,7 +70,8 @@ motor_1 = p.external_devices.PushBotSpiNNakerLinkMotorDevice(
 retina_device = p.external_devices.PushBotSpiNNakerLinkRetinaDevice(
         spinnaker_link_id=spinnaker_link,
         protocol=pushbot_protocol,
-        resolution=retina_resolution)
+        resolution=retina_resolution,
+        n_machine_vertices=n_machine_vertices)
 
 # Motor devices for connection
 devices = [motor_0, motor_1]
@@ -81,23 +86,9 @@ pushbot_retina = p.Population(
 p.external_devices.activate_live_output_for(
     pushbot_retina, database_notify_port_num=retina_viewer.port)
 
-
-# Network implementation
-# An excitatory population is inhibited by an inhibitory population and
-# only the neurons receiving enough number of retina events to break the
-# inhibition will activate the relevant neurons to drive the robot
-exc_pop = p.Population(
-    retina_resolution.value.n_neurons / 2,
-    p.IF_cond_exp(cm=0.75, tau_m=1.0),
-    label='exc_pop')
-inh_pop = p.Population(
-    retina_resolution.value.n_neurons / 2,
-    p.IF_cond_exp(cm=0.75, tau_m=1.0, i_offset=13, tau_refrac=0.01),
-    label='inh_pop')
-
 # A conceptual neuron population to drive motor neurons
-# (0: left, 1:right, 2: forward)
-driver_pop = p.Population(3, p.IF_curr_exp(cm=0.75, tau_m=1.0), label='driver')
+# (0: left, 1:right)
+driver_pop = p.Population(2, p.IF_curr_exp(), label='driver')
 
 ###########################################
 #  Connections lists
@@ -134,21 +125,7 @@ arr = numpy.arange(retina_resolution.value.n_neurons / 2)
 id_to_left = (arr % retina_resolution.value.pixels) < end_of_left
 
 # Determines which neuron IDs are on the right group
-id_to_right = (arr % retina_resolution.value.pixels) > start_of_right
-
-# Determines which neuron IDs are in the middle
-id_to_middle_up_1 = (arr % retina_resolution.value.pixels) <= start_of_right
-
-# Determines which neuron IDs are in the middle
-id_to_middle_up_2 = (arr % retina_resolution.value.pixels) >= end_of_left
-
-# Determines which neuron IDs are on the upper part
-id_to_middle_up_3 = (
-    (arr / retina_resolution.value.pixels) <
-    (retina_resolution.value.pixels / 2))
-
-# The variable to determine which neuron IDs are on the middle-up
-id_to_middle_up = id_to_middle_up_1 & id_to_middle_up_2  # & id_to_middle_up_3
+id_to_right = (arr % retina_resolution.value.pixels) >= start_of_right
 
 # Extracts the neuron IDs to be connected to the left neuron of driver_pop
 id_to_left = numpy.extract(id_to_left, arr)
@@ -158,10 +135,6 @@ print("left =", id_to_left)
 id_to_right = numpy.extract(id_to_right, arr)
 print("right =", id_to_right)
 
-# Extracts the neuron IDs to be connected to the forward neuron of driver_pop
-id_to_middle_up = numpy.extract(id_to_middle_up, arr)
-print("middle =", id_to_middle_up)
-
 # Connection list: (source neuron, target neuron, weight, delay)
 # Creates connection list to connect left neuron
 conn_list_left = [(i, 0, w_conn, d_conn) for i in id_to_left]
@@ -169,34 +142,10 @@ conn_list_left = [(i, 0, w_conn, d_conn) for i in id_to_left]
 # Creates connection list to connect right neuron
 conn_list_right = [(i, 1, w_conn, d_conn) for i in id_to_right]
 
-# Creates connection list to connect forward neuron
-conn_list_middle_up = [(i, 2, w_conn, d_conn) for i in id_to_middle_up]
-
-# Concatenates the lists into one list
-conn_list = conn_list_left + conn_list_right + conn_list_middle_up
-
 # Winner-takes-all connections from driver_pop to motor neurons
 w_motor = 1
 conn_motor_exc = [(0, 1, w_motor, 1), (1, 0, w_motor, 1)]
 conn_motor_inh = [(0, 0, w_motor, 1), (1, 1, w_motor, 1)]
-
-# Creates connection list from retina population to exc_pop
-# Each neuron in retina population excites the neuron with the same ID in
-# exc_pop and its 8 neighbours including the diagonals
-w_conn, w_inh = (0.35, 1.00)  # (3.7,95)#(3.8, 90.)# (3.7,65,15)
-
-conn_list_local = []
-n_row = retina_resolution.value.pixels
-conn_inc = numpy.array(
-    [-n_row-1, -n_row, -n_row + 1, -1, 0, 1, n_row - 1, n_row, n_row + 1])
-cont_inc = numpy.array([1, 1, 1, 0, 0, 0, -1, -1, -1])
-for i in range(retina_resolution.value.n_neurons):
-    sources = i + conn_inc
-    cont_1 = i / n_row
-    cont_2 = sources / n_row + cont_inc
-    for j, k in zip(sources, cont_2):
-        if j >= 0 and j < retina_resolution.value.n_neurons and cont_1 == k:
-            conn_list_local.append((i, j, w_conn, 1))
 
 
 ###########################################
@@ -215,13 +164,12 @@ pushbot = p.Population(
     label="PushBot"
 )
 
-p.Projection(pushbot_retina, exc_pop, p.FromListConnector(conn_list_local))
 p.Projection(
-    inh_pop, exc_pop, p.OneToOneConnector(),
-    synapse_type=p.StaticSynapse(weight=w_inh, delay=1.0),
-    receptor_type='inhibitory')
-p.Projection(exc_pop, driver_pop, p.FromListConnector(conn_list))
-p.Projection(driver_pop, pushbot, p.FromListConnector(conn_motor_exc))
+    pushbot_retina, driver_pop,
+    p.FromListConnector(conn_list_left + conn_list_right))
+p.Projection(
+    driver_pop, pushbot, p.FromListConnector(conn_motor_exc),
+    receptor_type='excitatory')
 p.Projection(
     driver_pop, pushbot, p.FromListConnector(conn_motor_inh),
     receptor_type='inhibitory')
@@ -230,11 +178,6 @@ p.Projection(
 ###########################################
 #  Simulation
 ###########################################
-
-# Record spikes
-# exc_pop.record(['spikes'])
-# inh_pop.record(['spikes'])
-# driver_pop.record(['spikes'])
 
 # Record spikes and membrane potentials
 # driver_pop.record(['spikes','v'])
