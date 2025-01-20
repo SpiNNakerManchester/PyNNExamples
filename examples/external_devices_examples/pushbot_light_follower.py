@@ -33,7 +33,7 @@ spinnaker_link = 0
 retina_resolution = \
     p.external_devices.PushBotRetinaResolution.NATIVE_128_X_128
 
-# Number of machine vertices.  We divide the retina into eigths and then also
+# Number of machine vertices.  We divide the retina into eight and then also
 # into polarity.
 n_machine_vertices = retina_resolution.value.pixels * 16
 
