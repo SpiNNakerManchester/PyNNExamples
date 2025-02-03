@@ -41,7 +41,7 @@ n_machine_vertices = retina_resolution.value.pixels * 16
 retina_label = "Retina"
 
 retina_viewer = p.external_devices.PushBotRetinaViewer(
-    retina_resolution, retina_label, p)
+    retina_resolution, retina_label)
 
 # Simulate with 1 ms time step
 p.setup(1.0)
