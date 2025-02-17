@@ -29,12 +29,12 @@ jobs:
       pip_installs: pytest
       ubuntu_packages: graphviz
       test_directories: unittests
-      coverage-package:
-      flake8-packages: examples balanced_random learning sudoku synfire
-      pylint-packages: examples balanced_random learning sudoku synfire
+      coverage_package:
+      flake8_packages: examples balanced_random learning sudoku synfire
+      pylint_packages: examples balanced_random learning sudoku synfire
       # invalid-name because scripts have values pylint considers constants
       # wrong-spelling-in-docstring due to param names ect
-      pylint-disable: R, wrong-spelling-in-docstring, invalid-name
+      pylint_disable: R, wrong-spelling-in-docstring, invalid-name
       # Examples are not typed to keep them easier to read
-      mypy-packages:
+      mypy_packages:
       run_sphinx: false
