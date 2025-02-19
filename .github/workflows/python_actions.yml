@@ -25,7 +25,7 @@ jobs:
       dependencies: >
           SpiNNUtils SpiNNMachine SpiNNMan PACMAN spalloc
           SpiNNFrontEndCommon sPyNNaker
-      install_module: false
+      install-module: false
       pip_installs: pytest
       ubuntu_packages: graphviz
       test_directories: unittests
