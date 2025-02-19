@@ -28,7 +28,7 @@ jobs:
       install-module: false
       pip-installs: pytest
       ubuntu-packages: graphviz
-      test_directories: unittests
+      test-directories: unittests
       coverage-package:
       flake8-packages: examples balanced_random learning sudoku synfire
       pylint-packages: examples balanced_random learning sudoku synfire
