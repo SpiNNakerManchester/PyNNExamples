@@ -27,7 +27,7 @@ jobs:
           SpiNNFrontEndCommon sPyNNaker
       install-module: false
       pip-installs: pytest
-      ubuntu_packages: graphviz
+      ubuntu-packages: graphviz
       test_directories: unittests
       coverage-package:
       flake8-packages: examples balanced_random learning sudoku synfire
