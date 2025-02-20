@@ -25,10 +25,10 @@ jobs:
       dependencies: >
           SpiNNUtils SpiNNMachine SpiNNMan PACMAN spalloc
           SpiNNFrontEndCommon sPyNNaker
-      install_module: false
-      pip_installs: pytest
-      ubuntu_packages: graphviz
-      test_directories: unittests
+      install-module: false
+      pip-installs: pytest
+      ubuntu-packages: graphviz
+      test-directories: unittests
       coverage-package:
       flake8-packages: examples balanced_random learning sudoku synfire
       pylint-packages: examples balanced_random learning sudoku synfire
@@ -37,4 +37,4 @@ jobs:
       pylint-disable: R, wrong-spelling-in-docstring, invalid-name
       # Examples are not typed to keep them easier to read
       mypy-packages:
-      run_sphinx: false
+      run-sphinx: false
