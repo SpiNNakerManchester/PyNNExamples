@@ -18,7 +18,7 @@ from pyNN.random import RandomDistribution
 from pyNN.utility.plotting import Figure, Panel
 import pyNN.spiNNaker as p
 from spynnaker.pyNN.extra_algorithms.splitter_components import (
-    SplitterPoissonDelegate, SplitterAbstractPopulationVertexNeuronsSynapses)
+    SplitterPoissonDelegate, SplitterPopulationVertexNeuronsSynapses)
 
 p.setup(timestep=0.1, time_scale_factor=1)
 p.set_number_of_neurons_per_core(p.IF_curr_exp, 64)
@@ -39,12 +39,12 @@ pop_input = p.Population(100, p.SpikeSourcePoisson(rate=0.0),
                          label="Input")
 
 pop_exc_splitter = \
-    SplitterAbstractPopulationVertexNeuronsSynapses(1, 128, False)
+    SplitterPopulationVertexNeuronsSynapses(1, 128, False)
 pop_exc = p.Population(n_exc, p.IF_curr_exp, label="Excitatory",
                        additional_parameters={"splitter": pop_exc_splitter,
                                               "seed": 1})
 pop_inh_splitter = \
-    SplitterAbstractPopulationVertexNeuronsSynapses(1, 128, False)
+    SplitterPopulationVertexNeuronsSynapses(1, 128, False)
 pop_inh = p.Population(n_inh, p.IF_curr_exp, label="Inhibitory",
                        additional_parameters={"splitter": pop_inh_splitter,
                                               "seed": 2})

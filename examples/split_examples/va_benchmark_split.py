@@ -33,7 +33,7 @@ from pyNN.utility import Timer
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 from spynnaker.pyNN.extra_algorithms.splitter_components import (
-    SplitterAbstractPopulationVertexNeuronsSynapses)
+    SplitterPopulationVertexNeuronsSynapses)
 
 
 simulator_name = 'spiNNaker'
@@ -158,11 +158,11 @@ if (benchmark == "COBA"):
 timer.start()
 
 print("%s Creating cell populations..." % node_id)
-exc_cells_splitter = SplitterAbstractPopulationVertexNeuronsSynapses(2)
+exc_cells_splitter = SplitterPopulationVertexNeuronsSynapses(2)
 exc_cells = p.Population(
     n_exc, celltype(**cell_params), label="Excitatory_Cells",
     additional_parameters={"splitter": exc_cells_splitter}, seed=1)
-inh_cells_splitter = SplitterAbstractPopulationVertexNeuronsSynapses(3)
+inh_cells_splitter = SplitterPopulationVertexNeuronsSynapses(3)
 inh_cells = p.Population(
     n_inh, celltype(**cell_params), label="Inhibitory_Cells",
     additional_parameters={"splitter": inh_cells_splitter}, seed=2)
