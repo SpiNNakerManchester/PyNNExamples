@@ -27,7 +27,7 @@ post-synaptic neurons to the same stimuli.
 """
 
 from spynnaker.pyNN.extra_algorithms.splitter_components import (
-    SplitterAbstractPopulationVertexNeuronsSynapses)
+    SplitterPopulationVertexNeuronsSynapses)
 
 import pyNN.spiNNaker as sim
 import pylab
@@ -87,7 +87,7 @@ synapse_dynamics = sim.STDPMechanism(
 for i in range(n_pops):
     stimulation.append(sim.Population(n_neurons, sim.SpikeSourcePoisson,
                        {'rate': stim_rate, 'duration': duration}, label="pre"))
-    post_splitters.append(SplitterAbstractPopulationVertexNeuronsSynapses(2))
+    post_splitters.append(SplitterPopulationVertexNeuronsSynapses(2))
     post_pops.append(sim.Population(
         n_neurons, sim.IF_curr_exp, cell_params, label='post',
         additional_parameters={"splitter": post_splitters[i]}))

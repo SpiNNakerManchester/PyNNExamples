@@ -18,7 +18,7 @@ from pacman.model.partitioner_splitters import (
     SplitterOneToOneLegacy as OneToOneSplitter,
     SplitterFixedLegacy)
 from spynnaker.pyNN.extra_algorithms.splitter_components import (
-    SplitterAbstractPopulationVertexFixed)
+    SplitterPopulationVertexFixed)
 
 runtime = 1000
 n_neurons = 100  # number of neurons in each population
@@ -31,20 +31,20 @@ p.set_number_of_neurons_per_core(p.IF_curr_exp, int(n_neurons / 2))
 neuron = p.Population(
     n_neurons, p.IF_curr_exp(), label='pop_1',
     additional_parameters={
-        "splitter_object": SplitterAbstractPopulationVertexFixed()})
+        "splitter_object": SplitterPopulationVertexFixed()})
 neuron.record("all")
 neuron2 = p.Population(
     int(n_neurons / 2), p.IF_curr_exp(), label='pop_1',
     additional_parameters={
-        "splitter_object": SplitterAbstractPopulationVertexFixed()})
+        "splitter_object": SplitterPopulationVertexFixed()})
 neuron3 = p.Population(
     n_neurons * 2, p.IF_curr_exp(), label='pop_1',
     additional_parameters={
-        "splitter_object": SplitterAbstractPopulationVertexFixed()})
+        "splitter_object": SplitterPopulationVertexFixed()})
 neuron4 = p.Population(
     int(n_neurons / 3), p.IF_curr_exp(), label='pop_1',
     additional_parameters={
-        "splitter_object": SplitterAbstractPopulationVertexFixed()})
+        "splitter_object": SplitterPopulationVertexFixed()})
 input1 = p.Population(
     n_neurons, p.SpikeSourcePoisson(), label='inputSpikes_1',
     additional_parameters={

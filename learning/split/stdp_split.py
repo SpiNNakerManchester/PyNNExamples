@@ -16,7 +16,7 @@ import pyNN.utility.plotting as plot
 import matplotlib.pyplot as plt
 import pyNN.spiNNaker as sim
 from spynnaker.pyNN.extra_algorithms.splitter_components import (
-    SplitterAbstractPopulationVertexNeuronsSynapses, SplitterPoissonDelegate)
+    SplitterPopulationVertexNeuronsSynapses, SplitterPoissonDelegate)
 
 n_neurons = 192
 simtime = 5000
@@ -24,11 +24,11 @@ simtime = 5000
 sim.setup(timestep=1.0)
 sim.set_number_of_neurons_per_core(sim.IF_curr_exp, 64)
 
-pre_splitter = SplitterAbstractPopulationVertexNeuronsSynapses(1, 128, False)
+pre_splitter = SplitterPopulationVertexNeuronsSynapses(1, 128, False)
 pre_pop = sim.Population(
     n_neurons, sim.IF_curr_exp(), label="Pre", additional_parameters={
         "splitter": pre_splitter})
-post_splitter = SplitterAbstractPopulationVertexNeuronsSynapses(1, 128, False)
+post_splitter = SplitterPopulationVertexNeuronsSynapses(1, 128, False)
 post_pop = sim.Population(
     n_neurons, sim.IF_curr_exp(), label="Post", additional_parameters={
         "splitter": post_splitter})

@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 from pyNN.random import RandomDistribution
 from pyNN.utility.plotting import Figure, Panel
 from spynnaker.pyNN.extra_algorithms.splitter_components import (
-    SplitterAbstractPopulationVertexNeuronsSynapses, SplitterPoissonDelegate)
+    SplitterPopulationVertexNeuronsSynapses, SplitterPoissonDelegate)
 
 simulator_Name = 'spiNNaker'
 # exec('import pyNN.%s as pynn' % simulator_Name)
@@ -164,12 +164,12 @@ inh_cell_params = {
 }
 
 # Set-up pynn Populations
-E_pop_splitter = SplitterAbstractPopulationVertexNeuronsSynapses(3, 128, False)
+E_pop_splitter = SplitterPopulationVertexNeuronsSynapses(3, 128, False)
 E_pop = pynn.Population(
     N_E, pynn.IF_curr_exp(**exc_cell_params), label="E_pop",
     additional_parameters={"splitter": E_pop_splitter}, seed=1)
 
-I_pop_splitter = SplitterAbstractPopulationVertexNeuronsSynapses(3, 128, False)
+I_pop_splitter = SplitterPopulationVertexNeuronsSynapses(3, 128, False)
 I_pop = pynn.Population(
     N_I, pynn.IF_curr_exp(**inh_cell_params), label="I_pop",
     additional_parameters={"splitter": I_pop_splitter}, seed=2)
