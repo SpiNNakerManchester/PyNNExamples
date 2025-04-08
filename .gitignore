@@ -9,3 +9,7 @@ __pycache__
 *reports/
 .cache/
 .mypy_cache/
+**/*png
+**/*pdf
+**/*npz
+**/*zip
