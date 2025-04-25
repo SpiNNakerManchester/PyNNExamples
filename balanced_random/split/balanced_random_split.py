@@ -17,10 +17,8 @@ import numpy
 from pyNN.random import RandomDistribution
 from pyNN.utility.plotting import Figure, Panel
 import pyNN.spiNNaker as p
-from spynnaker.pyNN.extra_algorithms.splitter_components import (
-    SplitterPoissonDelegate, SplitterPopulationVertexNeuronsSynapses)
 
-p.setup(timestep=0.1, time_scale_factor=1)
+p.setup(timestep=0.1)
 p.set_number_of_neurons_per_core(p.IF_curr_exp, 64)
 p.set_number_of_neurons_per_core(p.SpikeSourcePoisson, 64)
 n_neurons = 500
@@ -30,32 +28,15 @@ weight_exc = 0.1
 weight_inh = -5.0 * weight_exc
 weight_input = 0.001
 
-pop_input_splitter = SplitterPoissonDelegate()
-pop_input = p.Population(100, p.SpikeSourcePoisson(rate=0.0),
-                         additional_parameters={
-                             "max_rate": 50.0,
-                             "seed": 0,
-                             "splitter": pop_input_splitter},
-                         label="Input")
+pop_input = p.Population(
+    100, p.SpikeSourcePoisson(rate=0.0), label="Input", seed=0, max_rate=50.0)
 
-pop_exc_splitter = \
-    SplitterPopulationVertexNeuronsSynapses(1, 128, False)
-pop_exc = p.Population(n_exc, p.IF_curr_exp, label="Excitatory",
-                       additional_parameters={"splitter": pop_exc_splitter,
-                                              "seed": 1})
-pop_inh_splitter = \
-    SplitterPopulationVertexNeuronsSynapses(1, 128, False)
-pop_inh = p.Population(n_inh, p.IF_curr_exp, label="Inhibitory",
-                       additional_parameters={"splitter": pop_inh_splitter,
-                                              "seed": 2})
-stim_exc_splitter = SplitterPoissonDelegate()
+pop_exc = p.Population(n_exc, p.IF_curr_exp, label="Excitatory", seed=1)
+pop_inh = p.Population(n_inh, p.IF_curr_exp, label="Inhibitory", seed=2)
 stim_exc = p.Population(
-    n_exc, p.SpikeSourcePoisson(rate=1000.0), label="Stim_Exc",
-    additional_parameters={"seed": 3, "splitter": stim_exc_splitter})
-stim_inh_splitter = SplitterPoissonDelegate()
+    n_exc, p.SpikeSourcePoisson(rate=1000.0), label="Stim_Exc", seed=3)
 stim_inh = p.Population(
-    n_inh, p.SpikeSourcePoisson(rate=1000.0), label="Stim_Inh",
-    additional_parameters={"seed": 4, "splitter": stim_inh_splitter})
+    n_inh, p.SpikeSourcePoisson(rate=1000.0), label="Stim_Inh", seed=4)
 
 delays_exc = RandomDistribution(
     "normal_clipped", mu=1.5, sigma=0.75, low=1.0, high=1.6)
