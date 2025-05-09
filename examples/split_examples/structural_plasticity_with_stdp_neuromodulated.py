@@ -31,9 +31,6 @@ This uses the split neuron-synapse modelling as otherwise the neuromodulated
 STDP, structural plasticity and neuron instructions would not fit on one core
 """
 
-from spynnaker.pyNN.extra_algorithms.splitter_components import (
-    SplitterPopulationVertexNeuronsSynapses)
-
 import pyNN.spiNNaker as sim
 import pylab
 import numpy as np
@@ -76,7 +73,6 @@ punishment_pop = sim.Population(n_neurons, sim.SpikeSourceArray,
 pre_pops = []
 stimulation = []
 post_pops = []
-post_splitters = []
 reward_projections = []
 punishment_projections = []
 plastic_projections = []
@@ -118,12 +114,11 @@ synapse_dynamics = sim.StructuralMechanismSTDP(
     weight_dependence=sim.AdditiveWeightDependence(w_min=0, w_max=5.0))
 
 for i in range(n_pops):
-    stimulation.append(sim.Population(n_neurons, sim.SpikeSourcePoisson,
-                       {'rate': stim_rate, 'duration': duration}, label="pre"))
-    post_splitters.append(SplitterPopulationVertexNeuronsSynapses(1))
+    stimulation.append(sim.Population(
+        n_neurons, sim.SpikeSourcePoisson(rate=stim_rate, duration=duration),
+        label="pre"))
     post_pops.append(sim.Population(
-        n_neurons, sim.IF_curr_exp, cell_params, label='post',
-        additional_parameters={"splitter": post_splitters[i]}))
+        n_neurons, sim.IF_curr_exp, cell_params, label='post'))
     plastic_projections.append(
         sim.Projection(stimulation[i], post_pops[i],
                        sim.FixedProbabilityConnector(0.),  # no initial conns

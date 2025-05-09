@@ -16,29 +16,21 @@ import matplotlib.pyplot as plt
 import numpy
 import pyNN.spiNNaker as sim
 import pyNN.utility.plotting as plot
-from spynnaker.pyNN.extra_algorithms.splitter_components import (
-    SplitterPopulationVertexNeuronsSynapses, SplitterPoissonDelegate)
 
 n_neurons = 192
 simtime = 5000
 
 sim.setup(timestep=1.0)
+sim.set_number_of_synapse_cores(sim.IF_curr_exp, 1)
+sim.set_allow_delay_extensions(sim.IF_curr_exp, False)
 
 sim.set_number_of_neurons_per_core(sim.IF_curr_exp, 64)
-pre_splitter = SplitterPopulationVertexNeuronsSynapses(1, 128, False)
-pre_pop = sim.Population(
-    n_neurons, sim.IF_curr_exp(), label="Pre", additional_parameters={
-        "splitter": pre_splitter})
-post_splitter = SplitterPopulationVertexNeuronsSynapses(1, 128, False)
-post_pop = sim.Population(
-    n_neurons, sim.IF_curr_exp(), label="Post", additional_parameters={
-        "splitter": post_splitter})
+pre_pop = sim.Population(n_neurons, sim.IF_curr_exp(), label="Pre")
+post_pop = sim.Population(n_neurons, sim.IF_curr_exp(), label="Post")
 pre_noise = sim.Population(
-    n_neurons, sim.SpikeSourcePoisson(rate=10.0), label="Noise_Pre",
-    additional_parameters={"splitter": SplitterPoissonDelegate()})
+    n_neurons, sim.SpikeSourcePoisson(rate=10.0), label="Noise_Pre")
 post_noise = sim.Population(
-    n_neurons, sim.SpikeSourcePoisson(rate=10.0), label="Noise_Post",
-    additional_parameters={"splitter": SplitterPoissonDelegate()})
+    n_neurons, sim.SpikeSourcePoisson(rate=10.0), label="Noise_Post")
 
 pre_pop.record("spikes")
 post_pop.record("spikes")
@@ -46,8 +38,7 @@ post_pop.record("spikes")
 training = sim.Population(
     n_neurons,
     sim.SpikeSourcePoisson(rate=10.0, start=1500.0, duration=1500.0),
-    label="Training",
-    additional_parameters={"splitter": SplitterPoissonDelegate()})
+    label="Training")
 
 sim.Projection(pre_noise,  pre_pop,  sim.OneToOneConnector(),
                synapse_type=sim.StaticSynapse(weight=2.0))
