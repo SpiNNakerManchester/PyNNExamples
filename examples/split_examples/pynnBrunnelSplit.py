@@ -18,8 +18,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pyNN.random import RandomDistribution
 from pyNN.utility.plotting import Figure, Panel
-from spynnaker.pyNN.extra_algorithms.splitter_components import (
-    SplitterPopulationVertexNeuronsSynapses, SplitterPoissonDelegate)
 
 simulator_Name = 'spiNNaker'
 # exec('import pyNN.%s as pynn' % simulator_Name)
@@ -164,26 +162,16 @@ inh_cell_params = {
 }
 
 # Set-up pynn Populations
-E_pop_splitter = SplitterPopulationVertexNeuronsSynapses(3, 128, False)
 E_pop = pynn.Population(
-    N_E, pynn.IF_curr_exp(**exc_cell_params), label="E_pop",
-    additional_parameters={"splitter": E_pop_splitter}, seed=1)
+    N_E, pynn.IF_curr_exp(**exc_cell_params), label="E_pop", seed=1)
 
-I_pop_splitter = SplitterPopulationVertexNeuronsSynapses(3, 128, False)
 I_pop = pynn.Population(
-    N_I, pynn.IF_curr_exp(**inh_cell_params), label="I_pop",
-    additional_parameters={"splitter": I_pop_splitter}, seed=2)
+    N_I, pynn.IF_curr_exp(**inh_cell_params), label="I_pop", seed=2)
 
-Poiss_ext_E_splitter = SplitterPoissonDelegate()
 Poiss_ext_E = pynn.Population(
-    N_E, pynn.SpikeSourcePoisson(rate=10.0), label="Poisson_pop_E",
-    additional_parameters={"seed": 3,
-                           "splitter": Poiss_ext_E_splitter})
-Poiss_ext_I_splitter = SplitterPoissonDelegate()
+    N_E, pynn.SpikeSourcePoisson(rate=10.0), label="Poisson_pop_E", seed=3)
 Poiss_ext_I = pynn.Population(
-    N_I, pynn.SpikeSourcePoisson(rate=10.0), label="Poisson_pop_I",
-    additional_parameters={"seed": 4,
-                           "splitter": Poiss_ext_I_splitter})
+    N_I, pynn.SpikeSourcePoisson(rate=10.0), label="Poisson_pop_I", seed=4)
 
 # Connectors
 E_conn = pynn.FixedProbabilityConnector(epsilon)

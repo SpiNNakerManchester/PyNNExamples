@@ -19,7 +19,9 @@ import pyNN.spiNNaker as p
 from pyNN.random import RandomDistribution
 from pyNN.utility.plotting import Figure, Panel
 
-p.setup(timestep=0.1)
+# We need a time scale factor here as we are interacting live, so too fast
+# otherwise!
+p.setup(timestep=0.1, time_scale_factor=10.0)
 p.set_number_of_neurons_per_core(p.SpikeSourcePoisson, 50)
 n_neurons = 500
 n_exc = int(round(n_neurons * 0.8))

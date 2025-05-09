@@ -26,9 +26,6 @@ neurons which causes an inverse effect to reduce response of
 post-synaptic neurons to the same stimuli.
 """
 
-from spynnaker.pyNN.extra_algorithms.splitter_components import (
-    SplitterPopulationVertexNeuronsSynapses)
-
 import pyNN.spiNNaker as sim
 import pylab
 
@@ -59,6 +56,7 @@ cell_params = {'cm': 0.25,
                }
 
 sim.setup(timestep=timestep)
+sim.set_number_of_synapse_cores(sim.IF_curr_exp, 1)
 
 # Create a population of dopaminergic neurons for reward and punishment
 reward_pop = sim.Population(n_neurons, sim.SpikeSourceArray,
@@ -70,7 +68,6 @@ punishment_pop = sim.Population(n_neurons, sim.SpikeSourceArray,
 pre_pops = []
 stimulation = []
 post_pops = []
-post_splitters = []
 reward_projections = []
 punishment_projections = []
 plastic_projections = []
@@ -85,12 +82,11 @@ synapse_dynamics = sim.STDPMechanism(
     weight=plastic_weights)
 
 for i in range(n_pops):
-    stimulation.append(sim.Population(n_neurons, sim.SpikeSourcePoisson,
-                       {'rate': stim_rate, 'duration': duration}, label="pre"))
-    post_splitters.append(SplitterPopulationVertexNeuronsSynapses(2))
+    stimulation.append(sim.Population(
+        n_neurons, sim.SpikeSourcePoisson(rate=stim_rate, duration=duration),
+        label="pre"))
     post_pops.append(sim.Population(
-        n_neurons, sim.IF_curr_exp, cell_params, label='post',
-        additional_parameters={"splitter": post_splitters[i]}))
+        n_neurons, sim.IF_curr_exp, cell_params, label='post'))
     plastic_projections.append(
         sim.Projection(stimulation[i], post_pops[i],
                        sim.OneToOneConnector(),
