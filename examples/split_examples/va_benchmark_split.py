@@ -32,8 +32,6 @@ from pyNN.random import RandomDistribution
 from pyNN.utility import Timer
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
-from spynnaker.pyNN.extra_algorithms.splitter_components import (
-    SplitterPopulationVertexNeuronsSynapses)
 
 
 simulator_name = 'spiNNaker'
@@ -126,10 +124,8 @@ node_id = p.setup(
     timestep=dt, min_delay=delay, db_name='va_benchmark.sqlite', **extra)
 
 if simulator_name == 'spiNNaker':
-    p.set_number_of_neurons_per_core(p.IF_curr_exp, 100)      # this will set
-    #  100 neurons per core
-    p.set_number_of_neurons_per_core(p.IF_cond_exp, 50)      # this will set
-    # 50 neurons per core
+    p.set_number_of_neurons_per_core(p.IF_curr_exp, 100)
+    p.set_number_of_neurons_per_core(p.IF_cond_exp, 50)
 np = 1
 
 host_name = socket.gethostname()
@@ -158,14 +154,10 @@ if (benchmark == "COBA"):
 timer.start()
 
 print("%s Creating cell populations..." % node_id)
-exc_cells_splitter = SplitterPopulationVertexNeuronsSynapses(2)
 exc_cells = p.Population(
-    n_exc, celltype(**cell_params), label="Excitatory_Cells",
-    additional_parameters={"splitter": exc_cells_splitter}, seed=1)
-inh_cells_splitter = SplitterPopulationVertexNeuronsSynapses(3)
+    n_exc, celltype(**cell_params), label="Excitatory_Cells", seed=1)
 inh_cells = p.Population(
-    n_inh, celltype(**cell_params), label="Inhibitory_Cells",
-    additional_parameters={"splitter": inh_cells_splitter}, seed=2)
+    n_inh, celltype(**cell_params), label="Inhibitory_Cells", seed=2)
 exc_conn = None
 ext_stim = None
 if benchmark == "COBA":
