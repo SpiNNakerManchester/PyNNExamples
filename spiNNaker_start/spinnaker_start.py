@@ -105,6 +105,10 @@ class GetVersion(AbstractSCPRequest):
     __slots__ = []
 
     def __init__(self, x, y):
+        """
+        :param x:
+        :param y:
+        """
         super(GetVersion, self).__init__(
             SDPHeader(
                 flags=SDPFlag.REPLY_EXPECTED_NO_P2P, destination_port=0,
@@ -121,6 +125,12 @@ class ReadSV(AbstractSCPRequest):
     __slots__ = []
 
     def __init__(self, x, y, variable, size=None):
+        """
+        :param x:
+        :param y:
+        :param variable:
+        :param size:
+        """
         base_address = (SYSTEM_VARIABLE_BASE_ADDRESS + variable.offset)
         if size is None:
             size = variable.data_type.value
@@ -142,6 +152,14 @@ class ReadSV(AbstractSCPRequest):
 class ReadNetinitPhaseProcess(AbstractMultiConnectionProcess):
 
     def __init__(self, x, y, connection_selector, core_counter, save, load):
+        """
+        :param x:
+        :param y:
+        :param connection_selector:
+        :param core_counter:
+        :param save:
+        :param load:
+        """
         super(ReadNetinitPhaseProcess, self).__init__(
             connection_selector, timeout=0.5, n_retries=0)
         self._x = x
@@ -280,6 +298,13 @@ class ReadNetinitPhaseProcess(AbstractMultiConnectionProcess):
 class GetP2PTableProcess(AbstractMultiConnectionProcess):
 
     def __init__(self, connection_selector, width, height, save, load):
+        """
+        :param connection_selector:
+        :param width:
+        :param height:
+        :param save:
+        :param load:
+        """
         super(GetP2PTableProcess, self).__init__(connection_selector)
         self._width = width
         self._height = height
@@ -334,6 +359,17 @@ class ReadBoardProcess(AbstractMultiConnectionProcess):
     def __init__(
             self, eth_x, eth_y, width, height, p2p_table, connection_selector,
             core_counter, save, load):
+        """
+        :param eth_x:
+        :param eth_y:
+        :param width:
+        :param height:
+        :param p2p_table:
+        :param connection_selector:
+        :param core_counter:
+        :param save:
+        :param load:
+        """
         # pylint: disable=too-many-arguments
         super(ReadBoardProcess, self).__init__(
             connection_selector, n_retries=10, timeout=5.0, n_channels=1,
@@ -412,6 +448,10 @@ class ReadBoardProcess(AbstractMultiConnectionProcess):
 class CoreCounter(object):
 
     def __init__(self, width, height):
+        """
+        :param width:
+        :param height:
+        """
         self._total_cores = 0
         self._update_lock = RLock()
         self._ready = False
@@ -509,6 +549,12 @@ class CoreCounter(object):
 
 class MainThread(object):
     def __init__(self, core_counter, job, save, load):
+        """
+        :param core_counter:
+        :param job:
+        :param save:
+        :param load:
+        """
         self._done = False
         self._thread = Thread(
             target=self.run, args=[core_counter, job, save, load])
@@ -630,6 +676,10 @@ class MainThread(object):
 
 class MockJob(object):
     def __init__(self, width, height):
+        """
+        :param width:
+        :param height:
+        """
         self._boards = list()
         self._height = height
         self._width = width
