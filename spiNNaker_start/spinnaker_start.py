@@ -37,7 +37,7 @@ from spinnman.messages.scp.impl import ReadMemory, GetChipInfo
 from spinnman.model import P2PTable
 from spinnman.processes.get_version_process import GetVersionProcess
 from spinnman.messages.sdp.sdp_flag import SDPFlag
-from spinnman.messages.scp.impl.read_memory import _SCPReadMemoryResponse
+from spinnman.messages.scp.impl.read_memory import Response
 from spinnman.messages.spinnaker_boot import SystemVariableDefinition
 from spinnman.connections.udp_packet_connections \
     import SCAMPConnection, BootConnection
@@ -51,8 +51,9 @@ from spinnman.messages.spinnaker_boot import SpinnakerBootMessages
 
 from spinn_utilities.overrides import overrides
 
-from spalloc.job import Job
-from spalloc.states import JobState
+from spinnman.config_setup import unittest_setup
+from spinnman.spalloc import SpallocClient, SpallocState
+from spinn_utilities.config_holder import set_config
 
 from spinn_machine.machine import Machine
 
@@ -136,7 +137,7 @@ class ReadSV(AbstractSCPRequest):
 
     @overrides(AbstractSCPRequest.get_scp_response)
     def get_scp_response(self):
-        return _SCPReadMemoryResponse()
+        return Response()
 
 
 class ReadNetinitPhaseProcess(AbstractMultiConnectionProcess):
@@ -428,7 +429,7 @@ class CoreCounter(object):
     def run(self):
         matplotlib.rcParams['toolbar'] = 'None'
         self._fig, self._ax = pyplot.subplots()
-        self._fig.canvas.set_window_title("SpiNNaker")
+        self._fig.canvas.manager.set_window_title("SpiNNaker")
         self._image = self._ax.imshow(
             self._image_data, origin="lower")
         self._text = self._ax.text(
@@ -530,12 +531,12 @@ class MainThread(object):
 
     def run(self, core_counter, job, save, load):
         job_connections = list()
-        for (x, y), ip_address in iteritems(job.connections):
+        for (x, y), ip_address in iteritems(job.get_connections()):
             job_connections.append((x, y, ip_address))
         job_connections.sort(key=operator.itemgetter(0, 1))
         with job:
             warn("Waiting for user to start process")
-            core_counter.wait_until_ready()
+            #core_counter.wait_until_ready()
             warn("Process starting")
 
             # Get a list of connections to the machine and start a thread for
@@ -569,7 +570,7 @@ class MainThread(object):
             tries = 3
             while not self._done and not boot_done and tries > 0:
                 warn("Booting machine", boot_connection.remote_ip_address)
-                boot_messages = SpinnakerBootMessages(board_version=5)
+                boot_messages = SpinnakerBootMessages()
                 for boot_message in boot_messages.messages:
                     boot_connection.send_boot_message(boot_message)
                 time.sleep(2.0)
@@ -668,6 +669,8 @@ class MockJob(object):
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
+    unittest_setup()
+    set_config("Machine", "version", "5")
 
     save = False
     load = False
@@ -688,20 +691,23 @@ if __name__ == "__main__":
         print(job.width, job.height)
         close_file(load_file)
     else:
-        job = Job(1200, hostname="spinn-test.cs.man.ac.uk",
-                  owner="SpiNNaker Start")
+        client = SpallocClient("https://spinnaker.cs.man.ac.uk/spalloc")
+        job = client.create_job(
+            num_boards=2, machine_name="SpiNNaker1M")
     try:
-        job.wait_for_state_change(JobState.queued)
+        job.wait_until_ready()
+        txrx = job.create_transceiver()
+        dims = txrx._get_machine_dimensions()
         if save:
             save_file = open_file("record/job.dat", "wb")
             save_file.write(struct.pack(
-                "<III", job.width, job.height, len(job.connections)))
+                "<III", dims.width, dims.height, len(job.connections)))
             for (x, y), _ in iteritems(job.connections):
                 save_file.write(struct.pack("<II", x, y))
             close_file(save_file)
 
         # Create GUI
-        core_counter = CoreCounter(job.width, job.height)
+        core_counter = CoreCounter(dims.width, dims.height)
 
         # Run task in thread
         main_thread = MainThread(core_counter, job, save, load)
