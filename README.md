@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/SpiNNakerManchester/PyNNExamples.svg?branch=master)](https://travis-ci.org/SpiNNakerManchester/PyNNExamples)
+[![Python Actions](https://github.com/SpiNNakerManchester/PyNNExamples/actions/workflows/python_actions.yml/badge.svg)](https://github.com/SpiNNakerManchester/PyNNExamples/actions/workflows/python_actions.yml)
 
 Examples for PyNN
 =================
