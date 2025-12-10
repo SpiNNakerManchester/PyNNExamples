@@ -112,10 +112,12 @@ start_of_right = retina_resolution.value.pixels - n_conn
 # Last column of the right-side column group
 end_of_right = retina_resolution.value.pixels
 
-# First row to consider in any group of pixels (i.e. ignore bright top lights)
+# First row to consider in any group of pixels 
+# (i.e. ignore bright top lights)
 start_row = 30
 
-# Last row to consider in any group of pixels (i.e. ignore bright bottom lights)
+# Last row to consider in any group of pixels
+# (i.e. ignore bright bottom lights)
 end_row = retina_resolution.value.pixels - 40
 
 # Connection weights for this connection list
