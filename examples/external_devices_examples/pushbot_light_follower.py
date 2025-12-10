@@ -131,17 +131,17 @@ arr = numpy.arange(retina_resolution.value.n_neurons / 2)
 
 # Determines which neuron IDs are on the left group
 id_to_left = (
-    (arr % retina_resolution.value.pixels) >= start_of_left
-    & (arr % retina_resolution.value.pixels) < end_of_left
-    & (arr // retina_resolution.value.pixels >= start_row)
-    & (arr // retina_resolution.value.pixels < end_row))
+    ((arr % retina_resolution.value.pixels) >= start_of_left)
+    & ((arr % retina_resolution.value.pixels) < end_of_left)
+    & ((arr // retina_resolution.value.pixels) >= start_row)
+    & ((arr // retina_resolution.value.pixels) < end_row))
 
 # Determines which neuron IDs are on the right group
 id_to_right = (
-    (arr % retina_resolution.value.pixels) >= start_of_right
-    & (arr % retina_resolution.value.pixels) < end_of_right
-    & (arr // retina_resolution.value.pixels >= start_row)
-    & (arr // retina_resolution.value.pixels < end_row))
+    ((arr % retina_resolution.value.pixels) >= start_of_right)
+    & ((arr % retina_resolution.value.pixels) < end_of_right)
+    & ((arr // retina_resolution.value.pixels) >= start_row)
+    & ((arr // retina_resolution.value.pixels) < end_row))
 
 # Extracts the neuron IDs to be connected to the left neuron of driver_pop
 id_to_left = numpy.extract(id_to_left, arr)
