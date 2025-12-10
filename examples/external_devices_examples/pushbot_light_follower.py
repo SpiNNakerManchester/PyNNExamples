@@ -112,7 +112,7 @@ start_of_right = retina_resolution.value.pixels - n_conn
 # Last column of the right-side column group
 end_of_right = retina_resolution.value.pixels
 
-# First row to consider in any group of pixels 
+# First row to consider in any group of pixels
 # (i.e. ignore bright top lights)
 start_row = 30
 
