@@ -101,7 +101,7 @@ n_conn = 3 * (retina_resolution.value.pixels / 8)
 # The events coming from the specified columns of exc_pop population
 # will be connected to the relevant neuron in driver_pop
 # Starting column of the left-side column group
-start_of_left = 0
+start_of_left = 20
 
 # Last column of the left-side column group
 end_of_left = n_conn
@@ -110,7 +110,7 @@ end_of_left = n_conn
 start_of_right = retina_resolution.value.pixels - n_conn
 
 # Last column of the right-side column group
-end_of_right = retina_resolution.value.pixels
+end_of_right = retina_resolution.value.pixels - 20
 
 # First row to consider in any group of pixels
 # (i.e. ignore bright top lights)
@@ -130,16 +130,18 @@ d_conn = 1
 arr = numpy.arange(retina_resolution.value.n_neurons / 2)
 
 # Determines which neuron IDs are on the left group
-id_to_left = (arr % retina_resolution.value.pixels) < end_of_left
 id_to_left = (
-    (arr // retina_resolution.value.pixels >= start_row)
-    & (arr // retina_resolution.value.pixels < end_row)) & id_to_left
+    (arr % retina_resolution.value.pixels) >= start_of_left
+    & (arr % retina_resolution.value.pixels) < end_of_left
+    & (arr // retina_resolution.value.pixels >= start_row)
+    & (arr // retina_resolution.value.pixels < end_row))
 
 # Determines which neuron IDs are on the right group
-id_to_right = (arr % retina_resolution.value.pixels) >= start_of_right
 id_to_right = (
-    (arr // retina_resolution.value.pixels >= start_row)
-    & (arr // retina_resolution.value.pixels < end_row)) & id_to_right
+    (arr % retina_resolution.value.pixels) >= start_of_right
+    & (arr % retina_resolution.value.pixels) < end_of_right
+    & (arr // retina_resolution.value.pixels >= start_row)
+    & (arr // retina_resolution.value.pixels < end_row))
 
 # Extracts the neuron IDs to be connected to the left neuron of driver_pop
 id_to_left = numpy.extract(id_to_left, arr)
