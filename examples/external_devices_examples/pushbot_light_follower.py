@@ -112,6 +112,12 @@ start_of_right = retina_resolution.value.pixels - n_conn
 # Last column of the right-side column group
 end_of_right = retina_resolution.value.pixels
 
+# First row to consider in any group of pixels (i.e. ignore bright top lights)
+start_row = 30
+
+# Last row to consider in any group of pixels (i.e. ignore bright bottom lights)
+end_row = retina_resolution.value.pixels - 30
+
 # Connection weights for this connection list
 w_conn = 0.2
 
@@ -123,9 +129,15 @@ arr = numpy.arange(retina_resolution.value.n_neurons / 2)
 
 # Determines which neuron IDs are on the left group
 id_to_left = (arr % retina_resolution.value.pixels) < end_of_left
+id_to_left = (
+    (arr // retina_resolution.value.pixels >= start_row)
+    & (arr // retina_resolution.value.pixels < end_row)) & id_to_left
 
 # Determines which neuron IDs are on the right group
 id_to_right = (arr % retina_resolution.value.pixels) >= start_of_right
+id_to_right = (
+    (arr // retina_resolution.value.pixels >= start_row)
+    & (arr // retina_resolution.value.pixels < end_row)) & id_to_right
 
 # Extracts the neuron IDs to be connected to the left neuron of driver_pop
 id_to_left = numpy.extract(id_to_left, arr)
