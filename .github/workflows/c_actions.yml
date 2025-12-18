@@ -71,6 +71,6 @@ jobs:
         CFLAGS: -fdiagnostics-color=always
       run: |
         make -C spinnaker_tools
-        make -C spinn_common install
+        make -C spinn_common
         make -C SpiNNFrontEndCommon/c_common
         make -C sPyNNaker/neural_modelling
