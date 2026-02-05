@@ -16,7 +16,6 @@
 stdp_mad_recurrent_pre_stochastic_multiplicative
 """
 import matplotlib.pyplot as plt
-from pyNN.random import NumpyRNG, RandomDistribution
 import pyNN.spiNNaker as p
 from pyNN.utility.plotting import Figure, Panel
 # pylint: disable=wrong-spelling-in-comment
