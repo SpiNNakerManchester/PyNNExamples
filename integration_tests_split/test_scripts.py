@@ -50,3 +50,9 @@ class TestScripts(ScriptChecker):
         self.check_script("examples/extra_models_examples/IF_curr_exp_sEMD.py",
                           use_script_dir=False)
         self.check_binary_used("IF_curr_exp_sEMD_neuron.aplx")
+
+    def test_examples_extra_models_examples_vogel_2011_vogels_2011_live(self):
+        self.check_script("examples/extra_models_examples/vogel_2011/vogels_2011_live.py",
+                          use_script_dir=False)
+        # test does not produce spikes in either mode
+        self.check_binary_used("synapses_stdp_mad_vogels_2011_additive.aplx")
