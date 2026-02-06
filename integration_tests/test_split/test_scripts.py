@@ -32,27 +32,27 @@ class TestScripts(ScriptChecker):
         os.chdir(os.path.dirname(__file__))
 
     def test_examples_extra_models_examples_IF_cond_exp_stoc(self):
-        self.check_script("examples/extra_models_examples/IF_cond_exp_stoc.py",
+        self.check_script("../examples/extra_models_examples/IF_cond_exp_stoc.py",
                           use_script_dir=False)
         self.check_binary_used("IF_cond_exp_stoc_neuron.aplx")
 
     def test_examples_extra_models_examples_IF_curr_exp_ca2_adaptive(self):
-        self.check_script("examples/extra_models_examples/IF_curr_exp_ca2_adaptive.py",
+        self.check_script("../examples/extra_models_examples/IF_curr_exp_ca2_adaptive.py",
                           use_script_dir=False)
         self.check_binary_used("IF_curr_exp_ca2_adaptive_neuron.aplx")
 
     def test_examples_extra_models_examples_synfire_if_curr_dual_exp(self):
-        self.check_script("examples/extra_models_examples/synfire_if_curr_dual_exp.py",
+        self.check_script("../examples/extra_models_examples/synfire_if_curr_dual_exp.py",
                           use_script_dir=False)
         self.check_binary_used("IF_curr_exp_dual_neuron.aplx")
 
     def test_examples_extra_models_examples_IF_curr_exp_sEMD(self):
-        self.check_script("examples/extra_models_examples/IF_curr_exp_sEMD.py",
+        self.check_script("../examples/extra_models_examples/IF_curr_exp_sEMD.py",
                           use_script_dir=False)
         self.check_binary_used("IF_curr_exp_sEMD_neuron.aplx")
 
     def test_examples_extra_models_examples_vogel_2011_vogels_2011_live(self):
-        self.check_script("examples/extra_models_examples/vogel_2011/vogels_2011_live.py",
+        self.check_script("../examples/extra_models_examples/vogel_2011/vogels_2011_live.py",
                           use_script_dir=False)
         # test does not produce spikes in either mode
         self.check_binary_used("synapses_stdp_mad_vogels_2011_additive.aplx")
