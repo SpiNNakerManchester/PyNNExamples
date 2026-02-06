@@ -19,6 +19,8 @@ import pyNN.spiNNaker as p
 from pyNN.random import RandomDistribution
 from pyNN.utility.plotting import Figure, Panel
 
+from spynnaker.pyNN.connections import SpynnakerPoissonControlConnection
+
 # We need a time scale factor here as we are interacting live, so too fast
 # otherwise!
 p.setup(timestep=0.1, time_scale_factor=10.0)
@@ -93,7 +95,8 @@ p.external_devices.add_poisson_live_rate_control(
     pop_input, database_notify_port_num=poisson_control.local_port)
 
 
-def start_callback(label, connection):
+def start_callback(
+        label: str, connection: SpynnakerPoissonControlConnection) -> None:
     """
     Changes the connection rate very 10 seconds
 

@@ -12,10 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
+from typing import Optional, Tuple
+
 import pyNN.spiNNaker as sim
 import numpy
 import matplotlib.pyplot as pylab
+
+from spynnaker.pyNN.models.neuron import ConnectionHolder
+from spynnaker.pyNN.models.projection import Projection
+from spynnaker.pyNN.models.populations.population import Population
 from spynnaker.pyNN.utilities import neo_convertor
+
 
 # how much slowdown to put into the network to allow it to run without any
 # runtime errors
@@ -25,7 +32,7 @@ SLOWDOWN_STATIC = 10
 SLOWDOWN_PLASTIC = 10
 
 # bool hard code for extracting the weights or not
-EXTRACT_WEIGHTS = False
+EXTRACT_WEIGHTS = True
 GENERATE_PLOT = True
 
 # how many boards to use for this test
@@ -96,7 +103,9 @@ class Vogels2011(object):
     # file name for plastic in spikes
     PLASTIC_IN_SPIKES_FILE_NAME = "plasticInhibSpikes"
 
-    def _build_network(self, uses_stdp, slow_down):
+    def _build_network(self, uses_stdp: bool, slow_down: int) -> Tuple[
+            Population, Population, Projection, Projection, Projection,
+            Projection]:
         """ builds the network with either stdp or not, and with a given
         slowdown
 
@@ -167,7 +176,7 @@ class Vogels2011(object):
         return ex_pop, in_pop, ie_projection, proj1, proj2, proj3
 
     @staticmethod
-    def save_name(spike_name):
+    def save_name(spike_name: str) -> str:
         """
         Gets the name of a none existing file based on this name.
 
@@ -184,7 +193,10 @@ class Vogels2011(object):
             file_name = spike_name + str(index)
         return file_name
 
-    def run(self, slow_down_static, slow_down_plastic, extract_weights):
+    def run(self, slow_down_static: int, slow_down_plastic: int,
+            extract_weights: bool) -> Tuple[
+                Optional[ConnectionHolder], Optional[numpy.ndarray],
+                Optional[numpy.ndarray]]:
         """ builds and runs a network
 
         :param slow_down_static: the slowdown for the network during \
@@ -195,10 +207,9 @@ class Vogels2011(object):
         extraction
         :return: plastic weights, the static and plastic spikes.
         """
-
-        static_ex_spikes_numpy = None
-        plastic_weights = None
-        plastic_spikes_numpy = None
+        static_ex_spikes_numpy: Optional[numpy.ndarray]  = None
+        plastic_weights: Optional[ConnectionHolder] = None
+        plastic_spikes_numpy: Optional[numpy.ndarray]  = None
 
         if self.RUN_STATIC_VERSION:
             print("Generating Static network")
@@ -218,8 +229,7 @@ class Vogels2011(object):
                     index += 1
 
             # Get static spikes
-            static_ex_spikes_numpy = None
-            static_in_spikes_numpy = None
+            static_in_spikes_numpy: Optional[numpy.ndarray] = None
             if self.EXTRACT_SPIKES:
                 static_ex_spikes = static_ex_pop.get_data('spikes')
                 static_ex_spikes_numpy = neo_convertor.convert_spikes(
@@ -228,10 +238,12 @@ class Vogels2011(object):
                 static_in_spikes_numpy = neo_convertor.convert_spikes(
                     static_in_spikes)
 
-            if self.SAVE_SPIKES:
+            if self.EXTRACT_SPIKES and self.SAVE_SPIKES:
                 ex_name = self.save_name(self.STATIC_EX_SPIKES_FILE_NAME)
                 in_name = self.save_name(self.STATIC_IN_SPIKES_FILE_NAME)
+                assert static_ex_spikes_numpy is not None  # for mypy
                 numpy.savetxt(ex_name, static_ex_spikes_numpy)
+                assert static_in_spikes_numpy is not None  # for mypy
                 numpy.savetxt(in_name, static_in_spikes_numpy)
 
             # end static simulation
@@ -259,8 +271,6 @@ class Vogels2011(object):
                     index += 1
 
             # Get plastic spikes and save to disk
-            static_in_spikes_numpy = None
-            plastic_spikes_numpy = None
             if self.EXTRACT_SPIKES:
                 plastic_spikes = plastic_ex_pop.get_data('spikes')
                 plastic_spikes_numpy = (
@@ -269,10 +279,12 @@ class Vogels2011(object):
                 static_in_spikes_numpy = neo_convertor.convert_spikes(
                     static_in_spikes)
 
-            if self.SAVE_SPIKES:
+            if self.EXTRACT_SPIKES and self.SAVE_SPIKES:
                 ex_name = self.save_name(self.PLASTIC_EX_SPIKES_FILE_NAME)
                 in_name = self.save_name(self.PLASTIC_IN_SPIKES_FILE_NAME)
+                assert plastic_spikes_numpy is not None  # for mypy
                 numpy.savetxt(ex_name, plastic_spikes_numpy)
+                assert static_in_spikes_numpy is not None  # for mypy
                 numpy.savetxt(in_name, static_in_spikes_numpy)
 
             if extract_weights:
@@ -285,7 +297,9 @@ class Vogels2011(object):
         return plastic_weights, static_ex_spikes_numpy, plastic_spikes_numpy
 
     def plot(
-            self, plastic_weights, static_spikes_numpy, plastic_spikes_numpy):
+            self, plastic_weights: Optional[ConnectionHolder],
+            static_spikes_numpy: Optional[numpy.ndarray],
+            plastic_spikes_numpy: Optional[numpy.ndarray]) -> None:
         """ generates plots for a paper
 
         :param plastic_weights: the plastic weights.

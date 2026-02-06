@@ -41,42 +41,47 @@ https://journal.frontiersin.org/article/10.3389/fnins.2017.00454/abstract
 """
 
 import math
-import pyNN.spiNNaker as p
-import numpy as np
-from pyNN.random import RandomDistribution, NumpyRNG
+from typing import List
 
+import matplotlib.pyplot as plt
+import neo
+import numpy as np
+import pyNN.spiNNaker as p
+from pyNN.random import RandomDistribution, NumpyRNG
 # for plotting
 from pyNN.utility.plotting import Figure, Panel
-import matplotlib.pyplot as plt
+import quantities
+
+from spynnaker.pyNN.models.populations.population import Population
 
 # pylint: disable=pointless-string-statement,disable=wrong-spelling-in-comment
 
 
-def get_mean_rate(numCells, population):
+def get_mean_rate(numCells: int, block: neo.Block) -> float:
     """
     Calculate the average number of spikes ber neuron
 
     :param int numCells:
-    :param population: neo block
+    :param block: neo block
     :return:
     """
     firing_rate = []      # format = < neuron_id, rate (spikes/ms) >
 
     for index in range(0, numCells):
-        rate = len(population.segments[0].spiketrains[index])/TotalDuration
+        rate = len(block.segments[0].spiketrains[index])/TotalDuration
         firing_rate.append(rate)
 
     return sum(firing_rate)/len(firing_rate)
 
 
-def calc_irregularity(segment):
+def calc_irregularity(segment: neo.Segment) -> float:
     """
     Calculate the irregularity of spikes
 
     :param segment: neo Segment
     """
-    irregularity = 0
-    isi_array = []
+    irregularity: float = 0
+    isi_array: List[List[quantities.Quantity]] = []
     for spiketrain in segment.spiketrains:
         if len(spiketrain) > 2:
             isi_array.append([])
@@ -92,7 +97,7 @@ def calc_irregularity(segment):
     return irregularity
 
 
-def print_irregularity():
+def print_irregularity() -> None:
     """
     Calculate and prints the irregularity of spikes
     """
@@ -101,7 +106,7 @@ def print_irregularity():
     print("TRN irregularity: ", calc_irregularity(TRN_spikes.segments[0]))
 
 
-def calc_synchrony(segment):
+def calc_synchrony(segment: neo.Segment) -> float:
     """
     Calculate the synchrony of spikes
 
@@ -119,7 +124,7 @@ def calc_synchrony(segment):
     return synchrony
 
 
-def print_synchrony():
+def print_synchrony() -> None:
     """
     Calculate and print the synchrony of spikes
     """
