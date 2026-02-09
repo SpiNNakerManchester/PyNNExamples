@@ -183,8 +183,19 @@ class TestScripts(ScriptChecker):
     def test_examples_extra_models_examples_IF_curr_exp_ca2_adaptive(self):
         self.check_script("examples/extra_models_examples/IF_curr_exp_ca2_adaptive.py")
 
-    def test_examples_extra_models_examples_IF_cond_exp_stoc(self):
-        self.check_script("examples/extra_models_examples/IF_cond_exp_stoc.py")
+    def test_examples_extra_models_examples_IF_cond_exp_stoc_combined(self):
+        from examples.extra_models_examples.IF_cond_exp_stoc import run_script
+        run_script(split=False)
+        self.check_binaries_used([
+            'IF_cond_exp_stoc.aplx',
+            'IF_cond_exp.aplx'])
+
+    def test_examples_extra_models_examples_IF_cond_exp_stoc_split(self):
+        from examples.extra_models_examples.IF_cond_exp_stoc import run_script
+        run_script(split=True)
+        self.check_binaries_used([
+            'IF_cond_exp_stoc_neuron.aplx',
+            'IF_cond_exp_neuron.aplx'])
 
     def test_balanced_random_balanced_random(self):
         self.check_script("balanced_random/balanced_random.py")
