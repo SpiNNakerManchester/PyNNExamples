@@ -51,12 +51,6 @@ class TestScripts(ScriptChecker):
     def test_examples_split_examples_va_benchmark_split(self):
         self.check_script("examples/split_examples/va_benchmark_split.py")
 
-    def test_examples_balanced_random_balanced_random(self):
-        self.check_script("examples/balanced_random/balanced_random.py")
-
-    def test_examples_balanced_random_split_balanced_random_split(self):
-        self.check_script("examples/balanced_random/split/balanced_random_split.py")
-
     def test_examples_synfire_if_curr_exp_random(self):
         self.check_script("examples/synfire_if_curr_exp_random.py")
 
@@ -196,6 +190,9 @@ class TestScripts(ScriptChecker):
         self.check_binaries_used([
             'IF_cond_exp_stoc_neuron.aplx',
             'IF_cond_exp_neuron.aplx'])
+
+    def test_examples_wta_example(self):
+        self.check_script("examples/wta_example.py")
 
     def test_balanced_random_balanced_random(self):
         self.check_script("balanced_random/balanced_random.py")
