@@ -31,7 +31,7 @@ class PyNNScript(object):
 
         use_c_visualiser = False
         visualiser_port = 19996
-        use_spike_injector = True
+        use_spike_injector = False
 
         # neurons per population and the length of runtime in ms for the
         # simulation, as well as the expected weight each spike will contain
@@ -301,6 +301,5 @@ class GUI(object):
 
 
 # set up the initial script
-if __name__ == '__main__':
-    multiprocessing.freeze_support()
-    script = PyNNScript()
+multiprocessing.freeze_support()
+script = PyNNScript()
