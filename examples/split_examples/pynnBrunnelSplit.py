@@ -14,80 +14,12 @@
 
 import pyNN.spiNNaker as pynn
 
-import numpy as np
 import matplotlib.pyplot as plt
 from pyNN.random import RandomDistribution
 from pyNN.utility.plotting import Figure, Panel
 
 simulator_Name = 'spiNNaker'
 # exec('import pyNN.%s as pynn' % simulator_Name)
-
-
-def poisson_generator(rate, rng, t_start=0.0, t_stop=1000.0, array=True,
-                      debug=False):
-    """
-    Returns a SpikeTrain whose spikes are a realization of a Poisson process
-    with the given rate (Hz) and stopping time t_stop (milliseconds).
-
-    Note: t_start is always 0.0, thus all realizations are as if
-    they spiked at t=0.0, though this spike is not included in the SpikeList.
-
-    Inputs:
-        rate    - the rate of the discharge (in Hz)
-        t_start - the beginning of the SpikeTrain (in ms)
-        t_stop  - the end of the SpikeTrain (in ms)
-        array   - if True, a numpy array of sorted spikes is returned,
-                  rather than a SpikeTrain object.
-
-    Examples:
-        >> gen.poisson_generator(50, 0, 1000)
-        >> gen.poisson_generator(20, 5000, 10000, array=True)
-
-    See also:
-        inh_poisson_generator, inh_gamma_generator,
-        inh_adaptingmarkov_generator
-    """
-
-    n = (t_stop - t_start) / 1000.0 * rate
-    number = np.ceil(n + 3 * np.sqrt(n))
-    if number < 100:
-        number = min(5 + np.ceil(2 * n), 100)
-
-    if number > 0:
-        isi = rng.exponential(1.0 / rate, number) * 1000.0
-        if number > 1:
-            spikes = np.add.accumulate(isi)
-        else:
-            spikes = isi
-    else:
-        spikes = np.array([])
-
-    spikes += t_start
-    i = np.searchsorted(spikes, t_stop)
-
-    extra_spikes = []
-    if i == len(spikes):
-        # ISI buf overrun
-
-        t_last = spikes[-1] + rng.exponential(1.0 / rate, 1)[0] * 1000.0
-
-        while (t_last < t_stop):
-            extra_spikes.append(t_last)
-            t_last += rng.exponential(1.0 / rate, 1)[0] * 1000.0
-
-        spikes = np.concatenate((spikes, extra_spikes))
-
-        if debug:
-            print("ISI buf overrun handled. len(spikes)=%d,"
-                  " len(extra_spikes)=%d" % (len(spikes), len(extra_spikes)))
-
-    else:
-        spikes = np.resize(spikes, (i,))
-
-    if debug:
-        return spikes, extra_spikes
-    else:
-        return [round(x) for x in spikes]
 
 
 # Total number of neurons
