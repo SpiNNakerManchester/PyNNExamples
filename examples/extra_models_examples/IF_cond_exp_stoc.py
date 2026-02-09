@@ -64,7 +64,6 @@ def run_script(*, split: bool = False) -> None:
         'tau_syn_E': 5.0,
         'tau_syn_I': 5.0}))
 
-
     spike_sourceE = sim.Population(1, sim.SpikeSourceArray(**{
         'spike_times': [float(i) for i in range(5, 105, 10)]}))
     spike_sourceI = sim.Population(1, sim.SpikeSourceArray(**{
@@ -133,7 +132,9 @@ def run_script(*, split: bool = False) -> None:
     pylab.show()
 
 # combined binaries_used ['IF_cond_exp_stoc.aplx','IF_cond_exp.aplx']
-# split binaries used(['IF_cond_exp_stoc_neuron.aplx','IF_cond_exp_neuron.aplx'])
+# split binaries used(['IF_cond_exp_stoc_neuron.aplx',
+    # 'IF_cond_exp_neuron.aplx'])
+
 
 if __name__ == "__main__":
     run_script()
