@@ -14,7 +14,6 @@
 
 import pyNN.spiNNaker as pynn
 
-import numpy as np
 import matplotlib.pyplot as plt
 from pyNN.random import RandomDistribution
 from pyNN.utility.plotting import Figure, Panel
