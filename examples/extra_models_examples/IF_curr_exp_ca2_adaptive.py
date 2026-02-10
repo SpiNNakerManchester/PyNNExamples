@@ -107,7 +107,7 @@ def run_script(*, split: bool = False) -> None:
     #                             axis=0)
 
     # Plot
-    fig, axes = pylab.subplots(2, sharex=True)
+    _, axes = pylab.subplots(2, sharex=True)
 
     axes[0].scatter(mean_isis.keys(),
                     [1000.0 / i for i in mean_isis.values()], s=2)
