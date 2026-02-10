@@ -25,6 +25,7 @@ import numpy
 import matplotlib.pyplot as pylab
 import pyNN.spiNNaker as sim
 
+
 def run_script(*, split: bool = False) -> None:
     """
     Runs the example script
@@ -34,8 +35,8 @@ def run_script(*, split: bool = False) -> None:
         This requires more cores but allows more spikes to be received.
     """
     # Timestep (ms)
-    # **NOTE** the 2.5Khz input frequency is not going to work particularly well
-    # at 1ms
+    # **NOTE**
+    # the 2.5Khz input frequency is not going to work particularly well at 1ms
     dt = 0.1
 
     # Number of neurons - used to gather enough ISIs to get a smooth estimate

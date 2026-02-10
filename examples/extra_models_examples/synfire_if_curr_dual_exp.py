@@ -19,6 +19,7 @@ import pyNN.spiNNaker as p
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
 
+
 def run_script(*, split: bool = False) -> None:
     """
     Runs the example script
@@ -116,4 +117,3 @@ def run_script(*, split: bool = False) -> None:
 
 if __name__ == "__main__":
     run_script()
-

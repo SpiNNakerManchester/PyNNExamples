@@ -38,6 +38,7 @@ cell_params = {
 # (Number of inhibitory neurons is proportional to this)
 NUM_EXCITATORY = 2000
 
+
 def run_script(*, split: bool = False) -> None:
     """
     Runs the example script
@@ -107,4 +108,3 @@ def run_script(*, split: bool = False) -> None:
 
 if __name__ == "__main__":
     run_script()
-

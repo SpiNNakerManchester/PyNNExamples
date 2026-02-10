@@ -132,8 +132,7 @@ def run_script(*, split: bool = False) -> None:
     pylab.show()
 
 # combined binaries [IF_cond_exp_stoc.aplx, IF_cond_exp.aplx]
-# split binaries [IF_cond_exp_stoc_neuron.aplx,
-        # IF_cond_exp_neuron.aplx]
+# split binaries [IF_cond_exp_stoc_neuron.aplx, IF_cond_exp_neuron.aplx]
 
 
 if __name__ == "__main__":
