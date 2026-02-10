@@ -166,6 +166,10 @@ class TestScripts(ScriptChecker):
     def test_examples_extra_models_examples_stdp_associative_memory(self):
         self.check_script("examples/extra_models_examples/stdp_associative_memory.py")
 
+    def test_examples_extra_models_examples_stdp_mad_recurrent_pre_stochastic_multiplicative(self):
+        self.check_script("examples/extra_models_examples/stdp_mad_recurrent_pre_stochastic_multiplicative.py")
+        self.check_binaries_used(["IF_curr_exp_stdp_mad_recurrent_pre_stochastic_multiplicative.aplx"])
+
     def test_examples_extra_models_examples_stdp_triplet(self):
         self.check_script("examples/extra_models_examples/stdp_triplet.py")
 
