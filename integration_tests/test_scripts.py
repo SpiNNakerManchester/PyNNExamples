@@ -81,8 +81,8 @@ class TestScripts(ScriptChecker):
     def test_examples_external_devices_examples_live_examples_synfire_if_curr_exp_live(self):
         self.check_script("examples/external_devices_examples/live_examples/synfire_if_curr_exp_live.py")
 
-    def test_examples_external_devices_examples_live_examples_spike_io_interactive_demo_with_c_vis(self):
-        self.check_script("examples/external_devices_examples/live_examples/spike_io_interactive_demo_with_c_vis.py")
+    # Not testing file due to: Unhandled main
+    # examples/external_devices_examples/live_examples/spike_io_interactive_demo_with_c_vis.py
 
     def test_examples_external_devices_examples_live_examples_balanced_random_live_rate(self):
         self.check_script("examples/external_devices_examples/live_examples/balanced_random_live_rate.py")
@@ -150,11 +150,18 @@ class TestScripts(ScriptChecker):
     def test_examples_extra_models_examples_LGN_Izhikevich(self):
         self.check_script("examples/extra_models_examples/LGN_Izhikevich.py")
 
-    def test_examples_extra_models_examples_vogel_2011_vogels_2011_live(self):
-        self.check_script("examples/extra_models_examples/vogel_2011/vogels_2011_live.py")
+    def test_examples_extra_models_examples_vogel_2011_vogels_2011_live_combined(self):
+        from examples.extra_models_examples.vogel_2011.vogels_2011_live import run_script
+        run_script(split=False)
+        self.check_binaries_used(["IF_curr_exp_stdp_mad_vogels_2011_additive"])
 
-    def test_examples_extra_models_examples_vogel_2011_vogels_2011(self):
-        self.check_script("examples/extra_models_examples/vogel_2011/vogels_2011.py")
+    def test_examples_extra_models_examples_vogel_2011_vogels_2011_live_split(self):
+        from examples.extra_models_examples.vogel_2011.vogels_2011_live import run_script
+        run_script(split=True)
+        self.check_binaries_used(["synapses_stdp_mad_vogels_2011_additive"])
+
+    # Not testing file due to: Unhandled main
+    # examples/extra_models_examples/vogel_2011/vogels_2011.py
 
     def test_examples_extra_models_examples_stdp_associative_memory(self):
         self.check_script("examples/extra_models_examples/stdp_associative_memory.py")
@@ -162,11 +169,25 @@ class TestScripts(ScriptChecker):
     def test_examples_extra_models_examples_stdp_triplet(self):
         self.check_script("examples/extra_models_examples/stdp_triplet.py")
 
-    def test_examples_extra_models_examples_synfire_if_curr_dual_exp(self):
-        self.check_script("examples/extra_models_examples/synfire_if_curr_dual_exp.py")
+    def test_examples_extra_models_examples_synfire_if_curr_dual_exp_combined(self):
+        from examples.extra_models_examples.synfire_if_curr_dual_exp import run_script
+        run_script(split=False)
+        self.check_binaries_used(["IF_curr_exp_dual.aplx"])
 
-    def test_examples_extra_models_examples_IF_curr_exp_sEMD(self):
-        self.check_script("examples/extra_models_examples/IF_curr_exp_sEMD.py")
+    def test_examples_extra_models_examples_synfire_if_curr_dual_exp_split(self):
+        from examples.extra_models_examples.synfire_if_curr_dual_exp import run_script
+        run_script(split=True)
+        self.check_binaries_used(["IF_curr_exp_dual_neuron.aplx"])
+
+    def test_examples_extra_models_examples_IF_curr_exp_sEMD_combined(self):
+        from examples.extra_models_examples.IF_curr_exp_sEMD import run_script
+        run_script(split=False)
+        self.check_binaries_used(["IF_curr_exp_sEMD.aplx"])
+
+    def test_examples_extra_models_examples_IF_curr_exp_sEMD_split(self):
+        from examples.extra_models_examples.IF_curr_exp_sEMD import run_script
+        run_script(split=True)
+        self.check_binaries_used(["IF_curr_exp_sEMD_neuron.aplx"])
 
     def test_examples_extra_models_examples_IF_curr_delta(self):
         self.check_script("examples/extra_models_examples/IF_curr_delta.py")
@@ -174,22 +195,25 @@ class TestScripts(ScriptChecker):
     def test_examples_extra_models_examples_stdp_example_izk_cond(self):
         self.check_script("examples/extra_models_examples/stdp_example_izk_cond.py")
 
-    def test_examples_extra_models_examples_IF_curr_exp_ca2_adaptive(self):
-        self.check_script("examples/extra_models_examples/IF_curr_exp_ca2_adaptive.py")
+    def test_examples_extra_models_examples_IF_curr_exp_ca2_adaptive_combined(self):
+        from examples.extra_models_examples.IF_curr_exp_ca2_adaptive import run_script
+        run_script(split=False)
+        self.check_binaries_used(["IF_curr_exp_ca2_adaptive.aplx"])
+
+    def test_examples_extra_models_examples_IF_curr_exp_ca2_adaptive_split(self):
+        from examples.extra_models_examples.IF_curr_exp_ca2_adaptive import run_script
+        run_script(split=True)
+        self.check_binaries_used(["IF_curr_exp_ca2_adaptive_neuron.aplx"])
 
     def test_examples_extra_models_examples_IF_cond_exp_stoc_combined(self):
         from examples.extra_models_examples.IF_cond_exp_stoc import run_script
         run_script(split=False)
-        self.check_binaries_used([
-            'IF_cond_exp_stoc.aplx',
-            'IF_cond_exp.aplx'])
+        self.check_binaries_used(["IF_cond_exp_stoc.aplx", "IF_cond_exp.aplx"])
 
     def test_examples_extra_models_examples_IF_cond_exp_stoc_split(self):
         from examples.extra_models_examples.IF_cond_exp_stoc import run_script
         run_script(split=True)
-        self.check_binaries_used([
-            'IF_cond_exp_stoc_neuron.aplx',
-            'IF_cond_exp_neuron.aplx'])
+        self.check_binaries_used(["IF_cond_exp_stoc_neuron.aplx", "IF_cond_exp_neuron.aplx"])
 
     def test_examples_wta_example(self):
         self.check_script("examples/wta_example.py")
