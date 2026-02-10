@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
-from pyNN.random import NumpyRNG
 import pyNN.spiNNaker as sim
 import numpy
 import matplotlib.pyplot as pylab
