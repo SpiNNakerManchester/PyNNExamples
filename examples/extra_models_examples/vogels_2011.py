@@ -351,6 +351,7 @@ class Vogels2011(object):
         # Show figures
         pylab.show()
 
+
 def run_script(*, split: bool = False) -> None:
     """
     Runs the example script

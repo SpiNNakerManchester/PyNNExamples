@@ -15,6 +15,7 @@ import pyNN.spiNNaker as p
 import pyNN.utility.plotting as plot
 import matplotlib.pyplot as plt
 
+
 def run_script(*, split: bool = True) -> None:
     """
     Runs the example script
@@ -45,14 +46,10 @@ def run_script(*, split: bool = True) -> None:
     populations[0].set(tau_syn_I=4)
 
     # define the projections
-    exc_proj = p.Projection(pop_src1, populations[0],
-                            p.OneToOneConnector(),
-                            p.StaticSynapse(weight=1, delay=1),
-                            receptor_type="excitatory")
-    inh_proj = p.Projection(pop_src1, populations[0],
-                            p.OneToOneConnector(),
-                            p.StaticSynapse(weight=1, delay=10),
-                            receptor_type="inhibitory")
+    p.Projection(pop_src1, populations[0], p.OneToOneConnector(),
+                 p.StaticSynapse(weight=1, delay=1), receptor_type="excitatory")
+    p.Projection(pop_src1, populations[0], p.OneToOneConnector(),
+                 p.StaticSynapse(weight=1, delay=10),  receptor_type="inhibitory")
 
     populations[0].record("all")
     p.run(runtime)
@@ -61,6 +58,7 @@ def run_script(*, split: bool = True) -> None:
     gsyn_exc = populations[0].get_data("gsyn_exc")
     gsyn_inh = populations[0].get_data("gsyn_inh")
     spikes = populations[0].get_data("spikes")
+    print(spikes)
 
     plot.Figure(
         plot.Panel(v.segments[0].filter(name='v')[0],
