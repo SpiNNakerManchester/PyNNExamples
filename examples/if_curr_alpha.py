@@ -46,10 +46,12 @@ def run_script(*, split: bool = True) -> None:
     populations[0].set(tau_syn_I=4)
 
     # define the projections
-    p.Projection(pop_src1, populations[0], p.OneToOneConnector(),
-                 p.StaticSynapse(weight=1, delay=1), receptor_type="excitatory")
-    p.Projection(pop_src1, populations[0], p.OneToOneConnector(),
-                 p.StaticSynapse(weight=1, delay=10),  receptor_type="inhibitory")
+    p.Projection(
+        pop_src1, populations[0], p.OneToOneConnector(),
+        p.StaticSynapse(weight=1, delay=1), receptor_type="excitatory")
+    p.Projection(
+        pop_src1, populations[0], p.OneToOneConnector(),
+        p.StaticSynapse(weight=1, delay=10),  receptor_type="inhibitory")
 
     populations[0].record("all")
     p.run(runtime)
