@@ -96,8 +96,15 @@ class TestScripts(ScriptChecker):
     def test_examples_external_devices_examples_pushbot_spinnaker_link_example(self):
         self.check_script("examples/external_devices_examples/pushbot_spinnaker_link_example.py")
 
-    def test_examples_if_curr_alpha(self):
-        self.check_script("examples/if_curr_alpha.py")
+    def test_examples_if_curr_alpha_combined(self):
+        from examples.if_curr_alpha import run_script
+        run_script(split=False)
+        self.check_binaries_used(["IF_curr_alpha.aplx"])
+
+    def test_examples_if_curr_alpha_split(self):
+        from examples.if_curr_alpha import run_script
+        run_script(split=True)
+        self.check_binaries_used(["IF_curr_alpha_neuron.aplx", "synapses.aplx"])
 
     def test_examples_stdp_example_izk(self):
         self.check_script("examples/stdp_example_izk.py")
@@ -150,19 +157,6 @@ class TestScripts(ScriptChecker):
     def test_examples_extra_models_examples_LGN_Izhikevich(self):
         self.check_script("examples/extra_models_examples/LGN_Izhikevich.py")
 
-    def test_examples_extra_models_examples_vogel_2011_vogels_2011_live_combined(self):
-        from examples.extra_models_examples.vogel_2011.vogels_2011_live import run_script
-        run_script(split=False)
-        self.check_binaries_used(["IF_curr_exp_stdp_mad_vogels_2011_additive"])
-
-    def test_examples_extra_models_examples_vogel_2011_vogels_2011_live_split(self):
-        from examples.extra_models_examples.vogel_2011.vogels_2011_live import run_script
-        run_script(split=True)
-        self.check_binaries_used(["synapses_stdp_mad_vogels_2011_additive"])
-
-    # Not testing file due to: Unhandled main
-    # examples/extra_models_examples/vogel_2011/vogels_2011.py
-
     def test_examples_extra_models_examples_stdp_associative_memory(self):
         self.check_script("examples/extra_models_examples/stdp_associative_memory.py")
 
@@ -195,6 +189,26 @@ class TestScripts(ScriptChecker):
 
     def test_examples_extra_models_examples_IF_curr_delta(self):
         self.check_script("examples/extra_models_examples/IF_curr_delta.py")
+
+    def test_examples_extra_models_examples_vogels_2011_live_combined(self):
+        from examples.extra_models_examples.vogels_2011_live import run_script
+        run_script(split=False)
+        self.check_binaries_used(["IF_curr_exp_stdp_mad_vogels_2011_additive"])
+
+    def test_examples_extra_models_examples_vogels_2011_live_split(self):
+        from examples.extra_models_examples.vogels_2011_live import run_script
+        run_script(split=True)
+        self.check_binaries_used(["synapses_stdp_mad_vogels_2011_additive"])
+
+    def test_examples_extra_models_examples_vogels_2011_combined(self):
+        from examples.extra_models_examples.vogels_2011 import run_script
+        run_script(split=False)
+        self.check_binaries_used(["IF_curr_exp_stdp_mad_vogels_2011_additive.aplx"])
+
+    def test_examples_extra_models_examples_vogels_2011_split(self):
+        from examples.extra_models_examples.vogels_2011 import run_script
+        run_script(split=True)
+        self.check_binaries_used(["IF_curr_exp_neuron.aplx", "synapses_stdp_mad_vogels_2011_additive.aplx"])
 
     def test_examples_extra_models_examples_stdp_example_izk_cond(self):
         self.check_script("examples/extra_models_examples/stdp_example_izk_cond.py")

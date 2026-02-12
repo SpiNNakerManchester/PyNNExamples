@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
+from typing import Optional
 import pyNN.spiNNaker as sim
 import numpy
 import matplotlib.pyplot as pylab
@@ -40,6 +41,12 @@ class Vogels2011(object):
     https://www.opensourcebrain.org/projects/vogelsetal2011/wiki
     To reproduce the experiment from their paper
     """
+
+    def __init__(self, split: bool = False):
+        if split:
+            self._n_synapse_cores: Optional[int] = 1
+        else:
+            self._n_synapse_cores = None
 
     # Population parameters
     MODEL = sim.IF_curr_exp
@@ -119,7 +126,8 @@ class Vogels2011(object):
         # Create excitatory and inhibitory populations of neurons
         ex_pop = sim.Population(
             self.NUM_EXCITATORY, self.MODEL(**self.CELL_PARAMETERS),
-            label="excit_pop", seed=rng_seed)
+            label="excit_pop", seed=rng_seed,
+            n_synapse_cores=self._n_synapse_cores)
         in_pop = sim.Population(
             self.NUM_INHIBITORY, self.MODEL(**self.CELL_PARAMETERS),
             label="inhib_pop", seed=rng_seed)
@@ -343,9 +351,24 @@ class Vogels2011(object):
         # Show figures
         pylab.show()
 
+def run_script(*, split: bool = False) -> None:
+    """
+    Runs the example script
 
-x = Vogels2011()
-result_weights, static, plastic = x.run(
-    SLOWDOWN_STATIC, SLOWDOWN_PLASTIC, EXTRACT_WEIGHTS)
-if GENERATE_PLOT:
-    x.plot(result_weights, static, plastic)
+    :param split: If True will split the Populations that receive data
+        into synapse and neuron cores.
+        This requires more cores but allows more spikes to be received.
+    """
+    x = Vogels2011(split)
+    result_weights, static, plastic = x.run(
+        SLOWDOWN_STATIC, SLOWDOWN_PLASTIC, EXTRACT_WEIGHTS)
+    if GENERATE_PLOT:
+        x.plot(result_weights, static, plastic)
+
+# combined binaries [IF_curr_exp_stdp_mad_vogels_2011_additive.aplx]
+# split binaries [IF_curr_exp_neuron.aplx,
+# synapses_stdp_mad_vogels_2011_additive.aplx]
+
+
+if __name__ == "__main__":
+    run_script(split=True)
