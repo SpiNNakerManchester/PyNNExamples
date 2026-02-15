@@ -27,6 +27,9 @@ running = True
 
 class CSVLine():
     def __init__(self, line):
+        """
+        :param line: A single line as read from the file
+        """
         if len(line) == 0:
             raise EOFError
         parts = [int(part.strip()) for part in line.split(",")]
