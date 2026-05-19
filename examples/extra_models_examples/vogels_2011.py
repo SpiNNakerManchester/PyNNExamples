@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
-from pyNN.random import NumpyRNG
+from typing import Optional
 import pyNN.spiNNaker as sim
 import numpy
 import matplotlib.pyplot as pylab
@@ -26,8 +26,8 @@ SLOWDOWN_STATIC = 10
 SLOWDOWN_PLASTIC = 10
 
 # bool hard code for extracting the weights or not
-EXTRACT_WEIGHTS = False
-GENERATE_PLOT = False
+EXTRACT_WEIGHTS = True
+GENERATE_PLOT = True
 
 # how many boards to use for this test
 N_BOARDS = 1
@@ -41,6 +41,12 @@ class Vogels2011(object):
     https://www.opensourcebrain.org/projects/vogelsetal2011/wiki
     To reproduce the experiment from their paper
     """
+
+    def __init__(self, split: bool = False):
+        if split:
+            self._n_synapse_cores: Optional[int] = 1
+        else:
+            self._n_synapse_cores = None
 
     # Population parameters
     MODEL = sim.IF_curr_exp
@@ -115,39 +121,37 @@ class Vogels2011(object):
         sim.set_number_of_neurons_per_core(
             sim.IF_curr_exp, self.N_NEURONS_PER_CORE)
 
-        rng = NumpyRNG(59)
+        rng_seed = 59
 
         # Create excitatory and inhibitory populations of neurons
         ex_pop = sim.Population(
             self.NUM_EXCITATORY, self.MODEL(**self.CELL_PARAMETERS),
-            label="excit_pop")
+            label="excit_pop", seed=rng_seed,
+            n_synapse_cores=self._n_synapse_cores)
         in_pop = sim.Population(
             self.NUM_INHIBITORY, self.MODEL(**self.CELL_PARAMETERS),
-            label="inhib_pop")
+            label="inhib_pop", seed=rng_seed)
 
         # Record excitatory spikes
         ex_pop.record(['spikes'])
         in_pop.record(['spikes'])
 
-        # create seeder
-        # rng_seeder = NumpyRNG(seed=self.RANDOM_NUMBER_GENERATOR_SEED)
-
         # Make excitatory->inhibitory projections
         proj1 = sim.Projection(
             ex_pop, in_pop,
-            sim.FixedProbabilityConnector(0.02, rng=rng),
+            sim.FixedProbabilityConnector(0.02),
             receptor_type='excitatory',
             synapse_type=sim.StaticSynapse(weight=0.029))
         proj2 = sim.Projection(
             ex_pop, ex_pop,
-            sim.FixedProbabilityConnector(0.02, rng=rng),
+            sim.FixedProbabilityConnector(0.02),
             receptor_type='excitatory',
             synapse_type=sim.StaticSynapse(weight=0.029))
 
         # Make inhibitory->inhibitory projections
         proj3 = sim.Projection(
             in_pop, in_pop,
-            sim.FixedProbabilityConnector(0.02, rng=rng),
+            sim.FixedProbabilityConnector(0.02),
             receptor_type='inhibitory',
             synapse_type=sim.StaticSynapse(weight=-0.29))
 
@@ -163,7 +167,7 @@ class Vogels2011(object):
         # Make inhibitory->excitatory projection
         ie_projection = sim.Projection(
             in_pop, ex_pop,
-            sim.FixedProbabilityConnector(0.02, rng=rng),
+            sim.FixedProbabilityConnector(0.02),
             receptor_type='inhibitory', synapse_type=stdp_model)
 
         # return the excitatory population and the inhibitory->excitatory
@@ -348,9 +352,24 @@ class Vogels2011(object):
         pylab.show()
 
 
-if __name__ == "__main__":
-    x = Vogels2011()
+def run_script(*, split: bool = False) -> None:
+    """
+    Runs the example script
+
+    :param split: If True will split the Populations that receive data
+        into synapse and neuron cores.
+        This requires more cores but allows more spikes to be received.
+    """
+    x = Vogels2011(split)
     result_weights, static, plastic = x.run(
         SLOWDOWN_STATIC, SLOWDOWN_PLASTIC, EXTRACT_WEIGHTS)
     if GENERATE_PLOT:
         x.plot(result_weights, static, plastic)
+
+# combined binaries [IF_curr_exp_stdp_mad_vogels_2011_additive.aplx]
+# split binaries [IF_curr_exp_neuron.aplx,
+# synapses_stdp_mad_vogels_2011_additive.aplx]
+
+
+if __name__ == "__main__":
+    run_script(split=True)

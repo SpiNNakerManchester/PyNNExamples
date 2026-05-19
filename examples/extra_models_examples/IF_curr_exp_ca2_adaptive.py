@@ -25,91 +25,111 @@ import numpy
 import matplotlib.pyplot as pylab
 import pyNN.spiNNaker as sim
 
-# Timestep (ms)
-# **NOTE** the 2.5Khz input frequency is not going to work particularly well
-# at 1ms
-dt = 0.1
 
-# Number of neurons - used to gather enough ISIs to get a smooth estimate
-N = 300
+def run_script(*, split: bool = False) -> None:
+    """
+    Runs the example script
 
-# Time (ms) to simulate for
-T = 250
+    :param split: If True will split the Populations that receive data
+        into synapse and neuron cores.
+        This requires more cores but allows more spikes to be received.
+    """
+    # Timestep (ms)
+    # **NOTE**
+    # the 2.5Khz input frequency is not going to work particularly well at 1ms
+    dt = 0.1
 
-# Setup simulator
-sim.setup(timestep=dt, min_delay=1.0)
+    # Number of neurons - used to gather enough ISIs to get a smooth estimate
+    N = 300
 
-# Create population of neurons
-cell = sim.Population(N, sim.extra_models.IFCurrExpCa2Adaptive(**{
-    "tau_m": 20.0, "cm": 0.5,
-    "v_rest": -70.0,
-    "v_reset": -60.0,
-    "v_thresh": -54.0,
-    "i_alpha": 0.1,
-    "tau_ca2": 50.0}))
+    # Time (ms) to simulate for
+    T = 250
 
-# Create poisson spike source
-spike_source = sim.Population(N, sim.SpikeSourcePoisson(rate=2500.0))
+    # Setup simulator
+    sim.setup(timestep=dt, min_delay=1.0)
 
-sim.Projection(spike_source, cell,
-               sim.OneToOneConnector(),
-               sim.StaticSynapse(weight=0.1, delay=0.1),
-               receptor_type="excitatory")
+    if split:
+        sim.extra_models.IFCurrExpCa2Adaptive.set_model_n_synapse_cores(1)
 
-cell.record('spikes')
-# cell.record_gsyn()
+    # Create population of neurons
+    cell = sim.Population(N, sim.extra_models.IFCurrExpCa2Adaptive(**{
+        "tau_m": 20.0, "cm": 0.5,
+        "v_rest": -70.0,
+        "v_reset": -60.0,
+        "v_thresh": -54.0,
+        "i_alpha": 0.1,
+        "tau_ca2": 50.0}))
 
-sim.run(T)
+    # Create poisson spike source
+    spike_source = sim.Population(N, sim.SpikeSourcePoisson(rate=2500.0))
 
-spike_times = cell.spinnaker_get_data('spikes')
-# ca2 = cell.get_gsyn(compatible_output=True)
+    sim.Projection(spike_source, cell,
+                   sim.OneToOneConnector(),
+                   sim.StaticSynapse(weight=0.1, delay=0.1),
+                   receptor_type="excitatory")
 
-# Split into list of spike times for each neuron
-neuron_spikes = [spike_times[spike_times[:, 0] == n, 1] for n in range(N)]
+    cell.record('spikes')
+    # cell.record_gsyn()
 
-# Calculate interspike intervals
-# and pair these with bin index of last spike time in pair
-# **NOTE** using first spike time in pair leads to a dip at the
-# end as the end of long pairs goes off the end of the simulation
-binned_isis = numpy.hstack([
-    numpy.vstack(
-        (t[1:] - t[:-1],
-         numpy.digitize(t[1:], numpy.arange(T)) - 1))
-    for t in neuron_spikes])
+    sim.run(T)
 
-# Split interspike intervals into separate array for each time bin
-time_binned_isis = [binned_isis[0, binned_isis[1] == t] for t in range(T)]
+    spike_times = cell.spinnaker_get_data('spikes')
+    # ca2 = cell.get_gsyn(compatible_output=True)
 
-# Create a dictionary of non-empty time bins to mean interspike interval
-mean_isis = {t: numpy.average(i)
-             for (t, i) in enumerate(time_binned_isis) if len(i) > 0}
+    # Split into list of spike times for each neuron
+    neuron_spikes = [spike_times[spike_times[:, 0] == n, 1] for n in range(N)]
 
-# Calculate the coefficient of variance for each time bin
-isi_cv = {t: math.sqrt(
-    numpy.sum(numpy.power(time_binned_isis[t] - mean_isi, 2)) /
-    float(len(time_binned_isis[t]))) / mean_isi
-    for (t, mean_isi) in mean_isis.items()}
+    # Calculate interspike intervals
+    # and pair these with bin index of last spike time in pair
+    # **NOTE** using first spike time in pair leads to a dip at the
+    # end as the end of long pairs goes off the end of the simulation
+    binned_isis = numpy.hstack([
+        numpy.vstack(
+            (t[1:] - t[:-1],
+             numpy.digitize(t[1:], numpy.arange(T)) - 1))
+        for t in neuron_spikes])
 
-# Take average CA2 level across all neurons
-# average_ca2 = numpy.average(numpy.reshape(ca2[:,2], (N, int(T / dt))),
-#                             axis=0)
+    # Split interspike intervals into separate array for each time bin
+    time_binned_isis = [binned_isis[0, binned_isis[1] == t] for t in range(T)]
 
-# Plot
-fig, axes = pylab.subplots(2, sharex=True)
+    # Create a dictionary of non-empty time bins to mean interspike interval
+    mean_isis = {t: numpy.average(i)
+                 for (t, i) in enumerate(time_binned_isis) if len(i) > 0}
 
-axes[0].scatter(mean_isis.keys(),
-                [1000.0 / i for i in mean_isis.values()], s=2)
-axes[0].set_ylabel("Firing rate/Hz")
+    # Calculate the coefficient of variance for each time bin
+    isi_cv = {t: math.sqrt(
+        numpy.sum(numpy.power(time_binned_isis[t] - mean_isi, 2)) /
+        float(len(time_binned_isis[t]))) / mean_isi
+        for (t, mean_isi) in mean_isis.items()}
 
-# axes[1].scatter(numpy.arange(0.0, T, dt), average_ca2, s=2)
-# axes[1].set_ylabel("CA2/mA")
-# axes[1].set_ylim((0.0, numpy.amax(average_ca2) * 1.25))
+    # Take average CA2 level across all neurons
+    # average_ca2 = numpy.average(numpy.reshape(ca2[:,2], (N, int(T / dt))),
+    #                             axis=0)
 
-axes[1].scatter(isi_cv.keys(), isi_cv.values(), s=2)
-axes[1].set_ylabel("Coefficient of ISI variance")
+    # Plot
+    _, axes = pylab.subplots(2, sharex=True)
 
-axes[1].set_xlim((0.0, T))
-axes[1].set_xlabel("Time/ms")
+    axes[0].scatter(mean_isis.keys(),
+                    [1000.0 / i for i in mean_isis.values()], s=2)
+    axes[0].set_ylabel("Firing rate/Hz")
 
-sim.end()
-pylab.show()
+    # axes[1].scatter(numpy.arange(0.0, T, dt), average_ca2, s=2)
+    # axes[1].set_ylabel("CA2/mA")
+    # axes[1].set_ylim((0.0, numpy.amax(average_ca2) * 1.25))
+
+    axes[1].scatter(isi_cv.keys(), isi_cv.values(), s=2)
+    axes[1].set_ylabel("Coefficient of ISI variance")
+
+    axes[1].set_xlim((0.0, T))
+    axes[1].set_xlabel("Time/ms")
+
+    sim.end()
+    pylab.show()
+
+
+# combined binaries [IF_curr_exp_ca2_adaptive.aplx]
+# split binaries [IF_curr_exp_ca2_adaptive_neuron.aplx]
+
+
+if __name__ == "__main__":
+    run_script()
