@@ -52,7 +52,7 @@ from spinnman.messages.spinnaker_boot import SpinnakerBootMessages
 from spinn_utilities.overrides import overrides
 
 from spinnman.config_setup import unittest_setup
-from spinnman.spalloc import SpallocClient, SpallocState
+from spinnman.spalloc import SpallocClient
 from spinn_utilities.config_holder import set_config
 
 from spinn_machine.machine import Machine
