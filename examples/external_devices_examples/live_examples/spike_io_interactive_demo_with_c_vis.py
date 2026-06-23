@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import multiprocessing
-import tkinter as tk
+#import tkinter as tk
 import pyNN.spiNNaker as Frontend
 from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
@@ -242,6 +242,11 @@ class GUI(object):
     """
 
     def __init__(self, n_neurons, ready, port):
+        """
+        :param n_neurons: Number of neurons to show
+        :param ready: multiprocessing.Event
+        :param port: multiprocessing.Value
+        """
         self._n_neurons = n_neurons
 
         # Set up the live connection for sending and receiving spikes
