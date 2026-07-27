@@ -69,7 +69,7 @@ def send_spikes(width, height, min_x, min_y, run_time, label, connection):
     start_time = None
     max_x = min_x + width
     max_y = min_y + height
-    y_shift = get_n_bits(width)
+    y_shift = get_n_bits(width)  #noqa 841
     with open("spikes.csv") as f:
         first_time = -1
         line = read_csv_line(f)
@@ -85,9 +85,9 @@ def send_spikes(width, height, min_x, min_y, run_time, label, connection):
             line = next_line
 
             filtered_lines = [
-                l for l in same_time_lines
-                if (l.x >= min_x and l.x < max_x and l.y >= min_y and
-                    l.y < max_y)]
+                line for line in same_time_lines
+                if (line.x >= min_x and line.x < max_x and line.y >= min_y and
+                    line.y < max_y)]
 
             if not filtered_lines:
                 continue
