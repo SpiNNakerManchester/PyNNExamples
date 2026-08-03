@@ -39,10 +39,9 @@ chain_pops = [
 for pop in chain_pops:
     pop.record("spikes")
 
-connector = sim.FixedNumberPreConnector(10)
 for i in range(n_populations):
     sim.Projection(chain_pops[i], chain_pops[(i + 1) % n_populations],
-                   connector,
+                   sim.FixedNumberPreConnector(10),
                    synapse_type=sim.StaticSynapse(weight=weights,
                                                   delay=delays))
 
