@@ -38,3 +38,4 @@ jobs:
       # Examples are not typed to keep them easier to read
       mypy-packages:
       run-sphinx: false
+      ruff-packages: examples balanced_random learning sudoku synfire
