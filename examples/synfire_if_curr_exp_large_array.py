@@ -15,9 +15,9 @@
 """
 Synfirechain-like example
 """
+import matplotlib.pyplot as plt
 import pyNN.spiNNaker as p
 from pyNN.utility.plotting import Figure, Panel
-import matplotlib.pyplot as plt
 
 run_time = 6000
 p.setup(timestep=1.0, min_delay=1.00)

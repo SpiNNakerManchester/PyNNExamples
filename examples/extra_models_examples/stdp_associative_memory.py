@@ -16,9 +16,10 @@
 Simple Associative Memory
 """
 import matplotlib.pyplot as plt
-from pyNN.random import NumpyRNG, RandomDistribution
 import pyNN.spiNNaker as p
+from pyNN.random import NumpyRNG, RandomDistribution
 from pyNN.utility.plotting import Figure, Panel
+
 # pylint: disable=wrong-spelling-in-comment
 
 p.setup(timestep=1.0, min_delay=1.0)

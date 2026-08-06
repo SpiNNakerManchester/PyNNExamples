@@ -13,11 +13,11 @@
 # limitations under the License.
 
 # Standard PyNN imports
+import matplotlib.pyplot as plt
 import pyNN.spiNNaker as p
 
 # pynn plotting stuff
 from pyNN.utility.plotting import Figure, Panel
-import matplotlib.pyplot as plt
 
 # Define a synfire chain as usual
 p.setup(timestep=1.0, min_delay=1.0)

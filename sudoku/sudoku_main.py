@@ -18,16 +18,19 @@
 # Steve Furber, November 2015
 #
 #############################################################
-import subprocess
 import os
+import re
+import subprocess
 import sys
 import traceback
-import re
 from threading import Thread
-from pyNN.random import RandomDistribution
+
 import pyNN.spiNNaker as p
+from pyNN.random import RandomDistribution
+
 import spynnaker.pyNN.external_devices as ext
-from sudoku.utils import puzzles, get_rates
+
+from sudoku.utils import get_rates, puzzles
 
 run_time = 20000                        # run time in milliseconds
 neurons_per_digit = 5                   # number of neurons per digit

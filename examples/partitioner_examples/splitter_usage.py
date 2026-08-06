@@ -11,14 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import matplotlib.pyplot as plt
 import pyNN.spiNNaker as p
 from pyNN.utility.plotting import Figure, Panel
-import matplotlib.pyplot as plt
+
+from pacman.model.partitioner_splitters import SplitterFixedLegacy
 from pacman.model.partitioner_splitters import (
     SplitterOneToOneLegacy as OneToOneSplitter,
-    SplitterFixedLegacy)
+)
+
 from spynnaker.pyNN.extra_algorithms.splitter_components import (
-    SplitterPopulationVertexFixed)
+    SplitterPopulationVertexFixed,
+)
 
 runtime = 1000
 n_neurons = 100  # number of neurons in each population

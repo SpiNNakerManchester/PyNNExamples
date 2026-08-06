@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import matplotlib.pyplot as pylab
-
 import pyNN.spiNNaker as sim
 
 # pylint: disable=wrong-spelling-in-comment

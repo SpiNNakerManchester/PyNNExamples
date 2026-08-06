@@ -15,9 +15,9 @@
 """
 Synfirechain-like example
 """
+import matplotlib.pyplot as plt
 import pyNN.spiNNaker as p
 from pyNN.utility.plotting import Figure, Panel
-import matplotlib.pyplot as plt
 
 
 def run_script(*, split: bool = False) -> None:

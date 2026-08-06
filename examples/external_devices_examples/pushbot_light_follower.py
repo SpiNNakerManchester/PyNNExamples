@@ -18,7 +18,6 @@
 import numpy
 import pyNN.spiNNaker as p
 
-
 ###########################################
 #  Connection and simulation specifications
 ###########################################

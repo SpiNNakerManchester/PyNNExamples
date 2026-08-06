@@ -15,9 +15,10 @@
 import random
 import time
 from threading import Condition
+
+import matplotlib.pyplot as plt
 import pyNN.spiNNaker as Frontend
 from pyNN.utility.plotting import Figure, Panel
-import matplotlib.pyplot as plt
 
 ###################################
 # Setup for Live Input and Output #

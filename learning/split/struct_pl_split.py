@@ -14,8 +14,8 @@
 
 import matplotlib.pyplot as plt
 import numpy
-import pyNN.utility.plotting as plot
 import pyNN.spiNNaker as sim
+import pyNN.utility.plotting as plot
 
 n_neurons = 64
 simtime = 5000

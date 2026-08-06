@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pylab
 import numpy
+import pylab
+import pyNN.spiNNaker as p
 from pyNN.random import RandomDistribution
 from pyNN.utility.plotting import Figure, Panel
-import pyNN.spiNNaker as p
 
 p.setup(timestep=0.1)
 p.set_number_of_neurons_per_core(p.IF_curr_exp, 64)

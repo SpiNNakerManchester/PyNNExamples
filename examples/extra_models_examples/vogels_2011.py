@@ -13,9 +13,11 @@
 # limitations under the License.
 import os
 from typing import Optional
-import pyNN.spiNNaker as sim
-import numpy
+
 import matplotlib.pyplot as pylab
+import numpy
+import pyNN.spiNNaker as sim
+
 from spynnaker.pyNN.utilities import neo_convertor
 
 # how much slowdown to put into the network to allow it to run without any

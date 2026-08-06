@@ -12,12 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import functools
+import sys
 import tkinter as tk
 import tkinter.font as tkFont
-import sys
-import functools
+
 import pyNN.spiNNaker as p
-from sudoku.utils import puzzles, get_rates
+
+from sudoku.utils import get_rates, puzzles
 
 
 class GUI(object):
