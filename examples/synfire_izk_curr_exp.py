@@ -35,13 +35,13 @@ cell_params_izk = {'a': 0.02,
                    'i_offset': 0
                    }
 
-populations = list()
-projections = list()
+populations = []
+projections = []
 
 weight_to_spike = 30
 delay = 1
 
-loopConnections = list()
+loopConnections = []
 for i in range(0, nNeurons):
     singleConnection = ((i, (i + 1) % nNeurons, weight_to_spike, delay))
     loopConnections.append(singleConnection)

@@ -173,8 +173,8 @@ class PyNNScript(object):
         # neuron
         # NOTE: there is no recurrent connection so that each chain stops once
         # it reaches the end
-        loop_forward = list()
-        loop_backward = list()
+        loop_forward = []
+        loop_backward = []
         for i in range(0, self.n_neurons - 1):
             loop_forward.append((i, (i + 1) %
                                  self.n_neurons, weight_to_spike, 3))

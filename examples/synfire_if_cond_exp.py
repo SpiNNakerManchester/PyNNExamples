@@ -40,7 +40,7 @@ cell_params_lif = {'cm': 0.25,
 weight_to_spike = 0.035
 delay = 17
 
-loopConnections = list()
+loopConnections = []
 for i in range(0, nNeurons):
     singleConnection = ((i, (i + 1) % nNeurons, weight_to_spike, delay))
     loopConnections.append(singleConnection)
