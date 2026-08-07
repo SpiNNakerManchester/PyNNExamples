@@ -49,9 +49,9 @@ Authors : Catherine Wacongne < catherine.waco@gmail.com >
 April 2013
 """
 
+import matplotlib.pyplot as plt
 import pyNN.spiNNaker as sim
 from pyNN.utility.plotting import Figure, Panel
-import matplotlib.pyplot as plt
 
 # SpiNNaker setup
 sim.setup(timestep=0.1, min_delay=1.0)

@@ -28,10 +28,10 @@ September 2006
 $Id$
 """
 
+import matplotlib.pyplot as plt
 import pylab
 import pyNN.spiNNaker as sim
 from pyNN.utility.plotting import Figure, Panel
-import matplotlib.pyplot as plt
 
 
 def run_script(*, split: bool = False) -> None:

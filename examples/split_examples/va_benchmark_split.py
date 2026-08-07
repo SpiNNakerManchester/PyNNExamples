@@ -27,12 +27,12 @@ Andrew Davison, UNIC, CNRS
 August 2006
 """
 import socket
+
+import matplotlib.pyplot as plt
 import pyNN.spiNNaker as p
 from pyNN.random import RandomDistribution
 from pyNN.utility import Timer
 from pyNN.utility.plotting import Figure, Panel
-import matplotlib.pyplot as plt
-
 
 simulator_name = 'spiNNaker'
 benchmark = 'CUBA'

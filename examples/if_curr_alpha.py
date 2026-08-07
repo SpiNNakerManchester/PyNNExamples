@@ -11,9 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import matplotlib.pyplot as plt
 import pyNN.spiNNaker as p
 import pyNN.utility.plotting as plot
-import matplotlib.pyplot as plt
 
 
 def run_script(*, split: bool = True) -> None:

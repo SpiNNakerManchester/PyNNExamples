@@ -15,9 +15,9 @@
 # A simple script that compares the spikes from two inputs to determine if
 # one spiked just before or after the other.
 
+import matplotlib.pyplot as plt
 import pyNN.spiNNaker as sim
 import pyNN.utility.plotting as plot
-import matplotlib.pyplot as plt
 
 sim.setup(timestep=1.0)
 

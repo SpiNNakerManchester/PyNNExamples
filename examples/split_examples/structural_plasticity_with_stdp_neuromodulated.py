@@ -31,9 +31,9 @@ This uses the split neuron-synapse modelling as otherwise the neuromodulated
 STDP, structural plasticity and neuron instructions would not fit on one core
 """
 
-import pyNN.spiNNaker as sim
-import pylab
 import numpy as np
+import pylab
+import pyNN.spiNNaker as sim
 
 timestep = 1.0
 stim_rate = 50

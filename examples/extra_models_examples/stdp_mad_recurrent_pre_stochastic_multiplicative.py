@@ -18,6 +18,7 @@ stdp_mad_recurrent_pre_stochastic_multiplicative
 import matplotlib.pyplot as plt
 import pyNN.spiNNaker as p
 from pyNN.utility.plotting import Figure, Panel
+
 # pylint: disable=wrong-spelling-in-comment
 
 p.setup(timestep=1.0, min_delay=1.0)

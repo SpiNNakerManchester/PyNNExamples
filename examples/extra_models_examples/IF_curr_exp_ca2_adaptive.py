@@ -21,8 +21,9 @@
 # doi:10.1023/A:1008916026143
 # -----------------------------------------------------------------------------
 import math
-import numpy
+
 import matplotlib.pyplot as pylab
+import numpy
 import pyNN.spiNNaker as sim
 
 

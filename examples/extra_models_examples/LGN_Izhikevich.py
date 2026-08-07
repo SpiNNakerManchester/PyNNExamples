@@ -41,13 +41,14 @@ https://journal.frontiersin.org/article/10.3389/fnins.2017.00454/abstract
 """
 
 import math
-import pyNN.spiNNaker as p
+
+import matplotlib.pyplot as plt
 import numpy as np
-from pyNN.random import RandomDistribution, NumpyRNG
+import pyNN.spiNNaker as p
+from pyNN.random import NumpyRNG, RandomDistribution
 
 # for plotting
 from pyNN.utility.plotting import Figure, Panel
-import matplotlib.pyplot as plt
 
 # pylint: disable=pointless-string-statement,disable=wrong-spelling-in-comment
 

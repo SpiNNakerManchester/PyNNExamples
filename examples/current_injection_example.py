@@ -29,9 +29,9 @@ https://neuralensemble.org/docs/PyNN/examples/current_injection.html
 
 """
 
+import matplotlib.pyplot as plt
 import pyNN.spiNNaker as sim
 from pyNN.utility.plotting import Figure, Panel
-import matplotlib.pyplot as plt
 from quantities import mV
 
 sim.setup(timestep=1.0)

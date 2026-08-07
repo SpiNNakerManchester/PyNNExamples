@@ -26,8 +26,8 @@ neurons which causes an inverse effect to reduce response of
 post-synaptic neurons to the same stimuli.
 """
 
-import pyNN.spiNNaker as sim
 import pylab
+import pyNN.spiNNaker as sim
 
 timestep = 1.0
 stim_rate = 50

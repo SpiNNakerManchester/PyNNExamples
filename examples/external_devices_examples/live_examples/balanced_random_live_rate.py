@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import time
+
 import numpy
 import pylab
 import pyNN.spiNNaker as p

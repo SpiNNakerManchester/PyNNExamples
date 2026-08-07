@@ -17,8 +17,8 @@ A population of integrate-and-firing neurons with different input firing rates
 (example used in the HBP Neuromorphic Computing Guidebook)
 """
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import pyNN.spiNNaker as sim
 
 sim.setup(timestep=1.0, min_delay=1.0)

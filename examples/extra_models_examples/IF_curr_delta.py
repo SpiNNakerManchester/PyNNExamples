@@ -17,9 +17,9 @@ A single LIF neuron with two exponential, current-based synapses,
 and two delta, current-based synapses, fed by two spike sources.
 """
 
+import matplotlib.pyplot as plt
 import pyNN.spiNNaker as sim
 from pyNN.utility.plotting import Figure, Panel
-import matplotlib.pyplot as plt
 
 sim.setup(timestep=0.1, min_delay=0.1)
 

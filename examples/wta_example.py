@@ -24,9 +24,9 @@
 
 # The output graph shows the difference in the outputs of the two populations.
 
-import pyNN.spiNNaker as sim
 import matplotlib.pyplot as plt
 import numpy
+import pyNN.spiNNaker as sim
 
 sim.setup(1.0)
 

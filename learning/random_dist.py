@@ -13,9 +13,9 @@
 # limitations under the License.
 
 import matplotlib.pyplot as plt
-from pyNN.random import RandomDistribution
-import pyNN.utility.plotting as plot
 import pyNN.spiNNaker as sim
+import pyNN.utility.plotting as plot
+from pyNN.random import RandomDistribution
 
 n_neurons = 1000
 n_exc = int(round(n_neurons * 0.8))

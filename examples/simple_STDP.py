@@ -29,11 +29,12 @@ the weights involved are too low to be resolved using fixed-point arithmetic,
 so some alteration of parameters is necessary to get a similar effect.
 """
 
+import matplotlib.pyplot as plt
 import numpy
 import pyNN.spiNNaker as sim
+
 # from quantities import ms
-from pyNN.utility.plotting import Figure, Panel, DataTable
-import matplotlib.pyplot as plt
+from pyNN.utility.plotting import DataTable, Figure, Panel
 
 # === Parameters ============================================================
 

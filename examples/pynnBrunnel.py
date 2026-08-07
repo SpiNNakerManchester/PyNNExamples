@@ -12,9 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pyNN.spiNNaker as pynn
-
 import matplotlib.pyplot as plt
+import pyNN.spiNNaker as pynn
 from pyNN.random import RandomDistribution
 from pyNN.utility.plotting import Figure, Panel
 

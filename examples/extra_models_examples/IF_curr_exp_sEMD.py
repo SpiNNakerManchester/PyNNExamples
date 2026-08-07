@@ -19,8 +19,8 @@ See https://www.cit-ec.de/en/nbs/spiking-insect-vision for more details
 """
 
 # imports
-import pyNN.spiNNaker as p
 import matplotlib.pyplot as plt
+import pyNN.spiNNaker as p
 from pyNN.utility.plotting import Figure, Panel
 
 
