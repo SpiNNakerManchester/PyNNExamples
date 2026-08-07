@@ -54,8 +54,8 @@ cell_params_lif = {
     'v_rest': -70.0,
     'v_thresh': -50.0}
 
-populations = list()
-projections = list()
+populations = []
+projections = []
 
 stimulus = 0
 inhib = 1
@@ -85,8 +85,8 @@ p_inh2exc = 0.17
 p_to_inhib_connect = 1.0
 p_from_inhib_connect = 1.0
 
-spikes0 = list()
-teachingSpikes = list()
+spikes0 = []
+teachingSpikes = []
 for i in range(runTime//40):
     spikes0.append(i*40)
 for i in range(runTime//80):
@@ -106,7 +106,7 @@ for i in range(nSourceNeurons):
     arrayEntries.append(newEntry)
 spikeArray = {'spike_times': arrayEntries}
 
-teachlist = list()
+teachlist = []
 for i in range(nSourceNeurons):
     teachlist.append(teachingSpikes)
 teachingSpikeArray = {'spike_times': teachlist}

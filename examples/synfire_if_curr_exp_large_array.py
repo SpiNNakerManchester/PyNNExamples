@@ -39,8 +39,8 @@ delay = 2
 second_spike_start = delay * nNeurons
 space_between_inputs = delay * nNeurons * 2
 
-connections = list()
-reverseConnections = list()
+connections = []
+reverseConnections = []
 for i in range(0, nNeurons - 1):
     connections.append((i, (i + 1) % nNeurons, weight_to_spike, delay))
     reverseConnections.append(((i + 1) % nNeurons, i, weight_to_spike, delay))

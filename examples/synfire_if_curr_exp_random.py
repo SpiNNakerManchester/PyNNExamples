@@ -40,7 +40,7 @@ cell_params_lif = {'cm': 0.25,
 weight_to_spike = 2.0
 delay = RandomDistribution("uniform", low=1, high=max_delay)
 
-loopConnections = list()
+loopConnections = []
 for i in range(0, nNeurons):
     delay_value = delay.next()
     singleConnection = (i, ((i + 1) % nNeurons), weight_to_spike, delay_value)

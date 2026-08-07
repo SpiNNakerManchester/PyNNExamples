@@ -48,13 +48,13 @@ def run_script(*, split: bool = False) -> None:
                        'v_thresh': -50.0
                        }
 
-    populations = list()
-    projections = list()
+    populations = []
+    projections = []
 
     weight_to_spike = 2.0
     delay = 17
 
-    loopConnections = list()
+    loopConnections = []
     for i in range(0, nNeurons):
         singleConnection = ((i, (i + 1) % nNeurons, weight_to_spike, delay))
         loopConnections.append(singleConnection)

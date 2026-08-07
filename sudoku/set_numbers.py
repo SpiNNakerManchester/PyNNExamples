@@ -186,7 +186,7 @@ class GUI(object):
         new_rates = get_rates(
             new_values, self._n_total, self._n_cell, self._n_N,
             int(self._default_rate.get()), int(self._max_rate.get()))
-        updated_rates = list()
+        updated_rates = []
         for i, rate in enumerate(new_rates):
             if rate != self._rates[i]:
                 updated_rates.append((i, rate))

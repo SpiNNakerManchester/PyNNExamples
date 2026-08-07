@@ -193,7 +193,7 @@ p.external_devices.add_poisson_live_rate_control(
 # set up the cell internal inhibitory connections
 #
 print("Setting up cell inhibition...")
-connections = list()
+connections = []
 for x in range(9):
     for y in range(9):
         base = ((y * 9) + x) * n_cell

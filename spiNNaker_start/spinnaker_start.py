@@ -93,7 +93,7 @@ def write_data_to_file(write_file, data_list):
 
 
 def read_data_from_file(read_file):
-    data_list = list()
+    data_list = []
     n_items = struct.unpack("<I", read_file.read(4))[0]
     for _ in range(n_items):
         timestamp = struct.unpack("<f", read_file.read(4))[0]
@@ -162,8 +162,8 @@ class ReadNetinitPhaseProcess(AbstractMultiConnectionProcess):
         self._done = False
         self._index = 0
         self._thread = Thread(target=self._run)
-        self._p2p_active_data = list()
-        self._netinit_phase_data = list()
+        self._p2p_active_data = []
+        self._netinit_phase_data = []
         self._start_time = time.time()
         if load:
             read_file = open_file(
@@ -348,7 +348,7 @@ class ReadBoardProcess(AbstractMultiConnectionProcess):
         self._save = save
         self._load = load
         self._thread = Thread(target=self._read_board)
-        self._data = list()
+        self._data = []
         self._start_time = time.time()
         if load:
             read_file = open_file(
@@ -514,8 +514,8 @@ class MainThread(object):
         self._thread = Thread(
             target=self.run, args=[core_counter, job, save, load])
         self._close_lock = RLock()
-        self._boot_threads = list()
-        self._processes = list()
+        self._boot_threads = []
+        self._processes = []
 
     def start(self):
         self._thread.start()
@@ -530,7 +530,7 @@ class MainThread(object):
                 thread.close()
 
     def run(self, core_counter, job, save, load):
-        job_connections = list()
+        job_connections = []
         for (x, y), ip_address in iteritems(job.get_connections()):
             job_connections.append((x, y, ip_address))
         job_connections.sort(key=operator.itemgetter(0, 1))
@@ -541,7 +541,7 @@ class MainThread(object):
 
             # Get a list of connections to the machine and start a thread for
             # each listening for the boot to be done
-            connections = list()
+            connections = []
             root_connection = None
             boot_connection = None
             with self._close_lock:
@@ -631,7 +631,7 @@ class MainThread(object):
 
 class MockJob(object):
     def __init__(self, width, height):
-        self._boards = list()
+        self._boards = []
         self._height = height
         self._width = width
 

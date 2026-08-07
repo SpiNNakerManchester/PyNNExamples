@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-puzzles = list()
+puzzles = []
 puzzles.append(
     # Diabolical problem:
     [[0, 0, 1,  0, 0, 8,  0, 7, 3],
