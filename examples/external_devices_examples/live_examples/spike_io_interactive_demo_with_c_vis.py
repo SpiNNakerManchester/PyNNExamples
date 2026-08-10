@@ -133,7 +133,7 @@ class PyNNScript(object):
                 label='spike_injector_backward')
         else:
             spike_times = []
-            for _ in range(0, self.n_neurons):
+            for _ in range(self.n_neurons):
                 spike_times.append([])
             spike_times[0] = [0]
             spike_times[20] = [(run_time / 100) * 20]
@@ -142,7 +142,7 @@ class PyNNScript(object):
             spike_times[80] = [(run_time / 100) * 80]
             cell_params_forward = {'spike_times': spike_times}
             spike_times_backwards = []
-            for _ in range(0, self.n_neurons):
+            for _ in range(self.n_neurons):
                 spike_times_backwards.append([])
             spike_times_backwards[0] = [(run_time / 100) * 80]
             spike_times_backwards[20] = [(run_time / 100) * 60]
@@ -175,7 +175,7 @@ class PyNNScript(object):
         # it reaches the end
         loop_forward = []
         loop_backward = []
-        for i in range(0, self.n_neurons - 1):
+        for i in range(self.n_neurons - 1):
             loop_forward.append((i, (i + 1) %
                                  self.n_neurons, weight_to_spike, 3))
             loop_backward.append(((i + 1) %
