@@ -63,7 +63,7 @@ def get_mean_rate(numCells, population):
     """
     firing_rate = []      # format = < neuron_id, rate (spikes/ms) >
 
-    for index in range(0, numCells):
+    for index in range(numCells):
         rate = len(population.segments[0].spiketrains[index])/TotalDuration
         firing_rate.append(rate)
 

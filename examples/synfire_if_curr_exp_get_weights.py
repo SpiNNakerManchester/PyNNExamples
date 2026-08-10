@@ -40,7 +40,7 @@ weight_to_spike = 2.0
 delay = 17
 
 loopConnections = []
-for i in range(0, nNeurons):
+for i in range(nNeurons):
     singleConnection = ((i, (i + 1) % nNeurons, weight_to_spike, delay))
     loopConnections.append(singleConnection)
 

@@ -41,7 +41,7 @@ weight_to_spike = 2.0
 delay = RandomDistribution("uniform", low=1, high=max_delay)
 
 loopConnections = []
-for i in range(0, nNeurons):
+for i in range(nNeurons):
     delay_value = delay.next()
     singleConnection = (i, ((i + 1) % nNeurons), weight_to_spike, delay_value)
     loopConnections.append(singleConnection)
