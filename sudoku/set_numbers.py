@@ -22,7 +22,7 @@ import pyNN.spiNNaker as p
 from sudoku.utils import get_rates, puzzles
 
 
-class GUI(object):
+class GUI:
     """
     A Gui for setting the numbers in the puzzle.
     """
