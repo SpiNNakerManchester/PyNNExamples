@@ -497,14 +497,14 @@ class CoreCounter(object):
     def set_ethernet_n_routes(self, x, y, n_routes):
         colour = self._get_max_value(x, y)
         max_n_routes = self._width * self._height
-        value = int(round((float(colour) / max_n_routes) * n_routes))
+        value = round((float(colour) / max_n_routes) * n_routes)
         self._image_data[y, x] = [255 - value, 0, 255 - value]
 
     def add_cores(self, eth_x, eth_y, x, y, n_cores):
         colour = self._get_max_value(eth_x, eth_y)
         with self._update_lock:
             self._total_cores += n_cores
-            value = int(round((float(colour) / 18.0) * n_cores))
+            value = round((float(colour) / 18.0) * n_cores)
             self._image_data[y, x] = [0, value, 0]
 
 

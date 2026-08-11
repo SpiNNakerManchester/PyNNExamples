@@ -132,16 +132,16 @@ def print_synchrony():
 """ Initialising Time and Frequency parameters """
 
 # total duration of simulation
-TotalDuration = int(1000)
+TotalDuration = 1000
 
 # this is in ms.
-Duration_Inp = int(1000)
+Duration_Inp = 1000
 
 # 50 ms at both start and end are disregarded to avoid transients
-Start_Inp = int(0)
+Start_Inp = 0
 End_Inp = int(Start_Inp + Duration_Inp)
 
-Rate_Inp = int(22)
+Rate_Inp = 22
 Inp_isi = int(1000 / Rate_Inp)
 
 """ Initialising Model connectivity parameters """

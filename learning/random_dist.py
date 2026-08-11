@@ -18,8 +18,8 @@ import pyNN.utility.plotting as plot
 from pyNN.random import RandomDistribution
 
 n_neurons = 1000
-n_exc = int(round(n_neurons * 0.8))
-n_inh = int(round(n_neurons * 0.2))
+n_exc = round(n_neurons * 0.8)
+n_inh = round(n_neurons * 0.2)
 simtime = 1000
 
 sim.setup(timestep=0.1)
