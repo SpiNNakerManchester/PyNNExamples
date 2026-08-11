@@ -34,8 +34,8 @@ V_th = 20.0
 v_rest = 0.0
 tauSyn = 1.0
 
-N_E = int(round(Neurons * 0.8))
-N_I = int(round(Neurons * 0.2))
+N_E = round(Neurons * 0.8)
+N_I = round(Neurons * 0.2)
 
 C_E = N_E * 0.1
 C_I = N_I * 0.1

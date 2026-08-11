@@ -25,8 +25,8 @@ from pyNN.utility.plotting import Figure, Panel
 p.setup(timestep=0.1, time_scale_factor=10.0)
 p.set_number_of_neurons_per_core(p.SpikeSourcePoisson, 50)
 n_neurons = 500
-n_exc = int(round(n_neurons * 0.8))
-n_inh = int(round(n_neurons * 0.2))
+n_exc = round(n_neurons * 0.8)
+n_inh = round(n_neurons * 0.2)
 weight_exc = 0.1
 weight_inh = -5.0 * weight_exc
 weight_input = 0.001
