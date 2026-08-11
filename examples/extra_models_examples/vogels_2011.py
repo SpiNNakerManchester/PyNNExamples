@@ -35,7 +35,7 @@ GENERATE_PLOT = True
 N_BOARDS = 1
 
 
-class Vogels2011(object):
+class Vogels2011:
     """
     This example uses the sPyNNaker implementation of the inhibitory
     Plasticity rule developed by Vogels, Sprekeler, Zenke et al (2011)

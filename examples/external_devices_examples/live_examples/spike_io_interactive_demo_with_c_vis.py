@@ -20,7 +20,7 @@ import pyNN.spiNNaker as Frontend
 from pyNN.utility.plotting import Figure, Panel
 
 
-class PyNNScript(object):
+class PyNNScript:
     """
     the class which contains the pynn script
     """
@@ -238,7 +238,7 @@ def receive_spikes(label, time, neuron_ids):
         print(f"Received spike at time {time} from {label} - {neuron_id}")
 
 
-class GUI(object):
+class GUI:
     """ Simple GUI to demonstrate live injection of the spike io script.
     """
 
