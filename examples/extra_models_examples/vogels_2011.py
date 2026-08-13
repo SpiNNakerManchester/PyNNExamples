@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
-from typing import Optional
 
 import matplotlib.pyplot as pylab
 import numpy
@@ -46,7 +45,7 @@ class Vogels2011:
 
     def __init__(self, split: bool = False):
         if split:
-            self._n_synapse_cores: Optional[int] = 1
+            self._n_synapse_cores: int | None = 1
         else:
             self._n_synapse_cores = None
 
