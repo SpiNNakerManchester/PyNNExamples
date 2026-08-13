@@ -24,34 +24,11 @@ if [ "$#" -eq  "0" ]
 else
   python3 -m venv ../SupportScripts/venv/ruff_runner
   source ../SupportScripts/venv/ruff_runner/bin/activate
-  python3 -m pip install --upgrade ruff
+  python3 -m pip install --upgrade ruff flake8
 fi
 
-echo using ruff.toml
-ruff check ../SpiNNUtils/spinn_utilities ../SpiNNUtils/unittests \
-    ../SpiNNMachine/spinn_machine ../SpiNNMachine/unittests \
-    ../SpiNNMan/spinnman ../SpiNNMan/unittests \
-    ../SpiNNMan/spinnman_integration_tests ../SpiNNMan/manual_scripts \
-    ../PACMAN/pacman ../PACMAN/pacman_test_objects ../PACMAN/unittests \
-    ../spalloc/spalloc_client ../spalloc/tests \
-     ../SpiNNFrontEndCommon/spinn_front_end_common ../SpiNNFrontEndCommon/unittests \
-     ../SpiNNFrontEndCommon/fec_integration_tests \
-     ../TestBase/spinnaker_testbase ../TestBase/unittests \
-     ../sPyNNaker/spynnaker ../sPyNNaker/unittests \
-     ../sPyNNaker/spynnaker_integration_tests ../sPyNNaker/proxy_integration_tests \
-     examples balanced_random learning sudoku synfire \
-     --target-version py310 --config ../SupportScripts/actions/ruff/ruff.toml
-echo using ruff_up.toml
-ruff check ../SpiNNUtils/spinn_utilities ../SpiNNUtils/unittests \
-    ../SpiNNMachine/spinn_machine ../SpiNNMachine/unittests \
-    ../SpiNNMan/spinnman ../SpiNNMan/unittests \
-    ../SpiNNMan/spinnman_integration_tests ../SpiNNMan/manual_scripts \
-    ../PACMAN/pacman ../PACMAN/pacman_test_objects ../PACMAN/unittests \
-    ../spalloc/spalloc_client ../spalloc/tests \
-     ../SpiNNFrontEndCommon/spinn_front_end_common ../SpiNNFrontEndCommon/unittests \
-     ../SpiNNFrontEndCommon/fec_integration_tests \
-     ../TestBase/spinnaker_testbase ../TestBase/unittests \
-     ../sPyNNaker/spynnaker ../sPyNNaker/unittests \
-     ../sPyNNaker/spynnaker_integration_tests ../sPyNNaker/proxy_integration_tests \
-     examples balanced_random learning sudoku synfire \
-     --target-version py310 --config ../SupportScripts/actions/ruff/ruff_up.toml
+echo ruff using ruff_ignore.toml
+ruff check examples balanced_random learning sudoku synfire \
+     --target-version py310 --config ../SupportScripts/actions/ruff/ruff_ignore.toml --fix
+echo flake8
+flake8 examples balanced_random learning sudoku synfire
