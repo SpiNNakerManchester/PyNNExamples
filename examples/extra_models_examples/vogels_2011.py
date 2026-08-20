@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
+from typing import Final
 
 import matplotlib.pyplot as pylab
 import numpy
@@ -50,8 +51,8 @@ class Vogels2011:
             self._n_synapse_cores = None
 
     # Population parameters
-    MODEL = sim.IF_curr_exp
-    CELL_PARAMETERS = {
+    MODEL: Final = sim.IF_curr_exp
+    CELL_PARAMETERS: Final = {
         'cm': 0.2,  # nF
         'i_offset': 0.2,
         'tau_m': 20.0,
