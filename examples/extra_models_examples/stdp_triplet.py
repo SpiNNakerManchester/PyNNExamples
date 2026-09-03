@@ -151,7 +151,7 @@ axis.set_ylabel(r"$(\frac{\Delta w_{ij}}{w_{ij}})$", rotation="horizontal",
                 size="xx-large")
 
 line_styles = ["--", "-"]
-for m_w, d_w, d_e, line_style, t in zip(
+for m_w, d_w, d_e, line_style, ms in zip(
         weights, data_w, data_e, line_styles, delta_t):
     # Calculate deltas from end weights
     delta_w = [(w - start_w) / start_w for w in m_w]
@@ -159,11 +159,11 @@ for m_w, d_w, d_e, line_style, t in zip(
     # Plot experimental data and error bars
     axis.errorbar(
         frequencies, d_w, yerr=d_e, color="black", linestyle=line_style,
-        label=r"Experimental data, delta $(\Delta{t}=%dms)$" % t)
+        label=rf"Experimental data, delta $(\Delta{t}={ms}ms)$")
 
     # Plot model data
     axis.plot(frequencies, delta_w, color="blue", linestyle=line_style,
-              label=r"Triplet rule, delta $(\Delta{t}=%dms)$" % t)
+              label=rf"Triplet rule, delta $(\Delta{t}={ms}ms)$")
 
 axis.legend(loc="upper right", bbox_to_anchor=(1.0, 1.0))
 
