@@ -73,9 +73,9 @@ try:
         )
         offset += n_neurons
     plt.show()
-except Exception as ex:
+except Exception:
     print(spikes)
-    raise ex
+    raise
 
     # pylint: disable=wrong-spelling-in-comment
     # Way to plot the spikes without neo converter but without the colours
