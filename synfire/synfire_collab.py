@@ -74,6 +74,6 @@ try:
         )
         offset += n_neurons
     plt.show()
-except Exception as ex:
+except Exception:
     print(spikes)
-    raise ex
+    raise
