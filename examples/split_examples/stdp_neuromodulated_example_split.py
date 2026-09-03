@@ -138,7 +138,7 @@ pylab.plot(rewards, [0.5 for x in rewards], 'g^')
 pylab.plot(punishments, [0.5 for x in punishments], 'r^')
 pylab.show()
 
-print("Weights(Initial %s)" % plastic_weights)
+print(f"Weights(Initial {plastic_weights})")
 for x in weights:
     print(x)
 
