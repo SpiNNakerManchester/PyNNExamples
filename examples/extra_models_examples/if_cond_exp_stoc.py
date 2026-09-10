@@ -48,26 +48,26 @@ def run_script(*, split: bool = False) -> None:
         sim.extra_models.IFCondExpStoc.set_model_n_synapse_cores(1)
         sim.IF_cond_exp.set_model_n_synapse_cores(1)
 
-    stoc_cell = sim.Population(1, sim.extra_models.IFCondExpStoc(**{
-        'i_offset': 0.1,
-        'tau_refrac': 3.0,
-        'v_thresh': -51.0,
-        'v_reset': -70.0,
-        'tau_syn_E': 5.0,
-        'tau_syn_I': 5.0}))
+    stoc_cell = sim.Population(1, sim.extra_models.IFCondExpStoc(
+        i_offset=0.1,
+        tau_refrac=3.0,
+        v_thresh=-51.0,
+        v_reset=-70.0,
+        tau_syn_E=5.0,
+        tau_syn_I=5.0))
 
-    exp_cell = sim.Population(1, sim.IF_cond_exp(**{
-        'i_offset': 0.1,
-        'tau_refrac': 3.0,
-        'v_thresh': -51.0,
-        'v_reset': -70.0,
-        'tau_syn_E': 5.0,
-        'tau_syn_I': 5.0}))
+    exp_cell = sim.Population(1, sim.IF_cond_exp(
+        i_offset=0.1,
+        tau_refrac=3.0,
+        v_thresh=-51.0,
+        v_reset=-70.0,
+        tau_syn_E=5.0,
+        tau_syn_I=5.0))
 
-    spike_sourceE = sim.Population(1, sim.SpikeSourceArray(**{
-        'spike_times': [float(i) for i in range(5, 105, 10)]}))
-    spike_sourceI = sim.Population(1, sim.SpikeSourceArray(**{
-        'spike_times': [float(i) for i in range(155, 255, 10)]}))
+    spike_sourceE = sim.Population(1, sim.SpikeSourceArray(
+        spike_times=[float(i) for i in range(5, 105, 10)]))
+    spike_sourceI = sim.Population(1, sim.SpikeSourceArray(
+        spike_times=[float(i) for i in range(155, 255, 10)]))
 
     sim.Projection(spike_sourceE, exp_cell,
                    sim.OneToOneConnector(),
