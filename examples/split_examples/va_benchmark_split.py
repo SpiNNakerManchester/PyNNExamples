@@ -92,7 +92,7 @@ cm = cm * area * 1000                  # convert to nF
 Rm = 1e-6 / (g_leak * area)            # membrane resistance in MΩ
 assert tau_m == cm * Rm                # just to check
 
-n_exc = round((n * r_ei / (1 + r_ei)))  # number of excitatory cells
+n_exc = round(n * r_ei / (1 + r_ei))  # number of excitatory cells
 n_inh = n - n_exc                            # number of inhibitory cells
 
 print(n_exc, n_inh)
