@@ -33,7 +33,9 @@ class ScriptBuilder(RootScriptBuilder):
         too_long = {}
         too_long["stdp_triplet.py"] = "10 minutes"
 
-        self.create_test_scripts(["examples"], too_long, exceptions)
+        self.create_test_scripts(
+            ["examples","balanced_random", "learning", "synfire"],
+            too_long, exceptions)
 
 
 if __name__ == '__main__':

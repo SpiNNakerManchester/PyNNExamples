@@ -26,8 +26,8 @@ p.setup(timestep=1.0, min_delay=1.0)
 connected_chip_coords = {'x': 0, 'y': 0}
 link = 4
 
-populations = list()
-projections = list()
+populations = []
+projections = []
 
 
 input_population = p.Population(6, p.SpikeSourcePoisson(rate=10))

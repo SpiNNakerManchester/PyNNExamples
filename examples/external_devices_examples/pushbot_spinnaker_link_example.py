@@ -81,7 +81,7 @@ pushbot_retina = p.Population(
     label="Retina")
 
 retina_viewer = p.external_devices.PushBotRetinaViewer(
-    retina_resolution, pushbot_retina.label, p)
+    retina_resolution, pushbot_retina.label)
 p.external_devices.activate_live_output_for(
     pushbot_retina, database_notify_port_num=retina_viewer.port)
 

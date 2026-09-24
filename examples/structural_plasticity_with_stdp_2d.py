@@ -159,14 +159,14 @@ sim.Projection(
     synapse_type=sim.StaticSynapse(weight=jee * 0.05))
 
 # Additional Inputs projections
-for i in range(len(i_add_pre)):
+for _i_add_pre in i_add_pre:
     sim.Projection(
-        i_add_pre[i], pre_pop, sim.OneToOneConnector(),
+        _i_add_pre, pre_pop, sim.OneToOneConnector(),
         receptor_type='excitatory',
         synapse_type=sim.StaticSynapse(weight=jee * 0.05))
-for i in range(len(i_add_post)):
+for _i_add_post in i_add_post:
     sim.Projection(
-        i_add_post[i], post_pop, sim.OneToOneConnector(),
+        _i_add_post, post_pop, sim.OneToOneConnector(),
         receptor_type='excitatory',
         synapse_type=sim.StaticSynapse(weight=jee * 0.05))
 
@@ -174,7 +174,7 @@ for i in range(len(i_add_post)):
 # Structurally plastic connection between pre_pop and post_pop
 partner_selection_last_neuron = sim.RandomSelection()
 formation_distance = sim.DistanceDependentFormation(
-    grid=[np.sqrt(pop_size), np.sqrt(pop_size)],  # spatial org of neurons
+    grid=[np.sqrt(pop_size), np.sqrt(pop_size)],  # spatial neurons
     sigma_form_forward=.5  # spread of feed-forward connections
 )
 elimination_weight = sim.RandomByWeightElimination(

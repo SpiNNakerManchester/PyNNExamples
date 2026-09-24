@@ -13,7 +13,6 @@
 # limitations under the License.
 
 from spinnaker_testbase import ScriptChecker
-from unittest import SkipTest  # pylint: disable=unused-import
 
 
 class TestScripts(ScriptChecker):
@@ -28,141 +27,247 @@ class TestScripts(ScriptChecker):
     """
 # flake8: noqa
 
-    def test_examples_synfire_if_curr_exp_large_array(self):
-        self.check_script("examples/synfire_if_curr_exp_large_array.py")
-
-    def test_examples_synfire_izk_curr_exp(self):
-        self.check_script("examples/synfire_izk_curr_exp.py")
-
     def test_examples_hbp_neuroguidebook_example(self):
         self.check_script("examples/hbp_neuroguidebook_example.py")
 
-    def test_examples_partitioner_examples_splitter_usage(self):
-        self.check_script("examples/partitioner_examples/splitter_usage.py")
-
-    def test_examples_synfire_if_curr_exp_random(self):
-        self.check_script("examples/synfire_if_curr_exp_random.py")
+    def test_examples_wta_example(self):
+        self.check_script("examples/wta_example.py")
 
     def test_examples_va_benchmark(self):
         self.check_script("examples/va_benchmark.py")
 
-    def test_examples_structural_plasticity_with_stdp_2d(self):
-        self.check_script("examples/structural_plasticity_with_stdp_2d.py")
+    def test_examples_extra_models_examples_stdp_mad_recurrent_pre_stochastic_multiplicative(self):
+        self.check_script("examples/extra_models_examples/stdp_mad_recurrent_pre_stochastic_multiplicative.py")
+        self.check_binaries_used(["IF_curr_exp_stdp_mad_recurrent_pre_stochastic_multiplicative.aplx"])
 
-    def test_examples_if_curr_delta(self):
-        self.check_script("examples/if_curr_delta.py")
+    def test_examples_extra_models_examples_stdp_example_izk_cond(self):
+        self.check_script("examples/extra_models_examples/stdp_example_izk_cond.py")
 
-    def test_examples_structural_plasticity_without_stdp_2d(self):
-        self.check_script("examples/structural_plasticity_without_stdp_2d.py")
+    def test_examples_extra_models_examples_vogels_2011_combined(self):
+        from examples.extra_models_examples.vogels_2011 import run_script
+        run_script(split=False)
+        self.check_binaries_used(["IF_curr_exp_stdp_mad_vogels_2011_additive.aplx"])
 
-    def test_examples_external_devices_examples_retina_example(self):
-        self.check_script("examples/external_devices_examples/retina_example.py")
+    def test_examples_extra_models_examples_vogels_2011_split(self):
+        from examples.extra_models_examples.vogels_2011 import run_script
+        run_script(split=True)
+        self.check_binaries_used(["IF_curr_exp_neuron.aplx", "synapses_stdp_mad_vogels_2011_additive.aplx"])
 
-    def test_examples_external_devices_examples_motor_example(self):
-        self.check_script("examples/external_devices_examples/motor_example.py")
+    def test_examples_extra_models_examples_if_curr_exp_ca2_adaptive_combined(self):
+        from examples.extra_models_examples.if_curr_exp_ca2_adaptive import run_script
+        run_script(split=False)
+        self.check_binaries_used(["IF_curr_exp_ca2_adaptive.aplx"])
 
-    def test_examples_external_devices_examples_live_examples_spike_io(self):
-        self.check_script("examples/external_devices_examples/live_examples/spike_io.py")
+    def test_examples_extra_models_examples_if_curr_exp_ca2_adaptive_split(self):
+        from examples.extra_models_examples.if_curr_exp_ca2_adaptive import run_script
+        run_script(split=True)
+        self.check_binaries_used(["IF_curr_exp_ca2_adaptive_neuron.aplx"])
 
-    def test_examples_external_devices_examples_live_examples_synfire_if_curr_exp_live(self):
-        self.check_script("examples/external_devices_examples/live_examples/synfire_if_curr_exp_live.py")
+    def test_examples_extra_models_examples_ign_izhikevich(self):
+        self.check_script("examples/extra_models_examples/ign_izhikevich.py")
 
-    def test_examples_external_devices_examples_live_examples_spike_io_interactive_demo_with_c_vis(self):
-        self.check_script("examples/external_devices_examples/live_examples/spike_io_interactive_demo_with_c_vis.py")
+    def test_examples_extra_models_examples_if_curr_exp_semd_combined(self):
+        from examples.extra_models_examples.if_curr_exp_semd import run_script
+        run_script(split=False)
+        self.check_binaries_used(["IF_curr_exp_sEMD.aplx"])
 
-    def test_examples_external_devices_examples_live_examples_balanced_random_live_rate(self):
-        # Warning this test takes 125 seconds.
-        # raise skiptest is uncommented on branch tests
-        # raise SkipTest("125 seconds")
-        self.check_script("examples/external_devices_examples/live_examples/balanced_random_live_rate.py")
+    def test_examples_extra_models_examples_if_curr_exp_semd_split(self):
+        from examples.extra_models_examples.if_curr_exp_semd import run_script
+        run_script(split=True)
+        self.check_binaries_used(["IF_curr_exp_sEMD_neuron.aplx"])
 
-    def test_examples_external_devices_examples_pushbot_ethernet_example(self):
-        raise SkipTest("Needs a physical pushbot")
-        self.check_script("examples/external_devices_examples/pushbot_ethernet_example.py")
+    def test_examples_extra_models_examples_if_curr_delta(self):
+        self.check_script("examples/extra_models_examples/if_curr_delta.py")
 
-    def test_examples_external_devices_examples_pushbot_spinnaker_link_example(self):
-        self.check_script("examples/external_devices_examples/pushbot_spinnaker_link_example.py")
+    def test_examples_extra_models_examples_synfire_if_curr_dual_exp_combined(self):
+        from examples.extra_models_examples.synfire_if_curr_dual_exp import run_script
+        run_script(split=False)
+        self.check_binaries_used(["IF_curr_exp_dual.aplx"])
 
-    def test_examples_if_curr_alpha(self):
-        self.check_script("examples/if_curr_alpha.py")
+    def test_examples_extra_models_examples_synfire_if_curr_dual_exp_split(self):
+        from examples.extra_models_examples.synfire_if_curr_dual_exp import run_script
+        run_script(split=True)
+        self.check_binaries_used(["IF_curr_exp_dual_neuron.aplx"])
 
-    def test_examples_stdp_example_izk(self):
-        self.check_script("examples/stdp_example_izk.py")
+    def test_examples_extra_models_examples_if_cond_exp_stoc_combined(self):
+        from examples.extra_models_examples.if_cond_exp_stoc import run_script
+        run_script(split=False)
+        self.check_binaries_used(["IF_cond_exp_stoc.aplx", "IF_cond_exp.aplx"])
 
-    def test_examples_synfire_if_curr_exp(self):
-        self.check_script("examples/synfire_if_curr_exp.py")
+    def test_examples_extra_models_examples_if_cond_exp_stoc_split(self):
+        from examples.extra_models_examples.if_cond_exp_stoc import run_script
+        run_script(split=True)
+        self.check_binaries_used(["IF_cond_exp_stoc_neuron.aplx", "IF_cond_exp_neuron.aplx"])
 
-    def test_examples_spike_time_compare(self):
-        self.check_script("examples/spike_time_compare.py")
+    def test_examples_extra_models_examples_vogels_2011_live_combined(self):
+        from examples.extra_models_examples.vogels_2011_live import run_script
+        run_script(split=False)
+        self.check_binaries_used(["IF_curr_exp_stdp_mad_vogels_2011_additive"])
 
-    def test_examples_stdp_example_cond(self):
-        self.check_script("examples/stdp_example_cond.py")
-
-    def test_examples_stdp_pairing(self):
-        self.check_script("examples/stdp_pairing.py")
-
-    def test_examples_pynnBrunnel(self):
-        self.check_script("examples/pynnBrunnel.py")
-
-    def test_examples_synfire_if_curr_exp_get_weights(self):
-        self.check_script("examples/synfire_if_curr_exp_get_weights.py")
-
-    def test_examples_synfire_if_cond_exp(self):
-        self.check_script("examples/synfire_if_cond_exp.py")
-
-    def test_examples_stdp_curve_cond(self):
-        # Warning this test takes 121 seconds.
-        # raise skiptest is uncommented on branch tests
-        # raise SkipTest("121 seconds")
-        self.check_script("examples/stdp_curve_cond.py")
-
-    def test_examples_stdp_curve(self):
-        # Warning this test takes 118 seconds.
-        # raise skiptest is uncommented on branch tests
-        # raise SkipTest("118 seconds")
-        self.check_script("examples/stdp_curve.py")
-
-    def test_examples_stdp_example(self):
-        self.check_script("examples/stdp_example.py")
-
-    def test_examples_stdp_example_get_plastic_params(self):
-        self.check_script("examples/stdp_example_get_plastic_params.py")
-
-    def test_examples_extra_models_examples_LGN_Izhikevich(self):
-        self.check_script("examples/extra_models_examples/LGN_Izhikevich.py")
-
-    def test_examples_extra_models_examples_vogel_2011_vogels_2011_live(self):
-        self.check_script("examples/extra_models_examples/vogel_2011/vogels_2011_live.py")
-
-    def test_examples_extra_models_examples_vogel_2011_vogels_2011(self):
-        # Warning this test takes 698 seconds.
-        # raise skiptest is uncommented on branch tests
-        # raise SkipTest("698 seconds")
-        self.check_script("examples/extra_models_examples/vogel_2011/vogels_2011.py")
+    def test_examples_extra_models_examples_vogels_2011_live_split(self):
+        from examples.extra_models_examples.vogels_2011_live import run_script
+        run_script(split=True)
+        self.check_binaries_used(["synapses_stdp_mad_vogels_2011_additive"])
 
     def test_examples_extra_models_examples_stdp_associative_memory(self):
         self.check_script("examples/extra_models_examples/stdp_associative_memory.py")
 
     def test_examples_extra_models_examples_stdp_triplet(self):
-        # Warning this test takes 10 minutes.
-        # raise skiptest is uncommented on branch tests
-        # raise SkipTest("10 minutes")
         self.check_script("examples/extra_models_examples/stdp_triplet.py")
 
-    def test_examples_extra_models_examples_synfire_if_curr_dual_exp(self):
-        self.check_script("examples/extra_models_examples/synfire_if_curr_dual_exp.py")
+    def test_examples_structural_plasticity_with_stdp_neuromodulated_separate_pops(self):
+        self.check_script("examples/structural_plasticity_with_stdp_neuromodulated_separate_pops.py")
 
-    def test_examples_extra_models_examples_IF_curr_exp_sEMD(self):
-        self.check_script("examples/extra_models_examples/IF_curr_exp_sEMD.py")
+    def test_examples_structural_plasticity_with_stdp_2d(self):
+        self.check_script("examples/structural_plasticity_with_stdp_2d.py")
 
-    def test_examples_extra_models_examples_IF_curr_delta(self):
-        self.check_script("examples/extra_models_examples/IF_curr_delta.py")
+    def test_examples_if_curr_alpha_combined(self):
+        from examples.if_curr_alpha import run_script
+        run_script(split=False)
+        self.check_binaries_used(["IF_curr_alpha.aplx"])
 
-    def test_examples_extra_models_examples_stdp_example_izk_cond(self):
-        self.check_script("examples/extra_models_examples/stdp_example_izk_cond.py")
+    def test_examples_if_curr_alpha_split(self):
+        from examples.if_curr_alpha import run_script
+        run_script(split=True)
+        self.check_binaries_used(["IF_curr_alpha_neuron.aplx", "synapses.aplx"])
 
-    def test_examples_extra_models_examples_IF_curr_exp_ca2_adaptive(self):
-        self.check_script("examples/extra_models_examples/IF_curr_exp_ca2_adaptive.py")
+    def test_examples_structural_plasticity_without_stdp_2d(self):
+        self.check_script("examples/structural_plasticity_without_stdp_2d.py")
 
-    def test_examples_extra_models_examples_IF_cond_exp_stoc(self):
-        self.check_script("examples/extra_models_examples/IF_cond_exp_stoc.py")
+    def test_examples_synfire_if_curr_exp_get_weights(self):
+        self.check_script("examples/synfire_if_curr_exp_get_weights.py")
+
+    def test_examples_simple_stdp(self):
+        self.check_script("examples/simple_stdp.py")
+
+    def test_examples_synfire_if_curr_exp(self):
+        self.check_script("examples/synfire_if_curr_exp.py")
+
+    def test_examples_stdp_example_get_plastic_params(self):
+        self.check_script("examples/stdp_example_get_plastic_params.py")
+
+    def test_examples_stdp_neuromodulated_example(self):
+        self.check_script("examples/stdp_neuromodulated_example.py")
+
+    def test_examples_partitioner_examples_splitter_usage(self):
+        self.check_script("examples/partitioner_examples/splitter_usage.py")
+
+    def test_examples_if_curr_delta(self):
+        self.check_script("examples/if_curr_delta.py")
+
+    def test_examples_stdp_neuromodulation_test(self):
+        self.check_script("examples/stdp_neuromodulation_test.py")
+
+    def test_examples_stdp_pairing(self):
+        self.check_script("examples/stdp_pairing.py")
+
+    def test_examples_stdp_example_cond(self):
+        self.check_script("examples/stdp_example_cond.py")
+
+    def test_examples_spike_time_compare(self):
+        self.check_script("examples/spike_time_compare.py")
+
+    def test_examples_synfire_if_curr_exp_random(self):
+        self.check_script("examples/synfire_if_curr_exp_random.py")
+
+    def test_examples_current_injection_example(self):
+        self.check_script("examples/current_injection_example.py")
+
+    # Not testing file due to: Needs a physical pushbot
+    # examples/external_devices_examples/pushbot_ethernet_example.py
+
+    def test_examples_external_devices_examples_pushbot_spinnaker_link_example(self):
+        self.check_script("examples/external_devices_examples/pushbot_spinnaker_link_example.py")
+
+    # Not testing file due to: Unhandled main
+    # examples/external_devices_examples/live_examples/spike_io_interactive_demo_with_c_vis.py
+
+    def test_examples_external_devices_examples_live_examples_synfire_if_curr_exp_live(self):
+        self.check_script("examples/external_devices_examples/live_examples/synfire_if_curr_exp_live.py")
+
+    def test_examples_external_devices_examples_live_examples_balanced_random_live_rate(self):
+        self.check_script("examples/external_devices_examples/live_examples/balanced_random_live_rate.py")
+
+    def test_examples_external_devices_examples_live_examples_spike_io(self):
+        self.check_script("examples/external_devices_examples/live_examples/spike_io.py")
+
+    def test_examples_external_devices_examples_motor_example(self):
+        self.check_script("examples/external_devices_examples/motor_example.py")
+
+    # Not testing file due to: Runs forever
+    # examples/external_devices_examples/pushbot_light_follower.py
+
+    def test_examples_external_devices_examples_retina_example(self):
+        self.check_script("examples/external_devices_examples/retina_example.py")
+
+    def test_examples_synfire_if_cond_exp(self):
+        self.check_script("examples/synfire_if_cond_exp.py")
+
+    def test_examples_stdp_example(self):
+        self.check_script("examples/stdp_example.py")
+
+    def test_examples_stdp_curve_cond(self):
+        self.check_script("examples/stdp_curve_cond.py")
+
+    def test_examples_synfire_izk_curr_exp(self):
+        self.check_script("examples/synfire_izk_curr_exp.py")
+
+    def test_examples_stdp_curve(self):
+        self.check_script("examples/stdp_curve.py")
+
+    def test_examples_pynn_brunnel(self):
+        self.check_script("examples/pynn_brunnel.py")
+
+    def test_examples_split_examples_stdp_neuromodulated_example_split(self):
+        self.check_script("examples/split_examples/stdp_neuromodulated_example_split.py")
+
+    def test_examples_split_examples_structural_plasticity_with_stdp_neuromodulated(self):
+        self.check_script("examples/split_examples/structural_plasticity_with_stdp_neuromodulated.py")
+
+    def test_examples_split_examples_pynnBrunnelSplit(self):
+        self.check_script("examples/split_examples/pynnBrunnelSplit.py")
+
+    def test_examples_split_examples_va_benchmark_split(self):
+        self.check_script("examples/split_examples/va_benchmark_split.py")
+
+    def test_examples_synfire_if_curr_exp_large_array(self):
+        self.check_script("examples/synfire_if_curr_exp_large_array.py")
+
+    def test_examples_stdp_example_izk(self):
+        self.check_script("examples/stdp_example_izk.py")
+
+    def test_balanced_random_split_balanced_random_split(self):
+        self.check_script("balanced_random/split/balanced_random_split.py")
+
+    def test_balanced_random_balanced_random(self):
+        self.check_script("balanced_random/balanced_random.py")
+
+    def test_learning_split_struct_pl_stdp_split(self):
+        self.check_script("learning/split/struct_pl_stdp_split.py")
+
+    def test_learning_split_struct_pl_split(self):
+        self.check_script("learning/split/struct_pl_split.py")
+
+    def test_learning_split_stdp_split(self):
+        self.check_script("learning/split/stdp_split.py")
+
+    def test_learning_struct_pl_stdp(self):
+        self.check_script("learning/struct_pl_stdp.py")
+
+    def test_learning_random_dist(self):
+        self.check_script("learning/random_dist.py")
+
+    def test_learning_struct_pl(self):
+        self.check_script("learning/struct_pl.py")
+
+    def test_learning_simple(self):
+        self.check_script("learning/simple.py")
+
+    def test_learning_stdp(self):
+        self.check_script("learning/stdp.py")
+
+    def test_synfire_synfire_collab(self):
+        self.check_script("synfire/synfire_collab.py")
+
+    def test_synfire_synfire(self):
+        self.check_script("synfire/synfire.py")

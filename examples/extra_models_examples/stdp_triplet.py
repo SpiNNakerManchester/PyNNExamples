@@ -13,9 +13,9 @@
 # limitations under the License.
 
 import matplotlib.pyplot as pylab
-
 import pyNN.spiNNaker as sim
 
+# pylint: disable=wrong-spelling-in-comment
 # -------------------------------------------------------------------
 # This example uses the sPyNNaker implementation of the triplet rule
 # Developed by Pfister and Gerstner(2006) to reproduce the pairing
@@ -36,6 +36,14 @@ delta_t = [-10, 10]
 
 def generate_fixed_frequency_test_data(
         frequency, first_spike_time, num_spikes):
+    """
+    Generates a list of spike times based on the frequency
+
+    :param int frequency:
+    :param int first_spike_time:
+    :param int num_spikes:
+    :rtype: list(int)
+    """
     # Calculate interspike delays in ms
     interspike_delay = int(1000.0 / float(frequency))
 
@@ -109,7 +117,7 @@ for t in delta_t:
                 pre_pop, post_pop, sim.OneToOneConnector(),
                 synapse_type=stdp_model))
 
-print("Simulating for %us" % (sim_time / 1000))
+print(f"Simulating for {(sim_time / 1000)}s")
 
 # Run simulation
 sim.run(sim_time)
@@ -143,18 +151,19 @@ axis.set_ylabel(r"$(\frac{\Delta w_{ij}}{w_{ij}})$", rotation="horizontal",
                 size="xx-large")
 
 line_styles = ["--", "-"]
-for m_w, d_w, d_e, l, t in zip(weights, data_w, data_e, line_styles, delta_t):
+for m_w, d_w, d_e, line_style, ms in zip(
+        weights, data_w, data_e, line_styles, delta_t):
     # Calculate deltas from end weights
     delta_w = [(w - start_w) / start_w for w in m_w]
 
     # Plot experimental data and error bars
     axis.errorbar(
-        frequencies, d_w, yerr=d_e, color="black", linestyle=l,
-        label=r"Experimental data, delta $(\Delta{t}=%dms)$" % t)
+        frequencies, d_w, yerr=d_e, color="black", linestyle=line_style,
+        label=rf"Experimental data, delta $(\Delta{t}={ms}ms)$")
 
     # Plot model data
-    axis.plot(frequencies, delta_w, color="blue", linestyle=l,
-              label=r"Triplet rule, delta $(\Delta{t}=%dms)$" % t)
+    axis.plot(frequencies, delta_w, color="blue", linestyle=line_style,
+              label=rf"Triplet rule, delta $(\Delta{t}={ms}ms)$")
 
 axis.legend(loc="upper right", bbox_to_anchor=(1.0, 1.0))
 

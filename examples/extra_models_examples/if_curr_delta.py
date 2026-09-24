@@ -17,31 +17,31 @@ A single LIF neuron with two exponential, current-based synapses,
 and two delta, current-based synapses, fed by two spike sources.
 """
 
+import matplotlib.pyplot as plt
 import pyNN.spiNNaker as sim
 from pyNN.utility.plotting import Figure, Panel
-import matplotlib.pyplot as plt
 
 sim.setup(timestep=0.1, min_delay=0.1)
 
-delta_cell = sim.Population(1, sim.extra_models.IFCurDelta(**{
-    'i_offset': 0.1,
-    'tau_refrac': 3.0,
-    'v_thresh': -51.0,
-    'v_reset': -70.0}))
+delta_cell = sim.Population(1, sim.extra_models.IFCurDelta(
+    i_offset=0.1,
+    tau_refrac=3.0,
+    v_thresh=-51.0,
+    v_reset=-70.0))
 
-exp_cell = sim.Population(1, sim.IF_curr_exp(**{
-    'i_offset': 0.1,
-    'tau_refrac': 3.0,
-    'v_thresh': -51.0,
-    'v_reset': -70.0,
-    'tau_syn_E': 5.0,
-    'tau_syn_I': 5.0}))
+exp_cell = sim.Population(1, sim.IF_curr_exp(
+    i_offset=0.1,
+    tau_refrac=3.0,
+    v_thresh=-51.0,
+    v_reset=-70.0,
+    tau_syn_E=5.0,
+    tau_syn_I=5.0))
 
 
-spike_sourceE = sim.Population(1, sim.SpikeSourceArray(**{
-    'spike_times': [float(i) for i in range(5, 105, 10)]}))
-spike_sourceI = sim.Population(1, sim.SpikeSourceArray(**{
-    'spike_times': [float(i) for i in range(155, 255, 10)]}))
+spike_sourceE = sim.Population(1, sim.SpikeSourceArray(
+    spike_times=[float(i) for i in range(5, 105, 10)]))
+spike_sourceI = sim.Population(1, sim.SpikeSourceArray(
+    spike_times=[float(i) for i in range(155, 255, 10)]))
 
 sim.Projection(spike_sourceE, exp_cell,
                sim.OneToOneConnector(),
@@ -98,7 +98,7 @@ Figure(
           ylabel="gsyn inhibitory (mV)",
           data_labels=[exp_cell.label], yticks=True, xlim=(0, runtime)),
     title="IF_curr_delta example",
-    annotations="Simulated with {}".format(sim.name())
+    annotations=f"Simulated with {sim.name()}"
 )
 plt.show()
 

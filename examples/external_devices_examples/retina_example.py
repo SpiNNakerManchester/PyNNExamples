@@ -24,6 +24,11 @@ connected_chip_details = {
 
 
 def get_updated_params(params):
+    """
+    Adds extra values to the params
+
+    :param dict params:
+    """
     params.update(connected_chip_details)
     return params
 

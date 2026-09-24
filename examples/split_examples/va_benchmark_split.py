@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # coding: utf-8
 # Copyright (c) 2017 The University of Manchester
 #
@@ -27,14 +28,12 @@ Andrew Davison, UNIC, CNRS
 August 2006
 """
 import socket
+
+import matplotlib.pyplot as plt
 import pyNN.spiNNaker as p
 from pyNN.random import RandomDistribution
 from pyNN.utility import Timer
 from pyNN.utility.plotting import Figure, Panel
-import matplotlib.pyplot as plt
-from spynnaker.pyNN.extra_algorithms.splitter_components import (
-    SplitterAbstractPopulationVertexNeuronsSynapses)
-
 
 simulator_name = 'spiNNaker'
 benchmark = 'CUBA'
@@ -94,10 +93,10 @@ cm = cm * area * 1000                  # convert to nF
 Rm = 1e-6 / (g_leak * area)            # membrane resistance in MΩ
 assert tau_m == cm * Rm                # just to check
 
-n_exc = int(round((n * r_ei / (1 + r_ei))))  # number of excitatory cells
+n_exc = round(n * r_ei / (1 + r_ei))  # number of excitatory cells
 n_inh = n - n_exc                            # number of inhibitory cells
 
-print("{} {}".format(n_exc, n_inh))
+print(n_exc, n_inh)
 
 w_exc = None
 w_inh = None
@@ -106,7 +105,7 @@ if benchmark == "COBA":
     celltype = p.IF_cond_exp
     w_exc = Gexc * 1e-3              # We convert conductances to uS
     w_inh = Ginh * 1e-3
-    print("{} {}".format(w_exc, w_inh))
+    print(w_exc, w_inh)
 elif benchmark == "CUBA":
     celltype = p.IF_curr_exp
     w_exc = 1e-3 * Gexc * (Erev_exc - v_mean)  # (nA) weight of exc synapses
@@ -117,7 +116,7 @@ elif benchmark == "CUBA":
 # === Build the network ===
 
 extra = {'threads': threads,
-         'filename': "va_%s.xml" % benchmark,
+         'filename': f"va_{benchmark}.xml",
          'label': 'VA'}
 if simulator_name == "neuroml":
     extra["file"] = "VAbenchmarks.xml"
@@ -126,17 +125,15 @@ node_id = p.setup(
     timestep=dt, min_delay=delay, db_name='va_benchmark.sqlite', **extra)
 
 if simulator_name == 'spiNNaker':
-    p.set_number_of_neurons_per_core(p.IF_curr_exp, 100)      # this will set
-    #  100 neurons per core
-    p.set_number_of_neurons_per_core(p.IF_cond_exp, 50)      # this will set
-    # 50 neurons per core
+    p.set_number_of_neurons_per_core(p.IF_curr_exp, 100)
+    p.set_number_of_neurons_per_core(p.IF_cond_exp, 50)
 np = 1
 
 host_name = socket.gethostname()
-print("Host #%d is on %s" % (np, host_name))
+print(f"Host #{np} is on {host_name}")
 
-print("%s Initialising the simulator with %d thread(s)..." % (
-    node_id, extra['threads']))
+print(f"{node_id} Initialising the simulator with "
+      f"{extra['threads']} thread(s)...")
 
 cell_params = {'tau_m': tau_m,
                'tau_syn_E': tau_exc,
@@ -157,15 +154,11 @@ if (benchmark == "COBA"):
 
 timer.start()
 
-print("%s Creating cell populations..." % node_id)
-exc_cells_splitter = SplitterAbstractPopulationVertexNeuronsSynapses(2)
+print(f"{node_id} Creating cell populations...")
 exc_cells = p.Population(
-    n_exc, celltype(**cell_params), label="Excitatory_Cells",
-    additional_parameters={"splitter": exc_cells_splitter}, seed=1)
-inh_cells_splitter = SplitterAbstractPopulationVertexNeuronsSynapses(3)
+    n_exc, celltype(**cell_params), label="Excitatory_Cells", seed=1)
 inh_cells = p.Population(
-    n_inh, celltype(**cell_params), label="Inhibitory_Cells",
-    additional_parameters={"splitter": inh_cells_splitter}, seed=2)
+    n_inh, celltype(**cell_params), label="Inhibitory_Cells", seed=2)
 exc_conn = None
 ext_stim = None
 if benchmark == "COBA":
@@ -176,12 +169,12 @@ if benchmark == "COBA":
     ext_conn = p.FixedProbabilityConnector(rconn)
     ext_stim.record("spikes")
 
-print("%s Initialising membrane potential to random values..." % node_id)
+print(f"{node_id} Initialising membrane potential to random values...")
 uniformDistr = RandomDistribution('uniform', [v_reset, v_thresh])
 exc_cells.initialize(v=uniformDistr)
 inh_cells.initialize(v=uniformDistr)
 
-print("%s Connecting populations..." % node_id)
+print(f"{node_id} Connecting populations...")
 exc_conn = p.FixedProbabilityConnector(pconn)
 inh_conn = p.FixedProbabilityConnector(pconn)
 
@@ -208,16 +201,16 @@ if benchmark == "COBA":
         synapse_type=p.StaticSynapse(weight=0.1))
 
 # === Setup recording ===
-print("%s Setting up recording..." % node_id)
+print(f"{node_id} Setting up recording...")
 exc_cells.record("spikes")
 
 buildCPUTime = timer.diff()
 
 # === Run simulation ===
-print("%d Running simulation..." % node_id)
+print(f"{node_id} Running simulation...")
 
-print("timings: number of neurons: {}".format(n))
-print("timings: number of synapses: {}".format(n * n * pconn))
+print(f"timings: number of neurons: {n}")
+print(f"timings: number of synapses: {n * n * pconn}")
 
 p.run(tstop)
 
@@ -232,7 +225,7 @@ Figure(
     Panel(exc_spikes.segments[0].spiketrains, xlabel="Time/ms", xticks=True,
           yticks=True, markersize=0.2, xlim=(0, tstop)),
     title="Vogels-Abbott benchmark: spikes",
-    annotations="Simulated with {}".format(p.name())
+    annotations=f"Simulated with {p.name()}"
 )
 plt.show()
 
@@ -240,15 +233,15 @@ writeCPUTime = timer.diff()
 
 if node_id == 0:
     print("\n--- Vogels-Abbott Network Simulation ---")
-    print("Nodes                  : %d" % np)
-    print("Simulation type        : %s" % benchmark)
-    print("Number of Neurons      : %d" % n)
-    print("Number of Synapses     : %s" % connections)
-    print("Excitatory conductance : %g nS" % Gexc)
-    print("Inhibitory conductance : %g nS" % Ginh)
-    print("Build time             : %g s" % buildCPUTime)
-    print("Simulation time        : %g s" % simCPUTime)
-    print("Writing time           : %g s" % writeCPUTime)
+    print(f"Nodes                  : {np}")
+    print(f"Simulation type        : {benchmark}")
+    print(f"Number of Neurons      : {n}")
+    print(f"Number of Synapses     : {connections}")
+    print(f"Excitatory conductance : {Gexc} nS")
+    print(f"Inhibitory conductance : {Ginh} nS")
+    print(f"Build time             : {buildCPUTime} s")
+    print(f"Simulation time        : {simCPUTime} s")
+    print(f"Writing time           : {writeCPUTime} s")
 
 
 # === Finished with simulator ===

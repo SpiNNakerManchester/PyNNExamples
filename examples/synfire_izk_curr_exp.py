@@ -15,9 +15,9 @@
 """
 Synfirechain-like example
 """
+import matplotlib.pyplot as plt
 import pyNN.spiNNaker as p
 from pyNN.utility.plotting import Figure, Panel
-import matplotlib.pyplot as plt
 
 runtime = 500
 p.setup(timestep=1.0, min_delay=1.0)
@@ -35,14 +35,14 @@ cell_params_izk = {'a': 0.02,
                    'i_offset': 0
                    }
 
-populations = list()
-projections = list()
+populations = []
+projections = []
 
 weight_to_spike = 30
 delay = 1
 
-loopConnections = list()
-for i in range(0, nNeurons):
+loopConnections = []
+for i in range(nNeurons):
     singleConnection = ((i, (i + 1) % nNeurons, weight_to_spike, delay))
     loopConnections.append(singleConnection)
 
@@ -82,7 +82,7 @@ Figure(
           ylabel="gsyn inhibitory (mV)",
           data_labels=[populations[0].label], yticks=True, xlim=(0, runtime)),
     title="Simple synfire chain example",
-    annotations="Simulated with {}".format(p.name())
+    annotations=f"Simulated with {p.name()}"
 )
 plt.show()
 

@@ -15,9 +15,9 @@
 """
 Synfirechain-like example
 """
+import matplotlib.pyplot as plt
 import pyNN.spiNNaker as p
 from pyNN.utility.plotting import Figure, Panel
-import matplotlib.pyplot as plt
 
 run_time = 6000
 p.setup(timestep=1.0, min_delay=1.00)
@@ -39,9 +39,9 @@ delay = 2
 second_spike_start = delay * nNeurons
 space_between_inputs = delay * nNeurons * 2
 
-connections = list()
-reverseConnections = list()
-for i in range(0, nNeurons - 1):
+connections = []
+reverseConnections = []
+for i in range(nNeurons - 1):
     connections.append((i, (i + 1) % nNeurons, weight_to_spike, delay))
     reverseConnections.append(((i + 1) % nNeurons, i, weight_to_spike, delay))
 
@@ -92,7 +92,7 @@ Figure(
           ylabel="spikes from second pop",
           yticks=True, markersize=0.2, xlim=(0, run_time)),
     title="large data Simple synfire chain example",
-    annotations="Simulated with {}".format(p.name())
+    annotations=f"Simulated with {p.name()}"
 )
 plt.show()
 

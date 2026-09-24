@@ -15,11 +15,10 @@
 """
 Synfirechain-like example
 """
-import pyNN.spiNNaker as p
-from pyNN.utility.plotting import Figure, Panel
 import matplotlib.pyplot as plt
-
+import pyNN.spiNNaker as p
 from pyNN.random import RandomDistribution
+from pyNN.utility.plotting import Figure, Panel
 
 p.setup(timestep=1.0, min_delay=1.0)
 nNeurons = 200  # number of neurons in each population
@@ -41,8 +40,8 @@ cell_params_lif = {'cm': 0.25,
 weight_to_spike = 2.0
 delay = RandomDistribution("uniform", low=1, high=max_delay)
 
-loopConnections = list()
-for i in range(0, nNeurons):
+loopConnections = []
+for i in range(nNeurons):
     delay_value = delay.next()
     singleConnection = (i, ((i + 1) % nNeurons), weight_to_spike, delay_value)
     loopConnections.append(singleConnection)
@@ -59,7 +58,7 @@ p.Projection(input_pop, main_pop, p.FromListConnector(injectionConnection))
 
 main_pop.record(['v', 'gsyn_exc', 'gsyn_inh', 'spikes'])
 
-print("Running for {} ms".format(run_time))
+print(f"Running for {run_time} ms")
 p.run(run_time)
 # get data (could be done as one, but can be done bit by bit as well)
 data = main_pop.get_data(['v', 'gsyn_exc', 'spikes', 'gsyn_inh'])
@@ -79,7 +78,7 @@ Figure(
           ylabel="gsyn inhibitory (mV)",
           data_labels=[main_pop.label], yticks=True, xlim=(0, run_time)),
     title="Simple synfire chain example",
-    annotations="Simulated with {}".format(p.name())
+    annotations=f"Simulated with {p.name()}"
 )
 plt.show()
 

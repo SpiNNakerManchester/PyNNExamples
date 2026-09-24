@@ -12,14 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import multiprocessing
 import tkinter as tk
+
+import matplotlib.pyplot as plt
 import pyNN.spiNNaker as Frontend
 from pyNN.utility.plotting import Figure, Panel
-import matplotlib.pyplot as plt
-import multiprocessing
 
 
-class PyNNScript(object):
+class PyNNScript:
     """
     the class which contains the pynn script
     """
@@ -37,7 +38,7 @@ class PyNNScript(object):
         # simulation, as well as the expected weight each spike will contain
         self.n_neurons = 100
 
-        # set up gui
+        # set up GUI
         p = None
         sender_port = None
         if use_spike_injector:
@@ -65,7 +66,7 @@ class PyNNScript(object):
             live_spikes_connection_receive.add_receive_callback(
                 "pop_backward", receive_spikes)
 
-        # different runtimes for demostration purposes
+        # different run times for demonstration purposes
         run_time = None
         if not use_c_visualiser and not use_spike_injector:
             run_time = 1000
@@ -132,7 +133,7 @@ class PyNNScript(object):
                 label='spike_injector_backward')
         else:
             spike_times = []
-            for _ in range(0, self.n_neurons):
+            for _ in range(self.n_neurons):
                 spike_times.append([])
             spike_times[0] = [0]
             spike_times[20] = [(run_time / 100) * 20]
@@ -141,7 +142,7 @@ class PyNNScript(object):
             spike_times[80] = [(run_time / 100) * 80]
             cell_params_forward = {'spike_times': spike_times}
             spike_times_backwards = []
-            for _ in range(0, self.n_neurons):
+            for _ in range(self.n_neurons):
                 spike_times_backwards.append([])
             spike_times_backwards[0] = [(run_time / 100) * 80]
             spike_times_backwards[20] = [(run_time / 100) * 60]
@@ -172,9 +173,9 @@ class PyNNScript(object):
         # neuron
         # NOTE: there is no recurrent connection so that each chain stops once
         # it reaches the end
-        loop_forward = list()
-        loop_backward = list()
-        for i in range(0, self.n_neurons - 1):
+        loop_forward = []
+        loop_backward = []
+        for i in range(self.n_neurons - 1):
             loop_forward.append((i, (i + 1) %
                                  self.n_neurons, weight_to_spike, 3))
             loop_backward.append(((i + 1) %
@@ -185,7 +186,7 @@ class PyNNScript(object):
                             Frontend.FromListConnector(loop_backward))
 
         # record spikes from the synfire chains so that we can read off valid
-        # results in a safe way afterwards, and verify the behavior
+        # results in a safe way afterwards, and verify the behaviour
         pop_forward.record('spikes')
         pop_backward.record('spikes')
 
@@ -218,19 +219,26 @@ class PyNNScript(object):
             Panel(spikes_backward.segments[0].spiketrains,
                   yticks=True, markersize=0.2, xlim=(0, run_time)),
             title="Simple synfire chain example with injected spikes",
-            annotations="Simulated with {}".format(Frontend.name())
+            annotations=f"Simulated with {Frontend.name()}"
         )
         plt.show()
 
 
 # Create a receiver of live spikes
 def receive_spikes(label, time, neuron_ids):
+    """
+    Print that spikes have been received
+
+    :param str label:
+    :param int time:
+    :param list(int) neuron_ids:
+    :return:
+    """
     for neuron_id in neuron_ids:
-        print("Received spike at time {} from {} - {}".format(
-            time, label, neuron_id))
+        print(f"Received spike at time {time} from {label} - {neuron_id}")
 
 
-class GUI(object):
+class GUI:
     """ Simple GUI to demonstrate live injection of the spike io script.
     """
 
@@ -274,13 +282,22 @@ class GUI(object):
         self._root.mainloop()
 
     def start(self, pop_label, connection):
+        """
+        Set the start button to state to normal
+
+        :param pop_label: IGNORED
+        :param connection:  IGNORED
+        """
         # pylint: disable=unused-argument
         self._button["state"] = "normal"
 
     def inject_spike(self):
+        """
+        Inject a spike into system
+        """
         neuron_id = self._neuron_id.get()
         label = self._pop_label.get()
-        print("injecting with neuron_id {} to pop {}".format(neuron_id, label))
+        print(f"injecting with neuron_id {neuron_id} to pop {label}")
         self._live_spikes_connection.send_spike(label, neuron_id)
 
 

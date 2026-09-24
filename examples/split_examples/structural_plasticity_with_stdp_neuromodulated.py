@@ -31,12 +31,9 @@ This uses the split neuron-synapse modelling as otherwise the neuromodulated
 STDP, structural plasticity and neuron instructions would not fit on one core
 """
 
-from spynnaker.pyNN.extra_algorithms.splitter_components import (
-    SplitterAbstractPopulationVertexNeuronsSynapses)
-
-import pyNN.spiNNaker as sim
-import pylab
 import numpy as np
+import pylab
+import pyNN.spiNNaker as sim
 
 timestep = 1.0
 stim_rate = 50
@@ -76,7 +73,6 @@ punishment_pop = sim.Population(n_neurons, sim.SpikeSourceArray,
 pre_pops = []
 stimulation = []
 post_pops = []
-post_splitters = []
 reward_projections = []
 punishment_projections = []
 plastic_projections = []
@@ -87,7 +83,7 @@ stim_projections = []
 # Structurally plastic connection between pre_pop and post_pop
 partner_selection_last_neuron = sim.RandomSelection()
 formation_distance = sim.DistanceDependentFormation(
-    grid=[np.sqrt(n_neurons), np.sqrt(n_neurons)],  # spatial org of neurons
+    grid=[np.sqrt(n_neurons), np.sqrt(n_neurons)],  # spatial neurons
     sigma_form_forward=0.5  # spread of feed-forward connections
 )
 elimination_weight = sim.RandomByWeightElimination(
@@ -118,12 +114,11 @@ synapse_dynamics = sim.StructuralMechanismSTDP(
     weight_dependence=sim.AdditiveWeightDependence(w_min=0, w_max=5.0))
 
 for i in range(n_pops):
-    stimulation.append(sim.Population(n_neurons, sim.SpikeSourcePoisson,
-                       {'rate': stim_rate, 'duration': duration}, label="pre"))
-    post_splitters.append(SplitterAbstractPopulationVertexNeuronsSynapses(1))
+    stimulation.append(sim.Population(
+        n_neurons, sim.SpikeSourcePoisson(rate=stim_rate, duration=duration),
+        label="pre"))
     post_pops.append(sim.Population(
-        n_neurons, sim.IF_curr_exp, cell_params, label='post',
-        additional_parameters={"splitter": post_splitters[i]}))
+        n_neurons, sim.IF_curr_exp, cell_params, label='post'))
     plastic_projections.append(
         sim.Projection(stimulation[i], post_pops[i],
                        sim.FixedProbabilityConnector(0.),  # no initial conns
@@ -175,7 +170,7 @@ pylab.plot(rewards, [0.5 for x in rewards], 'g^')
 pylab.plot(punishments, [0.5 for x in punishments], 'r^')
 pylab.show()
 
-print("Weights(Initial %s)" % plastic_weights)
+print(f"Weights(Initial {plastic_weights})")
 for x in weights:
     print(x)
 

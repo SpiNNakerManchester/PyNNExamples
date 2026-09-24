@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Copyright (c) 2017 The University of Manchester
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,84 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pyNN.spiNNaker as pynn
-
-import numpy as np
 import matplotlib.pyplot as plt
+import pyNN.spiNNaker as pynn
 from pyNN.random import RandomDistribution
 from pyNN.utility.plotting import Figure, Panel
-from spynnaker.pyNN.extra_algorithms.splitter_components import (
-    SplitterAbstractPopulationVertexNeuronsSynapses, SplitterPoissonDelegate)
 
 simulator_Name = 'spiNNaker'
 # exec('import pyNN.%s as pynn' % simulator_Name)
-
-
-def poisson_generator(rate, rng, t_start=0.0, t_stop=1000.0, array=True,
-                      debug=False):
-    """
-    Returns a SpikeTrain whose spikes are a realization of a Poisson process
-    with the given rate (Hz) and stopping time t_stop (milliseconds).
-
-    Note: t_start is always 0.0, thus all realizations are as if
-    they spiked at t=0.0, though this spike is not included in the SpikeList.
-
-    Inputs:
-        rate    - the rate of the discharge (in Hz)
-        t_start - the beginning of the SpikeTrain (in ms)
-        t_stop  - the end of the SpikeTrain (in ms)
-        array   - if True, a numpy array of sorted spikes is returned,
-                  rather than a SpikeTrain object.
-
-    Examples:
-        >> gen.poisson_generator(50, 0, 1000)
-        >> gen.poisson_generator(20, 5000, 10000, array=True)
-
-    See also:
-        inh_poisson_generator, inh_gamma_generator,
-        inh_adaptingmarkov_generator
-    """
-
-    n = (t_stop - t_start) / 1000.0 * rate
-    number = np.ceil(n + 3 * np.sqrt(n))
-    if number < 100:
-        number = min(5 + np.ceil(2 * n), 100)
-
-    if number > 0:
-        isi = rng.exponential(1.0 / rate, number) * 1000.0
-        if number > 1:
-            spikes = np.add.accumulate(isi)
-        else:
-            spikes = isi
-    else:
-        spikes = np.array([])
-
-    spikes += t_start
-    i = np.searchsorted(spikes, t_stop)
-
-    extra_spikes = []
-    if i == len(spikes):
-        # ISI buf overrun
-
-        t_last = spikes[-1] + rng.exponential(1.0 / rate, 1)[0] * 1000.0
-
-        while (t_last < t_stop):
-            extra_spikes.append(t_last)
-            t_last += rng.exponential(1.0 / rate, 1)[0] * 1000.0
-
-        spikes = np.concatenate((spikes, extra_spikes))
-
-        if debug:
-            print("ISI buf overrun handled. len(spikes)=%d,"
-                  " len(extra_spikes)=%d" % (len(spikes), len(extra_spikes)))
-
-    else:
-        spikes = np.resize(spikes, (i,))
-
-    if debug:
-        return spikes, extra_spikes
-    else:
-        return [round(x) for x in spikes]
 
 
 # Total number of neurons
@@ -107,8 +37,8 @@ V_th = 20.0
 v_rest = 0.0
 tauSyn = 1.0
 
-N_E = int(round(Neurons * 0.8))
-N_I = int(round(Neurons * 0.2))
+N_E = round(Neurons * 0.8)
+N_I = round(Neurons * 0.2)
 
 C_E = N_E * 0.1
 C_I = N_I * 0.1
@@ -164,26 +94,16 @@ inh_cell_params = {
 }
 
 # Set-up pynn Populations
-E_pop_splitter = SplitterAbstractPopulationVertexNeuronsSynapses(3, 128, False)
 E_pop = pynn.Population(
-    N_E, pynn.IF_curr_exp(**exc_cell_params), label="E_pop",
-    additional_parameters={"splitter": E_pop_splitter}, seed=1)
+    N_E, pynn.IF_curr_exp(**exc_cell_params), label="E_pop", seed=1)
 
-I_pop_splitter = SplitterAbstractPopulationVertexNeuronsSynapses(3, 128, False)
 I_pop = pynn.Population(
-    N_I, pynn.IF_curr_exp(**inh_cell_params), label="I_pop",
-    additional_parameters={"splitter": I_pop_splitter}, seed=2)
+    N_I, pynn.IF_curr_exp(**inh_cell_params), label="I_pop", seed=2)
 
-Poiss_ext_E_splitter = SplitterPoissonDelegate()
 Poiss_ext_E = pynn.Population(
-    N_E, pynn.SpikeSourcePoisson(rate=10.0), label="Poisson_pop_E",
-    additional_parameters={"seed": 3,
-                           "splitter": Poiss_ext_E_splitter})
-Poiss_ext_I_splitter = SplitterPoissonDelegate()
+    N_E, pynn.SpikeSourcePoisson(rate=10.0), label="Poisson_pop_E", seed=3)
 Poiss_ext_I = pynn.Population(
-    N_I, pynn.SpikeSourcePoisson(rate=10.0), label="Poisson_pop_I",
-    additional_parameters={"seed": 4,
-                           "splitter": Poiss_ext_I_splitter})
+    N_I, pynn.SpikeSourcePoisson(rate=10.0), label="Poisson_pop_I", seed=4)
 
 # Connectors
 E_conn = pynn.FixedProbabilityConnector(epsilon)
@@ -239,7 +159,7 @@ Figure(
     Panel(esp.segments[0].spiketrains,
           yticks=True, markersize=1, xlim=(0, sim_time)),
     title="Brunnel example",
-    annotations="Simulated with {}".format(pynn.name())
+    annotations=f"Simulated with {pynn.name()}"
 )
 plt.show()
 

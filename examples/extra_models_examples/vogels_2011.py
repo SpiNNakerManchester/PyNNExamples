@@ -11,11 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from pyNN.random import NumpyRNG
-import pyNN.spiNNaker as sim
-import numpy
 import os
+from typing import Final
+
 import matplotlib.pyplot as pylab
+import numpy
+import pyNN.spiNNaker as sim
+
 from spynnaker.pyNN.utilities import neo_convertor
 
 # how much slowdown to put into the network to allow it to run without any
@@ -26,14 +28,14 @@ SLOWDOWN_STATIC = 10
 SLOWDOWN_PLASTIC = 10
 
 # bool hard code for extracting the weights or not
-EXTRACT_WEIGHTS = False
-GENERATE_PLOT = False
+EXTRACT_WEIGHTS = True
+GENERATE_PLOT = True
 
 # how many boards to use for this test
 N_BOARDS = 1
 
 
-class Vogels2011(object):
+class Vogels2011:
     """
     This example uses the sPyNNaker implementation of the inhibitory
     Plasticity rule developed by Vogels, Sprekeler, Zenke et al (2011)
@@ -42,9 +44,15 @@ class Vogels2011(object):
     To reproduce the experiment from their paper
     """
 
+    def __init__(self, split: bool = False):
+        if split:
+            self._n_synapse_cores: int | None = 1
+        else:
+            self._n_synapse_cores = None
+
     # Population parameters
-    MODEL = sim.IF_curr_exp
-    CELL_PARAMETERS = {
+    MODEL: Final = sim.IF_curr_exp
+    CELL_PARAMETERS: Final = {
         'cm': 0.2,  # nF
         'i_offset': 0.2,
         'tau_m': 20.0,
@@ -115,39 +123,37 @@ class Vogels2011(object):
         sim.set_number_of_neurons_per_core(
             sim.IF_curr_exp, self.N_NEURONS_PER_CORE)
 
-        rng = NumpyRNG(59)
+        rng_seed = 59
 
         # Create excitatory and inhibitory populations of neurons
         ex_pop = sim.Population(
             self.NUM_EXCITATORY, self.MODEL(**self.CELL_PARAMETERS),
-            label="excit_pop")
+            label="excit_pop", seed=rng_seed,
+            n_synapse_cores=self._n_synapse_cores)
         in_pop = sim.Population(
             self.NUM_INHIBITORY, self.MODEL(**self.CELL_PARAMETERS),
-            label="inhib_pop")
+            label="inhib_pop", seed=rng_seed)
 
         # Record excitatory spikes
         ex_pop.record(['spikes'])
         in_pop.record(['spikes'])
 
-        # create seeder
-        # rng_seeder = NumpyRNG(seed=self.RANDOM_NUMBER_GENERATOR_SEED)
-
         # Make excitatory->inhibitory projections
         proj1 = sim.Projection(
             ex_pop, in_pop,
-            sim.FixedProbabilityConnector(0.02, rng=rng),
+            sim.FixedProbabilityConnector(0.02),
             receptor_type='excitatory',
             synapse_type=sim.StaticSynapse(weight=0.029))
         proj2 = sim.Projection(
             ex_pop, ex_pop,
-            sim.FixedProbabilityConnector(0.02, rng=rng),
+            sim.FixedProbabilityConnector(0.02),
             receptor_type='excitatory',
             synapse_type=sim.StaticSynapse(weight=0.029))
 
         # Make inhibitory->inhibitory projections
         proj3 = sim.Projection(
             in_pop, in_pop,
-            sim.FixedProbabilityConnector(0.02, rng=rng),
+            sim.FixedProbabilityConnector(0.02),
             receptor_type='inhibitory',
             synapse_type=sim.StaticSynapse(weight=-0.29))
 
@@ -163,7 +169,7 @@ class Vogels2011(object):
         # Make inhibitory->excitatory projection
         ie_projection = sim.Projection(
             in_pop, ex_pop,
-            sim.FixedProbabilityConnector(0.02, rng=rng),
+            sim.FixedProbabilityConnector(0.02),
             receptor_type='inhibitory', synapse_type=stdp_model)
 
         # return the excitatory population and the inhibitory->excitatory
@@ -172,11 +178,20 @@ class Vogels2011(object):
 
     @staticmethod
     def save_name(spike_name):
+        """
+        Gets the name of a none existing file based on this name.
+
+        If needed ands a number at the end.
+
+        :param str spike_name:
+        :return: A unique file name
+        :rtype: str
+        """
         index = 0
-        file_name = spike_name + "{}".format(index)
+        file_name = spike_name + str(index)
         while os.path.exists(file_name):
             index += 1
-            file_name = spike_name + "{}".format(index)
+            file_name = spike_name + str(index)
         return file_name
 
     def run(self, slow_down_static, slow_down_plastic, extract_weights):
@@ -209,7 +224,7 @@ class Vogels2011(object):
             index = 0
             if self.SAVE_ALL_CONNECTIVITY_IF_INSANE:
                 for proj in projs:
-                    proj.save("all", "projection{}_data".format(index))
+                    proj.save("all", f"projection{index}_data")
                     index += 1
 
             # Get static spikes
@@ -241,7 +256,7 @@ class Vogels2011(object):
             index = 0
             if self.SAVE_ALL_CONNECTIVITY_IF_INSANE:
                 plastic_ie_projection.save(
-                    "all", "projection{}_before_data_plastic".format(index))
+                    "all", f"projection{index}_before_data_plastic")
 
             # Run simulation
             sim.run(self.SECOND_RUN_RUNTIME)
@@ -250,7 +265,7 @@ class Vogels2011(object):
                 projs = [plastic_ie_projection]
                 index = 0
                 for proj in projs:
-                    proj.save("all", "projection{}_data_plastic".format(index))
+                    proj.save("all", f"projection{index}_data_plastic")
                     index += 1
 
             # Get plastic spikes and save to disk
@@ -293,7 +308,7 @@ class Vogels2011(object):
         # print mean weight, if we bothered to extract them.
         if plastic_weights is not None:
             mean_weight = numpy.average(plastic_weights)
-            print("Mean learnt ie weight:%f" % mean_weight)
+            print(f"Mean learnt ie weight:{mean_weight:f}")
 
         # Create plot
         _fig, axes = pylab.subplots(3)
@@ -339,9 +354,24 @@ class Vogels2011(object):
         pylab.show()
 
 
-if __name__ == "__main__":
-    x = Vogels2011()
+def run_script(*, split: bool = False) -> None:
+    """
+    Runs the example script
+
+    :param split: If True will split the Populations that receive data
+        into synapse and neuron cores.
+        This requires more cores but allows more spikes to be received.
+    """
+    x = Vogels2011(split)
     result_weights, static, plastic = x.run(
         SLOWDOWN_STATIC, SLOWDOWN_PLASTIC, EXTRACT_WEIGHTS)
     if GENERATE_PLOT:
         x.plot(result_weights, static, plastic)
+
+# combined binaries [IF_curr_exp_stdp_mad_vogels_2011_additive.aplx]
+# split binaries [IF_curr_exp_neuron.aplx,
+# synapses_stdp_mad_vogels_2011_additive.aplx]
+
+
+if __name__ == "__main__":
+    run_script(split=True)

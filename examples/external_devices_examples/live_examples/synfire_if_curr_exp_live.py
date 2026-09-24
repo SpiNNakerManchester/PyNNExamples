@@ -13,11 +13,11 @@
 # limitations under the License.
 
 # Standard PyNN imports
+import matplotlib.pyplot as plt
 import pyNN.spiNNaker as p
 
 # pynn plotting stuff
 from pyNN.utility.plotting import Figure, Panel
-import matplotlib.pyplot as plt
 
 # Define a synfire chain as usual
 p.setup(timestep=1.0, min_delay=1.0)
@@ -35,14 +35,14 @@ cell_params_lif = {'cm': 0.25,
                    'v_thresh': -50.0
                    }
 
-populations = list()
-projections = list()
+populations = []
+projections = []
 
 weight_to_spike = 2.0
 delay = 17
 
-loopConnections = list()
-for i in range(0, nNeurons):
+loopConnections = []
+for i in range(nNeurons):
     singleConnection = (i, ((i + 1) % nNeurons), weight_to_spike, delay)
     loopConnections.append(singleConnection)
 
@@ -75,7 +75,7 @@ Figure(
     Panel(spikes.segments[0].spiketrains,
           yticks=True, markersize=0.2, xlim=(0, 5000)),
     title="Simple synfire chain example with injected spikes",
-    annotations="Simulated with {}".format(p.name())
+    annotations=f"Simulated with {p.name()}"
 )
 plt.show()
 
