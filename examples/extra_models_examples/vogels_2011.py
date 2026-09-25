@@ -263,10 +263,8 @@ class Vogels2011:
 
             if self.SAVE_ALL_CONNECTIVITY_IF_INSANE:
                 projs = [plastic_ie_projection]
-                index = 0
-                for proj in projs:
+                for index, proj in enumerate(projs):
                     proj.save("all", f"projection{index}_data_plastic")
-                    index += 1
 
             # Get plastic spikes and save to disk
             static_in_spikes_numpy = None
