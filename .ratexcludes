@@ -1,5 +1,6 @@
 **/*.colour_map
 **/*.col
+**/*.csv
 **/SpiNNUtils/**
 **/SpiNNMachine/**
 **/SpiNNMan/**
