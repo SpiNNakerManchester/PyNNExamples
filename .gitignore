@@ -9,3 +9,5 @@ __pycache__
 *reports/
 .cache/
 .mypy_cache/
+*big_with_labels/
+*graphs/
